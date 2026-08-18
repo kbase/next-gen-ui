@@ -5,26 +5,23 @@
    Text-on-tint: OKLAB L-axis darkened for WCAG AA 4.5:1.
    ================================================================ */
 :root {
-  /* Both schemes allowed, so light-dark() above follows the OS unless a
-     [data-theme] stamp narrows it. Also switches native controls, scrollbars
-     and form widgets, which no stylesheet of ours can reach. */
-  color-scheme: light dark;
+  color-scheme: light;
 
   /* fonts */
   --f-sans: 'Oxygen', system-ui, sans-serif;
   --f-mono: 'Fira Code', 'SF Mono', ui-monospace, monospace;
 
   /* base (warm neutrals) */
-  --c-bg: light-dark(#f5f2ee, #17140f);
-  --c-raised: light-dark(#fafaf8, #262219);
-  --c-surface: light-dark(#ffffff, #1e1b16);
-  --c-border: light-dark(rgba(62, 56, 50, 0.09), rgba(240, 238, 234, 0.11));
-  --c-border2: light-dark(rgba(62, 56, 50, 0.16), rgba(240, 238, 234, 0.2));
-  --c-ink: light-dark(#1a1714, #f0eeea); /* 15.5:1 on --c-bg */
-  --c-ink2: light-dark(#3e3832, #d8d4d0);
-  --c-ink3: light-dark(#6a6158, #aaa6a0);
-  --c-ink4: light-dark(#776d64, #98938c); /* 4.56:1 on --c-raised, the worst-case ground */
-  --c-ink5: light-dark(#9d9389, #726d66); /* decorative only, in both themes */
+  --c-bg: #f5f2ee;
+  --c-raised: #fafaf8;
+  --c-surface: #ffffff;
+  --c-border: rgba(62, 56, 50, 0.09);
+  --c-border2: rgba(62, 56, 50, 0.16);
+  --c-ink: #1a1714; /* 15.5:1 on --c-bg */
+  --c-ink2: #3e3832;
+  --c-ink3: #6a6158;
+  --c-ink4: #776d64; /* 4.56:1 on --c-raised, the worst-case ground */
+  --c-ink5: #9d9389; /* decorative only, in both themes */
   /* Warm-neutral mid-scale, used in showcase swatches; not for ink. */
   --c-warm-200: #ded5cb;
   --c-warm-300: #c4b9ad;
@@ -44,14 +41,14 @@
   --c-frost: #c7dbee;
 
   /* text on tint (OKLAB L-axis darkened for 4.5:1) */
-  --ct-primary: light-dark(#006eac, oklch(from var(--c-primary) var(--ct-l) var(--ct-c) h));
-  --ct-green: light-dark(#3c6e08, oklch(from var(--c-green) var(--ct-l) var(--ct-c) h));
-  --ct-yellow: light-dark(#8c5200, oklch(from var(--c-yellow) var(--ct-l) var(--ct-c) h));
-  --ct-red: light-dark(#ce1d27, oklch(from var(--c-red) var(--ct-l) var(--ct-c) h));
-  --ct-purple: light-dark(#66489d, oklch(from var(--c-purple) var(--ct-l) var(--ct-c) h));
-  --ct-teal: light-dark(#00776b, oklch(from var(--c-teal) var(--ct-l) var(--ct-c) h));
-  --ct-ocean: light-dark(#03757c, oklch(from var(--c-ocean) var(--ct-l) var(--ct-c) h));
-  --ct-orange: light-dark(#af4b00, oklch(from var(--c-orange) var(--ct-l) var(--ct-c) h));
+  --ct-primary: #006eac;
+  --ct-green: #3c6e08;
+  --ct-yellow: #8c5200;
+  --ct-red: #ce1d27;
+  --ct-purple: #66489d;
+  --ct-teal: #00776b;
+  --ct-ocean: #03757c;
+  --ct-orange: #af4b00;
 
   /* Tint geometry. Each family is one lightness and one chroma; the hue
      always comes from the base color. A theme restates these numbers and
@@ -68,8 +65,8 @@
   --tl-bgw-yellow: 0.954;
   --tc-bgw-yellow: 0.038;
 
-  /* Numbers a theme owns that light-dark() cannot carry: it returns a colour,
-     never a lightness or an alpha. Restated in the dark block at the end. */
+  /* Numbers a theme owns, alongside the colours above; the dark block at the
+     end of this file restates both. */
   --ct-l: 0.519;
   --ct-c: 0.128;
   --sa-1: 0.12;
@@ -116,22 +113,16 @@
   --bgw-orange: oklch(from var(--c-orange) var(--tl-bgw) var(--tc-bgw) h); /* #f4e7dd · aux */
 
   /* interactive */
-  --c-primary-dim: light-dark(#005889, oklch(from var(--c-primary) 0.68 c h));
+  --c-primary-dim: #005889;
   --c-teal-btn: #008578;
-  --c-teal-dim: light-dark(#007368, oklch(from var(--c-teal-btn) 0.68 c h));
+  --c-teal-dim: #007368;
   --c-purple-btn: #66489d; /* same as base; purple is already button-weight */
-  --c-purple-dim: light-dark(#49297c, oklch(from var(--c-purple-btn) 0.7 c h));
-  --c-focus: light-dark(
-    rgb(from var(--c-primary) r g b / 0.08),
-    rgb(from var(--c-primary) r g b / 0.32)
-  );
+  --c-purple-dim: #49297c;
+  --c-focus: rgb(from var(--c-primary) r g b / 0.08);
 
   /* Elevation. --c-shadow matches --c-ink but is its own token: a dark theme
      inverts ink and does not invert shadows. */
-  --c-shadow: light-dark(
-    #1a1714,
-    #000000
-  ); /* does not follow --c-ink: a theme inverts ink, not shadows */
+  --c-shadow: #1a1714; /* does not follow --c-ink: a theme inverts ink, not shadows */
   --c-scrim: rgb(from var(--c-shadow) r g b / var(--sa-scrim));
   --e-1: 0 1px 2px rgb(from var(--c-shadow) r g b / var(--sa-1)); /* switch thumb */
   --e-2: 0 2px 8px rgb(from var(--c-shadow) r g b / var(--sa-2)); /* tooltip */
@@ -190,23 +181,47 @@
 
 /* ================================================================
    DARK
-   The palette rides in light-dark() above, beside its light counterpart.
-   Only numbers land here, because light-dark() returns a colour.
+   Neutrals are the cream's own hue driven down in lightness, so the brand
+   does not change temperature between themes.
 
-   Two selectors, because the viewer has three states: no stamp at all
-   (the default, where the OS decides), an explicit light, and an explicit
-   dark. The media query is guarded so an explicit light beats a dark OS.
+   Two selectors, because the viewer has three states: no stamp at all (the
+   default, where the OS decides), an explicit light, and an explicit dark.
+   The media query is guarded so an explicit light beats a dark OS.
+
+   Written out twice rather than once in light-dark(): bundlers targeting
+   older browsers lower light-dark() into a prefers-color-scheme polyfill
+   and drop the [data-theme] override on the floor. Verified against this
+   repo's own Vite build. This file ships into other people's builds, so it
+   cannot rely on that surviving.
    ================================================================ */
-:root[data-theme='light'] {
-  color-scheme: light;
-}
-
-:root[data-theme='dark'] {
-  color-scheme: dark;
-}
-
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
+    color-scheme: dark;
+
+    --c-bg: #17140f;
+    --c-raised: #262219;
+    --c-surface: #1e1b16;
+    --c-border: rgba(240, 238, 234, 0.11);
+    --c-border2: rgba(240, 238, 234, 0.2);
+    --c-ink: #f0eeea; /* 15.5:1 on --c-bg */
+    --c-ink2: #d8d4d0;
+    --c-ink3: #aaa6a0;
+    --c-ink4: #98938c; /* 4.56:1 on --c-raised, the worst-case ground */
+    --c-ink5: #726d66; /* decorative only, as in light */
+    --ct-primary: oklch(from var(--c-primary) var(--ct-l) var(--ct-c) h);
+    --ct-green: oklch(from var(--c-green) var(--ct-l) var(--ct-c) h);
+    --ct-yellow: oklch(from var(--c-yellow) var(--ct-l) var(--ct-c) h);
+    --ct-red: oklch(from var(--c-red) var(--ct-l) var(--ct-c) h);
+    --ct-purple: oklch(from var(--c-purple) var(--ct-l) var(--ct-c) h);
+    --ct-teal: oklch(from var(--c-teal) var(--ct-l) var(--ct-c) h);
+    --ct-ocean: oklch(from var(--c-ocean) var(--ct-l) var(--ct-c) h);
+    --ct-orange: oklch(from var(--c-orange) var(--ct-l) var(--ct-c) h);
+    --c-primary-dim: oklch(from var(--c-primary) 0.68 c h);
+    --c-teal-dim: oklch(from var(--c-teal-btn) 0.68 c h);
+    --c-purple-dim: oklch(from var(--c-purple-btn) 0.7 c h);
+    --c-focus: rgb(from var(--c-primary) r g b / 0.32);
+    --c-shadow: #000000; /* does not follow --c-ink: a theme inverts ink, not shadows */
+
     --ct-l: 0.8;
     --ct-c: 0.105;
 
@@ -234,6 +249,32 @@
 }
 
 :root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --c-bg: #17140f;
+  --c-raised: #262219;
+  --c-surface: #1e1b16;
+  --c-border: rgba(240, 238, 234, 0.11);
+  --c-border2: rgba(240, 238, 234, 0.2);
+  --c-ink: #f0eeea; /* 15.5:1 on --c-bg */
+  --c-ink2: #d8d4d0;
+  --c-ink3: #aaa6a0;
+  --c-ink4: #98938c; /* 4.56:1 on --c-raised, the worst-case ground */
+  --c-ink5: #726d66; /* decorative only, as in light */
+  --ct-primary: oklch(from var(--c-primary) var(--ct-l) var(--ct-c) h);
+  --ct-green: oklch(from var(--c-green) var(--ct-l) var(--ct-c) h);
+  --ct-yellow: oklch(from var(--c-yellow) var(--ct-l) var(--ct-c) h);
+  --ct-red: oklch(from var(--c-red) var(--ct-l) var(--ct-c) h);
+  --ct-purple: oklch(from var(--c-purple) var(--ct-l) var(--ct-c) h);
+  --ct-teal: oklch(from var(--c-teal) var(--ct-l) var(--ct-c) h);
+  --ct-ocean: oklch(from var(--c-ocean) var(--ct-l) var(--ct-c) h);
+  --ct-orange: oklch(from var(--c-orange) var(--ct-l) var(--ct-c) h);
+  --c-primary-dim: oklch(from var(--c-primary) 0.68 c h);
+  --c-teal-dim: oklch(from var(--c-teal-btn) 0.68 c h);
+  --c-purple-dim: oklch(from var(--c-purple-btn) 0.7 c h);
+  --c-focus: rgb(from var(--c-primary) r g b / 0.32);
+  --c-shadow: #000000; /* does not follow --c-ink: a theme inverts ink, not shadows */
+
   --ct-l: 0.8;
   --ct-c: 0.105;
 

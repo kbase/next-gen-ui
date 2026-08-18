@@ -25,7 +25,9 @@ export default defineConfig(({ mode }) => {
       }),
       react(),
       {
-        // Must run before the stylesheet, so it cannot wait for the bundle.
+        // Stamps data-theme from localStorage before the first paint, so a
+        // dark-theme user gets no light flash. Inlined rather than imported
+        // because it has to run before the bundle loads.
         name: 'theme-init',
         transformIndexHtml: () => [
           { tag: 'script', children: themeInitScript, injectTo: 'head-prepend' as const },
@@ -33,10 +35,11 @@ export default defineConfig(({ mode }) => {
       },
     ],
     build: {
-      // Below this, the CSS minifier rewrites light-dark() into a
-      // prefers-color-scheme polyfill that ignores color-scheme, which
-      // breaks the data-theme override in tokens.css.
-      cssTarget: ['chrome123', 'safari17.5', 'firefox120', 'edge123'],
+      // The versions that shipped light-dark(). Below them the CSS minifier
+      // replaces it with a prefers-color-scheme fallback, which ignores the
+      // color-scheme that data-theme sets. Nothing else in the CSS output
+      // differs; relative colors already pass through either way.
+      cssTarget: ['chrome123', 'edge123', 'firefox120', 'safari17.5'],
     },
     resolve: {
       alias: {

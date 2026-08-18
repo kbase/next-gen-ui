@@ -14,6 +14,7 @@ import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LoginIndexRouteImport } from './routes/login/index'
 import { Route as LoginContinueRouteImport } from './routes/login/continue'
+import { Route as PluginIdSplatRouteImport } from './routes/$pluginId.$'
 
 const DesignSystemRoute = DesignSystemRouteImport.update({
   id: '/design-system',
@@ -40,11 +41,17 @@ const LoginContinueRoute = LoginContinueRouteImport.update({
   path: '/login/continue',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PluginIdSplatRoute = PluginIdSplatRouteImport.update({
+  id: '/$pluginId/$',
+  path: '/$pluginId/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/design-system': typeof DesignSystemRoute
+  '/$pluginId/$': typeof PluginIdSplatRoute
   '/login/continue': typeof LoginContinueRoute
   '/login/': typeof LoginIndexRoute
 }
@@ -52,6 +59,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/design-system': typeof DesignSystemRoute
+  '/$pluginId/$': typeof PluginIdSplatRoute
   '/login/continue': typeof LoginContinueRoute
   '/login': typeof LoginIndexRoute
 }
@@ -60,19 +68,33 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/design-system': typeof DesignSystemRoute
+  '/$pluginId/$': typeof PluginIdSplatRoute
   '/login/continue': typeof LoginContinueRoute
   '/login/': typeof LoginIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/account' | '/design-system' | '/login/continue' | '/login/'
+  fullPaths:
+    | '/'
+    | '/account'
+    | '/design-system'
+    | '/$pluginId/$'
+    | '/login/continue'
+    | '/login/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/account' | '/design-system' | '/login/continue' | '/login'
+  to:
+    | '/'
+    | '/account'
+    | '/design-system'
+    | '/$pluginId/$'
+    | '/login/continue'
+    | '/login'
   id:
     | '__root__'
     | '/'
     | '/account'
     | '/design-system'
+    | '/$pluginId/$'
     | '/login/continue'
     | '/login/'
   fileRoutesById: FileRoutesById
@@ -81,6 +103,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountRoute: typeof AccountRoute
   DesignSystemRoute: typeof DesignSystemRoute
+  PluginIdSplatRoute: typeof PluginIdSplatRoute
   LoginContinueRoute: typeof LoginContinueRoute
   LoginIndexRoute: typeof LoginIndexRoute
 }
@@ -122,6 +145,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginContinueRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$pluginId/$': {
+      id: '/$pluginId/$'
+      path: '/$pluginId/$'
+      fullPath: '/$pluginId/$'
+      preLoaderRoute: typeof PluginIdSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -129,6 +159,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountRoute: AccountRoute,
   DesignSystemRoute: DesignSystemRoute,
+  PluginIdSplatRoute: PluginIdSplatRoute,
   LoginContinueRoute: LoginContinueRoute,
   LoginIndexRoute: LoginIndexRoute,
 }

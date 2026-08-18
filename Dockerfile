@@ -23,9 +23,13 @@ RUN npm run build
 FROM alpine:3 AS conf
 ARG VITE_AUTH_ORIGIN=https://kbase.us
 ARG IDP_ORIGINS=https://orcid.org
+# Upstream host:port of the plugin registry service (k8s Service DNS in prod).
+# nginx reverse-proxies /plugin-registry/ here so plugins stay same-origin.
+ARG REGISTRY_UPSTREAM=plugin-registry:8080
 COPY nginx.conf /tmp/nginx.conf
 RUN sed -e "s#__AUTH_ORIGIN__#${VITE_AUTH_ORIGIN}#g" \
         -e "s#__IDP_ORIGINS__#${IDP_ORIGINS}#g" \
+        -e "s#__REGISTRY_UPSTREAM__#${REGISTRY_UPSTREAM}#g" \
         /tmp/nginx.conf > /tmp/default.conf
 
 FROM nginxinc/nginx-unprivileged:${NGINX_VERSION} AS runtime

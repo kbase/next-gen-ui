@@ -104,10 +104,6 @@ three rules above set. There is no second copy of the palette to keep in step.
 from cannot go inside it. Those sit in `:root` as pairs — `--tl-bg` and
 `--tl-bg-dark` — and each half of the tint's `light-dark()` reads its own.
 
-Note for bundlers: below the browser baseline in `build.cssTarget`, a minifier
-will rewrite `light-dark()` into a `prefers-color-scheme` media query, which
-ignores `color-scheme` and breaks `data-theme`.
-
 ---
 
 ## Layout

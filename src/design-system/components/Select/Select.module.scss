@@ -62,7 +62,7 @@
   }
 
   &[data-selected] {
-    color: var(--c-primary);
+    color: var(--ct-primary);
   }
 
   &:focus-visible {
@@ -74,5 +74,5 @@
   position: absolute;
   right: var(--s-4);
   display: flex;
-  color: var(--c-primary);
+  color: var(--ct-primary);
 }

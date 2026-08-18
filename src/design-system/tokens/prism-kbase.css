@@ -54,7 +54,7 @@ pre[class*='language-'] {
 }
 
 .token.function {
-  color: var(--c-primary);
+  color: var(--ct-primary);
 }
 .token.class-name {
   color: var(--ct-purple);

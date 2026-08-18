@@ -18,7 +18,7 @@
 
   &[data-selected],
   &[data-active] {
-    color: var(--c-primary);
+    color: var(--ct-primary);
     border-bottom-color: var(--c-primary);
     font-weight: 600;
   }

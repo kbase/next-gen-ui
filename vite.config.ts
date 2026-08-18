@@ -34,13 +34,6 @@ export default defineConfig(({ mode }) => {
         ],
       },
     ],
-    build: {
-      // Keeps light-dark() in the output. These are the versions that shipped
-      // it; below them the CSS minifier swaps it for a prefers-color-scheme
-      // fallback that ignores color-scheme, so choosing a theme silently
-      // stops working. No other CSS is affected.
-      cssTarget: ['chrome123', 'edge123', 'firefox120', 'safari17.5'],
-    },
     resolve: {
       alias: {
         '@kbase/design-system': designSystemSrc,

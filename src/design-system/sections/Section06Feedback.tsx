@@ -161,7 +161,7 @@ export function Section06Feedback({ cvd }: Section06FeedbackProps) {
           <Loader size={36} svgFilter={cvd !== 'off' ? `url(#${cvd})` : undefined} />
         </div>
         <div className={`${s.cell} ${s.cellDark}`} style={{ width: 80, height: 80 }}>
-          <Loader size={36} ground="dark" svgFilter={cvd !== 'off' ? `url(#${cvd})` : undefined} />
+          <Loader size={36} dark svgFilter={cvd !== 'off' ? `url(#${cvd})` : undefined} />
         </div>
         <div className={s.cellInline}>
           <Loader size={14} svgFilter={cvd !== 'off' ? `url(#${cvd})` : undefined} />
@@ -172,7 +172,7 @@ export function Section06Feedback({ cvd }: Section06FeedbackProps) {
       <CodeBlock
         language="tsx"
         code={`<Loader size={36} />                    // standalone
-<Loader size={36} ground="dark" />      // on a ground the theme does not own
+<Loader size={36} dark />               // force the dark blend
 <Loader size={14} />                    // inline with text`}
       />
 

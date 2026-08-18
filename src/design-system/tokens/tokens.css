@@ -2,11 +2,7 @@
    KBASE DESIGN TOKENS
    Everything visual is defined here. Nothing else uses a raw color.
    Tints: brand hue at a family-fixed lightness and chroma. Yellow hand-tuned.
-   Contrast is quoted as APCA Lc, which unlike a WCAG 2 ratio accounts for
-   which colour is the text and which the ground.
-
-   Theming: leave <html> unstamped to follow the OS. Set data-theme="light"
-   or data-theme="dark" to force one; an explicit light beats a dark OS.
+   Theming: no data-theme on <html> follows the OS; light or dark forces one.
    ================================================================ */
 :root {
   color-scheme: light;
@@ -44,8 +40,7 @@
   --c-grellow: #c1cd23;
   --c-frost: #c7dbee;
 
-  /* text on tint. Pair each with its own --bg-/--bgw- tint. (WCAG AA 4.5:1
-     on cream, APCA Lc 62-68.) */
+  /* text on tint (WCAG AA 4.5:1 on cream, APCA Lc 62) */
   --ct-primary: #006eac;
   --ct-green: #3c6e08;
   --ct-yellow: #8c5200;
@@ -55,10 +50,7 @@
   --ct-ocean: #03757c;
   --ct-orange: #af4b00;
 
-  /* Internal. The lightness and chroma each tint family is built at; the hue
-     comes from the base color. Use the --bg-, --bo- and --bgw- tokens below
-     rather than these. Yellow is off-family because at the shared chroma it reads
-     weaker than the others. */
+  /* internal: L and C per tint family. Yellow is hand-tuned. */
   --tl-bg: 0.935;
   --tc-bg: 0.015;
   --tl-bo: 0.895;
@@ -70,8 +62,7 @@
   --tl-bgw-yellow: 0.954;
   --tc-bgw-yellow: 0.038;
 
-  /* Internal. --ct-l/--ct-c build the text-on-tint colors; --sa-* are the
-     shadow alphas behind --e-1..4 and --c-scrim. */
+  /* internal: --ct-* geometry, and the alphas behind --e-1..4 and --c-scrim */
   --ct-l: 0.519;
   --ct-c: 0.128;
   --sa-1: 0.12;
@@ -125,9 +116,8 @@
   --c-purple-dim: #49297c;
   --c-focus: rgb(from var(--c-primary) r g b / 0.08);
 
-  /* Elevation, lowest to highest. Match the tier to how far the element sits
-     off the page, not to how prominent it should look. */
-  --c-shadow: #1a1714; /* deliberately not --c-ink: a theme inverts ink, not shadows */
+  /* elevation, lowest to highest */
+  --c-shadow: #1a1714; /* not --c-ink: a theme inverts ink, not shadows */
   --c-scrim: rgb(from var(--c-shadow) r g b / var(--sa-scrim));
   --e-1: 0 1px 2px rgb(from var(--c-shadow) r g b / var(--sa-1)); /* switch thumb */
   --e-2: 0 2px 8px rgb(from var(--c-shadow) r g b / var(--sa-2)); /* tooltip */
@@ -186,11 +176,9 @@
 
 /* ================================================================
    DARK
-   Same token names as above, dark values. Neutrals keep the cream's hue so
-   the brand does not change temperature between themes.
-
-   Do not collapse these two blocks into light-dark(): bundlers lower it to a
-   prefers-color-scheme pair, and the data-theme override stops working.
+   Same tokens, dark values. Neutrals keep the cream's hue.
+   Do not collapse the two blocks into light-dark(): bundlers lower it to a
+   prefers-color-scheme pair and the data-theme override stops working.
    ================================================================ */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
@@ -223,8 +211,7 @@
     --ct-l: 0.8;
     --ct-c: 0.105;
 
-    /* More chroma than light: at the light family's chroma a dark tint reads
-       as grey. */
+    /* higher chroma; at light's chroma a dark tint reads grey */
     --tl-bg: 0.285;
     --tc-bg: 0.038;
     --tl-bo: 0.43;
@@ -276,8 +263,7 @@
   --ct-l: 0.8;
   --ct-c: 0.105;
 
-  /* More chroma than light: at the light family's chroma a dark tint reads
-     as grey. */
+  /* higher chroma; at light's chroma a dark tint reads grey */
   --tl-bg: 0.285;
   --tc-bg: 0.038;
   --tl-bo: 0.43;

@@ -89,9 +89,6 @@ Inline `themeInitScript` in `<head>` for the pre-paint stamp:
 <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
 ```
 
-`THEME_STORAGE_KEY` and `THEME_ATTRIBUTE` are exported for anything that needs
-to agree with it without importing the hook.
-
 ### Writing a third theme
 
 Copy the dark block at the end of `tokens.css` and change the values. The 24

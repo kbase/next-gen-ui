@@ -177,8 +177,8 @@
 /* ================================================================
    DARK
    Same tokens, dark values. Neutrals keep the cream's hue.
-   Do not collapse the two blocks into light-dark(): bundlers lower it to a
-   prefers-color-scheme pair and the data-theme override stops working.
+   Do not merge the two blocks into light-dark(). The build rewrites it into
+   a prefers-color-scheme media query, and data-theme stops working.
    ================================================================ */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {

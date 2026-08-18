@@ -29,9 +29,7 @@ function declarationsAfter(marker: string): string[] {
 }
 
 describe('dark theme', () => {
-  // The dark values are written twice, once per selector, because light-dark()
-  // does not survive bundlers that lower it. Nothing but this test keeps the
-  // two copies in step.
+  // the two dark blocks are hand-maintained copies
   it('declares the same values under the media query and the explicit stamp', () => {
     const viaMedia = declarationsAfter(":root:not([data-theme='light'])");
     const viaStamp = declarationsAfter("\n:root[data-theme='dark']");
@@ -41,8 +39,7 @@ describe('dark theme', () => {
 });
 
 describe('themeInitScript', () => {
-  // index.html cannot import it, so it carries a copy. A drift here reinstates
-  // the light-frame flash the script exists to prevent.
+  // index.html cannot import it, so it carries a copy
   it('matches the copy inlined in index.html', () => {
     const html = readFileSync(join(root, 'index.html'), 'utf8');
     const squash = (s: string) => s.replace(/\s+/g, '');

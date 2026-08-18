@@ -19,7 +19,7 @@ function read(): ThemeChoice {
   return 'system';
 }
 
-/** Stamps data-theme on <html> and remembers the choice. The tokens do the rest. */
+/** Stamps data-theme on <html> and remembers the choice. */
 export function useTheme() {
   const [theme, setTheme] = useState<ThemeChoice>(read);
 

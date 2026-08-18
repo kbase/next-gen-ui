@@ -5,27 +5,21 @@
    Theming: no data-theme on <html> follows the OS; light or dark forces one.
    ================================================================ */
 :root {
-  /* One of these is empty and the other is `initial`, so of the two values on
-     each token below exactly one survives. Set by the three rules at the end
-     of this file. */
-  --if-light: initial;
-  --if-dark: ;
-
   /* fonts */
   --f-sans: 'Oxygen', system-ui, sans-serif;
   --f-mono: 'Fira Code', 'SF Mono', ui-monospace, monospace;
 
   /* base (warm neutrals) */
-  --c-bg: var(--if-light, #f5f2ee) var(--if-dark, #17140f);
-  --c-raised: var(--if-light, #fafaf8) var(--if-dark, #262219);
-  --c-surface: var(--if-light, #ffffff) var(--if-dark, #1e1b16);
-  --c-border: var(--if-light, rgba(62, 56, 50, 0.09)) var(--if-dark, rgba(240, 238, 234, 0.11));
-  --c-border2: var(--if-light, rgba(62, 56, 50, 0.16)) var(--if-dark, rgba(240, 238, 234, 0.2));
-  --c-ink: var(--if-light, #1a1714) var(--if-dark, #f5f3ef); /* APCA Lc 97 on --c-bg */
-  --c-ink2: var(--if-light, #3e3832) var(--if-dark, #e9e6e1);
-  --c-ink3: var(--if-light, #6a6158) var(--if-dark, #d0cbc5);
-  --c-ink4: var(--if-light, #776d64) var(--if-dark, #c7c2ba); /* APCA Lc 67 on --c-bg, the worst-case ground */
-  --c-ink5: var(--if-light, #9d9389) var(--if-dark, #9f9992); /* decorative only */
+  --c-bg: light-dark(#f5f2ee, #17140f);
+  --c-raised: light-dark(#fafaf8, #262219);
+  --c-surface: light-dark(#ffffff, #1e1b16);
+  --c-border: light-dark(rgba(62, 56, 50, 0.09), rgba(240, 238, 234, 0.11));
+  --c-border2: light-dark(rgba(62, 56, 50, 0.16), rgba(240, 238, 234, 0.2));
+  --c-ink: light-dark(#1a1714, #f5f3ef); /* APCA Lc 97 on --c-bg */
+  --c-ink2: light-dark(#3e3832, #e9e6e1);
+  --c-ink3: light-dark(#6a6158, #d0cbc5);
+  --c-ink4: light-dark(#776d64, #c7c2ba); /* APCA Lc 67 on --c-bg, the worst-case ground */
+  --c-ink5: light-dark(#9d9389, #9f9992); /* decorative only */
   /* Warm-neutral mid-scale, used in showcase swatches; not for ink. */
   --c-warm-200: #ded5cb;
   --c-warm-300: #c4b9ad;
@@ -45,47 +39,63 @@
   --c-frost: #c7dbee;
 
   /* text on tint (WCAG AA 4.5:1 on cream, APCA Lc 62) */
-  --ct-primary: var(--if-light, #006eac)
-    var(--if-dark, oklch(from var(--c-primary) var(--ct-l) var(--ct-c) h));
-  --ct-green: var(--if-light, #3c6e08)
-    var(--if-dark, oklch(from var(--c-green) var(--ct-l) var(--ct-c) h));
-  --ct-yellow: var(--if-light, #8c5200)
-    var(--if-dark, oklch(from var(--c-yellow) var(--ct-l) var(--ct-c) h));
-  --ct-red: var(--if-light, #ce1d27)
-    var(--if-dark, oklch(from var(--c-red) var(--ct-l) var(--ct-c) h));
-  --ct-purple: var(--if-light, #66489d)
-    var(--if-dark, oklch(from var(--c-purple) var(--ct-l) var(--ct-c) h));
-  --ct-teal: var(--if-light, #00776b)
-    var(--if-dark, oklch(from var(--c-teal) var(--ct-l) var(--ct-c) h));
-  --ct-ocean: var(--if-light, #03757c)
-    var(--if-dark, oklch(from var(--c-ocean) var(--ct-l) var(--ct-c) h));
-  --ct-orange: var(--if-light, #af4b00)
-    var(--if-dark, oklch(from var(--c-orange) var(--ct-l) var(--ct-c) h));
+  --ct-primary: light-dark(
+    #006eac,
+    oklch(from var(--c-primary) var(--ct-l-dark) var(--ct-c-dark) h)
+  );
+  --ct-green: light-dark(#3c6e08, oklch(from var(--c-green) var(--ct-l-dark) var(--ct-c-dark) h));
+  --ct-yellow: light-dark(#8c5200, oklch(from var(--c-yellow) var(--ct-l-dark) var(--ct-c-dark) h));
+  --ct-red: light-dark(#ce1d27, oklch(from var(--c-red) var(--ct-l-dark) var(--ct-c-dark) h));
+  --ct-purple: light-dark(#66489d, oklch(from var(--c-purple) var(--ct-l-dark) var(--ct-c-dark) h));
+  --ct-teal: light-dark(#00776b, oklch(from var(--c-teal) var(--ct-l-dark) var(--ct-c-dark) h));
+  --ct-ocean: light-dark(#03757c, oklch(from var(--c-ocean) var(--ct-l-dark) var(--ct-c-dark) h));
+  --ct-orange: light-dark(#af4b00, oklch(from var(--c-orange) var(--ct-l-dark) var(--ct-c-dark) h));
 
   /* internal: L and C per tint family. Yellow is hand-tuned. */
-  --tl-bg: var(--if-light, 0.935) var(--if-dark, 0.285);
-  --tc-bg: var(--if-light, 0.015) var(--if-dark, 0.038);
-  --tl-bo: var(--if-light, 0.895) var(--if-dark, 0.43);
-  --tc-bo: var(--if-light, 0.035) var(--if-dark, 0.062);
-  --tl-bgw: var(--if-light, 0.935) var(--if-dark, 0.315);
-  --tc-bgw: var(--if-light, 0.02) var(--if-dark, 0.04);
-  --tc-bg-yellow: var(--if-light, 0.032) var(--if-dark, 0.055);
-  --tc-bo-yellow: var(--if-light, 0.075) var(--if-dark, 0.09);
-  --tl-bgw-yellow: var(--if-light, 0.954) var(--if-dark, 0.315);
-  --tc-bgw-yellow: var(--if-light, 0.038) var(--if-dark, 0.058);
+  --tl-bg: 0.935;
+  --tl-bg-dark: 0.285;
+  --tc-bg: 0.015;
+  --tc-bg-dark: 0.038;
+  --tl-bo: 0.895;
+  --tl-bo-dark: 0.43;
+  --tc-bo: 0.035;
+  --tc-bo-dark: 0.062;
+  --tl-bgw: 0.935;
+  --tl-bgw-dark: 0.315;
+  --tc-bgw: 0.02;
+  --tc-bgw-dark: 0.04;
+  --tc-bg-yellow: 0.032;
+  --tc-bg-yellow-dark: 0.055;
+  --tc-bo-yellow: 0.075;
+  --tc-bo-yellow-dark: 0.09;
+  --tl-bgw-yellow: 0.954;
+  --tl-bgw-yellow-dark: 0.315;
+  --tc-bgw-yellow: 0.038;
+  --tc-bgw-yellow-dark: 0.058;
 
   /* internal: --ct-* geometry, and the alphas behind --e-1..4 and --c-scrim */
-  --ct-l: var(--if-light, 0.519) var(--if-dark, 0.8);
-  --ct-c: var(--if-light, 0.128) var(--if-dark, 0.105);
-  --sa-1: var(--if-light, 0.12) var(--if-dark, 0.5);
-  --sa-2: var(--if-light, 0.15) var(--if-dark, 0.55);
-  --sa-3: var(--if-light, 0.04) var(--if-dark, 0.4);
-  --sa-4: var(--if-light, 0.08) var(--if-dark, 0.45);
-  --sa-5: var(--if-light, 0.06) var(--if-dark, 0.4);
-  --sa-scrim: var(--if-light, 0.4) var(--if-dark, 0.62);
+  --ct-l: 0.519;
+  --ct-l-dark: 0.8;
+  --ct-c: 0.128;
+  --ct-c-dark: 0.105;
+  --sa-1: 0.12;
+  --sa-1-dark: 0.5;
+  --sa-2: 0.15;
+  --sa-2-dark: 0.55;
+  --sa-3: 0.04;
+  --sa-3-dark: 0.4;
+  --sa-4: 0.08;
+  --sa-4-dark: 0.45;
+  --sa-5: 0.06;
+  --sa-5-dark: 0.4;
+  --sa-scrim: 0.4;
+  --sa-scrim-dark: 0.62;
 
   /* tint bgs on cream */
-  --bg-primary: oklch(from var(--c-primary) var(--tl-bg) var(--tc-bg) h); /* #e1ebf3 */
+  --bg-primary: light-dark(
+    oklch(from var(--c-primary) var(--tl-bg) var(--tc-bg) h),
+    oklch(from var(--c-primary) var(--tl-bg-dark) var(--tc-bg-dark) h)
+  ); /* #e1ebf3 */
   --bg-green: oklch(from var(--c-green) var(--tl-bg) var(--tc-bg) h); /* #e5ece2 */
   --bg-yellow: oklch(
     from var(--c-yellow) var(--tl-bg) var(--tc-bg-yellow) calc(h + 6.1)
@@ -121,24 +131,50 @@
   --bgw-orange: oklch(from var(--c-orange) var(--tl-bgw) var(--tc-bgw) h); /* #f4e7dd · aux */
 
   /* interactive */
-  --c-primary-dim: var(--if-light, #005889) var(--if-dark, oklch(from var(--c-primary) 0.68 c h));
+  --c-primary-dim: light-dark(#005889, oklch(from var(--c-primary) 0.68 c h));
   --c-teal-btn: #008578;
-  --c-teal-dim: var(--if-light, #007368) var(--if-dark, oklch(from var(--c-teal-btn) 0.68 c h));
+  --c-teal-dim: light-dark(#007368, oklch(from var(--c-teal-btn) 0.68 c h));
   --c-purple-btn: #66489d; /* same as base; purple is already button-weight */
-  --c-purple-dim: var(--if-light, #49297c) var(--if-dark, oklch(from var(--c-purple-btn) 0.7 c h));
-  --c-focus: var(--if-light, rgb(from var(--c-primary) r g b / 0.08))
-    var(--if-dark, rgb(from var(--c-primary) r g b / 0.32));
+  --c-purple-dim: light-dark(#49297c, oklch(from var(--c-purple-btn) 0.7 c h));
+  --c-focus: light-dark(
+    rgb(from var(--c-primary) r g b / 0.08),
+    rgb(from var(--c-primary) r g b / 0.32)
+  );
 
   /* elevation, lowest to highest */
-  --c-shadow: var(--if-light, #1a1714) var(--if-dark, #000000); /* not --c-ink: a theme inverts ink, not shadows */
-  --c-scrim: rgb(from var(--c-shadow) r g b / var(--sa-scrim));
-  --e-1: 0 1px 2px rgb(from var(--c-shadow) r g b / var(--sa-1)); /* switch thumb */
-  --e-2: 0 2px 8px rgb(from var(--c-shadow) r g b / var(--sa-2)); /* tooltip */
+  --c-shadow: light-dark(#1a1714, #000000); /* not --c-ink: a theme inverts ink, not shadows */
+  --c-scrim: light-dark(
+    rgb(from var(--c-shadow) r g b / var(--sa-scrim)),
+    rgb(from var(--c-shadow) r g b / var(--sa-scrim-dark))
+  );
+  --e-1: 0 1px 2px
+    light-dark(
+      rgb(from var(--c-shadow) r g b / var(--sa-1)),
+      rgb(from var(--c-shadow) r g b / var(--sa-1-dark))
+    ); /* switch thumb */
+  --e-2: 0 2px 8px
+    light-dark(
+      rgb(from var(--c-shadow) r g b / var(--sa-2)),
+      rgb(from var(--c-shadow) r g b / var(--sa-2-dark))
+    ); /* tooltip */
   --e-3:
-    0 1px 2px rgb(from var(--c-shadow) r g b / var(--sa-3)),
-    0 4px 12px rgb(from var(--c-shadow) r g b / var(--sa-4)); /* menu, select */
+    0 1px 2px
+      light-dark(
+        rgb(from var(--c-shadow) r g b / var(--sa-3)),
+        rgb(from var(--c-shadow) r g b / var(--sa-3-dark))
+      ),
+    0 4px 12px
+      light-dark(
+        rgb(from var(--c-shadow) r g b / var(--sa-4)),
+        rgb(from var(--c-shadow) r g b / var(--sa-4-dark))
+      ); /* menu, select */
   --e-4:
-    var(--e-3), 0 12px 32px rgb(from var(--c-shadow) r g b / var(--sa-5)); /* dialog, popover, toast */
+    var(--e-3),
+    0 12px 32px
+      light-dark(
+        rgb(from var(--c-shadow) r g b / var(--sa-5)),
+        rgb(from var(--c-shadow) r g b / var(--sa-5-dark))
+      ); /* dialog, popover, toast */
 
   /* motion */
   --t-fast: 0.1s; /* hover and press feedback */
@@ -189,28 +225,19 @@
 
 /* ================================================================
    THEME SELECTION
-   No data-theme on <html> follows the OS; light or dark forces one.
-   color-scheme also switches native scrollbars and form controls.
+   light-dark() above reads whichever of the two schemes is in use, so this
+   is all that picks a theme. `light dark` means either is acceptable and
+   the OS decides; naming one forces it. color-scheme also switches native
+   scrollbars and form controls, which no stylesheet can reach.
    ================================================================ */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    --if-light: ;
-    --if-dark: initial;
-  }
-}
-
 :root {
   color-scheme: light dark;
 }
 
 :root[data-theme='light'] {
   color-scheme: light;
-  --if-light: initial;
-  --if-dark: ;
 }
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --if-light: ;
-  --if-dark: initial;
 }

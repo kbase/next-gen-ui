@@ -89,11 +89,24 @@ Inline `themeInitScript` in `<head>` for the pre-paint stamp:
 <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
 ```
 
-### Writing a third theme
+### How the two themes are stored
 
-Copy the dark block at the end of `tokens.css` and change the values. The 24
-tint tokens are derived, so a theme sets its neutrals, its semantic colors, and
-about twenty numbers — not another 24 hexes.
+Every themed token carries both values on one line:
+
+```css
+--c-bg: light-dark(#f5f2ee, #17140f);
+```
+
+`light-dark()` reads the element's `color-scheme`, which is the only thing the
+three rules above set. There is no second copy of the palette to keep in step.
+
+`light-dark()` takes colors, so the lightnesses and chromas the tints are built
+from cannot go inside it. Those sit in `:root` as pairs — `--tl-bg` and
+`--tl-bg-dark` — and each half of the tint's `light-dark()` reads its own.
+
+Note for bundlers: below the browser baseline in `build.cssTarget`, a minifier
+will rewrite `light-dark()` into a `prefers-color-scheme` media query, which
+ignores `color-scheme` and breaks `data-theme`.
 
 ---
 

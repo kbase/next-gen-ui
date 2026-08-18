@@ -32,6 +32,12 @@ export default defineConfig(({ mode }) => {
         ],
       },
     ],
+    build: {
+      // Below this, the CSS minifier rewrites light-dark() into a
+      // prefers-color-scheme polyfill that ignores color-scheme, which
+      // breaks the data-theme override in tokens.css.
+      cssTarget: ['chrome123', 'safari17.5', 'firefox120', 'edge123'],
+    },
     resolve: {
       alias: {
         '@kbase/design-system': designSystemSrc,

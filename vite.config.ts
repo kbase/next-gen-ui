@@ -35,10 +35,10 @@ export default defineConfig(({ mode }) => {
       },
     ],
     build: {
-      // The versions that shipped light-dark(). Below them the CSS minifier
-      // replaces it with a prefers-color-scheme fallback, which ignores the
-      // color-scheme that data-theme sets. Nothing else in the CSS output
-      // differs; relative colors already pass through either way.
+      // Keeps light-dark() in the output. These are the versions that shipped
+      // it; below them the CSS minifier swaps it for a prefers-color-scheme
+      // fallback that ignores color-scheme, so choosing a theme silently
+      // stops working. No other CSS is affected.
       cssTarget: ['chrome123', 'edge123', 'firefox120', 'safari17.5'],
     },
     resolve: {

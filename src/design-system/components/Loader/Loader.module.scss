@@ -51,24 +51,19 @@
   }
 }
 
-/* blend mode */
+/* multiply on light, screen on dark; the `blend` prop pins it inline */
 .loader circle {
-  mix-blend-mode: multiply;
+  mix-blend-mode: var(--loader-blend, multiply);
 }
 
-/* multiply on light, screen on dark; follows the theme unless `dark` is set */
 @media (prefers-color-scheme: dark) {
-  :global(:root:not([data-theme='light'])) .loader circle {
-    mix-blend-mode: screen;
+  :global(:root:not([data-theme='light'])) .root {
+    --loader-blend: screen;
   }
 }
 
-:global(:root[data-theme='dark']) .loader circle {
-  mix-blend-mode: screen;
-}
-
-.dark .loader circle {
-  mix-blend-mode: screen;
+:global(:root[data-theme='dark']) .root {
+  --loader-blend: screen;
 }
 
 /* static fills (visible when animation is off, e.g. reduced motion) */

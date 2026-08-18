@@ -153,15 +153,19 @@ export function Section06Feedback({ cvd }: Section06FeedbackProps) {
 
       <div className={s.sub}>Loader</div>
       <p className={s.note}>
-        The KBase logo, animated. Use <code>dark</code> on dark backgrounds (switches blend mode to
-        screen). Inline at size 14, standalone at 36+.
+        The KBase logo, animated. The circles composite where they overlap, so the blend follows the
+        theme. Pin it with <code>blend</code> on a surface that does not — a brand fill, an image.
+        Inline at size 14, standalone at 36+.
       </p>
       <div className={s.row}>
         <div className={s.cell} style={{ width: 80, height: 80 }}>
           <Loader size={36} svgFilter={cvd !== 'off' ? `url(#${cvd})` : undefined} />
         </div>
         <div className={`${s.cell} ${s.cellDark}`} style={{ width: 80, height: 80 }}>
-          <Loader size={36} dark svgFilter={cvd !== 'off' ? `url(#${cvd})` : undefined} />
+          <Loader size={36} svgFilter={cvd !== 'off' ? `url(#${cvd})` : undefined} />
+        </div>
+        <div className={`${s.cell} ${s.cellFixed}`} style={{ width: 80, height: 80 }}>
+          <Loader size={36} blend="screen" svgFilter={cvd !== 'off' ? `url(#${cvd})` : undefined} />
         </div>
         <div className={s.cellInline}>
           <Loader size={14} svgFilter={cvd !== 'off' ? `url(#${cvd})` : undefined} />
@@ -171,8 +175,8 @@ export function Section06Feedback({ cvd }: Section06FeedbackProps) {
 
       <CodeBlock
         language="tsx"
-        code={`<Loader size={36} />                    // standalone
-<Loader size={36} dark />               // force the dark blend
+        code={`<Loader size={36} />                    // standalone, follows the theme
+<Loader size={36} blend="screen" />     // on a brand fill or an image
 <Loader size={14} />                    // inline with text`}
       />
 

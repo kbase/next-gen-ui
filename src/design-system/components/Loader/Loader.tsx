@@ -1,11 +1,14 @@
+import type { CSSProperties } from 'react';
 import styles from './Loader.module.scss';
 import { cx } from '../../util/cx';
 
 export interface LoaderProps {
   /** Rendered width/height in px */
   size?: number;
-  /** Force the dark-background blend. Follows the theme unless set. */
-  dark?: boolean;
+  /** How the circles composite where they overlap. Follows the theme unless
+   *  set — multiply on light, screen on dark. Set it for a surface that does
+   *  not follow the theme: a brand fill, an image. */
+  blend?: 'multiply' | 'screen';
   /** Apply an SVG filter (e.g. "url(#deutan)" for CVD simulation) */
   svgFilter?: string;
   /** Accessible label. When set, the wrapping element gets
@@ -14,10 +17,11 @@ export interface LoaderProps {
   className?: string;
 }
 
-export function Loader({ size = 48, dark, svgFilter, label, className }: LoaderProps) {
+export function Loader({ size = 48, blend, svgFilter, label, className }: LoaderProps) {
   return (
     <span
-      className={cx(styles.root, dark && styles.dark, className)}
+      className={cx(styles.root, className)}
+      style={blend ? ({ '--loader-blend': blend } as CSSProperties) : undefined}
       role={label ? 'status' : undefined}
       aria-label={label}
     >

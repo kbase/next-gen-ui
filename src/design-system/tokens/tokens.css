@@ -96,39 +96,102 @@
     oklch(from var(--c-primary) var(--tl-bg) var(--tc-bg) h),
     oklch(from var(--c-primary) var(--tl-bg-dark) var(--tc-bg-dark) h)
   ); /* #e1ebf3 */
-  --bg-green: oklch(from var(--c-green) var(--tl-bg) var(--tc-bg) h); /* #e5ece2 */
-  --bg-yellow: oklch(
-    from var(--c-yellow) var(--tl-bg) var(--tc-bg-yellow) calc(h + 6.1)
+  --bg-green: light-dark(
+    oklch(from var(--c-green) var(--tl-bg) var(--tc-bg) h),
+    oklch(from var(--c-green) var(--tl-bg-dark) var(--tc-bg-dark) h)
+  ); /* #e5ece2 */
+  --bg-yellow: light-dark(
+    oklch(from var(--c-yellow) var(--tl-bg) var(--tc-bg-yellow) calc(h + 6.1)),
+    oklch(from var(--c-yellow) var(--tl-bg-dark) var(--tc-bg-yellow-dark) calc(h + 6.1))
   ); /* #eeead2 */
-  --bg-red: oklch(from var(--c-red) var(--tl-bg) var(--tc-bg) h); /* #f3e6e4 */
-  --bg-purple: oklch(from var(--c-purple) var(--tl-bg) var(--tc-bg) h); /* #eae8f3 */
-  --bg-teal: oklch(from var(--c-teal) var(--tl-bg) var(--tc-bg) h); /* #dfedea */
-  --bg-ocean: oklch(from var(--c-ocean) var(--tl-bg) var(--tc-bg) h); /* #dfedee */
-  --bg-orange: oklch(from var(--c-orange) var(--tl-bg) var(--tc-bg) h); /* #f1e7e0 · aux */
+  --bg-red: light-dark(
+    oklch(from var(--c-red) var(--tl-bg) var(--tc-bg) h),
+    oklch(from var(--c-red) var(--tl-bg-dark) var(--tc-bg-dark) h)
+  ); /* #f3e6e4 */
+  --bg-purple: light-dark(
+    oklch(from var(--c-purple) var(--tl-bg) var(--tc-bg) h),
+    oklch(from var(--c-purple) var(--tl-bg-dark) var(--tc-bg-dark) h)
+  ); /* #eae8f3 */
+  --bg-teal: light-dark(
+    oklch(from var(--c-teal) var(--tl-bg) var(--tc-bg) h),
+    oklch(from var(--c-teal) var(--tl-bg-dark) var(--tc-bg-dark) h)
+  ); /* #dfedea */
+  --bg-ocean: light-dark(
+    oklch(from var(--c-ocean) var(--tl-bg) var(--tc-bg) h),
+    oklch(from var(--c-ocean) var(--tl-bg-dark) var(--tc-bg-dark) h)
+  ); /* #dfedee */
+  --bg-orange: light-dark(
+    oklch(from var(--c-orange) var(--tl-bg) var(--tc-bg) h),
+    oklch(from var(--c-orange) var(--tl-bg-dark) var(--tc-bg-dark) h)
+  ); /* #f1e7e0 · aux */
 
   /* tint borders on cream */
-  --bo-primary: oklch(from var(--c-primary) var(--tl-bo) var(--tc-bo) h); /* #cae0f2 */
-  --bo-green: oklch(from var(--c-green) var(--tl-bo) var(--tc-bo) h); /* #d3e2cb */
-  --bo-yellow: oklch(
-    from var(--c-yellow) var(--tl-bo) var(--tc-bo-yellow) calc(h + 2)
+  --bo-primary: light-dark(
+    oklch(from var(--c-primary) var(--tl-bo) var(--tc-bo) h),
+    oklch(from var(--c-primary) var(--tl-bo-dark) var(--tc-bo-dark) h)
+  ); /* #cae0f2 */
+  --bo-green: light-dark(
+    oklch(from var(--c-green) var(--tl-bo) var(--tc-bo) h),
+    oklch(from var(--c-green) var(--tl-bo-dark) var(--tc-bo-dark) h)
+  ); /* #d3e2cb */
+  --bo-yellow: light-dark(
+    oklch(from var(--c-yellow) var(--tl-bo) var(--tc-bo-yellow) calc(h + 2)),
+    oklch(from var(--c-yellow) var(--tl-bo-dark) var(--tc-bo-yellow-dark) calc(h + 2))
   ); /* #ecdda4 */
-  --bo-red: oklch(from var(--c-red) var(--tl-bo) var(--tc-bo) h); /* #f3d4d0 */
-  --bo-purple: oklch(from var(--c-purple) var(--tl-bo) var(--tc-bo) h); /* #ded8f1 */
-  --bo-teal: oklch(from var(--c-teal) var(--tl-bo) var(--tc-bo) h); /* #c4e4df */
-  --bo-ocean: oklch(from var(--c-ocean) var(--tl-bo) var(--tc-bo) h); /* #c3e4e6 */
-  --bo-orange: oklch(from var(--c-orange) var(--tl-bo) var(--tc-bo) h); /* #efd8c6 · aux */
+  --bo-red: light-dark(
+    oklch(from var(--c-red) var(--tl-bo) var(--tc-bo) h),
+    oklch(from var(--c-red) var(--tl-bo-dark) var(--tc-bo-dark) h)
+  ); /* #f3d4d0 */
+  --bo-purple: light-dark(
+    oklch(from var(--c-purple) var(--tl-bo) var(--tc-bo) h),
+    oklch(from var(--c-purple) var(--tl-bo-dark) var(--tc-bo-dark) h)
+  ); /* #ded8f1 */
+  --bo-teal: light-dark(
+    oklch(from var(--c-teal) var(--tl-bo) var(--tc-bo) h),
+    oklch(from var(--c-teal) var(--tl-bo-dark) var(--tc-bo-dark) h)
+  ); /* #c4e4df */
+  --bo-ocean: light-dark(
+    oklch(from var(--c-ocean) var(--tl-bo) var(--tc-bo) h),
+    oklch(from var(--c-ocean) var(--tl-bo-dark) var(--tc-bo-dark) h)
+  ); /* #c3e4e6 */
+  --bo-orange: light-dark(
+    oklch(from var(--c-orange) var(--tl-bo) var(--tc-bo) h),
+    oklch(from var(--c-orange) var(--tl-bo-dark) var(--tc-bo-dark) h)
+  ); /* #efd8c6 · aux */
 
   /* tint bgs on white, for elements inside cards/frames */
-  --bgw-primary: oklch(from var(--c-primary) var(--tl-bgw) var(--tc-bgw) h); /* #dfebf6 */
-  --bgw-green: oklch(from var(--c-green) var(--tl-bgw) var(--tc-bgw) h); /* #e4eddf */
-  --bgw-yellow: oklch(
-    from var(--c-yellow) var(--tl-bgw-yellow) var(--tc-bgw-yellow) h
+  --bgw-primary: light-dark(
+    oklch(from var(--c-primary) var(--tl-bgw) var(--tc-bgw) h),
+    oklch(from var(--c-primary) var(--tl-bgw-dark) var(--tc-bgw-dark) h)
+  ); /* #dfebf6 */
+  --bgw-green: light-dark(
+    oklch(from var(--c-green) var(--tl-bgw) var(--tc-bgw) h),
+    oklch(from var(--c-green) var(--tl-bgw-dark) var(--tc-bgw-dark) h)
+  ); /* #e4eddf */
+  --bgw-yellow: light-dark(
+    oklch(from var(--c-yellow) var(--tl-bgw-yellow) var(--tc-bgw-yellow) h),
+    oklch(from var(--c-yellow) var(--tl-bgw-yellow-dark) var(--tc-bgw-yellow-dark) h)
   ); /* #f8f0d4 */
-  --bgw-red: oklch(from var(--c-red) var(--tl-bgw) var(--tc-bgw) h); /* #f7e5e3 */
-  --bgw-purple: oklch(from var(--c-purple) var(--tl-bgw) var(--tc-bgw) h); /* #ebe7f6 */
-  --bgw-teal: oklch(from var(--c-teal) var(--tl-bgw) var(--tc-bgw) h); /* #dceeeb */
-  --bgw-ocean: oklch(from var(--c-ocean) var(--tl-bgw) var(--tc-bgw) h); /* #dbeeef */
-  --bgw-orange: oklch(from var(--c-orange) var(--tl-bgw) var(--tc-bgw) h); /* #f4e7dd · aux */
+  --bgw-red: light-dark(
+    oklch(from var(--c-red) var(--tl-bgw) var(--tc-bgw) h),
+    oklch(from var(--c-red) var(--tl-bgw-dark) var(--tc-bgw-dark) h)
+  ); /* #f7e5e3 */
+  --bgw-purple: light-dark(
+    oklch(from var(--c-purple) var(--tl-bgw) var(--tc-bgw) h),
+    oklch(from var(--c-purple) var(--tl-bgw-dark) var(--tc-bgw-dark) h)
+  ); /* #ebe7f6 */
+  --bgw-teal: light-dark(
+    oklch(from var(--c-teal) var(--tl-bgw) var(--tc-bgw) h),
+    oklch(from var(--c-teal) var(--tl-bgw-dark) var(--tc-bgw-dark) h)
+  ); /* #dceeeb */
+  --bgw-ocean: light-dark(
+    oklch(from var(--c-ocean) var(--tl-bgw) var(--tc-bgw) h),
+    oklch(from var(--c-ocean) var(--tl-bgw-dark) var(--tc-bgw-dark) h)
+  ); /* #dbeeef */
+  --bgw-orange: light-dark(
+    oklch(from var(--c-orange) var(--tl-bgw) var(--tc-bgw) h),
+    oklch(from var(--c-orange) var(--tl-bgw-dark) var(--tc-bgw-dark) h)
+  ); /* #f4e7dd · aux */
 
   /* interactive */
   --c-primary-dim: light-dark(#005889, oklch(from var(--c-primary) 0.68 c h));

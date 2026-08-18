@@ -56,9 +56,8 @@
   mix-blend-mode: multiply;
 }
 
-/* The theme knows which ground this sits on, so it drives the blend rather
-   than every caller. `dark` stays for a loader on a ground that disagrees
-   with the theme — an image, a filled banner. */
+/* Multiply on a light ground, screen on a dark one. Follows the theme by
+   default; the `ground` prop overrides it in either direction. */
 @media (prefers-color-scheme: dark) {
   :global(:root:not([data-theme='light'])) .loader circle {
     mix-blend-mode: screen;
@@ -67,6 +66,10 @@
 
 :global(:root[data-theme='dark']) .loader circle {
   mix-blend-mode: screen;
+}
+
+.light .loader circle {
+  mix-blend-mode: multiply;
 }
 
 .dark .loader circle {

@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import s from './Showcase.module.scss';
-import { ThemeToggle } from './theme/ThemeToggle';
+import { Sun, Moon, Desktop } from '@phosphor-icons/react';
+import { useTheme } from './theme/useTheme';
+import type { ThemeChoice } from './theme/useTheme';
+import { SegmentedControl } from './components/SegmentedControl';
 import { Package } from '@phosphor-icons/react';
 import { Accordion } from './components/Accordion';
 import { useToastManager } from './components/Toast';
@@ -190,6 +193,23 @@ function TableOfContents() {
         ))}
       </ul>
     </nav>
+  );
+}
+
+const THEME_OPTIONS = [
+  { value: 'system', label: 'Match system', icon: <Desktop size={15} weight="bold" /> },
+  { value: 'light', label: 'Light', icon: <Sun size={15} weight="bold" /> },
+  { value: 'dark', label: 'Dark', icon: <Moon size={15} weight="bold" /> },
+];
+
+function ThemeToggle() {
+  const { theme, setTheme } = useTheme();
+  return (
+    <SegmentedControl
+      options={THEME_OPTIONS}
+      value={theme}
+      onChange={(v) => setTheme(v as ThemeChoice)}
+    />
   );
 }
 

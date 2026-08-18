@@ -37,6 +37,69 @@ for opt-in: `components.css`, `global.css`,
 
 ---
 
+## Theming
+
+The tokens ship both themes. Which one resolves is decided by one attribute on
+`<html>`:
+
+| `data-theme` | Result                       |
+| ------------ | ---------------------------- |
+| absent       | follows the OS (the default) |
+| `light`      | light, even on a dark OS     |
+| `dark`       | dark, even on a light OS     |
+
+Nothing else is required — no provider, no class on `<body>`, no JS.
+
+### Without a bundler
+
+Set the attribute however the page already renders. That is the whole
+integration:
+
+```html
+<html data-theme="dark"></html>
+```
+
+To let a page remember a choice, store it under `kbase-theme` and stamp the
+attribute before the first paint, so a dark-theme user never sees a light
+frame:
+
+```html
+<script>
+  (function () {
+    try {
+      var v = localStorage.getItem('kbase-theme');
+      if (v === 'light' || v === 'dark') document.documentElement.setAttribute('data-theme', v);
+    } catch (e) {}
+  })();
+</script>
+```
+
+### In React
+
+`useTheme()` does the same thing, and persists the choice under the same key,
+so the two consumers agree:
+
+```tsx
+const { theme, setTheme } = useTheme(); // 'system' | 'light' | 'dark'
+```
+
+Inline `themeInitScript` in `<head>` for the pre-paint stamp:
+
+```tsx
+<script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+```
+
+`THEME_STORAGE_KEY` and `THEME_ATTRIBUTE` are exported for anything that needs
+to agree with it without importing the hook.
+
+### Writing a third theme
+
+Copy the dark block at the end of `tokens.css` and change the values. The 24
+tint tokens are derived, so a theme sets its neutrals, its semantic colors, and
+about twenty numbers — not another 24 hexes.
+
+---
+
 ## Layout
 
 ```

@@ -4,8 +4,10 @@ import { cx } from '../../util/cx';
 export interface LoaderProps {
   /** Rendered width/height in px */
   size?: number;
-  /** Use screen blend mode for dark backgrounds */
-  dark?: boolean;
+  /** The mark blends into what is behind it, so it needs to know the ground it
+   *  sits on. Defaults to the theme's own; set this only when placing the
+   *  loader on something that disagrees with it — a filled banner, an image. */
+  ground?: 'light' | 'dark';
   /** Apply an SVG filter (e.g. "url(#deutan)" for CVD simulation) */
   svgFilter?: string;
   /** Accessible label. When set, the wrapping element gets
@@ -14,10 +16,10 @@ export interface LoaderProps {
   className?: string;
 }
 
-export function Loader({ size = 48, dark, svgFilter, label, className }: LoaderProps) {
+export function Loader({ size = 48, ground, svgFilter, label, className }: LoaderProps) {
   return (
     <span
-      className={cx(styles.root, dark && styles.dark, className)}
+      className={cx(styles.root, ground && styles[ground], className)}
       role={label ? 'status' : undefined}
       aria-label={label}
     >

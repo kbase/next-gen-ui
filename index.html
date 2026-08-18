@@ -2,6 +2,16 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <!-- Stamps data-theme before first paint so a dark-theme user never sees a
+         light frame. Kept in sync with themeInitScript in the design system. -->
+    <script>
+      (function () {
+        try {
+          var v = localStorage.getItem('kbase-theme');
+          if (v === 'light' || v === 'dark') document.documentElement.setAttribute('data-theme', v);
+        } catch (e) {}
+      })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="KBERDL: KBase Domain Intelligence Layer" />
     <meta name="theme-color" content="#007dc3" />

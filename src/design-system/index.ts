@@ -1,10 +1,8 @@
 export { cx } from './util/cx';
 
 // Theme
-export { useTheme, applyTheme, themeInitScript } from './theme/useTheme';
-export type { ThemeChoice, ResolvedTheme, UseThemeResult } from './theme/useTheme';
-export { ThemeToggle } from './theme/ThemeToggle';
-export type { ThemeToggleProps } from './theme/ThemeToggle';
+export { useTheme, themeInitScript, THEME_STORAGE_KEY, THEME_ATTRIBUTE } from './theme/useTheme';
+export type { ThemeChoice, UseThemeResult } from './theme/useTheme';
 
 // Display
 export { Loader } from './components/Loader';

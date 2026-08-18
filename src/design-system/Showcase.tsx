@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import s from './Showcase.module.scss';
+import { ThemeToggle } from './theme/ThemeToggle';
 import { Package } from '@phosphor-icons/react';
 import { Accordion } from './components/Accordion';
 import { useToastManager } from './components/Toast';
@@ -228,17 +229,20 @@ export function Showcase() {
                 <span className={s.heroLabelMono}>design system</span>
               </div>
             </div>
-            <button
-              className={s.cvdToggle}
-              onClick={() => {
-                const next: CvdMode =
-                  cvd === 'off' ? 'deutan' : cvd === 'deutan' ? 'protan' : 'off';
-                setCvd(next);
-                applyCvdFilter(next);
-              }}
-            >
-              {cvd === 'off' ? 'deuteranopia' : cvd === 'deutan' ? 'protanopia' : 'reset'}
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-4)' }}>
+              <ThemeToggle />
+              <button
+                className={s.cvdToggle}
+                onClick={() => {
+                  const next: CvdMode =
+                    cvd === 'off' ? 'deutan' : cvd === 'deutan' ? 'protan' : 'off';
+                  setCvd(next);
+                  applyCvdFilter(next);
+                }}
+              >
+                {cvd === 'off' ? 'deuteranopia' : cvd === 'deutan' ? 'protanopia' : 'reset'}
+              </button>
+            </div>
           </div>
           <h1 className={s.heroHeadline}>
             Warm, data-literate,

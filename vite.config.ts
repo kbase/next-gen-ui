@@ -3,6 +3,7 @@ import { loadEnv } from 'vite';
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
+import { themeInitScript } from './src/design-system/theme/useTheme';
 
 // `@kbase/design-system` is the public name; the canonical source
 // lives in this repo at `src/design-system/`. Keep this alias in
@@ -23,6 +24,13 @@ export default defineConfig(({ mode }) => {
         routeFileIgnorePattern: '\\.(test|spec)\\.[tj]sx?$',
       }),
       react(),
+      {
+        // Must run before the stylesheet, so it cannot wait for the bundle.
+        name: 'theme-init',
+        transformIndexHtml: () => [
+          { tag: 'script', children: themeInitScript, injectTo: 'head-prepend' as const },
+        ],
+      },
     ],
     resolve: {
       alias: {

@@ -1,9 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { themeInitScript } from '../theme/useTheme';
 
-const root = join(__dirname, '..', '..', '..');
 const tokens = readFileSync(join(__dirname, 'tokens.css'), 'utf8');
 
 /** Declarations inside the rule that follows `marker`, normalised for comparison. */
@@ -35,14 +33,5 @@ describe('dark theme', () => {
     const viaStamp = declarationsAfter("\n:root[data-theme='dark']");
     expect(viaMedia.length).toBeGreaterThan(20);
     expect(viaStamp).toEqual(viaMedia);
-  });
-});
-
-describe('themeInitScript', () => {
-  // index.html cannot import it, so it carries a copy
-  it('matches the copy inlined in index.html', () => {
-    const html = readFileSync(join(root, 'index.html'), 'utf8');
-    const squash = (s: string) => s.replace(/\s+/g, '');
-    expect(squash(html)).toContain(squash(themeInitScript));
   });
 });

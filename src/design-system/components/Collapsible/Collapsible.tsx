@@ -2,11 +2,10 @@ import { Collapsible as BaseCollapsible } from '@base-ui/react/collapsible';
 import styles from './Collapsible.module.scss';
 import { cx } from '../../util/cx';
 
-/* A section whose trigger is a control rather than a title — "Show code",
-   "More details". The trigger is styled text and emits no heading, so it suits
-   detail only some readers need. Keep the panel immediately after the trigger
-   so a screen reader reaches it by moving forward. Use Accordion where the
-   trigger titles the section. */
+/* A section whose trigger is a control, not a title — "Show code", "More
+   details". Styled text, no heading. Keep the panel immediately after the
+   trigger so a screen reader reaches it by moving forward. Use Accordion when
+   the trigger titles the section. */
 
 export interface RootProps extends Omit<BaseCollapsible.Root.Props, 'className'> {
   className?: string;

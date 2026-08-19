@@ -1,0 +1,39 @@
+.root {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+
+  &[data-orientation='vertical'] {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* Tighter than the gap between groups, so the grouping reads without a
+   separator having to carry it alone. */
+.group {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+
+  [data-orientation='vertical'] > & {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.separator {
+  border: none;
+  background: var(--c-border2);
+  margin: 0 var(--s-1);
+
+  &[data-orientation='vertical'] {
+    width: 1px;
+    align-self: stretch;
+  }
+
+  &[data-orientation='horizontal'] {
+    height: 1px;
+    margin: var(--s-1) 0;
+  }
+}

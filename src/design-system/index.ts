@@ -51,10 +51,12 @@ export type { RowProps } from './components/Row';
 export { NavIcon } from './components/NavIcon';
 export type { NavIconProps } from './components/NavIcon';
 export * as Tabs from './components/Tabs';
+export * as Toolbar from './components/Toolbar';
 export { Separator } from './components/Separator';
 export type { SeparatorProps } from './components/Separator';
 export { Accordion } from './components/Accordion';
 export type { AccordionProps } from './components/Accordion';
+export * as Collapsible from './components/Collapsible';
 export { Breadcrumbs } from './components/Breadcrumbs';
 export type { BreadcrumbsProps, BreadcrumbItem } from './components/Breadcrumbs';
 
@@ -70,6 +72,7 @@ export type { PaginationProps } from './components/Pagination';
 
 // Overlays
 export * as Dialog from './components/Dialog';
+export * as AlertDialog from './components/AlertDialog';
 export * as Tooltip from './components/Tooltip';
 export * as Popover from './components/Popover';
 export * as Menu from './components/Menu';

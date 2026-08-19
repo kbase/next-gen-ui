@@ -40,7 +40,3 @@ export function Button({
 }: BaseToolbar.Button.Props) {
   return <BaseToolbar.Button render={render} {...props} />;
 }
-
-export function Link(props: BaseToolbar.Link.Props) {
-  return <BaseToolbar.Link {...props} />;
-}

@@ -157,7 +157,7 @@ toasts.add({
           <Input defaultValue="Soil Metagenome Assembly" aria-label="Project name" />
           <div className={s.row} style={{ justifyContent: 'flex-end', marginTop: 'var(--s-7)' }}>
             <Dialog.Close render={<Button variant="ghost">Cancel</Button>} />
-            <Dialog.Close render={<Button>Save</Button>} />
+            <Dialog.Close>Save</Dialog.Close>
           </div>
         </Dialog.Popup>
       </Dialog.Root>

@@ -1,5 +1,6 @@
 import { AlertDialog as BaseAlertDialog } from '@base-ui/react/alert-dialog';
 import styles from '../Dialog/Dialog.module.scss';
+import { Button } from '../Button';
 import { cx } from '../../util/cx';
 
 /* Dialog's parts and stylesheet with role="alertdialog", for destructive or
@@ -11,8 +12,8 @@ export function Root(props: BaseAlertDialog.Root.Props) {
   return <BaseAlertDialog.Root {...props} />;
 }
 
-export function Trigger(props: BaseAlertDialog.Trigger.Props) {
-  return <BaseAlertDialog.Trigger {...props} />;
+export function Trigger({ render = <Button />, ...props }: BaseAlertDialog.Trigger.Props) {
+  return <BaseAlertDialog.Trigger render={render} {...props} />;
 }
 
 export interface PopupProps extends Omit<BaseAlertDialog.Popup.Props, 'className'> {
@@ -44,6 +45,6 @@ export function Description({ className, ...props }: DescriptionProps) {
   return <BaseAlertDialog.Description className={cx(styles.description, className)} {...props} />;
 }
 
-export function Close(props: BaseAlertDialog.Close.Props) {
-  return <BaseAlertDialog.Close {...props} />;
+export function Close({ render = <Button />, ...props }: BaseAlertDialog.Close.Props) {
+  return <BaseAlertDialog.Close render={render} {...props} />;
 }

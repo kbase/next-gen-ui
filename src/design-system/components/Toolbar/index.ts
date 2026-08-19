@@ -1,1 +1,1 @@
-export { Root, Group, Separator, Button, Link } from './Toolbar';
+export { Root, Group, Separator, Button } from './Toolbar';

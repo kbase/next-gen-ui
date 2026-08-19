@@ -1,13 +1,14 @@
 import { Popover as BasePopover } from '@base-ui/react/popover';
 import styles from './Popover.module.scss';
+import { Button } from '../Button';
 import { cx } from '../../util/cx';
 
 export function Root(props: BasePopover.Root.Props) {
   return <BasePopover.Root {...props} />;
 }
 
-export function Trigger(props: BasePopover.Trigger.Props) {
-  return <BasePopover.Trigger {...props} />;
+export function Trigger({ render = <Button />, ...props }: BasePopover.Trigger.Props) {
+  return <BasePopover.Trigger render={render} {...props} />;
 }
 
 export interface PopupProps extends Omit<BasePopover.Popup.Props, 'className'> {
@@ -32,6 +33,6 @@ export function Description(props: BasePopover.Description.Props) {
   return <BasePopover.Description className={styles.description} {...props} />;
 }
 
-export function Close(props: BasePopover.Close.Props) {
-  return <BasePopover.Close {...props} />;
+export function Close({ render = <Button />, ...props }: BasePopover.Close.Props) {
+  return <BasePopover.Close render={render} {...props} />;
 }

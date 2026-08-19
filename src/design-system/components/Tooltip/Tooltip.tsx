@@ -1,5 +1,6 @@
 import { Tooltip as BaseTooltip } from '@base-ui/react/tooltip';
 import styles from './Tooltip.module.scss';
+import { Button } from '../Button';
 import { cx } from '../../util/cx';
 
 export function Provider(props: BaseTooltip.Provider.Props) {
@@ -10,8 +11,8 @@ export function Root(props: BaseTooltip.Root.Props) {
   return <BaseTooltip.Root {...props} />;
 }
 
-export function Trigger(props: BaseTooltip.Trigger.Props) {
-  return <BaseTooltip.Trigger {...props} />;
+export function Trigger({ render = <Button />, ...props }: BaseTooltip.Trigger.Props) {
+  return <BaseTooltip.Trigger render={render} {...props} />;
 }
 
 export interface PopupProps extends Omit<BaseTooltip.Popup.Props, 'className'> {

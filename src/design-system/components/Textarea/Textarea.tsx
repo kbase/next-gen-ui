@@ -7,8 +7,8 @@ export interface TextareaProps extends Omit<BaseInput.Props, 'className' | 'rend
   className?: string;
 }
 
-/* Base UI's Input part rendered as a textarea, so Field.Root reaches it with
-   the label and description wiring a bare <textarea> does not receive. */
+/* Base UI's Input part rendered as a textarea, so Field.Root supplies the id,
+   label and description wiring. */
 export function Textarea({ rows, className, ...props }: TextareaProps) {
   return (
     <BaseInput

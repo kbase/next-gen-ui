@@ -1,5 +1,6 @@
-/* Base UI publishes the measured height as --collapsible-panel-height and
-   marks the frames either side of the transition. */
+/* Base UI measures the panel into --collapsible-panel-height, and marks the
+   first and last frame of the transition with data-starting-style and
+   data-ending-style. */
 .panel {
   overflow: hidden;
   height: var(--collapsible-panel-height);

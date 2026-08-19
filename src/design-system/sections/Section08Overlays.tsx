@@ -176,10 +176,10 @@ toasts.add({
 
       <div className={s.sub}>Alert dialog</div>
       <p className={s.note}>
-        A decision the user has to make. Dialog's parts with{' '}
+        For destructive or irreversible actions. Dialog's parts with{' '}
         <code>role=&quot;alertdialog&quot;</code>. The backdrop does not dismiss it; Escape does, so
-        closing must be the safe outcome &mdash; give it a Close. Use it for destructive and
-        irreversible actions. Put the consequence in the description, not the button.
+        Escape must cancel, never confirm. Name the action in each button and put its consequences
+        in the description.
       </p>
       <AlertDialog.Root>
         <AlertDialog.Trigger

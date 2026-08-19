@@ -2,9 +2,10 @@ import { AlertDialog as BaseAlertDialog } from '@base-ui/react/alert-dialog';
 import styles from '../Dialog/Dialog.module.scss';
 import { cx } from '../../util/cx';
 
-/* Dialog's parts and stylesheet, with role="alertdialog". The backdrop does
-   not dismiss it; Escape does, so closing must be the safe outcome. Use
-   Dialog when the user can leave without deciding. */
+/* Dialog's parts and stylesheet with role="alertdialog", for destructive or
+   irreversible actions. The backdrop does not dismiss it; Escape does, so
+   Escape must cancel, never confirm. Use Dialog when the user can leave
+   without deciding. */
 
 export function Root(props: BaseAlertDialog.Root.Props) {
   return <BaseAlertDialog.Root {...props} />;

@@ -39,10 +39,6 @@ export function Description({ className, ...props }: DescriptionProps) {
   return <BaseDialog.Description className={cx(styles.description, className)} {...props} />;
 }
 
-export interface CloseProps extends Omit<BaseDialog.Close.Props, 'className'> {
-  className?: string;
-}
-
-export function Close({ className, ...props }: CloseProps) {
-  return <BaseDialog.Close className={cx(styles.close, className)} {...props} />;
+export function Close(props: BaseDialog.Close.Props) {
+  return <BaseDialog.Close {...props} />;
 }

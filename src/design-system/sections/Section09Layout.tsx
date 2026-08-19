@@ -2,7 +2,6 @@ import { useState } from 'react';
 import {
   ArrowClockwise,
   ArrowsOut,
-  CaretDown,
   Columns,
   DownloadSimple,
   FunnelSimple,
@@ -70,29 +69,18 @@ export function Section09Layout() {
 
       <div className={s.sub}>Collapsible</div>
       <p className={s.note}>
-        One section, for detail only some readers want. The trigger reads as text so it stays
-        quieter than the content around it &mdash; do not use it to hide something most readers
-        need. Two or more such sections is an Accordion.
+        One section, for detail only some readers want. The trigger is styled text and sits in the
+        flow of the copy it expands, so it stays quieter than a control &mdash; do not use it to
+        hide something most readers need. Two or more such sections is an Accordion.
       </p>
       <Frame padding="md">
-        <Collapsible.Root
-          open={showMethod}
-          onOpenChange={setShowMethod}
-          style={{ display: 'grid', justifyItems: 'start', gap: 'var(--s-4)' }}
-        >
+        <Collapsible.Root open={showMethod} onOpenChange={setShowMethod}>
           <p className="body" style={{ maxWidth: '68ch' }}>
-            Assembled with MEGAHIT v1.2.9. 4,355 contigs, N50 8,241 bp.
+            Assembled with MEGAHIT v1.2.9. 4,355 contigs, N50 8,241 bp.{' '}
+            <Collapsible.Trigger>
+              {showMethod ? 'Fewer details' : 'More details'}
+            </Collapsible.Trigger>
           </p>
-          <Collapsible.Trigger>
-            <CaretDown
-              size={12}
-              style={{
-                transform: showMethod ? undefined : 'rotate(-90deg)',
-                transition: 'transform var(--t-base)',
-              }}
-            />
-            {showMethod ? 'Hide assembly parameters' : 'Show assembly parameters'}
-          </Collapsible.Trigger>
           <Collapsible.Panel>
             <p className="body" style={{ maxWidth: '68ch', paddingTop: 'var(--s-4)' }}>
               Reads trimmed with fastp. Minimum contig length 200 bp. K-list 21, 29, 39, 59, 79, 99,

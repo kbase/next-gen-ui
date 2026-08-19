@@ -2,12 +2,9 @@ import { AlertDialog as BaseAlertDialog } from '@base-ui/react/alert-dialog';
 import styles from '../Dialog/Dialog.module.scss';
 import { cx } from '../../util/cx';
 
-/* Same parts and the same styles as Dialog, for a decision the user has to
-   make: the backdrop does not dismiss it, so the decision cannot be made by
-   clicking past. Escape does close it, as it must, which means closing has
-   to be the safe answer — never the destructive one — and that answer needs
-   a Close of its own so the button and Escape agree. Reach for Dialog
-   whenever leaving without deciding is unremarkable. */
+/* Dialog's parts and stylesheet, with role="alertdialog". The backdrop does
+   not dismiss it; Escape does, so closing must be the safe outcome. Use
+   Dialog when the user can leave without deciding. */
 
 export function Root(props: BaseAlertDialog.Root.Props) {
   return <BaseAlertDialog.Root {...props} />;

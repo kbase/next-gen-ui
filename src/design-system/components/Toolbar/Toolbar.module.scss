@@ -9,8 +9,7 @@
   }
 }
 
-/* Tighter than the gap between groups, so the grouping reads without a
-   separator having to carry it alone. */
+/* Tighter than the gap between groups. */
 .group {
   display: flex;
   align-items: center;

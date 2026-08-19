@@ -1,7 +1,5 @@
-/* Base UI measures the panel and publishes the result as
-   --collapsible-panel-height, which is what makes the height animatable.
-   It also marks the frames either side of the transition, and those are
-   the two states the panel collapses to. */
+/* Base UI publishes the measured height as --collapsible-panel-height and
+   marks the frames either side of the transition. */
 .panel {
   overflow: hidden;
   height: var(--collapsible-panel-height);

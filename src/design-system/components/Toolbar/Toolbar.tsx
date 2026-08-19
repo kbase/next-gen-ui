@@ -2,15 +2,12 @@ import { Toolbar as BaseToolbar } from '@base-ui/react/toolbar';
 import styles from './Toolbar.module.scss';
 import { cx } from '../../util/cx';
 
-/* A strip of related controls that the arrow keys move between, so the strip
-   is one tab stop rather than one per control. Toolbar.Button carries that
-   behaviour and no appearance — give it the look it should have by rendering
-   a Button through it:
+/* One tab stop; arrow keys move between the controls. Toolbar.Button has no
+   styles of its own — pass the appearance through render:
 
      <Toolbar.Button render={<Button variant="ghost" size="sm" />} />
 
-   Group the controls that belong together and put a Separator between the
-   groups; the separator takes the axis opposite the toolbar's own. */
+   Separator takes the axis opposite the toolbar's. */
 
 export interface RootProps extends Omit<BaseToolbar.Root.Props, 'className'> {
   className?: string;

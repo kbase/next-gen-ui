@@ -39,17 +39,14 @@
   --c-frost: #c7dbee;
 
   /* text on tint (WCAG AA 4.5:1 on cream, APCA Lc 62) */
-  --ct-primary: light-dark(
-    #006eac,
-    oklch(from var(--c-primary) var(--ct-l-dark) var(--ct-c-dark) h)
-  );
-  --ct-green: light-dark(#3c6e08, oklch(from var(--c-green) var(--ct-l-dark) var(--ct-c-dark) h));
-  --ct-yellow: light-dark(#8c5200, oklch(from var(--c-yellow) var(--ct-l-dark) var(--ct-c-dark) h));
-  --ct-red: light-dark(#ce1d27, oklch(from var(--c-red) var(--ct-l-dark) var(--ct-c-dark) h));
-  --ct-purple: light-dark(#66489d, oklch(from var(--c-purple) var(--ct-l-dark) var(--ct-c-dark) h));
-  --ct-teal: light-dark(#00776b, oklch(from var(--c-teal) var(--ct-l-dark) var(--ct-c-dark) h));
-  --ct-ocean: light-dark(#03757c, oklch(from var(--c-ocean) var(--ct-l-dark) var(--ct-c-dark) h));
-  --ct-orange: light-dark(#af4b00, oklch(from var(--c-orange) var(--ct-l-dark) var(--ct-c-dark) h));
+  --ct-primary: light-dark(#006eac, oklch(from var(--c-primary) 0.8 0.105 h));
+  --ct-green: light-dark(#3c6e08, oklch(from var(--c-green) 0.78 0.13 h));
+  --ct-yellow: light-dark(#8c5200, oklch(from var(--c-yellow) 0.87 0.16 h));
+  --ct-red: light-dark(#ce1d27, oklch(from var(--c-red) 0.88 0.09 h));
+  --ct-purple: light-dark(#66489d, oklch(from var(--c-purple) 0.8 0.105 h));
+  --ct-teal: light-dark(#00776b, oklch(from var(--c-teal) 0.8 0.105 h));
+  --ct-ocean: light-dark(#03757c, oklch(from var(--c-ocean) 0.8 0.105 h));
+  --ct-orange: light-dark(#af4b00, oklch(from var(--c-orange) 0.8 0.105 h));
 
   /* internal: L and C per tint family. Yellow is hand-tuned. */
   --tl-bg: 0.935;
@@ -73,11 +70,9 @@
   --tc-bgw-yellow: 0.038;
   --tc-bgw-yellow-dark: 0.058;
 
-  /* internal: --ct-* geometry, and the alphas behind --e-1..4 and --c-scrim */
+  /* internal: alphas behind --e-1..4 and --c-scrim */
   --ct-l: 0.519;
-  --ct-l-dark: 0.8;
   --ct-c: 0.128;
-  --ct-c-dark: 0.105;
   --sa-1: 0.12;
   --sa-1-dark: 0.5;
   --sa-2: 0.15;

@@ -18,7 +18,10 @@
   --c-ink: light-dark(#1a1714, #f5f3ef); /* APCA Lc 97 on --c-bg */
   --c-ink2: light-dark(#3e3832, #e9e6e1);
   --c-ink3: light-dark(#6a6158, #d0cbc5);
-  --c-ink4: light-dark(#776d64, #c7c2ba); /* APCA Lc 67 on --c-bg, the worst-case ground */
+  --c-ink4: light-dark(
+    #776d64,
+    #c7c2ba
+  ); /* APCA Lc 67; worst ground is --c-bg in light, --c-raised in dark */
   --c-ink5: light-dark(#9d9389, #9f9992); /* decorative only */
   /* Warm-neutral mid-scale, used in showcase swatches; not for ink. */
   --c-warm-200: #ded5cb;
@@ -71,8 +74,6 @@
   --tc-bgw-yellow-dark: 0.058;
 
   /* internal: alphas behind --e-1..4 and --c-scrim */
-  --ct-l: 0.519;
-  --ct-c: 0.128;
   --sa-1: 0.12;
   --sa-1-dark: 0.5;
   --sa-2: 0.15;

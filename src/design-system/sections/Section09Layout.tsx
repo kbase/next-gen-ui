@@ -59,8 +59,8 @@ export function Section09Layout() {
       <div className={s.sub}>Collapsible</div>
       <p className={s.note}>
         The same Base UI part with the trigger left unstyled, for disclosures that are not a titled
-        section &mdash; a &ldquo;show more&rdquo;, a detail row. The panel animates its height. The
-        trigger carries <code>aria-expanded</code> and <code>aria-controls</code>.
+        section. The panel animates its height. Keep the panel immediately after the trigger so a
+        screen reader reaches the revealed content by moving forward.
       </p>
       <Frame style={{ padding: 'var(--s-7) var(--s-8)' }}>
         <Collapsible.Root
@@ -69,18 +69,10 @@ export function Section09Layout() {
           style={{ display: 'grid', justifyItems: 'start', gap: 'var(--s-4)' }}
         >
           <p className="body" style={{ maxWidth: '68ch' }}>
-            Reads were trimmed with fastp, assembled with MEGAHIT v1.2.9 at default parameters, and
-            binned with MetaBAT2.
+            Assembled with MEGAHIT v1.2.9. 4,355 contigs, N50 8,241 bp.
           </p>
-          <Collapsible.Panel>
-            <p className="body" style={{ maxWidth: '68ch' }}>
-              Bins were scored with CheckM2; those above 90% completeness and below 5% contamination
-              were carried forward for annotation. Contigs shorter than 200 bp were dropped before
-              binning.
-            </p>
-          </Collapsible.Panel>
           <Collapsible.Trigger render={<Button variant="ghost" size="xs" />}>
-            {showMethod ? 'Show less' : 'Show more'}
+            {showMethod ? 'Hide parameters' : 'Show parameters'}
             <CaretDown
               size={12}
               style={{
@@ -89,18 +81,24 @@ export function Section09Layout() {
               }}
             />
           </Collapsible.Trigger>
+          <Collapsible.Panel>
+            <p className="body" style={{ maxWidth: '68ch' }}>
+              Reads trimmed with fastp. Minimum contig length 200 bp. K-list 21, 29, 39, 59, 79, 99,
+              119, 141. Binned with MetaBAT2 and scored with CheckM2.
+            </p>
+          </Collapsible.Panel>
         </Collapsible.Root>
       </Frame>
       <CodeBlock
         language="tsx"
         code={`<Collapsible.Root open={open} onOpenChange={setOpen}>
   <p className="body">The summary that is always shown.</p>
+  <Collapsible.Trigger render={<Button variant="ghost" size="xs" />}>
+    {open ? 'Hide parameters' : 'Show parameters'}
+  </Collapsible.Trigger>
   <Collapsible.Panel>
     <p className="body">The detail that is not.</p>
   </Collapsible.Panel>
-  <Collapsible.Trigger render={<Button variant="ghost" size="xs" />}>
-    {open ? 'Show less' : 'Show more'}
-  </Collapsible.Trigger>
 </Collapsible.Root>`}
       />
 

@@ -170,8 +170,8 @@
   }
 }
 
-/* Chrome inside the panel, so quieter than the default disclosure trigger:
-   no underline, and ink rather than link colour. */
+/* Quieter than the default disclosure trigger: ink rather than link colour,
+   and no underline. */
 .logTrigger {
   width: 100%;
   display: flex;

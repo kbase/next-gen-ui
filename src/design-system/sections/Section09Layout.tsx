@@ -29,10 +29,9 @@ export function Section09Layout() {
 
       <div className={s.sub}>Accordion</div>
       <p className={s.note}>
-        A set of sections. The arrow keys move between the triggers, and <code>defaultValue</code>{' '}
-        lists the items that start open. Sections open independently; pass{' '}
-        <code>multiple={'{false}'}</code> for one at a time. <code>summary</code> stays on the
-        trigger whether the section is open or closed.
+        A set of sections. Arrow keys move between the triggers. <code>defaultValue</code> lists the
+        items that start open. Sections open independently; pass <code>multiple={'{false}'}</code>{' '}
+        for one at a time. <code>summary</code> shows on the trigger in both states.
       </p>
       <Frame>
         <Accordion.Root defaultValue={['params']}>
@@ -69,9 +68,9 @@ export function Section09Layout() {
 
       <div className={s.sub}>Collapsible</div>
       <p className={s.note}>
-        One section, for detail only some readers want. The trigger is styled text and sits in the
-        flow of the copy it expands, so it stays quieter than a control &mdash; do not use it to
-        hide something most readers need. Two or more such sections is an Accordion.
+        A single section. The trigger is styled text and sits in the flow of the copy it expands, so
+        it reads as detail rather than a control. Not for content most readers need. Use Accordion
+        for two or more sections.
       </p>
       <Frame padding="md">
         <Collapsible.Root open={showMethod} onOpenChange={setShowMethod}>

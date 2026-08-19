@@ -1,5 +1,4 @@
-/* The divider between sections is drawn by the set, so a lone item and the
-   last item in a set both end without a rule. */
+/* The set draws the dividers, so the first item has none. */
 .root {
   display: flex;
   flex-direction: column;
@@ -47,7 +46,7 @@
   color: var(--c-ink3);
 }
 
-/* Pushed to the chevron so the title stays left-aligned across items. */
+/* Right-aligned, so titles line up across items. */
 .summary {
   margin-left: auto;
   font-size: var(--fs-4);
@@ -69,9 +68,8 @@
   }
 }
 
-/* Base UI measures the panel into --accordion-panel-height, and marks the
-   first and last frame of the transition with data-starting-style and
-   data-ending-style. */
+/* Base UI measures the panel into --accordion-panel-height and marks the
+   first and last frame with data-starting-style and data-ending-style. */
 .panel {
   overflow: hidden;
   height: var(--accordion-panel-height);

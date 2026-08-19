@@ -6,7 +6,7 @@ export type FramePadding = 'none' | 'sm' | 'md' | 'lg';
 
 export interface FrameProps {
   children: ReactNode;
-  /** none when the content pads itself, as a table or an EmptyState does. */
+  /** Use none when the content pads itself. */
   padding?: FramePadding;
   className?: string;
   style?: CSSProperties;

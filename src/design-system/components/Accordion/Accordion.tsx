@@ -4,11 +4,10 @@ import { CaretDown } from '@phosphor-icons/react';
 import styles from './Accordion.module.scss';
 import { cx } from '../../util/cx';
 
-/* A set of sections, one trigger each, with the arrow keys moving between the
-   triggers. Root's value lists the open items; give an Item a value to name
-   it, or let Base UI generate one. Sections open independently — pass
-   multiple={false} for one at a time. Collapsible is a single section whose
-   trigger you build yourself. */
+/* A set of sections. Arrow keys move between the triggers. Root's value lists
+   the open items; an Item without a value gets a generated one. Sections open
+   independently — pass multiple={false} for one at a time. Use Collapsible for
+   a single section. */
 
 export interface RootProps extends Omit<BaseAccordion.Root.Props, 'className'> {
   className?: string;
@@ -24,7 +23,7 @@ export interface ItemProps extends Omit<BaseAccordion.Item.Props, 'className' | 
   title: ReactNode;
   /** Shown before the title. */
   icon?: ReactNode;
-  /** Shown on the trigger whether the section is open or closed, for a count or a status. */
+  /** Shown on the trigger in both states, for a count or a status. */
   summary?: ReactNode;
   className?: string;
 }

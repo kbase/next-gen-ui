@@ -114,9 +114,8 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Anchors, and buttons that read as anchors. font: inherit because a
-   <button> would otherwise sit at the browser's smaller default size next
-   to real anchors in the same paragraph. */
+/* Anchors, and buttons styled as anchors. font: inherit keeps a <button> at
+   body size beside real anchors. */
 .link {
   font: inherit;
   color: var(--ct-primary);

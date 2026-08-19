@@ -32,14 +32,13 @@
   }
 }
 
-/* Holds the trigger off the card edges; the code section below bleeds to
-   them. */
+/* Insets the trigger; the code section below runs to the card edges. */
 .triggerRow {
   padding: var(--s-3) 0;
 }
 
-/* Chrome that repeats under every example, so quieter than the default
-   disclosure trigger: no underline, and ink rather than link colour. */
+/* Quieter than the default disclosure trigger, for a control that repeats:
+   ink rather than link colour, and no underline. */
 .trigger {
   display: inline-flex;
   align-items: center;

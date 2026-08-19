@@ -29,9 +29,10 @@ export function Section09Layout() {
 
       <div className={s.sub}>Accordion</div>
       <p className={s.note}>
-        A set of sections. Arrow keys move between the triggers. <code>defaultValue</code> lists the
-        items that start open. Sections open independently; pass <code>multiple={'{false}'}</code>{' '}
-        for one at a time. <code>summary</code> shows on the trigger in both states.
+        Sections whose triggers are their titles, so each renders as a heading and arrow keys move
+        between them. <code>defaultValue</code> lists the items that start open. Sections open
+        independently; pass <code>multiple={'{false}'}</code> for one at a time.{' '}
+        <code>summary</code> shows on the trigger in both states.
       </p>
       <Frame>
         <Accordion.Root defaultValue={['params']}>
@@ -68,9 +69,9 @@ export function Section09Layout() {
 
       <div className={s.sub}>Collapsible</div>
       <p className={s.note}>
-        A single section. The trigger is styled text and sits in the flow of the copy it expands, so
-        it reads as detail rather than a control. Not for content most readers need. Use Accordion
-        for two or more sections.
+        A section whose trigger is a control rather than a title. The trigger is styled text, sits
+        in the flow of the copy it expands, and emits no heading. Not for content most readers need.
+        Use Accordion where the trigger titles the section.
       </p>
       <Frame padding="md">
         <Collapsible.Root open={showMethod} onOpenChange={setShowMethod}>

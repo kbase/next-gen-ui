@@ -4,10 +4,11 @@ import { CaretDown } from '@phosphor-icons/react';
 import styles from './Accordion.module.scss';
 import { cx } from '../../util/cx';
 
-/* A set of sections. Arrow keys move between the triggers. Root's value lists
-   the open items; an Item without a value gets a generated one. Sections open
-   independently — pass multiple={false} for one at a time. Use Collapsible for
-   a single section. */
+/* Sections whose triggers are their titles: each one renders as a heading, so
+   the set is navigable by heading and by arrow key. Root's value lists the
+   open items; an Item without a value gets a generated one. Sections open
+   independently — pass multiple={false} for one at a time. Use Collapsible
+   where the trigger is a control rather than a title. */
 
 export interface RootProps extends Omit<BaseAccordion.Root.Props, 'className'> {
   className?: string;

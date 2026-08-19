@@ -113,3 +113,19 @@
   color: var(--c-ink5);
   font-variant-numeric: tabular-nums;
 }
+
+/* Anchors, and buttons that read as anchors. font: inherit because a
+   <button> would otherwise sit at the browser's smaller default size next
+   to real anchors in the same paragraph. */
+.link {
+  font: inherit;
+  color: var(--ct-primary);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.link:hover {
+  text-decoration-thickness: 2px;
+}

@@ -139,24 +139,6 @@ body,
   margin: 0 auto;
 }
 
-/* App-level link utility. Mirrors the inline styles the design system
-   applies to anchors inside Alert / JobPanel / NotificationFeed
-   (color: --ct-primary; underline w/ 2px offset; weight 600; thicker
-   underline on hover). */
-.link {
-  /* iOS Safari uses a smaller default font for <button>; force
-     inherit so a button styled as a link sits at body size next to
-     real anchors in the same paragraph. */
-  font: inherit;
-  color: var(--ct-primary);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  font-weight: 600;
-}
-.link:hover {
-  text-decoration-thickness: 2px;
-}
-
 /* Login footer: quiet utility links that sit below the auth card.
    Smaller than body copy; muted ink-4 by default; underline only on
    hover. The visual weight should never compete with the primary

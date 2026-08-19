@@ -5,16 +5,19 @@ import styles from './Accordion.module.scss';
 import { cx } from '../../util/cx';
 
 /* A set of sections, one trigger each, with the arrow keys moving between the
-   triggers. Root's value says which items are open; give an Item a value to
-   name it, or let Base UI generate one. Collapsible is a single section whose
+   triggers. Root's value lists the open items; give an Item a value to name
+   it, or let Base UI generate one. Sections open independently — pass
+   multiple={false} for one at a time. Collapsible is a single section whose
    trigger you build yourself. */
 
 export interface RootProps extends Omit<BaseAccordion.Root.Props, 'className'> {
   className?: string;
 }
 
-export function Root({ className, ...props }: RootProps) {
-  return <BaseAccordion.Root className={cx(styles.root, className)} {...props} />;
+export function Root({ multiple = true, className, ...props }: RootProps) {
+  return (
+    <BaseAccordion.Root multiple={multiple} className={cx(styles.root, className)} {...props} />
+  );
 }
 
 export interface ItemProps extends Omit<BaseAccordion.Item.Props, 'className' | 'title'> {

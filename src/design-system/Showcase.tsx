@@ -78,7 +78,7 @@ function PackageCallout() {
     <div
       style={{
         margin: 'var(--s-9) 0',
-        padding: '0 var(--s-7)',
+        padding: 'var(--s-3) var(--s-7) var(--s-5)',
         border: '1px solid var(--c-border)',
         borderRadius: 'var(--r-lg)',
         background: 'var(--c-raised)',

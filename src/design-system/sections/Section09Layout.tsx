@@ -31,8 +31,9 @@ export function Section09Layout() {
       <div className={s.sub}>Accordion</div>
       <p className={s.note}>
         A set of sections. The arrow keys move between the triggers, and <code>defaultValue</code>{' '}
-        lists the items that start open. <code>summary</code> stays on the trigger whether the
-        section is open or closed.
+        lists the items that start open. Sections open independently; pass{' '}
+        <code>multiple={'{false}'}</code> for one at a time. <code>summary</code> stays on the
+        trigger whether the section is open or closed.
       </p>
       <Frame>
         <Accordion.Root defaultValue={['params']}>

@@ -1,5 +1,6 @@
 import { Field as BaseField } from '@base-ui/react/field';
 import styles from './Field.module.scss';
+import { Input } from '../Input';
 import { cx } from '../../util/cx';
 
 export interface FieldRootProps extends Omit<BaseField.Root.Props, 'className'> {
@@ -32,6 +33,9 @@ function FieldError({ className, ...props }: FieldErrorProps) {
 }
 export { FieldError as Error };
 
-export function Control(props: BaseField.Control.Props) {
-  return <BaseField.Control {...props} />;
+/* The escape hatch for a control the system does not ship. Input, Textarea,
+   Select and the rest already wire themselves to Field.Root, so use those
+   directly; this renders an Input unless render says otherwise. */
+export function Control({ render = <Input />, ...props }: BaseField.Control.Props) {
+  return <BaseField.Control render={render} {...props} />;
 }

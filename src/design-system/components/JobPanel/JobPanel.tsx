@@ -102,7 +102,7 @@ export function JobPanel({
           {stages.map((st, i) => (
             <div key={i} className={cx(styles.stageRow, styles[`st_${st.status}`])}>
               <span className={styles.stageMark}>{STAGE_MARK[st.status]}</span>
-              <span className={styles.stageLabel}>{st.label}</span>
+              <span>{st.label}</span>
             </div>
           ))}
         </div>

@@ -75,7 +75,7 @@ export function Section06Feedback({ cvd }: Section06FeedbackProps) {
       <p className={s.note}>
         Determinate bar. <code>color</code> accepts primary, green, yellow, red, purple.
       </p>
-      <Frame style={{ padding: 'var(--s-8)' }}>
+      <Frame padding="md">
         <div className="h4" style={{ marginBottom: 'var(--s-2)' }}>
           Annotation pipeline
         </div>
@@ -127,7 +127,7 @@ export function Section06Feedback({ cvd }: Section06FeedbackProps) {
         Three variants: text (default), circular (avatars), rectangular (blocks). Animates shimmer
         automatically.
       </p>
-      <Frame style={{ padding: 'var(--s-7)' }}>
+      <Frame padding="md">
         <div
           style={{
             display: 'flex',
@@ -184,7 +184,7 @@ export function Section06Feedback({ cvd }: Section06FeedbackProps) {
       <p className={s.note}>
         Icon + title + description + optional action. For empty tables, no-results search, 404s.
       </p>
-      <Frame style={{ maxWidth: 400 }}>
+      <Frame padding="none" style={{ maxWidth: 400 }}>
         <EmptyState
           icon={<MagnifyingGlass size={32} />}
           title="No objects match"

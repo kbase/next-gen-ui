@@ -80,7 +80,7 @@ export function JobPanel({
   const failed = status === 'error' || status === 'terminated';
 
   return (
-    <Frame className={cx(styles.root, failed && styles[status], className)}>
+    <Frame padding="none" className={cx(styles.root, failed && styles[status], className)}>
       <div className={cx(styles.header, active && !stages && styles.headerWithLoader)}>
         {active && !stages && <Loader size={12} />}
         <span className={styles.title}>{title}</span>

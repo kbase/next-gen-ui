@@ -26,7 +26,7 @@ export function Section00InContext() {
       <div className={s.sTitle}>In context</div>
       <p className={s.sDesc}>How it actually feels.</p>
 
-      <Frame style={{ display: 'flex', minHeight: 440 }}>
+      <Frame padding="none" style={{ display: 'flex', minHeight: 440 }}>
         <div className={css.sidebar}>
           <svg
             width="24"

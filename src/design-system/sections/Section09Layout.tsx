@@ -30,23 +30,21 @@ export function Section09Layout() {
 
       <div className={s.sub}>Accordion</div>
       <p className={s.note}>
-        Wraps Base UI Collapsible. <code>defaultOpen</code> starts expanded. Use inside Frame with
-        horizontal padding for panel-style grouping.
+        Wraps Base UI Collapsible. <code>defaultOpen</code> starts expanded. Use inside Frame for
+        panel-style grouping.
       </p>
       <Frame>
-        <div style={{ padding: '0 var(--s-8)' }}>
-          <Accordion title={<span className="caption">Assembly parameters</span>} defaultOpen>
-            <span className="body">
-              MEGAHIT v1.2.9 with default parameters. Min contig length: 200 bp. K-list: 21, 29, 39,
-              59, 79, 99, 119, 141.
-            </span>
-          </Accordion>
-          <Accordion title={<span className="caption">Quality metrics</span>}>
-            <span className="body">
-              N50: 8,241 bp. Total: 48.2 Mb. GC: 52.3%. CheckM completeness: 94.2%.
-            </span>
-          </Accordion>
-        </div>
+        <Accordion title={<span className="caption">Assembly parameters</span>} defaultOpen>
+          <span className="body">
+            MEGAHIT v1.2.9 with default parameters. Min contig length: 200 bp. K-list: 21, 29, 39,
+            59, 79, 99, 119, 141.
+          </span>
+        </Accordion>
+        <Accordion title={<span className="caption">Quality metrics</span>}>
+          <span className="body">
+            N50: 8,241 bp. Total: 48.2 Mb. GC: 52.3%. CheckM completeness: 94.2%.
+          </span>
+        </Accordion>
       </Frame>
       <CodeBlock
         language="tsx"
@@ -61,7 +59,7 @@ export function Section09Layout() {
         titled section. The panel animates its height. Keep the panel immediately after the trigger
         so a screen reader reaches the revealed content by moving forward.
       </p>
-      <Frame style={{ padding: 'var(--s-7) var(--s-8)' }}>
+      <Frame padding="md">
         <Collapsible.Root
           open={showMethod}
           onOpenChange={setShowMethod}
@@ -107,7 +105,7 @@ export function Section09Layout() {
         unless <code>render</code> says otherwise. Group what belongs together and separate the
         groups.
       </p>
-      <Frame style={{ padding: 'var(--s-4) var(--s-5)' }}>
+      <Frame padding="sm">
         <Toolbar.Root aria-label="Table controls">
           <Toolbar.Group>
             <Toolbar.Button>

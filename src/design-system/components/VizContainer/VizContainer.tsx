@@ -84,7 +84,7 @@ export function VizContainer({
   const ready = !loading && !error;
 
   return (
-    <Frame className={cx(styles.root, className)} style={style}>
+    <Frame padding="none" className={cx(styles.root, className)} style={style}>
       {(title || toolbar || onExport) && (
         <div className={styles.titleBar}>
           {title && <span className={styles.title}>{title}</span>}

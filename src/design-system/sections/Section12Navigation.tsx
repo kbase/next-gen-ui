@@ -92,7 +92,7 @@ export function Section12Navigation() {
 
       <div className={s.sub}>Tree</div>
       <div style={{ display: 'flex', gap: 'var(--s-9)', flexWrap: 'wrap' }}>
-        <Frame style={{ width: 260, padding: 'var(--s-4)' }}>
+        <Frame padding="sm" style={{ width: 260 }}>
           <Tree.Root
             items={treeItems}
             selected={treeSelected}

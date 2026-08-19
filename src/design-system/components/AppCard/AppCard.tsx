@@ -87,7 +87,7 @@ export function AppCard({
   );
 
   return (
-    <Frame className={cx(styles.root, className)}>
+    <Frame padding="none" className={cx(styles.root, className)}>
       <div className={styles.inner}>
         {onClick ? (
           <button type="button" className={styles.clickable} onClick={onClick} aria-label={name}>

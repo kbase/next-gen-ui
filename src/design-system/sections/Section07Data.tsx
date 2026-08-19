@@ -114,46 +114,44 @@ export function Section07Data() {
         surrounding container.
       </p>
       <Frame>
-        <div style={{ padding: 'var(--s-6) var(--s-7)' }}>
-          <Table compact>
-            <Thead>
-              <Tr>
-                <Th>Stage</Th>
-                <Th style={{ textAlign: 'right' }}>Reads</Th>
-                <Th style={{ textAlign: 'right' }}>Pass %</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              <Tr>
-                <Td>Raw</Td>
-                <Td className="mono-secondary" style={{ textAlign: 'right' }}>
-                  2.4M
-                </Td>
-                <Td className="mono-secondary" style={{ textAlign: 'right' }}>
-                  n/a
-                </Td>
-              </Tr>
-              <Tr>
-                <Td>Trimmed</Td>
-                <Td className="mono-secondary" style={{ textAlign: 'right' }}>
-                  2.1M
-                </Td>
-                <Td className="mono-secondary" style={{ textAlign: 'right' }}>
-                  87.5
-                </Td>
-              </Tr>
-              <Tr>
-                <Td>Aligned</Td>
-                <Td className="mono-secondary" style={{ textAlign: 'right' }}>
-                  1.9M
-                </Td>
-                <Td className="mono-secondary" style={{ textAlign: 'right' }}>
-                  90.4
-                </Td>
-              </Tr>
-            </Tbody>
-          </Table>
-        </div>
+        <Table compact>
+          <Thead>
+            <Tr>
+              <Th>Stage</Th>
+              <Th style={{ textAlign: 'right' }}>Reads</Th>
+              <Th style={{ textAlign: 'right' }}>Pass %</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            <Tr>
+              <Td>Raw</Td>
+              <Td className="mono-secondary" style={{ textAlign: 'right' }}>
+                2.4M
+              </Td>
+              <Td className="mono-secondary" style={{ textAlign: 'right' }}>
+                n/a
+              </Td>
+            </Tr>
+            <Tr>
+              <Td>Trimmed</Td>
+              <Td className="mono-secondary" style={{ textAlign: 'right' }}>
+                2.1M
+              </Td>
+              <Td className="mono-secondary" style={{ textAlign: 'right' }}>
+                87.5
+              </Td>
+            </Tr>
+            <Tr>
+              <Td>Aligned</Td>
+              <Td className="mono-secondary" style={{ textAlign: 'right' }}>
+                1.9M
+              </Td>
+              <Td className="mono-secondary" style={{ textAlign: 'right' }}>
+                90.4
+              </Td>
+            </Tr>
+          </Tbody>
+        </Table>
       </Frame>
       <CodeBlock
         language="tsx"

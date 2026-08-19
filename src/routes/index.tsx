@@ -75,7 +75,7 @@ function HomePage() {
 
 function DesignSystemFooter() {
   return (
-    <Frame style={{ padding: 'var(--s-7)', marginTop: 'var(--s-7)' }}>
+    <Frame padding="md" style={{ marginTop: 'var(--s-7)' }}>
       <Link
         to="/design-system"
         style={{
@@ -162,7 +162,7 @@ interface DestinationCardProps {
 
 function DestinationCard({ icon, tint, title, description }: DestinationCardProps) {
   return (
-    <Frame style={{ padding: 'var(--s-7)' }}>
+    <Frame padding="md">
       <div
         style={{
           display: 'flex',

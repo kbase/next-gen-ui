@@ -26,9 +26,10 @@ export function Section02Color() {
         hue can break the spread and make two colors indistinguishable.
       </p>
       <p className={s.note}>
-        Every color has a tint system with four tokens. Use <code>bg-*</code> on the cream page
-        background, <code>bgw-*</code> inside white cards (Frame), <code>bo-*</code> for borders,
-        and <code>ct-*</code> for text that meets WCAG AA 4.5:1 contrast. The <code>bg-*</code> and{' '}
+        <code>c-*</code> is the fill and is the same in both themes, so it is never text. Every
+        color also has a tint system with four tokens. Use <code>bg-*</code> on the page background,{' '}
+        <code>bgw-*</code> inside cards (Frame), <code>bo-*</code> for borders, and{' '}
+        <code>ct-*</code> for text that meets WCAG AA 4.5:1 contrast. The <code>bg-*</code> and{' '}
         <code>bgw-*</code> variants are tuned differently; using <code>bg-*</code> inside a Frame
         looks washed out.
       </p>
@@ -171,12 +172,12 @@ export function Section02Color() {
         </Thead>
         <Tbody>
           <Tr>
-            <Td>The solid color</Td>
+            <Td>A solid fill</Td>
             <Td>
               <code>--c-*</code>
             </Td>
             <Td>
-              <code>color: var(--c-red)</code>
+              <code>background: var(--c-red)</code>
             </Td>
           </Tr>
           <Tr>
@@ -207,7 +208,7 @@ export function Section02Color() {
             </Td>
           </Tr>
           <Tr>
-            <Td>Text on a tint (AA contrast)</Td>
+            <Td>Text (AA contrast)</Td>
             <Td>
               <code>--ct-*</code>
             </Td>

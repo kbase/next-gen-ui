@@ -11,7 +11,10 @@ export function Root(props: BaseTooltip.Root.Props) {
   return <BaseTooltip.Root {...props} />;
 }
 
-export function Trigger({ render = <Button />, ...props }: BaseTooltip.Trigger.Props) {
+export function Trigger({
+  render = <Button variant="ghost" />,
+  ...props
+}: BaseTooltip.Trigger.Props) {
   return <BaseTooltip.Trigger render={render} {...props} />;
 }
 

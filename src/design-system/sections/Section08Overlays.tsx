@@ -168,7 +168,7 @@ toasts.add({
   <Dialog.Popup>
     <Dialog.Title>Rename project</Dialog.Title>
     <Dialog.Description>The new name is shown everywhere.</Dialog.Description>
-    <Dialog.Close>Cancel</Dialog.Close>
+    <Dialog.Close render={<Button variant="ghost">Cancel</Button>} />
     <Dialog.Close>Save</Dialog.Close>
   </Dialog.Popup>
 </Dialog.Root>`}
@@ -210,12 +210,12 @@ toasts.add({
       <CodeBlock
         language="tsx"
         code={`<AlertDialog.Root>
-  <AlertDialog.Trigger>Delete project</AlertDialog.Trigger>
+  <AlertDialog.Trigger render={<Button variant="danger">Delete project</Button>} />
   <AlertDialog.Popup>
     <AlertDialog.Title>Delete project?</AlertDialog.Title>
     <AlertDialog.Description>This cannot be undone.</AlertDialog.Description>
-    <AlertDialog.Close>Keep project</AlertDialog.Close>
-    <AlertDialog.Close>Delete</AlertDialog.Close>
+    <AlertDialog.Close render={<Button variant="ghost">Keep project</Button>} />
+    <AlertDialog.Close render={<Button variant="danger">Delete</Button>} />
   </AlertDialog.Popup>
 </AlertDialog.Root>`}
       />

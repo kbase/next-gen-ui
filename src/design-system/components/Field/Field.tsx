@@ -1,6 +1,6 @@
 import { Field as BaseField } from '@base-ui/react/field';
 import styles from './Field.module.scss';
-import { Input } from '../Input';
+import inputStyles from '../Input/Input.module.scss';
 import { cx } from '../../util/cx';
 
 export interface FieldRootProps extends Omit<BaseField.Root.Props, 'className'> {
@@ -33,9 +33,13 @@ function FieldError({ className, ...props }: FieldErrorProps) {
 }
 export { FieldError as Error };
 
-/* The escape hatch for a control the system does not ship. Input, Textarea,
-   Select and the rest already wire themselves to Field.Root, so use those
-   directly; this renders an Input unless render says otherwise. */
-export function Control({ render = <Input />, ...props }: BaseField.Control.Props) {
-  return <BaseField.Control render={render} {...props} />;
+export interface FieldControlProps extends Omit<BaseField.Control.Props, 'className'> {
+  className?: string;
+}
+
+/* Carries Input's appearance. Input and Select are this same part with their
+   own props, so reach for those first; use Control with render for an element
+   they do not cover. */
+export function Control({ className, ...props }: FieldControlProps) {
+  return <BaseField.Control className={cx(inputStyles.input, className)} {...props} />;
 }

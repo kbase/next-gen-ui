@@ -1,3 +1,30 @@
+/* Quieter than a button on purpose: a disclosure offers detail rather than
+   asking for an action. */
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: var(--ct-primary);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration-thickness: 2px;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--c-focus);
+    border-radius: var(--r-sm);
+  }
+}
+
 /* Base UI measures the panel into --collapsible-panel-height, and marks the
    first and last frame of the transition with data-starting-style and
    data-ending-style. */

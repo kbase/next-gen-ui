@@ -70,9 +70,9 @@ export function Section09Layout() {
 
       <div className={s.sub}>Collapsible</div>
       <p className={s.note}>
-        The same Base UI part with the trigger left to the caller, for disclosures that are not a
-        titled section. The panel animates its height. Keep the panel immediately after the trigger
-        so a screen reader reaches the revealed content by moving forward.
+        One section, for detail only some readers want. The trigger reads as text so it stays
+        quieter than the content around it &mdash; do not use it to hide something most readers
+        need. Two or more such sections is an Accordion.
       </p>
       <Frame padding="md">
         <Collapsible.Root
@@ -84,17 +84,17 @@ export function Section09Layout() {
             Assembled with MEGAHIT v1.2.9. 4,355 contigs, N50 8,241 bp.
           </p>
           <Collapsible.Trigger>
-            {showMethod ? 'Hide parameters' : 'Show parameters'}
             <CaretDown
               size={12}
               style={{
-                transform: showMethod ? 'rotate(180deg)' : undefined,
+                transform: showMethod ? undefined : 'rotate(-90deg)',
                 transition: 'transform var(--t-base)',
               }}
             />
+            {showMethod ? 'Hide assembly parameters' : 'Show assembly parameters'}
           </Collapsible.Trigger>
           <Collapsible.Panel>
-            <p className="body" style={{ maxWidth: '68ch' }}>
+            <p className="body" style={{ maxWidth: '68ch', paddingTop: 'var(--s-4)' }}>
               Reads trimmed with fastp. Minimum contig length 200 bp. K-list 21, 29, 39, 59, 79, 99,
               119, 141. Binned with MetaBAT2 and scored with CheckM2.
             </p>

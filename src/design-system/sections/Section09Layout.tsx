@@ -2,7 +2,7 @@ import { useState } from 'react';
 import {
   ArrowClockwise,
   ArrowsOut,
-  CaretRight,
+  CaretDown,
   Columns,
   DownloadSimple,
   FunnelSimple,
@@ -63,30 +63,44 @@ export function Section09Layout() {
         animates its height and the trigger carries the aria wiring.
       </p>
       <Frame>
-        <Collapsible.Root open={showMethod} onOpenChange={setShowMethod}>
-          <span className="body">Reads were assembled with MEGAHIT and binned with MetaBAT2.</span>{' '}
-          <Collapsible.Trigger
-            render={<Button variant="ghost" size="xs" />}
-            aria-label={showMethod ? 'Show less' : 'Show more'}
-          >
-            {showMethod ? 'Show less' : 'Show more'}
-            <CaretRight size={12} style={{ transform: showMethod ? 'rotate(90deg)' : undefined }} />
-          </Collapsible.Trigger>
+        <Collapsible.Root
+          open={showMethod}
+          onOpenChange={setShowMethod}
+          style={{ display: 'grid', justifyItems: 'start', gap: 'var(--s-4)' }}
+        >
+          <p className="body" style={{ maxWidth: '68ch' }}>
+            Reads were trimmed with fastp, assembled with MEGAHIT v1.2.9 at default parameters, and
+            binned with MetaBAT2.
+          </p>
           <Collapsible.Panel>
-            <p className="body" style={{ paddingTop: 'var(--s-3)' }}>
-              Bins were scored with CheckM2 and those above 90% completeness and below 5%
-              contamination were carried forward for annotation.
+            <p className="body" style={{ maxWidth: '68ch' }}>
+              Bins were scored with CheckM2; those above 90% completeness and below 5% contamination
+              were carried forward for annotation. Contigs shorter than 200 bp were dropped before
+              binning.
             </p>
           </Collapsible.Panel>
+          <Collapsible.Trigger render={<Button variant="ghost" size="xs" />}>
+            {showMethod ? 'Show less' : 'Show more'}
+            <CaretDown
+              size={12}
+              style={{
+                transform: showMethod ? 'rotate(180deg)' : undefined,
+                transition: 'transform var(--t-base)',
+              }}
+            />
+          </Collapsible.Trigger>
         </Collapsible.Root>
       </Frame>
       <CodeBlock
         language="tsx"
-        code={`<Collapsible.Root>
+        code={`<Collapsible.Root open={open} onOpenChange={setOpen}>
+  <p className="body">The summary that is always shown.</p>
+  <Collapsible.Panel>
+    <p className="body">The detail that is not.</p>
+  </Collapsible.Panel>
   <Collapsible.Trigger render={<Button variant="ghost" size="xs" />}>
-    Show more
+    {open ? 'Show less' : 'Show more'}
   </Collapsible.Trigger>
-  <Collapsible.Panel>Detail here.</Collapsible.Panel>
 </Collapsible.Root>`}
       />
 

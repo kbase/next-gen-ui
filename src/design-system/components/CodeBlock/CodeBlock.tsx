@@ -6,7 +6,7 @@ import 'prismjs/components/prism-typescript';
 import 'prismjs/components/prism-jsx';
 import 'prismjs/components/prism-tsx';
 import { Code } from '@phosphor-icons/react';
-import { Accordion } from '../Accordion';
+import * as Accordion from '../Accordion';
 import { cx } from '../../util/cx';
 import styles from './CodeBlock.module.scss';
 
@@ -68,12 +68,14 @@ export function CodeBlock({
 
   return (
     <div className={cx(styles.card, className)}>
-      <Accordion
-        title={<span className="caption">{title}</span>}
-        icon={<Code size={14} weight="bold" />}
-      >
-        <div className={styles.codeSection}>{pre}</div>
-      </Accordion>
+      <Accordion.Root>
+        <Accordion.Item
+          title={<span className="caption">{title}</span>}
+          icon={<Code size={14} weight="bold" />}
+        >
+          <div className={styles.codeSection}>{pre}</div>
+        </Accordion.Item>
+      </Accordion.Root>
     </div>
   );
 }

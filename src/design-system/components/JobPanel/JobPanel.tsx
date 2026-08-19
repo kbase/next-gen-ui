@@ -5,7 +5,7 @@ import { Frame } from '../Frame';
 import { Chip } from '../Chip';
 import { Progress } from '../Progress';
 import { Loader } from '../Loader';
-import { Accordion } from '../Accordion';
+import * as Accordion from '../Accordion';
 import {
   Play,
   Clock,
@@ -110,9 +110,11 @@ export function JobPanel({
 
       {logLines && logLines.length > 0 && (
         <div className={styles.logSection}>
-          <Accordion title={`Log · ${logLines.length} lines`}>
-            <pre className={styles.logPre}>{logLines.join('\n')}</pre>
-          </Accordion>
+          <Accordion.Root>
+            <Accordion.Item title="Log" summary={`${logLines.length} lines`}>
+              <pre className={styles.logPre}>{logLines.join('\n')}</pre>
+            </Accordion.Item>
+          </Accordion.Root>
         </div>
       )}
 

@@ -5,7 +5,7 @@ import { useTheme } from './theme/useTheme';
 import type { ThemeChoice } from './theme/useTheme';
 import { SegmentedControl } from './components/SegmentedControl';
 import { Package } from '@phosphor-icons/react';
-import { Accordion } from './components/Accordion';
+import * as Collapsible from './components/Collapsible';
 import { useToastManager } from './components/Toast';
 import { DataExplorerAppendix } from './appendix/DataExplorer';
 import { JobsNotificationsAppendix } from './appendix/JobsNotifications';
@@ -84,49 +84,54 @@ function PackageCallout() {
         background: 'var(--c-raised)',
       }}
     >
-      <Accordion title="Use it in your project" icon={<Package size={14} weight="fill" />}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s-4)' }}>
-          <p className="note" style={{ maxWidth: '70ch', margin: 0 }}>
-            Published as{' '}
-            <a className="link" href={packageUrl} target="_blank" rel="noopener noreferrer">
-              <code>@kbase/design-system</code>
-            </a>{' '}
-            on GitHub Packages.
-          </p>
-          <p className="note" style={{ maxWidth: '70ch', margin: 0 }}>
-            Sourced from{' '}
-            <a className="link" href={repoUrl} target="_blank" rel="noopener noreferrer">
-              <code>kbase/next-gen-ui</code>
-            </a>
-            .
-          </p>
-          <div>
-            <div className="h4" style={{ marginBottom: 'var(--s-3)' }}>
-              Install from the registry
-            </div>
-            <p className="note" style={{ marginBottom: 'var(--s-3)', maxWidth: '70ch' }}>
-              GitHub Packages npm requires auth even for public packages. You'll need a GitHub PAT
-              with <code>read:packages</code> scope and an <code>.npmrc</code> pointing the{' '}
-              <code>@kbase</code> scope at <code>npm.pkg.github.com</code>.
-            </p>
-            <pre style={installPreStyle}>{registrySnippet}</pre>
-          </div>
-          <div>
-            <div className="h4" style={{ marginBottom: 'var(--s-3)' }}>
-              Install from a release tarball
-            </div>
-            <p className="note" style={{ marginBottom: 'var(--s-3)', maxWidth: '70ch' }}>
-              Each <code>ds-v*</code>{' '}
-              <a className="link" href={releasesUrl} target="_blank" rel="noopener noreferrer">
-                release
+      <Collapsible.Root>
+        <Collapsible.Trigger>
+          <Package size={14} weight="fill" /> Use it in your project
+        </Collapsible.Trigger>
+        <Collapsible.Panel>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s-4)' }}>
+            <p className="note" style={{ maxWidth: '70ch', margin: 0 }}>
+              Published as{' '}
+              <a className="link" href={packageUrl} target="_blank" rel="noopener noreferrer">
+                <code>@kbase/design-system</code>
               </a>{' '}
-              has the published <code>.tgz</code> attached as an asset. Downloading the tarball and
-              installing it locally bypasses the registry auth dance entirely.
+              on GitHub Packages.
             </p>
-            <pre style={installPreStyle}>{tarballSnippet}</pre>
+            <p className="note" style={{ maxWidth: '70ch', margin: 0 }}>
+              Sourced from{' '}
+              <a className="link" href={repoUrl} target="_blank" rel="noopener noreferrer">
+                <code>kbase/next-gen-ui</code>
+              </a>
+              .
+            </p>
+            <div>
+              <div className="h4" style={{ marginBottom: 'var(--s-3)' }}>
+                Install from the registry
+              </div>
+              <p className="note" style={{ marginBottom: 'var(--s-3)', maxWidth: '70ch' }}>
+                GitHub Packages npm requires auth even for public packages. You'll need a GitHub PAT
+                with <code>read:packages</code> scope and an <code>.npmrc</code> pointing the{' '}
+                <code>@kbase</code> scope at <code>npm.pkg.github.com</code>.
+              </p>
+              <pre style={installPreStyle}>{registrySnippet}</pre>
+            </div>
+            <div>
+              <div className="h4" style={{ marginBottom: 'var(--s-3)' }}>
+                Install from a release tarball
+              </div>
+              <p className="note" style={{ marginBottom: 'var(--s-3)', maxWidth: '70ch' }}>
+                Each <code>ds-v*</code>{' '}
+                <a className="link" href={releasesUrl} target="_blank" rel="noopener noreferrer">
+                  release
+                </a>{' '}
+                has the published <code>.tgz</code> attached as an asset. Downloading the tarball
+                and installing it locally bypasses the registry auth dance entirely.
+              </p>
+              <pre style={installPreStyle}>{tarballSnippet}</pre>
+            </div>
           </div>
-        </div>
-      </Accordion>
+        </Collapsible.Panel>
+      </Collapsible.Root>
     </div>
   );
 }

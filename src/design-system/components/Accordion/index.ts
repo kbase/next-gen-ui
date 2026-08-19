@@ -1,2 +1,2 @@
-export { Accordion } from './Accordion';
-export type { AccordionProps } from './Accordion';
+export { Root, Item } from './Accordion';
+export type { RootProps, ItemProps } from './Accordion';

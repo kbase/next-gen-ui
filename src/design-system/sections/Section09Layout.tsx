@@ -9,7 +9,7 @@ import {
 } from '@phosphor-icons/react';
 import s from './showcase.module.scss';
 import { Frame } from '../components/Frame';
-import { Accordion } from '../components/Accordion';
+import * as Accordion from '../components/Accordion';
 import * as Collapsible from '../components/Collapsible';
 import * as Toolbar from '../components/Toolbar';
 import { Avatar } from '../components/Avatar';
@@ -30,27 +30,41 @@ export function Section09Layout() {
 
       <div className={s.sub}>Accordion</div>
       <p className={s.note}>
-        Wraps Base UI Collapsible. <code>defaultOpen</code> starts expanded. Use inside Frame for
-        panel-style grouping.
+        A set of sections. The arrow keys move between the triggers, and <code>defaultValue</code>{' '}
+        lists the items that start open. <code>summary</code> stays on the trigger whether the
+        section is open or closed.
       </p>
       <Frame>
-        <Accordion title={<span className="caption">Assembly parameters</span>} defaultOpen>
-          <span className="body">
-            MEGAHIT v1.2.9 with default parameters. Min contig length: 200 bp. K-list: 21, 29, 39,
-            59, 79, 99, 119, 141.
-          </span>
-        </Accordion>
-        <Accordion title={<span className="caption">Quality metrics</span>}>
-          <span className="body">
-            N50: 8,241 bp. Total: 48.2 Mb. GC: 52.3%. CheckM completeness: 94.2%.
-          </span>
-        </Accordion>
+        <Accordion.Root defaultValue={['params']}>
+          <Accordion.Item
+            value="params"
+            title={<span className="caption">Assembly parameters</span>}
+            summary="MEGAHIT v1.2.9"
+          >
+            <span className="body">
+              Default parameters. Min contig length: 200 bp. K-list: 21, 29, 39, 59, 79, 99, 119,
+              141.
+            </span>
+          </Accordion.Item>
+          <Accordion.Item
+            value="quality"
+            title={<span className="caption">Quality metrics</span>}
+            summary="94.2% complete"
+          >
+            <span className="body">N50: 8,241 bp. Total: 48.2 Mb. GC: 52.3%.</span>
+          </Accordion.Item>
+        </Accordion.Root>
       </Frame>
       <CodeBlock
         language="tsx"
-        code={`<Accordion title={<span className="caption">Assembly parameters</span>} defaultOpen>
-  <span className="body">Content here.</span>
-</Accordion>`}
+        code={`<Accordion.Root defaultValue={['params']}>
+  <Accordion.Item value="params" title="Assembly parameters" summary="MEGAHIT v1.2.9">
+    <span className="body">Content here.</span>
+  </Accordion.Item>
+  <Accordion.Item value="quality" title="Quality metrics">
+    <span className="body">More content.</span>
+  </Accordion.Item>
+</Accordion.Root>`}
       />
 
       <div className={s.sub}>Collapsible</div>

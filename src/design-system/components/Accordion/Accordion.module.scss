@@ -1,19 +1,24 @@
+/* The divider between sections is drawn by the set, so a lone item and the
+   last item in a set both end without a rule. */
 .root {
-  border-bottom: 1px solid var(--c-border);
+  display: flex;
+  flex-direction: column;
+}
 
-  /* The bottom border forms the divider between stacked accordions.
-     When this is the last (or only) item in its container, the
-     container's edge already supplies that line. */
-  &:last-child {
-    border-bottom: none;
-  }
+.item + .item {
+  border-top: 1px solid var(--c-border);
+}
+
+.header {
+  margin: 0;
+  font: inherit;
 }
 
 .trigger {
   width: 100%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: var(--s-4);
   padding: var(--s-3) 0;
   border: none;
   background: none;
@@ -42,16 +47,43 @@
   color: var(--c-ink3);
 }
 
+/* Pushed to the chevron so the title stays left-aligned across items. */
+.summary {
+  margin-left: auto;
+  font-size: var(--fs-4);
+  font-weight: 400;
+  color: var(--c-ink4);
+}
+
 .chevron {
+  margin-left: auto;
   color: var(--c-ink4);
   transition: transform var(--t-base);
+
+  .summary + & {
+    margin-left: var(--s-4);
+  }
 
   .trigger[data-panel-open] & {
     transform: rotate(180deg);
   }
 }
 
+/* Base UI measures the panel into --accordion-panel-height, and marks the
+   first and last frame of the transition with data-starting-style and
+   data-ending-style. */
 .panel {
+  overflow: hidden;
+  height: var(--accordion-panel-height);
+  transition: height var(--t-base) ease-out;
+
+  &[data-starting-style],
+  &[data-ending-style] {
+    height: 0;
+  }
+}
+
+.panelInner {
   padding-bottom: var(--s-5);
   font-size: var(--fs-5);
   color: var(--c-ink2);

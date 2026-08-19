@@ -4,7 +4,7 @@ import { Pagination } from '../components/Pagination';
 import { Checkbox } from '../components/Checkbox';
 import { TypeBadge } from '../components/TypeBadge';
 import { Chip } from '../components/Chip';
-import { Accordion } from '../components/Accordion';
+import * as Accordion from '../components/Accordion';
 import { Button } from '../components/Button';
 import { Frame } from '../components/Frame';
 import { SearchBar } from '../components/SearchBar';
@@ -248,22 +248,24 @@ export function DataExplorerAppendix() {
 
       <div className={s.layout}>
         <div className={s.sidebar}>
-          {FACETS.map((group) => (
-            <Accordion key={group.key} title={group.label} defaultOpen>
-              <div className={s.facetOptions}>
-                {group.options.map((opt) => (
-                  <label key={opt.value} className={s.facetOption}>
-                    <Checkbox
-                      checked={(filters[group.key] ?? []).includes(opt.value)}
-                      onCheckedChange={() => toggleFilter(group.key, opt.value)}
-                    />
-                    <span className={s.facetLabel}>{opt.label}</span>
-                    <span className={s.facetCount}>{opt.count}</span>
-                  </label>
-                ))}
-              </div>
-            </Accordion>
-          ))}
+          <Accordion.Root defaultValue={FACETS.map((group) => group.key)}>
+            {FACETS.map((group) => (
+              <Accordion.Item key={group.key} value={group.key} title={group.label}>
+                <div className={s.facetOptions}>
+                  {group.options.map((opt) => (
+                    <label key={opt.value} className={s.facetOption}>
+                      <Checkbox
+                        checked={(filters[group.key] ?? []).includes(opt.value)}
+                        onCheckedChange={() => toggleFilter(group.key, opt.value)}
+                      />
+                      <span className={s.facetLabel}>{opt.label}</span>
+                      <span className={s.facetCount}>{opt.count}</span>
+                    </label>
+                  ))}
+                </div>
+              </Accordion.Item>
+            ))}
+          </Accordion.Root>
         </div>
 
         <div className={s.main}>

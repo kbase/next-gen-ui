@@ -137,8 +137,8 @@ toasts.add({
 
       <div className={s.sub}>Dialog</div>
       <p className={s.note}>
-        A task in a modal, for work the user can back out of: clicking the backdrop or pressing
-        Escape closes it. Dialog.Close also dismisses. Put the confirming action on the right.
+        A task the user can back out of. The backdrop and Escape both close it, as does
+        Dialog.Close. Confirming action on the right.
       </p>
       <Dialog.Root>
         <Dialog.Trigger
@@ -176,12 +176,10 @@ toasts.add({
 
       <div className={s.sub}>Alert dialog</div>
       <p className={s.note}>
-        The same parts and the same look, for a decision the user has to make: the backdrop does not
-        dismiss it, so the decision cannot be made by clicking past. Escape does close it, as it
-        must, so closing has to be the safe answer &mdash; give that answer its own Close, and never
-        make the destructive one what happens on close. Reach for it when leaving without deciding
-        would be ambiguous: a destructive action, an irreversible one. Say what will happen in the
-        description rather than in the button.
+        A decision the user has to make. Dialog's parts with{' '}
+        <code>role=&quot;alertdialog&quot;</code>. The backdrop does not dismiss it; Escape does, so
+        closing must be the safe outcome &mdash; give it a Close. Use it for destructive and
+        irreversible actions. Put the consequence in the description, not the button.
       </p>
       <AlertDialog.Root>
         <AlertDialog.Trigger

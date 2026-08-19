@@ -58,9 +58,9 @@ export function Section09Layout() {
 
       <div className={s.sub}>Collapsible</div>
       <p className={s.note}>
-        The same Base UI part with the trigger left open, for disclosures that are not a titled
-        section &mdash; a &ldquo;show more&rdquo; on truncated text, a detail row. The panel
-        animates its height and the trigger carries the aria wiring.
+        The same Base UI part with the trigger left unstyled, for disclosures that are not a titled
+        section &mdash; a &ldquo;show more&rdquo;, a detail row. The panel animates its height. The
+        trigger carries <code>aria-expanded</code> and <code>aria-controls</code>.
       </p>
       <Frame style={{ padding: 'var(--s-7) var(--s-8)' }}>
         <Collapsible.Root
@@ -106,9 +106,9 @@ export function Section09Layout() {
 
       <div className={s.sub}>Toolbar</div>
       <p className={s.note}>
-        A strip of related controls the arrow keys move between, so the strip is one tab stop.
-        Toolbar.Button has the behaviour and no appearance &mdash; render a Button through it.
-        Separate the groups that mean different things.
+        One tab stop; arrow keys move between the controls. Toolbar.Button has the behaviour and no
+        styles &mdash; render a Button through it. Group what belongs together and separate the
+        groups.
       </p>
       <Frame style={{ padding: 'var(--s-4) var(--s-5)' }}>
         <Toolbar.Root aria-label="Table controls">

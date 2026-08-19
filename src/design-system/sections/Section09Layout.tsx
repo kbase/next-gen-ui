@@ -62,7 +62,7 @@ export function Section09Layout() {
         section &mdash; a &ldquo;show more&rdquo; on truncated text, a detail row. The panel
         animates its height and the trigger carries the aria wiring.
       </p>
-      <Frame>
+      <Frame style={{ padding: 'var(--s-7) var(--s-8)' }}>
         <Collapsible.Root
           open={showMethod}
           onOpenChange={setShowMethod}
@@ -110,7 +110,7 @@ export function Section09Layout() {
         Toolbar.Button has the behaviour and no appearance &mdash; render a Button through it.
         Separate the groups that mean different things.
       </p>
-      <Frame>
+      <Frame style={{ padding: 'var(--s-4) var(--s-5)' }}>
         <Toolbar.Root aria-label="Table controls">
           <Toolbar.Group>
             <Toolbar.Button render={<Button variant="ghost" size="sm" />}>

@@ -176,11 +176,12 @@ toasts.add({
 
       <div className={s.sub}>Alert dialog</div>
       <p className={s.note}>
-        The same parts and the same look, for a decision the user has to make: clicking the backdrop
-        does not dismiss it, so the choice cannot be made by clicking past. Escape still closes it
-        &mdash; give the non-committing option its own Close. Reach for it when backing out with no
-        choice made would be ambiguous: a destructive action, an irreversible one. Say what will
-        happen in the description rather than in the button.
+        The same parts and the same look, for a decision the user has to make: the backdrop does not
+        dismiss it, so the decision cannot be made by clicking past. Escape does close it, as it
+        must, so closing has to be the safe answer &mdash; give that answer its own Close, and never
+        make the destructive one what happens on close. Reach for it when leaving without deciding
+        would be ambiguous: a destructive action, an irreversible one. Say what will happen in the
+        description rather than in the button.
       </p>
       <AlertDialog.Root>
         <AlertDialog.Trigger

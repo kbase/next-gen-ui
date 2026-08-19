@@ -3,10 +3,11 @@ import styles from '../Dialog/Dialog.module.scss';
 import { cx } from '../../util/cx';
 
 /* Same parts and the same styles as Dialog, for a decision the user has to
-   make: clicking the backdrop does not dismiss it, so the choice is made
-   deliberately rather than by clicking past. Escape still closes it, so
-   always give the non-committing option its own Close. Reach for Dialog
-   instead whenever backing out with no choice made is unremarkable. */
+   make: the backdrop does not dismiss it, so the decision cannot be made by
+   clicking past. Escape does close it, as it must, which means closing has
+   to be the safe answer — never the destructive one — and that answer needs
+   a Close of its own so the button and Escape agree. Reach for Dialog
+   whenever leaving without deciding is unremarkable. */
 
 export function Root(props: BaseAlertDialog.Root.Props) {
   return <BaseAlertDialog.Root {...props} />;

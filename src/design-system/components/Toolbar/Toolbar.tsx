@@ -1,11 +1,12 @@
 import { Toolbar as BaseToolbar } from '@base-ui/react/toolbar';
 import styles from './Toolbar.module.scss';
+import { Button as KBaseButton } from '../Button';
 import { cx } from '../../util/cx';
 
-/* One tab stop; arrow keys move between the controls. Toolbar.Button has no
-   styles of its own — pass the appearance through render:
+/* One tab stop; arrow keys move between the controls. Toolbar.Button renders
+   a ghost Button unless render says otherwise:
 
-     <Toolbar.Button render={<Button variant="ghost" size="sm" />} />
+     <Toolbar.Button render={<Button variant="danger" size="sm" />} />
 
    Separator takes the axis opposite the toolbar's. */
 
@@ -33,8 +34,11 @@ export function Separator({ className, ...props }: SeparatorProps) {
   return <BaseToolbar.Separator className={cx(styles.separator, className)} {...props} />;
 }
 
-export function Button(props: BaseToolbar.Button.Props) {
-  return <BaseToolbar.Button {...props} />;
+export function Button({
+  render = <KBaseButton variant="ghost" size="sm" />,
+  ...props
+}: BaseToolbar.Button.Props) {
+  return <BaseToolbar.Button render={render} {...props} />;
 }
 
 export function Link(props: BaseToolbar.Link.Props) {

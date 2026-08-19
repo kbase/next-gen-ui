@@ -12,7 +12,6 @@ import { Frame } from '../components/Frame';
 import { Accordion } from '../components/Accordion';
 import * as Collapsible from '../components/Collapsible';
 import * as Toolbar from '../components/Toolbar';
-import { Button } from '../components/Button';
 import { Avatar } from '../components/Avatar';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { CodeBlock } from '../components/CodeBlock';
@@ -58,9 +57,9 @@ export function Section09Layout() {
 
       <div className={s.sub}>Collapsible</div>
       <p className={s.note}>
-        The same Base UI part with the trigger left unstyled, for disclosures that are not a titled
-        section. The panel animates its height. Keep the panel immediately after the trigger so a
-        screen reader reaches the revealed content by moving forward.
+        The same Base UI part with the trigger left to the caller, for disclosures that are not a
+        titled section. The panel animates its height. Keep the panel immediately after the trigger
+        so a screen reader reaches the revealed content by moving forward.
       </p>
       <Frame style={{ padding: 'var(--s-7) var(--s-8)' }}>
         <Collapsible.Root
@@ -71,7 +70,7 @@ export function Section09Layout() {
           <p className="body" style={{ maxWidth: '68ch' }}>
             Assembled with MEGAHIT v1.2.9. 4,355 contigs, N50 8,241 bp.
           </p>
-          <Collapsible.Trigger render={<Button variant="ghost" size="xs" />}>
+          <Collapsible.Trigger>
             {showMethod ? 'Hide parameters' : 'Show parameters'}
             <CaretDown
               size={12}
@@ -93,7 +92,7 @@ export function Section09Layout() {
         language="tsx"
         code={`<Collapsible.Root open={open} onOpenChange={setOpen}>
   <p className="body">The summary that is always shown.</p>
-  <Collapsible.Trigger render={<Button variant="ghost" size="xs" />}>
+  <Collapsible.Trigger>
     {open ? 'Hide parameters' : 'Show parameters'}
   </Collapsible.Trigger>
   <Collapsible.Panel>
@@ -104,29 +103,29 @@ export function Section09Layout() {
 
       <div className={s.sub}>Toolbar</div>
       <p className={s.note}>
-        One tab stop; arrow keys move between the controls. Toolbar.Button has the behaviour and no
-        styles &mdash; render a Button through it. Group what belongs together and separate the
+        One tab stop; arrow keys move between the controls. Toolbar.Button renders a ghost Button
+        unless <code>render</code> says otherwise. Group what belongs together and separate the
         groups.
       </p>
       <Frame style={{ padding: 'var(--s-4) var(--s-5)' }}>
         <Toolbar.Root aria-label="Table controls">
           <Toolbar.Group>
-            <Toolbar.Button render={<Button variant="ghost" size="sm" />}>
+            <Toolbar.Button>
               <DownloadSimple size={14} /> Export
             </Toolbar.Button>
-            <Toolbar.Button render={<Button variant="ghost" size="sm" />}>
+            <Toolbar.Button>
               <FunnelSimple size={14} /> Filter
             </Toolbar.Button>
-            <Toolbar.Button render={<Button variant="ghost" size="sm" />}>
+            <Toolbar.Button>
               <Columns size={14} /> Columns
             </Toolbar.Button>
           </Toolbar.Group>
           <Toolbar.Separator />
           <Toolbar.Group>
-            <Toolbar.Button render={<Button variant="ghost" size="sm" />} aria-label="Refresh">
+            <Toolbar.Button aria-label="Refresh">
               <ArrowClockwise size={14} />
             </Toolbar.Button>
-            <Toolbar.Button render={<Button variant="ghost" size="sm" />} aria-label="Full screen">
+            <Toolbar.Button aria-label="Full screen">
               <ArrowsOut size={14} />
             </Toolbar.Button>
           </Toolbar.Group>
@@ -136,12 +135,12 @@ export function Section09Layout() {
         language="tsx"
         code={`<Toolbar.Root aria-label="Table controls">
   <Toolbar.Group>
-    <Toolbar.Button render={<Button variant="ghost" size="sm" />}>Export</Toolbar.Button>
-    <Toolbar.Button render={<Button variant="ghost" size="sm" />}>Filter</Toolbar.Button>
+    <Toolbar.Button>Export</Toolbar.Button>
+    <Toolbar.Button>Filter</Toolbar.Button>
   </Toolbar.Group>
   <Toolbar.Separator />
   <Toolbar.Group>
-    <Toolbar.Button render={<Button variant="ghost" size="sm" />} aria-label="Refresh">
+    <Toolbar.Button aria-label="Refresh">
       <ArrowClockwise size={14} />
     </Toolbar.Button>
   </Toolbar.Group>

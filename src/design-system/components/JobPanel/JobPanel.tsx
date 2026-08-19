@@ -113,9 +113,9 @@ export function JobPanel({
         <div className={styles.logSection}>
           <Collapsible.Root>
             <Collapsible.Trigger render={<button type="button" className={styles.logTrigger} />}>
+              <CaretDown size={12} className={styles.logChevron} />
               Log
               <span className={styles.logCount}>{logLines.length} lines</span>
-              <CaretDown size={12} className={styles.logChevron} />
             </Collapsible.Trigger>
             <Collapsible.Panel>
               <pre className={styles.logPre}>{logLines.join('\n')}</pre>

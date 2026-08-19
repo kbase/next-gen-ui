@@ -32,20 +32,29 @@
   }
 }
 
-/* The disclosure row above the code. A control label, so it is a button and
-   not a heading. */
-.trigger {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: var(--s-3);
+/* Holds the trigger off the card edges; the code section below bleeds to
+   them. */
+.triggerRow {
   padding: var(--s-3) 0;
+}
+
+/* Chrome that repeats under every example, so quieter than the default
+   disclosure trigger: no underline, and ink rather than link colour. */
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: 0;
   border: none;
   background: none;
   font: inherit;
-  color: var(--c-ink);
+  font-size: var(--fs-4);
+  color: var(--c-ink3);
   cursor: pointer;
-  text-align: left;
+
+  &:hover {
+    color: var(--c-ink);
+  }
 
   &:focus-visible {
     outline: none;
@@ -54,16 +63,14 @@
   }
 }
 
-.triggerIcon {
-  color: var(--c-ink3);
-}
-
 .chevron {
-  margin-left: auto;
-  color: var(--c-ink4);
   transition: transform var(--t-base);
 
-  .trigger[data-panel-open] & {
+  button[data-panel-open] & {
     transform: rotate(180deg);
+  }
+
+  button:not([data-panel-open]) & {
+    transform: rotate(-90deg);
   }
 }

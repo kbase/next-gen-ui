@@ -170,21 +170,25 @@
   }
 }
 
-/* The log disclosure. A control label, so it is a button and not a heading. */
+/* Chrome inside the panel, so quieter than the default disclosure trigger:
+   no underline, and ink rather than link colour. */
 .logTrigger {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: var(--s-3);
+  gap: var(--s-2);
   padding: var(--s-3) 0;
   border: none;
   background: none;
-  font-family: var(--f-sans);
-  font-size: var(--fs-5);
-  font-weight: 600;
-  color: var(--c-ink);
+  font: inherit;
+  font-size: var(--fs-4);
+  color: var(--c-ink3);
   cursor: pointer;
   text-align: left;
+
+  &:hover {
+    color: var(--c-ink);
+  }
 
   &:focus-visible {
     outline: none;
@@ -195,16 +199,17 @@
 
 .logCount {
   margin-left: auto;
-  font-size: var(--fs-4);
-  font-weight: 400;
   color: var(--c-ink4);
 }
 
 .logChevron {
-  color: var(--c-ink4);
   transition: transform var(--t-base);
 
   .logTrigger[data-panel-open] & {
     transform: rotate(180deg);
+  }
+
+  .logTrigger:not([data-panel-open]) & {
+    transform: rotate(-90deg);
   }
 }

@@ -5,7 +5,7 @@ import { Frame } from '../Frame';
 import { Chip } from '../Chip';
 import { Progress } from '../Progress';
 import { Loader } from '../Loader';
-import * as Accordion from '../Accordion';
+import * as Collapsible from '../Collapsible';
 import {
   Play,
   Clock,
@@ -15,6 +15,7 @@ import {
   ArrowCounterClockwise,
   X,
   ArrowSquareOut,
+  CaretDown,
 } from '@phosphor-icons/react';
 
 export type JobStatus = 'queued' | 'running' | 'completed' | 'error' | 'terminated';
@@ -110,11 +111,16 @@ export function JobPanel({
 
       {logLines && logLines.length > 0 && (
         <div className={styles.logSection}>
-          <Accordion.Root>
-            <Accordion.Item title="Log" summary={`${logLines.length} lines`}>
+          <Collapsible.Root>
+            <Collapsible.Trigger render={<button type="button" className={styles.logTrigger} />}>
+              Log
+              <span className={styles.logCount}>{logLines.length} lines</span>
+              <CaretDown size={12} className={styles.logChevron} />
+            </Collapsible.Trigger>
+            <Collapsible.Panel>
               <pre className={styles.logPre}>{logLines.join('\n')}</pre>
-            </Accordion.Item>
-          </Accordion.Root>
+            </Collapsible.Panel>
+          </Collapsible.Root>
         </div>
       )}
 

@@ -6,7 +6,8 @@ import 'prismjs/components/prism-typescript';
 import 'prismjs/components/prism-jsx';
 import 'prismjs/components/prism-tsx';
 import { Code } from '@phosphor-icons/react';
-import * as Accordion from '../Accordion';
+import * as Collapsible from '../Collapsible';
+import { CaretDown } from '@phosphor-icons/react';
 import { cx } from '../../util/cx';
 import styles from './CodeBlock.module.scss';
 
@@ -68,14 +69,16 @@ export function CodeBlock({
 
   return (
     <div className={cx(styles.card, className)}>
-      <Accordion.Root>
-        <Accordion.Item
-          title={<span className="caption">{title}</span>}
-          icon={<Code size={14} weight="bold" />}
-        >
+      <Collapsible.Root>
+        <Collapsible.Trigger render={<button type="button" className={styles.trigger} />}>
+          <Code size={14} weight="bold" className={styles.triggerIcon} />
+          <span className="caption">{title}</span>
+          <CaretDown size={12} className={styles.chevron} />
+        </Collapsible.Trigger>
+        <Collapsible.Panel>
           <div className={styles.codeSection}>{pre}</div>
-        </Accordion.Item>
-      </Accordion.Root>
+        </Collapsible.Panel>
+      </Collapsible.Root>
     </div>
   );
 }

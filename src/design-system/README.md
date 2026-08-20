@@ -27,12 +27,14 @@ peer dependency: every icon-using component imports from it.
 ```tsx
 import { Button, Alert } from '@kbase/design-system';
 import '@kbase/design-system/style.css';
-import '@kbase/design-system/tokens/fonts.css'; // optional
+import '@kbase/design-system/tokens/fonts.css';
 ```
 
 `style.css` is the all-in-one bundle: tokens, utilities, resets, and
-component styles in correct order. Granular entries
-are available for opt-in: `components.css`, `global.css`,
+component styles in correct order. `fonts.css` is separate because it needs a
+bundler to resolve — drop it if you serve the CSS from a plain `<link>`, or if
+you supply Oxygen and Fira Code yourself. Granular entries are available for
+opt-in: `components.css`, `global.css`,
 `tokens/{fonts,tokens,prism-kbase,utilities}.css`. See
 [Layering](#layering).
 
@@ -145,16 +147,16 @@ npm run build:design-system
 
 Output: `dist-design-system/`.
 
-| File             | Contents                                                                     |
-| ---------------- | ---------------------------------------------------------------------------- |
-| `index.js`       | ESM bundle of the public surface.                                            |
-| `index.js.map`   | Source map.                                                                  |
-| `style.css`      | All-in-one: tokens + utilities + resets + component styles.                  |
-| `components.css` | Component styles only (no tokens, no resets).                                |
-| `global.css`     | Element resets, mirrored from `src/design-system/global.css`.                |
-| `tokens/*.css`   | Tokens, mirrored from `src/design-system/tokens/*.css`.                      |
-| `types/`         | `.d.ts` declarations emitted by `tsc`.                                       |
-| `package.json`   | Generated. Version from `DS_VERSION` env or root `package.json` as fallback. |
+| File             | Contents                                                                                   |
+| ---------------- | ------------------------------------------------------------------------------------------ |
+| `index.js`       | ESM bundle of the public surface.                                                          |
+| `index.js.map`   | Source map.                                                                                |
+| `style.css`      | All-in-one: tokens + utilities + resets + component styles.                                |
+| `components.css` | Component styles only (no tokens, no resets).                                              |
+| `global.css`     | Element resets, mirrored from `src/design-system/global.css`.                              |
+| `tokens/*.css`   | Tokens, mirrored from `src/design-system/tokens/*.css`. `fonts.css` is not in `style.css`. |
+| `types/`         | `.d.ts` declarations emitted by `tsc`.                                                     |
+| `package.json`   | Generated. Version from `DS_VERSION` env or root `package.json` as fallback.               |
 
 Inspect the would-be tarball: `cd dist-design-system && npm pack --dry-run`.
 
@@ -213,6 +215,7 @@ or replaced.
 4. `global.css`: element resets and globals
 5. `components.css`: bundled component styles
 
-`tokens/fonts.css` is not in `style.css`. It imports the Oxygen and Fira Code
-faces from Fontsource by bare specifier, so a bundler has to resolve it. Skip
-it and `--f-sans` / `--f-mono` fall back to system fonts.
+`tokens/fonts.css` is not in `style.css`: it imports the Oxygen and Fira Code
+faces from Fontsource by bare specifier, which a bundler resolves and a plain
+`<link>` cannot. Without it `--f-sans` and `--f-mono` fall back to system
+fonts.

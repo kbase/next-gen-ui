@@ -31,7 +31,7 @@ export interface RouterContext {
   queryClient: QueryClient;
 }
 
-const PUBLIC_ROUTES: ReadonlyArray<string> = ['/login', '/login/continue', '/design-system'];
+const PUBLIC_ROUTES: ReadonlyArray<string> = ['/login', '/login/continue'];
 
 function isPublic(pathname: string): boolean {
   return PUBLIC_ROUTES.includes(pathname);

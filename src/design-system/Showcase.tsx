@@ -77,8 +77,8 @@ function PackageCallout() {
 
   return (
     <Frame
-      paddingBlock="3"
-      paddingInline="7"
+      paddingY="3"
+      paddingX="7"
       style={{ margin: 'var(--s-9) 0', background: 'var(--c-raised)' }}
     >
       <Collapsible.Root>

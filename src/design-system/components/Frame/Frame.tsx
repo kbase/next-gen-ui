@@ -23,8 +23,8 @@ export interface FrameProps {
   /** Defaults to 7, which tokens.css names as the frame's padding. */
   padding?: FrameSpace;
   /** Overrides padding on one axis. */
-  paddingBlock?: FrameSpace;
-  paddingInline?: FrameSpace;
+  paddingX?: FrameSpace;
+  paddingY?: FrameSpace;
   className?: string;
   style?: CSSProperties;
 }
@@ -34,8 +34,8 @@ const space = (v: FrameSpace) => (v === 'none' ? '0' : `var(--s-${v})`);
 export function Frame({
   children,
   padding = '7',
-  paddingBlock,
-  paddingInline,
+  paddingX,
+  paddingY,
   className,
   style,
 }: FrameProps) {
@@ -43,8 +43,9 @@ export function Frame({
     <div
       className={cx(styles.frame, className)}
       style={{
-        paddingBlock: space(paddingBlock ?? padding),
-        paddingInline: space(paddingInline ?? padding),
+        // The logical properties, so the axes follow the writing mode.
+        paddingBlock: space(paddingY ?? padding),
+        paddingInline: space(paddingX ?? padding),
         ...style,
       }}
     >

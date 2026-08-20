@@ -1,4 +1,4 @@
-import { useRef, type CSSProperties } from 'react';
+import type { CSSProperties } from 'react';
 import styles from './Loader.module.scss';
 import { useInView } from '../../util/useInView';
 import { cx } from '../../util/cx';
@@ -24,8 +24,7 @@ export interface LoaderProps {
 }
 
 export function Loader({ size = 48, blend, svgFilter, label, className }: LoaderProps) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref);
+  const [ref, inView] = useInView<HTMLSpanElement>();
 
   return (
     <span

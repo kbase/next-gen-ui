@@ -1,4 +1,3 @@
-import { useRef } from 'react';
 import styles from './Skeleton.module.scss';
 import { useInView } from '../../util/useInView';
 import { cx } from '../../util/cx';
@@ -14,8 +13,7 @@ export interface SkeletonProps {
    rather than repainting every frame. */
 
 export function Skeleton({ width, height, variant = 'text', className }: SkeletonProps) {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref);
+  const [ref, inView] = useInView<HTMLDivElement>();
 
   return (
     <div

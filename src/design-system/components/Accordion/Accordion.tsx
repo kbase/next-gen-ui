@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 import { Accordion as BaseAccordion } from '@base-ui/react/accordion';
 import { CaretDown } from '@phosphor-icons/react';
 import styles from './Accordion.module.scss';
@@ -23,16 +23,22 @@ export interface ItemProps extends Omit<BaseAccordion.Item.Props, 'className' | 
   title: ReactNode;
   /** Shown before the title. */
   icon?: ReactNode;
-  /** Shown on the trigger in both states, for a count or a status. */
+  /** Shown on the trigger in both states, for a count or a status. Describes
+   *  the trigger rather than naming it, so the name stays the title. */
   summary?: ReactNode;
   className?: string;
 }
 
 export function Item({ title, icon, summary, className, children, ...props }: ItemProps) {
+  const summaryId = useId();
+
   return (
     <BaseAccordion.Item className={cx(styles.item, className)} {...props}>
       <BaseAccordion.Header className={styles.header}>
-        <BaseAccordion.Trigger className={styles.trigger}>
+        <BaseAccordion.Trigger
+          className={styles.trigger}
+          aria-describedby={summary ? summaryId : undefined}
+        >
           <span className={styles.titleRow}>
             {icon && (
               <span className={styles.icon} aria-hidden="true">
@@ -41,7 +47,11 @@ export function Item({ title, icon, summary, className, children, ...props }: It
             )}
             <span>{title}</span>
           </span>
-          {summary && <span className={styles.summary}>{summary}</span>}
+          {summary && (
+            <span id={summaryId} aria-hidden="true" className={styles.summary}>
+              {summary}
+            </span>
+          )}
           <CaretDown size={12} className={styles.chevron} />
         </BaseAccordion.Trigger>
       </BaseAccordion.Header>

@@ -94,11 +94,12 @@
 }
 
 .logSection {
-  padding: 0 var(--s-7) var(--s-5);
+  padding: 0 var(--s-7);
   border-top: 1px solid var(--c-border);
 }
 
 .logPre {
+  margin-bottom: var(--s-5);
   font-family: var(--f-mono);
   font-size: var(--fs-3);
   line-height: 1.5;

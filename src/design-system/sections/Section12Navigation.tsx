@@ -59,9 +59,10 @@ const treeItems: Tree.TreeNode[] = [
         icon: <Folder size={13} />,
         children: [
           { id: 'src/tokens/tokens.css', label: 'tokens.css', icon: <FileText size={13} /> },
-          { id: 'src/tokens/fonts.css', label: 'fonts.css', icon: <FileText size={13} /> },
+          { id: 'src/tokens/utilities.css', label: 'utilities.css', icon: <FileText size={13} /> },
         ],
       },
+      { id: 'src/fonts.css', label: 'fonts.css', icon: <FileText size={13} /> },
       { id: 'src/main.tsx', label: 'main.tsx', icon: <FileCode size={13} /> },
       { id: 'src/Showcase.tsx', label: 'Showcase.tsx', icon: <FileCode size={13} /> },
     ],

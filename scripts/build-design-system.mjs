@@ -29,7 +29,7 @@ const isPublishBuild = Boolean(process.env.DS_VERSION);
 
 const cssAssets = [
   'global.css',
-  'tokens/fonts.css',
+  'fonts.css',
   'tokens/tokens.css',
   'tokens/prism-kbase.css',
   'tokens/utilities.css',
@@ -77,12 +77,13 @@ const pkg = {
     './style.css': './style.css',
     './components.css': './components.css',
     './global.css': './global.css',
-    './tokens/fonts.css': './tokens/fonts.css',
+    './fonts.css': './fonts.css',
     './tokens/tokens.css': './tokens/tokens.css',
     './tokens/prism-kbase.css': './tokens/prism-kbase.css',
     './tokens/utilities.css': './tokens/utilities.css',
   },
   files: [
+    'fonts.css',
     'index.js',
     'index.js.map',
     'style.css',

@@ -4,7 +4,7 @@ import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Design system: tokens first (vars, fonts, utilities), then globals.
-import './design-system/tokens/fonts.css';
+import './design-system/fonts.css';
 import './design-system/tokens/tokens.css';
 import './design-system/tokens/prism-kbase.css';
 import './design-system/tokens/utilities.css';

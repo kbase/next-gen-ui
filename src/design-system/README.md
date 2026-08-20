@@ -27,14 +27,14 @@ peer dependency: every icon-using component imports from it.
 ```tsx
 import { Button, Alert } from '@kbase/design-system';
 import '@kbase/design-system/style.css';
-import '@kbase/design-system/tokens/fonts.css';
+import '@kbase/design-system/fonts.css';
 ```
 
 `style.css` is the all-in-one bundle: tokens, utilities, resets, and
 component styles in correct order. `fonts.css` is separate — see
 [Fonts](#fonts). Granular entries are available for opt-in:
 `components.css`, `global.css`,
-`tokens/{fonts,tokens,prism-kbase,utilities}.css`. See
+`fonts.css`, `tokens/{tokens,prism-kbase,utilities}.css`. See
 [Layering](#layering).
 
 ---
@@ -114,7 +114,8 @@ from cannot go inside it. Those sit in `:root` as pairs — `--tl-bg` and
 src/design-system/
   index.ts                  Public surface. Anything not re-exported here is private.
   components/<Name>/        Component.tsx, Component.module.scss, index.ts
-  tokens/                   fonts.css, tokens.css, prism-kbase.css, utilities.css
+  fonts.css                 Optional @font-face loading. Not in style.css.
+  tokens/                   tokens.css, prism-kbase.css, utilities.css
   global.css                Element resets and globals.
   util/cx.ts                Class-name helper.
   sections/, appendix/      In-app demo content. Not in the published package.
@@ -146,16 +147,17 @@ npm run build:design-system
 
 Output: `dist-design-system/`.
 
-| File             | Contents                                                                                   |
-| ---------------- | ------------------------------------------------------------------------------------------ |
-| `index.js`       | ESM bundle of the public surface.                                                          |
-| `index.js.map`   | Source map.                                                                                |
-| `style.css`      | All-in-one: tokens + utilities + resets + component styles.                                |
-| `components.css` | Component styles only (no tokens, no resets).                                              |
-| `global.css`     | Element resets, mirrored from `src/design-system/global.css`.                              |
-| `tokens/*.css`   | Tokens, mirrored from `src/design-system/tokens/*.css`. `fonts.css` is not in `style.css`. |
-| `types/`         | `.d.ts` declarations emitted by `tsc`.                                                     |
-| `package.json`   | Generated. Version from `DS_VERSION` env or root `package.json` as fallback.               |
+| File             | Contents                                                                     |
+| ---------------- | ---------------------------------------------------------------------------- |
+| `index.js`       | ESM bundle of the public surface.                                            |
+| `index.js.map`   | Source map.                                                                  |
+| `style.css`      | All-in-one: tokens + utilities + resets + component styles.                  |
+| `components.css` | Component styles only (no tokens, no resets).                                |
+| `global.css`     | Element resets, mirrored from `src/design-system/global.css`.                |
+| `tokens/*.css`   | Tokens, mirrored from `src/design-system/tokens/*.css`.                      |
+| `fonts.css`      | Optional `@font-face` loading. Not part of `style.css`.                      |
+| `types/`         | `.d.ts` declarations emitted by `tsc`.                                       |
+| `package.json`   | Generated. Version from `DS_VERSION` env or root `package.json` as fallback. |
 
 Inspect the would-be tarball: `cd dist-design-system && npm pack --dry-run`.
 
@@ -216,7 +218,7 @@ or replaced.
 
 ## Fonts
 
-`tokens/fonts.css` imports Oxygen and Fira Code from the Fontsource packages,
+`fonts.css` imports Oxygen and Fira Code from the Fontsource packages,
 which ship as dependencies. It is not part of `style.css`, because the imports
 are bare specifiers: they need a toolchain that resolves those inside a CSS
 `@import` — Vite and webpack's `css-loader` do, a bare PostCSS pipeline without

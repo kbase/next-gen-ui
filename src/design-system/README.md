@@ -34,7 +34,7 @@ import '@kbase/design-system/fonts.css';
 component styles in correct order. `fonts.css` is separate — see
 [Fonts](#fonts). Granular entries are available for opt-in:
 `components.css`, `global.css`,
-`fonts.css`, `tokens/{tokens,prism-kbase,utilities}.css`. See
+`fonts.css`, `prism.css`, `utilities.css`, `tokens/tokens.css`. See
 [Layering](#layering).
 
 ---
@@ -115,7 +115,9 @@ src/design-system/
   index.ts                  Public surface. Anything not re-exported here is private.
   components/<Name>/        Component.tsx, Component.module.scss, index.ts
   fonts.css                 Optional @font-face loading. Not in style.css.
-  tokens/                   tokens.css, prism-kbase.css, utilities.css
+  prism.css                 Syntax theme for CodeBlock.
+  utilities.css             Type utility classes: .h1, .body, .link, …
+  tokens/tokens.css         The custom properties.
   global.css                Element resets and globals.
   util/cx.ts                Class-name helper.
   sections/, appendix/      In-app demo content. Not in the published package.
@@ -147,17 +149,18 @@ npm run build:design-system
 
 Output: `dist-design-system/`.
 
-| File             | Contents                                                                     |
-| ---------------- | ---------------------------------------------------------------------------- |
-| `index.js`       | ESM bundle of the public surface.                                            |
-| `index.js.map`   | Source map.                                                                  |
-| `style.css`      | All-in-one: tokens + utilities + resets + component styles.                  |
-| `components.css` | Component styles only (no tokens, no resets).                                |
-| `global.css`     | Element resets, mirrored from `src/design-system/global.css`.                |
-| `tokens/*.css`   | Tokens, mirrored from `src/design-system/tokens/*.css`.                      |
-| `fonts.css`      | Optional `@font-face` loading. Not part of `style.css`.                      |
-| `types/`         | `.d.ts` declarations emitted by `tsc`.                                       |
-| `package.json`   | Generated. Version from `DS_VERSION` env or root `package.json` as fallback. |
+| File                         | Contents                                                                     |
+| ---------------------------- | ---------------------------------------------------------------------------- |
+| `index.js`                   | ESM bundle of the public surface.                                            |
+| `index.js.map`               | Source map.                                                                  |
+| `style.css`                  | All-in-one: tokens + utilities + resets + component styles.                  |
+| `components.css`             | Component styles only (no tokens, no resets).                                |
+| `global.css`                 | Element resets, mirrored from `src/design-system/global.css`.                |
+| `tokens/tokens.css`          | The custom properties.                                                       |
+| `prism.css`, `utilities.css` | Syntax theme and type utilities.                                             |
+| `fonts.css`                  | Optional `@font-face` loading. Not part of `style.css`.                      |
+| `types/`                     | `.d.ts` declarations emitted by `tsc`.                                       |
+| `package.json`               | Generated. Version from `DS_VERSION` env or root `package.json` as fallback. |
 
 Inspect the would-be tarball: `cd dist-design-system && npm pack --dry-run`.
 
@@ -211,8 +214,8 @@ the granular entries instead if a specific layer needs to be skipped
 or replaced.
 
 1. `tokens/tokens.css`: design tokens (`--c-*`, `--s-*`, `--r-*`, …)
-2. `tokens/prism-kbase.css`: Prism syntax theme
-3. `tokens/utilities.css`: `.h1` / `.h2` / `.body` / `.caption` / `.note`
+2. `prism.css`: Prism syntax theme
+3. `utilities.css`: `.h1` / `.h2` / `.body` / `.caption` / `.note`
 4. `global.css`: element resets and globals
 5. `components.css`: bundled component styles
 

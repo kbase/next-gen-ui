@@ -31,8 +31,8 @@ const cssAssets = [
   'global.css',
   'fonts.css',
   'tokens/tokens.css',
-  'tokens/prism-kbase.css',
-  'tokens/utilities.css',
+  'prism.css',
+  'utilities.css',
 ];
 
 for (const rel of cssAssets) {
@@ -49,8 +49,8 @@ renameSync(join(distRoot, 'style.css'), join(distRoot, 'components.css'));
 // fonts.css is left out: bare specifiers need a bundler to resolve them.
 const allInOneOrder = [
   'tokens/tokens.css',
-  'tokens/prism-kbase.css',
-  'tokens/utilities.css',
+  'prism.css',
+  'utilities.css',
   'global.css',
   'components.css',
 ];
@@ -79,11 +79,13 @@ const pkg = {
     './global.css': './global.css',
     './fonts.css': './fonts.css',
     './tokens/tokens.css': './tokens/tokens.css',
-    './tokens/prism-kbase.css': './tokens/prism-kbase.css',
-    './tokens/utilities.css': './tokens/utilities.css',
+    './prism.css': './prism.css',
+    './utilities.css': './utilities.css',
   },
   files: [
     'fonts.css',
+    'prism.css',
+    'utilities.css',
     'index.js',
     'index.js.map',
     'style.css',

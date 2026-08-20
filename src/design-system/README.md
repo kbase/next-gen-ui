@@ -233,6 +233,14 @@ import '@fontsource/fira-code/700.css';
 ```
 
 **Serving `style.css` from a plain `<link>` gets you no webfonts**, and
-`--f-sans` / `--f-mono` fall back to `system-ui` and the platform monospace.
-There is no build-free path to the faces from this package; host them yourself
-or accept the system stack.
+`--f-sans` / `--f-mono` fall back to `system-ui` and the platform monospace. The
+package has no build-free entry for the faces, but the page can load them
+itself — self-hosted, or from a CDN:
+
+```html
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Oxygen:wght@400;700&family=Fira+Code:wght@400;700&display=swap"
+/>
+```

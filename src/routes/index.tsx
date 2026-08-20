@@ -75,7 +75,7 @@ function HomePage() {
 
 function DesignSystemFooter() {
   return (
-    <Frame padding="md" style={{ marginTop: 'var(--s-7)' }}>
+    <Frame style={{ marginTop: 'var(--s-7)' }}>
       <Link
         to="/design-system"
         style={{
@@ -117,11 +117,9 @@ function DesignSystemFooter() {
 function CoScientistHero() {
   return (
     <Frame
-      style={{
-        padding: 'var(--s-8) var(--s-9)',
-        background: 'var(--bgw-green)',
-        borderColor: 'var(--bo-green)',
-      }}
+      paddingBlock="8"
+      paddingInline="9"
+      style={{ background: 'var(--bgw-green)', borderColor: 'var(--bo-green)' }}
     >
       <div
         style={{
@@ -162,7 +160,7 @@ interface DestinationCardProps {
 
 function DestinationCard({ icon, tint, title, description }: DestinationCardProps) {
   return (
-    <Frame padding="md">
+    <Frame>
       <div
         style={{
           display: 'flex',

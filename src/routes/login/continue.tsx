@@ -231,7 +231,7 @@ function CenteredFrame({ children }: { children: React.ReactNode }) {
         padding: 'var(--s-9)',
       }}
     >
-      <Frame style={{ width: 'min(420px, 100%)', padding: 'var(--s-10) var(--s-8)' }}>
+      <Frame paddingBlock="10" paddingInline="8" style={{ width: 'min(420px, 100%)' }}>
         {children}
       </Frame>
     </div>

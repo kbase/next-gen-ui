@@ -138,7 +138,7 @@ export function Section04Forms() {
         A layout pattern, not a component. Frame + textarea + border + action footer. For open-ended
         input: AI assist, natural language, chat (see appendix E).
       </p>
-      <Frame padding="sm" className={css.promptInput}>
+      <Frame paddingBlock="5" paddingInline="6" className={css.promptInput}>
         <textarea
           rows={2}
           placeholder="Describe the analysis you want to run, or search for data…"
@@ -154,7 +154,7 @@ export function Section04Forms() {
         All controls together inside a Frame. Separator divides groups. Field wraps inputs that need
         labels.
       </p>
-      <Frame padding="md">
+      <Frame padding="8">
         <div className="h2" style={{ marginBottom: 'var(--s-7)' }}>
           New annotation job
         </div>

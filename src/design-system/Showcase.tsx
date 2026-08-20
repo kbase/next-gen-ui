@@ -76,7 +76,11 @@ function PackageCallout() {
   ].join('\n');
 
   return (
-    <Frame padding="sm" style={{ margin: 'var(--s-9) 0', background: 'var(--c-raised)' }}>
+    <Frame
+      paddingBlock="3"
+      paddingInline="7"
+      style={{ margin: 'var(--s-9) 0', background: 'var(--c-raised)' }}
+    >
       <Collapsible.Root>
         <Collapsible.Trigger>
           <Package size={14} weight="fill" /> Use it in your project

@@ -75,7 +75,7 @@ export function Section06Feedback({ cvd }: Section06FeedbackProps) {
       <p className={s.note}>
         Determinate bar. <code>color</code> accepts primary, green, yellow, red, purple.
       </p>
-      <Frame padding="md">
+      <Frame padding="8">
         <div className="h4" style={{ marginBottom: 'var(--s-2)' }}>
           Annotation pipeline
         </div>
@@ -127,7 +127,7 @@ export function Section06Feedback({ cvd }: Section06FeedbackProps) {
         Three variants: text (default), circular (avatars), rectangular (blocks). Animates shimmer
         automatically.
       </p>
-      <Frame padding="md">
+      <Frame>
         <div
           style={{
             display: 'flex',

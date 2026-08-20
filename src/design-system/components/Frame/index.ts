@@ -1,2 +1,2 @@
 export { Frame } from './Frame';
-export type { FrameProps, FramePadding } from './Frame';
+export type { FrameProps, FrameSpace } from './Frame';

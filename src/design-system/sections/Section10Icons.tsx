@@ -31,7 +31,7 @@ export function Section10Icons() {
       </p>
 
       <div className={s.sub}>Weight as state</div>
-      <Frame padding="md">
+      <Frame paddingBlock="7" paddingInline="8">
         <div style={{ display: 'flex', gap: 'var(--s-9)', flexWrap: 'wrap' }}>
           {(
             [

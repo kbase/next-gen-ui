@@ -76,7 +76,7 @@ export function Section09Layout() {
         A section whose trigger is a control, not a title. Styled text, in the flow of the copy it
         expands, no heading. Use Accordion when the trigger titles the section.
       </p>
-      <Frame padding="md">
+      <Frame paddingBlock="none" paddingInline="8">
         <Collapsible.Root open={showMethod} onOpenChange={setShowMethod}>
           <p className="body" style={{ maxWidth: '68ch' }}>
             Assembled with MEGAHIT v1.2.9. 4,355 contigs, N50 8,241 bp.{' '}
@@ -111,7 +111,7 @@ export function Section09Layout() {
         unless <code>render</code> says otherwise. Group what belongs together and separate the
         groups.
       </p>
-      <Frame padding="sm">
+      <Frame>
         <Toolbar.Root aria-label="Table controls">
           <Toolbar.Group>
             <Toolbar.Button>

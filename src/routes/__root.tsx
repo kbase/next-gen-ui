@@ -31,7 +31,8 @@ export interface RouterContext {
   queryClient: QueryClient;
 }
 
-const PUBLIC_ROUTES: ReadonlyArray<string> = ['/login', '/login/continue'];
+// The design system is documentation, so it is readable without an account.
+const PUBLIC_ROUTES: ReadonlyArray<string> = ['/login', '/login/continue', '/design-system'];
 
 function isPublic(pathname: string): boolean {
   return PUBLIC_ROUTES.includes(pathname);

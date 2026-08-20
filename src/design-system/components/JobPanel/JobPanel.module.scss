@@ -99,12 +99,13 @@
 }
 
 .logPre {
-  margin-bottom: var(--s-5);
   font-family: var(--f-mono);
   font-size: var(--fs-3);
   line-height: 1.5;
   color: var(--c-ink3);
-  margin: 0;
+  /* Insets the open log from the footer divider; the closed row must not
+     carry it, so it sits here rather than on .logSection. */
+  margin: 0 0 var(--s-5);
   white-space: pre-wrap;
   word-break: break-all;
   max-height: 100px;

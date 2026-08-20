@@ -4,7 +4,7 @@ import { Sun, Moon, Desktop } from '@phosphor-icons/react';
 import { useTheme } from './theme/useTheme';
 import type { ThemeChoice } from './theme/useTheme';
 import { SegmentedControl } from './components/SegmentedControl';
-import { Package } from '@phosphor-icons/react';
+import { Package, CaretRight } from '@phosphor-icons/react';
 import * as Collapsible from './components/Collapsible';
 import { Frame } from './components/Frame';
 import { useToastManager } from './components/Toast';
@@ -83,6 +83,7 @@ function PackageCallout() {
     >
       <Collapsible.Root>
         <Collapsible.Trigger>
+          <CaretRight size={12} className={s.calloutCaret} />
           <Package size={14} weight="fill" /> Use it in your project
         </Collapsible.Trigger>
         <Collapsible.Panel>

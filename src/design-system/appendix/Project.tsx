@@ -57,6 +57,7 @@ export function ProjectAppendix() {
             )}
           </div>
           <CodeBlock
+            collapsible={false}
             language="python"
             code={`records = list(SeqIO.parse("contigs.fasta", "fasta"))
 print(f"{len(records)} contigs loaded")`}

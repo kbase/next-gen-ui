@@ -32,7 +32,8 @@
   }
 }
 
-/* Insets the trigger; the code section below runs to the card edges. */
+/* Vertical room for the trigger. The card supplies the horizontal inset and
+   .codeSection cancels it. */
 .triggerRow {
   padding: var(--s-3) 0;
 }
@@ -64,10 +65,6 @@
 
 .chevron {
   transition: transform var(--t-base);
-
-  button[data-panel-open] & {
-    transform: rotate(180deg);
-  }
 
   button:not([data-panel-open]) & {
     transform: rotate(-90deg);

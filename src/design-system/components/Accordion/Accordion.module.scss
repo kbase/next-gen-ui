@@ -59,8 +59,9 @@
   color: var(--c-ink4);
   transition: transform var(--t-base);
 
+  /* The summary already sits hard right; the chevron just follows it. */
   .summary + & {
-    margin-left: var(--s-4);
+    margin-left: 0;
   }
 
   .trigger[data-panel-open] & {

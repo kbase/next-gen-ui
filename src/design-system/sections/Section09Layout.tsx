@@ -58,10 +58,14 @@ export function Section09Layout() {
       <CodeBlock
         language="tsx"
         code={`<Accordion.Root defaultValue={['params']}>
-  <Accordion.Item value="params" title="Assembly parameters" summary="MEGAHIT v1.2.9">
+  <Accordion.Item
+    value="params"
+    title={<span className="caption">Assembly parameters</span>}
+    summary="MEGAHIT v1.2.9"
+  >
     <span className="body">Content here.</span>
   </Accordion.Item>
-  <Accordion.Item value="quality" title="Quality metrics">
+  <Accordion.Item value="quality" title={<span className="caption">Quality metrics</span>}>
     <span className="body">More content.</span>
   </Accordion.Item>
 </Accordion.Root>`}

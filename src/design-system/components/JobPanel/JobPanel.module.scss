@@ -94,12 +94,8 @@
 }
 
 .logSection {
-  padding: 0 var(--s-7);
+  padding: 0 var(--s-7) var(--s-5);
   border-top: 1px solid var(--c-border);
-
-  button {
-    font-size: var(--fs-4);
-  }
 }
 
 .logPre {
@@ -204,10 +200,6 @@
 
 .logChevron {
   transition: transform var(--t-base);
-
-  .logTrigger[data-panel-open] & {
-    transform: rotate(180deg);
-  }
 
   .logTrigger:not([data-panel-open]) & {
     transform: rotate(-90deg);

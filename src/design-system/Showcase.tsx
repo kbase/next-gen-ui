@@ -6,6 +6,7 @@ import type { ThemeChoice } from './theme/useTheme';
 import { SegmentedControl } from './components/SegmentedControl';
 import { Package } from '@phosphor-icons/react';
 import * as Collapsible from './components/Collapsible';
+import { Frame } from './components/Frame';
 import { useToastManager } from './components/Toast';
 import { DataExplorerAppendix } from './appendix/DataExplorer';
 import { JobsNotificationsAppendix } from './appendix/JobsNotifications';
@@ -75,15 +76,7 @@ function PackageCallout() {
   ].join('\n');
 
   return (
-    <div
-      style={{
-        margin: 'var(--s-9) 0',
-        padding: 'var(--s-3) var(--s-7) var(--s-5)',
-        border: '1px solid var(--c-border)',
-        borderRadius: 'var(--r-lg)',
-        background: 'var(--c-raised)',
-      }}
-    >
+    <Frame padding="sm" style={{ margin: 'var(--s-9) 0', background: 'var(--c-raised)' }}>
       <Collapsible.Root>
         <Collapsible.Trigger>
           <Package size={14} weight="fill" /> Use it in your project
@@ -132,7 +125,7 @@ function PackageCallout() {
           </div>
         </Collapsible.Panel>
       </Collapsible.Root>
-    </div>
+    </Frame>
   );
 }
 

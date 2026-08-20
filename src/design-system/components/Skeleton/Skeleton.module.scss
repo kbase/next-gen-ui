@@ -11,6 +11,12 @@
 .skeleton {
   background: var(--c-border2);
   animation: pulse 1.5s ease-in-out infinite;
+
+  /* Set while out of view. The animation keeps its position, so scrolling
+     back resumes it where it left off. */
+  &[data-paused] {
+    animation-play-state: paused;
+  }
 }
 
 .text {

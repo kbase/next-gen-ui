@@ -27,13 +27,7 @@ const version = process.env.DS_VERSION ?? rootPkg.version;
 // `npm publish` from the dist refuses.
 const isPublishBuild = Boolean(process.env.DS_VERSION);
 
-const cssAssets = [
-  'global.css',
-  'fonts.css',
-  'tokens/tokens.css',
-  'prism.css',
-  'utilities.css',
-];
+const cssAssets = ['global.css', 'fonts.css', 'tokens.css', 'prism.css', 'utilities.css'];
 
 for (const rel of cssAssets) {
   const from = join(srcRoot, rel);
@@ -47,13 +41,7 @@ for (const rel of cssAssets) {
 // component styles to `style.css`; rename it first, then concat.
 renameSync(join(distRoot, 'style.css'), join(distRoot, 'components.css'));
 // fonts.css is left out: bare specifiers need a bundler to resolve them.
-const allInOneOrder = [
-  'tokens/tokens.css',
-  'prism.css',
-  'utilities.css',
-  'global.css',
-  'components.css',
-];
+const allInOneOrder = ['tokens.css', 'prism.css', 'utilities.css', 'global.css', 'components.css'];
 const combined = allInOneOrder.map((rel) => readFileSync(join(distRoot, rel), 'utf8')).join('\n');
 writeFileSync(join(distRoot, 'style.css'), combined);
 
@@ -78,13 +66,14 @@ const pkg = {
     './components.css': './components.css',
     './global.css': './global.css',
     './fonts.css': './fonts.css',
-    './tokens/tokens.css': './tokens/tokens.css',
+    './tokens.css': './tokens.css',
     './prism.css': './prism.css',
     './utilities.css': './utilities.css',
   },
   files: [
     'fonts.css',
     'prism.css',
+    'tokens.css',
     'utilities.css',
     'index.js',
     'index.js.map',

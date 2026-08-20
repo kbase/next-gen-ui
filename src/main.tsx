@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Design system: tokens first (vars, fonts, utilities), then globals.
 import './design-system/fonts.css';
-import './design-system/tokens/tokens.css';
+import './design-system/tokens.css';
 import './design-system/prism.css';
 import './design-system/utilities.css';
 import './design-system/global.css';

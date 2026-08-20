@@ -34,7 +34,7 @@ import '@kbase/design-system/fonts.css';
 component styles in correct order. `fonts.css` is separate — see
 [Fonts](#fonts). Granular entries are available for opt-in:
 `components.css`, `global.css`,
-`fonts.css`, `prism.css`, `utilities.css`, `tokens/tokens.css`. See
+`fonts.css`, `prism.css`, `utilities.css`, `tokens.css`. See
 [Layering](#layering).
 
 ---
@@ -117,7 +117,7 @@ src/design-system/
   fonts.css                 Optional @font-face loading. Not in style.css.
   prism.css                 Syntax theme for CodeBlock.
   utilities.css             Type utility classes: .h1, .body, .link, …
-  tokens/tokens.css         The custom properties.
+  tokens.css                The custom properties.
   global.css                Element resets and globals.
   util/cx.ts                Class-name helper.
   sections/, appendix/      In-app demo content. Not in the published package.
@@ -156,7 +156,7 @@ Output: `dist-design-system/`.
 | `style.css`                  | All-in-one: tokens + utilities + resets + component styles.                  |
 | `components.css`             | Component styles only (no tokens, no resets).                                |
 | `global.css`                 | Element resets, mirrored from `src/design-system/global.css`.                |
-| `tokens/tokens.css`          | The custom properties.                                                       |
+| `tokens.css`                 | The custom properties.                                                       |
 | `prism.css`, `utilities.css` | Syntax theme and type utilities.                                             |
 | `fonts.css`                  | Optional `@font-face` loading. Not part of `style.css`.                      |
 | `types/`                     | `.d.ts` declarations emitted by `tsc`.                                       |
@@ -213,7 +213,7 @@ The combined `style.css` concatenates the layers in this order. Use
 the granular entries instead if a specific layer needs to be skipped
 or replaced.
 
-1. `tokens/tokens.css`: design tokens (`--c-*`, `--s-*`, `--r-*`, …)
+1. `tokens.css`: design tokens (`--c-*`, `--s-*`, `--r-*`, …)
 2. `prism.css`: Prism syntax theme
 3. `utilities.css`: `.h1` / `.h2` / `.body` / `.caption` / `.note`
 4. `global.css`: element resets and globals

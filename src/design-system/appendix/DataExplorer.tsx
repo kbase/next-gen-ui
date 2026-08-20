@@ -301,7 +301,7 @@ export function DataExplorerAppendix() {
           </div>
 
           {filtered.length === 0 ? (
-            <Frame padding="none">
+            <Frame padding={0}>
               <EmptyState
                 icon={<MagnifyingGlass size={32} />}
                 title="No objects match"

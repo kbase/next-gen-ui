@@ -68,7 +68,7 @@ function LoginPage() {
         padding: 'var(--s-9)',
       }}
     >
-      <Frame paddingY="11" paddingX="9" style={{ width: 'min(380px, 100%)' }}>
+      <Frame paddingY={11} paddingX={9} style={{ width: 'min(380px, 100%)' }}>
         <div
           style={{
             display: 'flex',

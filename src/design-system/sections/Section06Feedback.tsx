@@ -75,7 +75,7 @@ export function Section06Feedback({ cvd }: Section06FeedbackProps) {
       <p className={s.note}>
         Determinate bar. <code>color</code> accepts primary, green, yellow, red, purple.
       </p>
-      <Frame padding="8">
+      <Frame padding={8}>
         <div className="h4" style={{ marginBottom: 'var(--s-2)' }}>
           Annotation pipeline
         </div>
@@ -184,7 +184,7 @@ export function Section06Feedback({ cvd }: Section06FeedbackProps) {
       <p className={s.note}>
         Icon + title + description + optional action. For empty tables, no-results search, 404s.
       </p>
-      <Frame padding="none" style={{ maxWidth: 400 }}>
+      <Frame padding={0} style={{ maxWidth: 400 }}>
         <EmptyState
           icon={<MagnifyingGlass size={32} />}
           title="No objects match"

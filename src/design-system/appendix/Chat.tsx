@@ -42,7 +42,7 @@ export function ChatAppendix() {
       </p>
 
       <div style={{ marginTop: 'var(--s-7)' }}>
-        <Frame padding="none" style={{ display: 'flex', flexDirection: 'column' }}>
+        <Frame padding={0} style={{ display: 'flex', flexDirection: 'column' }}>
           <div
             style={{
               display: 'flex',

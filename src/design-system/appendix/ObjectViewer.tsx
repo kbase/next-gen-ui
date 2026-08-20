@@ -81,7 +81,7 @@ export function ObjectViewer({
           <Breadcrumbs items={breadcrumbs} />
         </div>
       )}
-      <Frame padding="none">
+      <Frame padding={0}>
         <div className={styles.header}>
           <TypeBadge color={type.color}>{type.abbr}</TypeBadge>
           <div className={styles.headerContent}>

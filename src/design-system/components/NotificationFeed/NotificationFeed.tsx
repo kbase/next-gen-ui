@@ -56,7 +56,7 @@ export function NotificationFeed({
   const groups = groupByTimestamp(notifications);
 
   return (
-    <Frame padding="none" className={cx(styles.root, className)}>
+    <Frame padding={0} className={cx(styles.root, className)}>
       <div className={styles.header}>
         <span className={styles.headerTitle}>Notifications</span>
         {onClearAll && notifications.length > 0 && (

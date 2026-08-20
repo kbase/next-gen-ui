@@ -18,7 +18,7 @@ export function Section03Typography() {
         taxonomy.
       </p>
 
-      <Frame padding="8">
+      <Frame padding={8}>
         <div
           style={{
             display: 'flex',

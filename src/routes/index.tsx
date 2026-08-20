@@ -117,8 +117,8 @@ function DesignSystemFooter() {
 function CoScientistHero() {
   return (
     <Frame
-      paddingY="8"
-      paddingX="9"
+      paddingY={8}
+      paddingX={9}
       style={{ background: 'var(--bgw-green)', borderColor: 'var(--bo-green)' }}
     >
       <div

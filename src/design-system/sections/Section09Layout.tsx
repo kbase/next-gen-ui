@@ -34,7 +34,7 @@ export function Section09Layout() {
         <code>multiple={'{false}'}</code> to open one at a time. <code>summary</code> shows on the
         trigger in both states.
       </p>
-      <Frame paddingY="none" paddingX="8">
+      <Frame paddingY={0} paddingX={8}>
         <Accordion.Root defaultValue={['params']}>
           <Accordion.Item
             value="params"
@@ -76,7 +76,7 @@ export function Section09Layout() {
         A section whose trigger is a control, not a title. Styled text, in the flow of the copy it
         expands, no heading. Use Accordion when the trigger titles the section.
       </p>
-      <Frame paddingY="7" paddingX="8">
+      <Frame paddingY={7} paddingX={8}>
         <Collapsible.Root open={showMethod} onOpenChange={setShowMethod}>
           <p className="body" style={{ maxWidth: '68ch' }}>
             Assembled with MEGAHIT v1.2.9. 4,355 contigs, N50 8,241 bp.{' '}
@@ -111,7 +111,7 @@ export function Section09Layout() {
         unless <code>render</code> says otherwise. Group what belongs together and separate the
         groups.
       </p>
-      <Frame paddingY="4" paddingX="5">
+      <Frame paddingY={4} paddingX={5}>
         <Toolbar.Root aria-label="Table controls">
           <Toolbar.Group>
             <Toolbar.Button>

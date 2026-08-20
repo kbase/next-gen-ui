@@ -31,10 +31,9 @@ import '@kbase/design-system/tokens/fonts.css';
 ```
 
 `style.css` is the all-in-one bundle: tokens, utilities, resets, and
-component styles in correct order. `fonts.css` is separate because it needs a
-bundler to resolve — drop it if you serve the CSS from a plain `<link>`, or if
-you supply Oxygen and Fira Code yourself. Granular entries are available for
-opt-in: `components.css`, `global.css`,
+component styles in correct order. `fonts.css` is separate — see
+[Fonts](#fonts). Granular entries are available for opt-in:
+`components.css`, `global.css`,
 `tokens/{fonts,tokens,prism-kbase,utilities}.css`. See
 [Layering](#layering).
 
@@ -215,7 +214,25 @@ or replaced.
 4. `global.css`: element resets and globals
 5. `components.css`: bundled component styles
 
-`tokens/fonts.css` is not in `style.css`: it imports the Oxygen and Fira Code
-faces from Fontsource by bare specifier, which a bundler resolves and a plain
-`<link>` cannot. Without it `--f-sans` and `--f-mono` fall back to system
-fonts.
+## Fonts
+
+`tokens/fonts.css` imports Oxygen and Fira Code from the Fontsource packages,
+which ship as dependencies. It is not part of `style.css`, because the imports
+are bare specifiers: they need a toolchain that resolves those inside a CSS
+`@import` — Vite and webpack's `css-loader` do, a bare PostCSS pipeline without
+`postcss-import` does not, and a browser cannot.
+
+If your pipeline passes CSS imports through untouched, import the faces from JS
+instead, which any bundler handles:
+
+```js
+import '@fontsource/oxygen/400.css';
+import '@fontsource/oxygen/700.css';
+import '@fontsource/fira-code/400.css';
+import '@fontsource/fira-code/700.css';
+```
+
+**Serving `style.css` from a plain `<link>` gets you no webfonts**, and
+`--f-sans` / `--f-mono` fall back to `system-ui` and the platform monospace.
+There is no build-free path to the faces from this package; host them yourself
+or accept the system stack.

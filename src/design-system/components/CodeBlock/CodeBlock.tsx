@@ -15,7 +15,7 @@ export type CodeBlockLanguage = 'python' | 'typescript' | 'jsx' | 'tsx';
 export interface CodeBlockProps {
   code: string;
   language: CodeBlockLanguage;
-  /** When true (default), the snippet is behind a disclosure. */
+  /** When true (default), wraps the snippet in a Collapsible that starts closed. */
   collapsible?: boolean;
   /** Trigger label when collapsible. Defaults to "Show code". */
   title?: string;

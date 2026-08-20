@@ -32,14 +32,13 @@
   }
 }
 
-/* Vertical room for the trigger. The card supplies the horizontal inset and
-   .codeSection cancels it. */
+/* Vertical room for the trigger; the card supplies the horizontal inset. */
 .triggerRow {
   padding: var(--s-3) 0;
 }
 
-/* Quieter than the default disclosure trigger, for a control that repeats:
-   ink rather than link colour, and no underline. */
+/* Quieter than the default disclosure trigger: ink, not link colour, and no
+   underline. */
 .trigger {
   display: inline-flex;
   align-items: center;

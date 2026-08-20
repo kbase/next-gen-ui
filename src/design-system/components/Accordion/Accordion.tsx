@@ -23,8 +23,8 @@ export interface ItemProps extends Omit<BaseAccordion.Item.Props, 'className' | 
   title: ReactNode;
   /** Shown before the title. */
   icon?: ReactNode;
-  /** Shown on the trigger in both states, for a count or a status. Describes
-   *  the trigger rather than naming it, so the name stays the title. */
+  /** Shown on the trigger in both states, for a count or a status. Exposed as
+   *  the trigger's description, so the name stays the title. */
   summary?: ReactNode;
   className?: string;
 }

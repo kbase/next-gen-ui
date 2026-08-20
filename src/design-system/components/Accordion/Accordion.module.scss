@@ -1,4 +1,3 @@
-/* The set draws the dividers, so the first item has none. */
 .root {
   display: flex;
   flex-direction: column;
@@ -59,7 +58,7 @@
   color: var(--c-ink4);
   transition: transform var(--t-base);
 
-  /* The summary already sits hard right; the chevron just follows it. */
+  /* The summary is already right-aligned; the chevron follows it. */
   .summary + & {
     margin-left: 0;
   }

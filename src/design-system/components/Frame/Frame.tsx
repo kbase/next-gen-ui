@@ -20,7 +20,7 @@ export type FrameSpace =
 
 export interface FrameProps {
   children: ReactNode;
-  /** Defaults to 7, which tokens.css names as the frame's padding. */
+  /** Defaults to 7, which tokens.css calls the frame's padding. */
   padding?: FrameSpace;
   /** Overrides padding on one axis. */
   paddingX?: FrameSpace;

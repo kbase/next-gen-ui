@@ -1,7 +1,6 @@
 .page {
   /* Width and centering come from .app-shell__body-inner so all
-     routes share the same column width. The inline padding keeps the
-     copy off the viewport edge once that column stops constraining it. */
+     routes share the same column width. */
   padding: var(--s-10) var(--s-5) var(--s-12);
 }
 
@@ -159,7 +158,6 @@
   width: 22px;
 }
 
-/* Turns down when the install callout opens. */
 .calloutCaret {
   transition: transform var(--t-base);
 

@@ -37,6 +37,13 @@
   align-items: center;
 }
 
+/* Set while the loader is out of view. The animations keep their state, so
+   scrolling back to one resumes it where it left off. */
+.root[data-paused] .loader,
+.root[data-paused] .loader circle {
+  animation-play-state: paused;
+}
+
 /* rotation on whole element */
 .loader {
   animation: kb-spin 11s linear infinite;

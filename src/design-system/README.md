@@ -27,11 +27,12 @@ peer dependency: every icon-using component imports from it.
 ```tsx
 import { Button, Alert } from '@kbase/design-system';
 import '@kbase/design-system/style.css';
+import '@kbase/design-system/tokens/fonts.css'; // optional
 ```
 
 `style.css` is the all-in-one bundle: tokens, utilities, resets, and
-component styles in correct order. Granular entries are available
-for opt-in: `components.css`, `global.css`,
+component styles in correct order. Granular entries
+are available for opt-in: `components.css`, `global.css`,
 `tokens/{fonts,tokens,prism-kbase,utilities}.css`. See
 [Layering](#layering).
 
@@ -206,9 +207,12 @@ The combined `style.css` concatenates the layers in this order. Use
 the granular entries instead if a specific layer needs to be skipped
 or replaced.
 
-1. `tokens/fonts.css`: Google Fonts `@import`
-2. `tokens/tokens.css`: design tokens (`--c-*`, `--s-*`, `--r-*`, …)
-3. `tokens/prism-kbase.css`: Prism syntax theme
-4. `tokens/utilities.css`: `.h1` / `.h2` / `.body` / `.caption` / `.note`
-5. `global.css`: element resets and globals
-6. `components.css`: bundled component styles
+1. `tokens/tokens.css`: design tokens (`--c-*`, `--s-*`, `--r-*`, …)
+2. `tokens/prism-kbase.css`: Prism syntax theme
+3. `tokens/utilities.css`: `.h1` / `.h2` / `.body` / `.caption` / `.note`
+4. `global.css`: element resets and globals
+5. `components.css`: bundled component styles
+
+`tokens/fonts.css` is not in `style.css`. It imports the Oxygen and Fira Code
+faces from Fontsource by bare specifier, so a bundler has to resolve it. Skip
+it and `--f-sans` / `--f-mono` fall back to system fonts.

@@ -46,8 +46,8 @@ for (const rel of cssAssets) {
 // global resets + component styles, in load order. Vite emits the
 // component styles to `style.css`; rename it first, then concat.
 renameSync(join(distRoot, 'style.css'), join(distRoot, 'components.css'));
+// fonts.css is left out: bare specifiers need a bundler to resolve them.
 const allInOneOrder = [
-  'tokens/fonts.css',
   'tokens/tokens.css',
   'tokens/prism-kbase.css',
   'tokens/utilities.css',
@@ -92,6 +92,10 @@ const pkg = {
     'types/',
     'README.md',
   ],
+  dependencies: {
+    '@fontsource/oxygen': rootPkg.dependencies['@fontsource/oxygen'],
+    '@fontsource/fira-code': rootPkg.dependencies['@fontsource/fira-code'],
+  },
   peerDependencies: {
     react: rootPkg.dependencies.react,
     'react-dom': rootPkg.dependencies['react-dom'],

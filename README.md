@@ -308,5 +308,5 @@ Set `VITE_DEV_ALLOWED_HOSTS` in `.env.development.local`
   contract, login flow, `safeRedirect`, cross-tab sync, token
   storage trade-off, local dev, troubleshooting.
 - [`DEPLOYING.md`](./DEPLOYING.md): Rancher2 deployment — image
-  tags, container facts, runtime configuration, what the Ingress
-  has to do, and how to verify it.
+  tags, container facts, runtime configuration, and what the
+  Ingress has to do.

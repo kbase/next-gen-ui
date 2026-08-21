@@ -60,7 +60,8 @@ public routes work, and sign-in reports that it is unavailable. This is
 the state before an auth route exists.
 
 The container exits non-zero if a template placeholder is left
-unsubstituted, so a misconfigured pod does not serve traffic.
+unsubstituted, so a misconfigured pod does not serve traffic. The
+container log names the placeholder it could not substitute.
 
 ## Ingress
 
@@ -94,38 +95,6 @@ will not redirect to a plaintext callback.
 Use a hostname under `kbase.us` if the session should be shared with
 the legacy UI and narratives. On any other hostname the cookie is
 scoped to that host unless `COOKIE_DOMAIN` is set explicitly.
-
-## Verify
-
-```bash
-# 200, no redirect. A 301 here means the /portals rule is wrong.
-curl -sS -o /dev/null -w '%{http_code} %{redirect_url}\n' https://<host>/portals
-
-# 200 and text/html: the SPA fallback is reaching the pod.
-curl -sS -o /dev/null -w '%{http_code} %{content_type}\n' https://<host>/no-such-route
-
-# no-cache on the document, immutable on assets.
-curl -sSI https://<host>/ | grep -i cache-control
-
-# Exactly one CSP header, naming the right auth origin.
-curl -sSI https://<host>/ | grep -ci content-security-policy
-```
-
-Then load `/portals` directly in a browser and check the console is
-clean. CSP violations do not appear in `curl` output, and there is no
-CSP on the dev server, so the console is the only place they show.
-
-## If something is wrong
-
-| Symptom                                       | Cause                                                                                  |
-| --------------------------------------------- | -------------------------------------------------------------------------------------- |
-| Navigation works, reload 404s                 | The edge is not routing every path to the service.                                     |
-| `/portals` 301s, then 403s                    | A `/portals/` rule is matching before the gallery route.                               |
-| Blank page, 404s on `/assets/…`               | Served under a path prefix, or a cached `index.html`.                                  |
-| Fonts or form posts blocked by CSP            | A second CSP header added at the edge.                                                 |
-| Auth requests blocked by CSP                  | `AUTH_ORIGIN` does not match the origin the app calls. Restart; no rebuild.            |
-| Sign-in works, but not shared across kbase.us | Hostname is outside `kbase.us`, so the cookie has no `Domain`.                         |
-| CrashLoopBackOff on start                     | Check the container log: the entrypoint names the placeholder it could not substitute. |
 
 ---
 

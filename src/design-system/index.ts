@@ -13,6 +13,8 @@ export { Alert } from './components/Alert';
 export type { AlertProps, AlertColor } from './components/Alert';
 export { TypeBadge } from './components/TypeBadge';
 export type { TypeBadgeProps, TypeBadgeColor } from './components/TypeBadge';
+export { Stat } from './components/Stat';
+export type { StatProps } from './components/Stat';
 export { Badge } from './components/Badge';
 export type { BadgeProps } from './components/Badge';
 export { Avatar } from './components/Avatar';
@@ -27,6 +29,8 @@ export type { EmptyStateProps } from './components/EmptyState';
 // Form controls
 export { Button, ButtonLink } from './components/Button';
 export type { ButtonProps, ButtonLinkProps, ButtonVariant, ButtonSize } from './components/Button';
+export { CopyButton } from './components/CopyButton';
+export type { CopyButtonProps } from './components/CopyButton';
 export { Input } from './components/Input';
 export type { InputProps } from './components/Input';
 export { Textarea } from './components/Textarea';

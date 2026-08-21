@@ -1,0 +1,52 @@
+/* Surface, border, radius and padding come from Frame. */
+.stat {
+  min-width: 90px;
+}
+
+.value {
+  font-size: var(--fs-11);
+  font-weight: 700;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums; /* digits align across a row */
+  color: var(--c-primary);
+}
+
+/* Weight as well as colour, so no data does not read as a small value. */
+.muted {
+  font-weight: 500;
+  color: var(--c-ink4);
+}
+
+.label {
+  font-size: var(--fs-2);
+  color: var(--c-ink3);
+}
+
+/* --ct-*: the tier that meets contrast on a plain surface. */
+.neutral {
+  color: var(--c-ink3);
+}
+.primary {
+  color: var(--ct-primary);
+}
+.teal {
+  color: var(--ct-teal);
+}
+.ocean {
+  color: var(--ct-ocean);
+}
+.green {
+  color: var(--ct-green);
+}
+.yellow {
+  color: var(--ct-yellow);
+}
+.orange {
+  color: var(--ct-orange);
+}
+.red {
+  color: var(--ct-red);
+}
+.purple {
+  color: var(--ct-purple);
+}

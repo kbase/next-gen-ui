@@ -1,5 +1,6 @@
 import s from './showcase.module.scss';
 import { Chip } from '../components/Chip';
+import { Stat } from '../components/Stat';
 import { TypeBadge } from '../components/TypeBadge';
 import { Skeleton } from '../components/Skeleton';
 import { Badge } from '../components/Badge';
@@ -173,6 +174,44 @@ export function Section07Data() {
         For status specifically &mdash; which icon, which colour, and why the system ships no list
         of states &mdash; see section 06.
       </p>
+
+      <div className={s.sub}>Stat</div>
+      <p className={s.note}>
+        A number and what it counts. <code>value</code> is already formatted by the caller, since
+        counts, currency, durations and percentages each need different formatting and only the
+        caller knows which applies.
+      </p>
+      <div className={s.row} style={{ marginBottom: 'var(--s-7)', alignItems: 'stretch' }}>
+        <Stat value="1,284" label="turns" />
+        <Stat value="4.2M" label="in tokens" />
+        <Stat value="$18.40" label="est. cost" />
+        <Stat value="2h 14m" label="agent time" />
+      </div>
+      <CodeBlock language="tsx" code={`<Stat value={fmtCount(n)} label="turns" />`} />
+      <p className={s.note}>
+        <code>muted</code> is for the no-data case. It lightens the weight as well as the colour, so
+        an empty stat is not mistaken for one with a small value. The same stat with and without
+        data:
+      </p>
+      <div className={s.row} style={{ marginBottom: 'var(--s-7)', alignItems: 'stretch' }}>
+        <Stat value="1,284" label="queued asks" />
+        <Stat value="—" label="queued asks" muted />
+      </div>
+      <CodeBlock language="tsx" code={`<Stat value="—" label="queued asks" muted />`} />
+
+      <p className={s.note}>
+        <code>color</code> tints the value, and is reinforcement only. A threshold may colour a
+        stat, but the number must still make sense without the colour. If the verdict itself
+        matters, put it in the label or add a status Chip beside it.
+      </p>
+      <div className={s.row} style={{ marginBottom: 'var(--s-7)', alignItems: 'stretch' }}>
+        <Stat value="94%" label="claims met (48)" color="green" />
+        <Stat value="41%" label="claims met (12)" color="yellow" />
+      </div>
+      <CodeBlock
+        language="tsx"
+        code={`<Stat value={pct + '%'} label={\`claims met (\${n})\`} color={pct >= 50 ? 'green' : 'yellow'} />`}
+      />
 
       <div className={s.sub}>Data-type marker (TypeBadge preset)</div>
       <p className={s.note}>

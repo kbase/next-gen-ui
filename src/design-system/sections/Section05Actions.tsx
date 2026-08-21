@@ -1,5 +1,6 @@
 import s from './showcase.module.scss';
 import { Button, ButtonLink } from '../components/Button';
+import { CopyButton } from '../components/CopyButton';
 import { SegmentedControl } from '../components/SegmentedControl';
 import { CodeBlock } from '../components/CodeBlock';
 import {
@@ -134,6 +135,34 @@ export function Section05Actions() {
 <Button size="xs" variant="outline">Filter</Button>
 <Button size="xs" variant="ghost">Reset</Button>`}
       />
+
+      <div className={s.sub}>Copy button</div>
+      <p className={s.note}>
+        Writes <code>text</code> to the clipboard and confirms it. The component owns the whole
+        confirmation: the tick, how long it shows, and the announcement.
+      </p>
+      <div className={s.row} style={{ marginBottom: 'var(--s-7)', alignItems: 'center' }}>
+        <CopyButton text="s3://cdm-lake/users-general-warehouse/alice/" variant="outline" size="sm">
+          Copy path
+        </CopyButton>
+        <CopyButton
+          text="s3://cdm-lake/users-general-warehouse/alice/"
+          variant="ghost"
+          size="sm"
+          label="Copy path"
+        />
+      </div>
+      <CodeBlock
+        language="tsx"
+        code={`<CopyButton text={path} variant="outline" size="sm">Copy path</CopyButton>
+<CopyButton text={path} variant="ghost" size="sm" label="Copy path" />   // icon only`}
+      />
+      <p className={s.note}>
+        The tick is <code>aria-hidden</code>, so the result is also announced in a polite live
+        region. The button stays in its resting state if the copy fails &mdash; the clipboard API is
+        missing on insecure origins, and rejects when the document is not focused or permission is
+        denied. Takes Button's <code>variant</code>, <code>size</code>, and its other props.
+      </p>
 
       <div className={s.sub}>Segmented control</div>
       <p className={s.note}>

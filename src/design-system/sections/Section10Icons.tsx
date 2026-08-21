@@ -4,6 +4,58 @@ import { Frame } from '../components/Frame';
 import { CodeBlock } from '../components/CodeBlock';
 import { Table, Thead, Tbody, Tr, Th, Td } from '../components/Table';
 import {
+  Archive,
+  ArrowBendDownRight,
+  ArrowClockwise,
+  ArrowElbowDownRight,
+  ArrowSquareOut,
+  ArrowUp,
+  ArrowsLeftRight,
+  Bell,
+  BookOpen,
+  Brain,
+  Circle,
+  CircleDashed,
+  CircleHalf,
+  CircleNotch,
+  Compass,
+  Diamond,
+  File,
+  Files,
+  Folder,
+  Gear,
+  Hexagon,
+  Hourglass,
+  Info,
+  Lightning,
+  ListDashes,
+  Lock,
+  Microscope,
+  PencilSimple,
+  PuzzlePiece,
+  Plug,
+  Plus,
+  Prohibit,
+  Question,
+  Rows,
+  Shuffle,
+  Star,
+  Tray,
+  DotsSixVertical,
+  ArrowCounterClockwise,
+  CaretDown,
+  CaretRight,
+  Check,
+  Copy,
+  Database,
+  DownloadSimple,
+  Eye,
+  MagnifyingGlass,
+  PaperPlaneRight,
+  ShareNetwork,
+  SquaresFour,
+  Trash,
+  XCircle,
   CheckCircle,
   Clock,
   Warning,
@@ -120,7 +172,9 @@ export function Section10Icons() {
 
       <div className={s.sub}>Status chips</div>
       <p className={s.note}>
-        Each status has a unique icon shape. Bold weight at size 9 inside Chip.
+        Each status has its own icon shape, so the state reads without colour. Bold weight at size 9
+        inside Chip. Green and red are the pair colour-blind readers lose first &mdash; the icon has
+        to carry the meaning, and the colour reinforces it.
       </p>
       <div className={s.row}>
         <Chip color="primary">
@@ -139,6 +193,161 @@ export function Section10Icons() {
           <Clock size={9} weight="bold" /> Queued
         </Chip>
       </div>
+
+      <div className={s.sub}>Glossary</div>
+      <p className={s.note}>
+        One icon per meaning, across the system. Look a meaning up here before choosing an icon: two
+        meanings sharing an icon is how a set stops being readable.
+      </p>
+      <Frame padding={0}>
+        <Table compact>
+          <Thead>
+            <Tr>
+              <Th style={{ width: 44 }}>Icon</Th>
+              <Th>Means</Th>
+              <Th>Not</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {(
+              [
+                [
+                  '\u2713',
+                  <Check size={15} weight="bold" />,
+                  'Confirmed, inline done',
+                  'a finished job — CheckCircle',
+                ],
+                ['', <CheckCircle size={15} weight="bold" />, 'Complete, succeeded', ''],
+                [
+                  '\u2717',
+                  <X size={15} weight="bold" />,
+                  'Close, dismiss, clear',
+                  'error — XCircle',
+                ],
+                ['\u2715', <XCircle size={15} weight="bold" />, 'Error, failed', 'close — X'],
+                [
+                  '\u26a0',
+                  <Warning size={15} weight="bold" />,
+                  'Warning, needs attention',
+                  'error',
+                ],
+                ['\u26d4', <Prohibit size={15} weight="bold" />, 'Blocked, not permitted', 'error'],
+                ['\u25cf', <Circle size={15} weight="fill" />, 'Active', ''],
+                ['\u25cb', <Circle size={15} weight="bold" />, 'Pending', ''],
+                ['\u25d0', <CircleHalf size={15} weight="bold" />, 'Half done', ''],
+                ['\u25d4', <CircleNotch size={15} weight="bold" />, 'Partial progress', ''],
+                ['\u25cd', <CircleDashed size={15} weight="bold" />, 'Indeterminate', ''],
+                [
+                  '\u23f3',
+                  <Hourglass size={15} weight="bold" />,
+                  'Waiting',
+                  'elapsed time — Clock',
+                ],
+                ['', <Clock size={15} weight="bold" />, 'Queued, scheduled', 'a running job'],
+                ['\u25c6', <Diamond size={15} weight="fill" />, 'Marker, filled', ''],
+                ['\u25c7', <Diamond size={15} weight="bold" />, 'Marker, empty', ''],
+                ['\u{1f512}', <Lock size={15} weight="bold" />, 'Locked, private', ''],
+                [
+                  '\u25b8',
+                  <CaretRight size={15} weight="bold" />,
+                  'Collapsed disclosure',
+                  'next page',
+                ],
+                [
+                  '\u25be',
+                  <CaretDown size={15} weight="bold" />,
+                  'Expanded disclosure',
+                  'sort descending',
+                ],
+                ['\u21b3', <ArrowElbowDownRight size={15} weight="bold" />, 'Nested, reply', ''],
+                [
+                  '\u2191',
+                  <ArrowUp size={15} weight="bold" />,
+                  'Promote, move up',
+                  'sort ascending',
+                ],
+                ['\u283f', <DotsSixVertical size={15} weight="bold" />, 'Drag handle', ''],
+                ['\u29c9', <SquaresFour size={15} weight="bold" />, 'Overview, grid view', ''],
+                [
+                  '\u25b6',
+                  <Play size={15} weight="bold" />,
+                  'Running, in progress',
+                  'a play button',
+                ],
+                ['\u27f3', <ArrowClockwise size={15} weight="bold" />, 'Refresh', 'retry'],
+                ['\u21ba', <ArrowCounterClockwise size={15} weight="bold" />, 'Retry', 'undo'],
+                ['\u2913', <DownloadSimple size={15} weight="bold" />, 'Download', 'import'],
+                ['\u{1f4e5}', <Tray size={15} weight="bold" />, 'Ingest, inbox', 'download'],
+                ['\u2197', <ArrowSquareOut size={15} weight="bold" />, 'External link', ''],
+                ['\u{1f4cb}', <Copy size={15} weight="bold" />, 'Copy to clipboard', 'paste'],
+                ['', <Trash size={15} weight="bold" />, 'Delete permanently', 'remove from a list'],
+                ['', <ShareNetwork size={15} weight="bold" />, 'Share, publish', ''],
+                ['\u{1f5c4}', <Archive size={15} weight="bold" />, 'Archive', 'delete'],
+                ['\u2605', <Star size={15} weight="fill" />, 'Favourite', ''],
+                ['\uff0b', <Plus size={15} weight="bold" />, 'Add', ''],
+                ['\u270e', <PencilSimple size={15} weight="bold" />, 'Rename, edit', ''],
+                ['\u2935', <ArrowBendDownRight size={15} weight="bold" />, 'Move, file under', ''],
+                [
+                  '\u21cc',
+                  <ArrowsLeftRight size={15} weight="bold" />,
+                  'Sync, both directions',
+                  '',
+                ],
+                ['\u{1f500}', <Shuffle size={15} weight="bold" />, 'Route, reorder', ''],
+                [
+                  '\u{1f50e}',
+                  <MagnifyingGlass size={15} weight="bold" />,
+                  'Search, filter',
+                  'zoom',
+                ],
+                ['', <PaperPlaneRight size={15} weight="bold" />, 'Send, submit', ''],
+                ['', <Eye size={15} weight="bold" />, 'View, preview', 'a visibility toggle'],
+                ['\u24d8', <Info size={15} weight="bold" />, 'Info', 'help — Question'],
+                ['\uff1f', <Question size={15} weight="bold" />, 'Help', ''],
+                ['\u{1f514}', <Bell size={15} weight="bold" />, 'Notifications', ''],
+                ['\u2699', <Gear size={15} weight="bold" />, 'Settings', ''],
+                ['\u26a1', <Lightning size={15} weight="bold" />, 'Activity', ''],
+                ['\u{1f9ed}', <Compass size={15} weight="bold" />, 'Routing', 'navigation'],
+                ['\u25a4', <TableIcon size={15} weight="bold" />, 'Table, dataset', ''],
+                ['', <Rows size={15} weight="bold" />, 'Rows, dense list', 'a table'],
+                ['\u2263', <ListDashes size={15} weight="bold" />, 'List', ''],
+                ['', <Database size={15} weight="bold" />, 'Database, warehouse', 'a single table'],
+                ['\u{1f5c2}', <Files size={15} weight="bold" />, 'Data, file set', ''],
+                ['\u{1f4c1}', <Folder size={15} weight="bold" />, 'Folder', ''],
+                ['\u{1f4c4}', <File size={15} weight="bold" />, 'Document', ''],
+                ['\u{1f4d6}', <BookOpen size={15} weight="bold" />, 'Docs, reading', ''],
+                ['', <Notebook size={15} weight="bold" />, 'Notebook', 'a document'],
+                ['\u{1f4ca}', <ChartBar size={15} weight="bold" />, 'Metrics, chart', ''],
+                ['\u{1f9e0}', <Brain size={15} weight="bold" />, 'Knowledge, memory', ''],
+                ['\u{1f52c}', <Microscope size={15} weight="bold" />, 'Research', ''],
+                ['\u{1f9ec}', <Dna size={15} weight="bold" />, 'Genome', ''],
+                ['\u{1f9ea}', <Flask size={15} weight="bold" />, 'Experiment', ''],
+                [
+                  '\u232c',
+                  <Hexagon size={15} weight="bold" />,
+                  'Molecule, structure',
+                  'a single atom — Atom',
+                ],
+                ['\u{1f50c}', <Plug size={15} weight="bold" />, 'Tools, plug-in', ''],
+                ['\u{1f9e9}', <PuzzlePiece size={15} weight="bold" />, 'App, extension', ''],
+              ] as const
+            ).map(([, icon, means, not_], i) => (
+              <Tr key={i}>
+                <Td style={{ color: 'var(--c-ink3)' }}>{icon}</Td>
+                <Td>{means}</Td>
+                <Td className="note">{not_}</Td>
+              </Tr>
+            ))}
+          </Tbody>
+        </Table>
+      </Frame>
+      <div className={s.sub}>Categories</div>
+      <p className={s.note}>
+        When colour identifies a kind rather than a state, give each kind its own icon and keep the
+        pairs in one map, so a new kind cannot arrive without one. Two kinds may share a hue if
+        their icons differ; two kinds may not share an icon. Check any set with the deuteranopia
+        filter at the top of this page &mdash; if a distinction disappears, it was never encoded.
+      </p>
 
       <div className={s.sub}>Science</div>
       <p className={s.note}>Phosphor includes science-relevant icons out of the box.</p>

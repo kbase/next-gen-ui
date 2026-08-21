@@ -139,12 +139,8 @@ body,
   margin: 0 auto;
 }
 
-/* The KBase logo, in two files. The wordmark is near-black and vanishes
-   on the dark theme, while the marks beside it must keep their brand
-   colours, so no single file and no CSS filter can serve both. Height is
-   set by the caller. Three rules, because the theme has three states: an
-   explicit choice stamps data-theme, and the default follows the OS with
-   no attribute set at all. */
+/* Light/dark pair; height set by the caller. Three rules because the theme
+   has three states: data-theme dark, data-theme light, and neither (OS). */
 .kbase-logo {
   display: block;
   width: auto;
@@ -359,8 +355,7 @@ body,
   gap: var(--s-4);
 }
 
-/* Falls back to the neutral surface for "All portals", which has no tag
-   colour of its own. */
+/* --filter-* are set inline per facet; "All portals" has none. */
 .portals__filter {
   all: unset;
   cursor: pointer;
@@ -384,8 +379,6 @@ body,
   outline-offset: 2px;
 }
 
-/* Selected reads as the filled version of the same chip, so the colour
-   carries through from the filter to the tags on the cards below. */
 .portals__filter--active {
   background: var(--filter-bg, var(--c-primary));
   border-color: var(--filter-bo, var(--c-primary));
@@ -537,8 +530,7 @@ body,
   margin-top: var(--s-6);
 }
 
-/* Plain text, deliberately: these are not filters, and anything shaped
-   like a chip here would read as one. */
+/* Plain text, not a chip: these are not filterable. */
 .portal-card__topics {
   margin-top: var(--s-5);
   color: var(--c-ink4);

@@ -1,19 +1,8 @@
-// Deploy-time configuration.
-//
-// Values are rendered into index.html as `<meta name="config:*">` when the
-// container starts (docker-entrypoint.d/05-render-config.sh), NOT inlined
-// into the bundle at build time. One image therefore runs in every
-// environment and is promoted by tag rather than rebuilt per environment.
-//
-// Meta tags rather than an inline `<script>` because the CSP blocks inline
-// script unless it is named by hash, and a hash over per-environment values
-// would have to be recomputed inside the boot script. Meta content is not
-// script, so CSP never enters into it -- and unlike a fetched config.json
-// the values are available synchronously, so AUTH_ORIGIN stays a plain
-// const and the auth client does not have to become async.
-//
-// In dev and `npm run preview` no entrypoint has run, so the placeholders
-// are still in place and this falls back to import.meta.env.
+// Deploy-time config, rendered into index.html as `<meta name="config:*">`
+// at container start (docker-entrypoint.d/05-render-config.sh), not baked
+// into the bundle. Meta rather than an inline script because the CSP would
+// need a per-environment hash for the latter; meta is also synchronous, so
+// AUTH_ORIGIN stays a plain const.
 
 import { z } from 'zod';
 
@@ -35,17 +24,14 @@ export type AppConfig = z.infer<typeof ConfigSchema>;
 
 const PLACEHOLDER = /^__[A-Z_]+__$/;
 
-/** Whether the build injected config tags at all. Only builds have them. */
+/** Only a build injects the tags at all. */
 function hasMeta(name: string): boolean {
   return document.querySelector(`meta[name="config:${name}"]`) !== null;
 }
 
 /**
- * Reads one `<meta name="config:NAME">`. Returns undefined when the tag is
- * absent (dev build) or still holds its `__PLACEHOLDER__` — the entrypoint
- * leaves the placeholder in place for a variable the operator did not set,
- * so "not configured" survives as a distinct state from "set to empty".
- * An empty `content` is a real value.
+ * undefined when the tag is absent or still holds its `__PLACEHOLDER__`.
+ * An empty `content` is a real value, not an absent one.
  */
 function readMeta(name: string): string | undefined {
   const content = document.querySelector(`meta[name="config:${name}"]`)?.getAttribute('content');
@@ -70,9 +56,5 @@ export const config: AppConfig = ConfigSchema.parse({
   cookieDomain: readMeta('cookie-domain') ?? import.meta.env.VITE_COOKIE_DOMAIN,
 });
 
-/**
- * False when this deployment has no auth service. Public routes must render
- * normally; anything that would talk to the auth service reports itself as
- * unavailable instead.
- */
+/** False when this deployment has no auth service. */
 export const authEnabled: boolean = config.authOrigin !== null;

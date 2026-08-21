@@ -9,15 +9,10 @@ export const Route = createFileRoute('/portals')({
   staticData: { title: 'Portal gallery' },
 });
 
-/**
- * Portals are served by a different backend on the same origin, so the
- * edge splits this prefix: `/portals` reaches this app, `/portals/<slug>`
- * reaches the portal server. Nothing this app serves can live under the
- * prefix -- hence `public/portal-thumbs/` rather than `public/portals/`.
- */
+// A different backend serves /portals/<slug>, so nothing this app serves
+// may live under that prefix (hence public/portal-thumbs/).
 const PORTAL_BASE = 'https://gen2.kbase.us/portals/';
 
-/** Where questions and concerns go while this is a soft launch. */
 const CONTACT_URL = 'https://www.kbase.us/support/';
 
 interface PortalFacet {
@@ -25,11 +20,7 @@ interface PortalFacet {
   color: ChipColor;
 }
 
-/**
- * The four filterable facets, defined once. Every chip on a card is one of
- * these, and every filter is one of these, so nothing that looks like a
- * filter fails to be one.
- */
+// Card chips and filter pills both come from here, so every chip filters.
 const FACETS = {
   genomes: { label: 'Genomes', color: 'primary' },
   ecology: { label: 'Ecology', color: 'green' },
@@ -43,42 +34,22 @@ interface Portal {
   title: string;
   blurb: string;
   facets: PortalFacet[];
-  /** Specific subject terms. Not filterable -- rendered as plain text. */
+  /** Not filterable; rendered as plain text so it reads as prose. */
   topics: string[];
   credit: string;
   version: string;
   /** ISO 8601. */
   updated: string;
-  /**
-   * Kept in the list but not rendered. Only the portals cleared as having
-   * no private-data issues are shown; the rest stay here so restoring one
-   * is a flag change rather than a retype.
-   */
+  /** Not cleared for public display. Kept so restoring one is a flag flip. */
   hidden?: true;
-  /**
-   * Recorded, deliberately not rendered. genKnown's "tester preview" is a
-   * correctness disclosure, not a maturity label -- some enrichment and
-   * association statistics are approximate, and KIND*AI's RELEASES.md
-   * ships it that way on purpose ("transparency over silence", Adam's
-   * call, 2026-07-27). The gallery leaves it out because those
-   * limitations are surfaced inside the portal itself, where a reader
-   * meets them next to the numbers they qualify.
-   */
+  /** Not rendered: the portal discloses its own caveats. */
   status?: string;
 }
 
-// Array order is the stakeholders' priority order, which the `default` sort
-// renders as-is. The two hidden entries sit at the end, out of its way.
-//
-// Titles, blurbs, and versions track the app manifests and release pins in
-// the KIND*AI repo (`plugins/*.json`, `RELEASES.md`). Versions are the
-// cut-plan pins from the `v2026.08.11` release, which is also the `updated`
-// date for every entry -- they were cut together.
-//
-// PLACEHOLDER, pending real metadata: `credit`. The app manifests carry
-// no authorship field today (they hold type/id/title/description/launch
-// only), so these are our best reading of each app's data sources rather
-// than a recorded fact. Confirm before this is shown outside a demo.
+// Order is the `default` sort; hidden entries sit at the end.
+// Titles, blurbs and versions come from KIND*AI (`plugins/*.json`,
+// `RELEASES.md` v2026.08.11). `credit` does NOT -- it is a placeholder,
+// unverified, and needs real values before this is shown outside a demo.
 const PORTALS: readonly Portal[] = [
   {
     slug: 'genknown',
@@ -162,16 +133,11 @@ const PORTALS: readonly Portal[] = [
   },
 ];
 
-// Only the portals cleared for public deployment. Everything downstream --
-// the grid, the count, and the filter vocabulary -- reads this, so a hidden
-// portal cannot leave a filter behind that matches no visible card.
+// Everything downstream reads this, so a hidden portal leaves no filter behind.
 const VISIBLE_PORTALS = PORTALS.filter((p) => !p.hidden);
 
 const ALL = 'all';
 
-// One vocabulary: the filter list is the tags themselves, each keeping the
-// colour it has on the card. A tag with no filter, or a filter matching no
-// tag, would be two vocabularies pretending to be one.
 const FILTERS = [
   { value: ALL, label: 'All portals', color: null as ChipColor | null },
   ...Object.values(FACETS)
@@ -230,9 +196,8 @@ function TopBar() {
     <header className="portals__topbar">
       <div className="portals__topbar-inner">
         <span className="portals__brand">
-          {/* Two files, not one recoloured by CSS: the wordmark is
-              near-black and vanishes on the dark theme, while the marks
-              beside it must keep their brand colours. */}
+          {/* Two files: the wordmark is near-black, the marks beside it are
+              brand colours, so no single file or filter serves both themes. */}
           <img
             className="kbase-logo kbase-logo--light"
             src="/kbase-logo-ref.png"
@@ -291,9 +256,7 @@ function Gallery() {
         (q === '' || haystack(p).includes(q)),
     );
     if (sort === 'name') return [...filtered].sort((a, b) => a.title.localeCompare(b.title));
-    // Title as the tiebreak, so equal dates -- which is every portal today,
-    // all cut in the same release -- order predictably rather than by
-    // array position.
+    // Title tiebreak: every portal shares one release date today.
     if (sort === 'updated') {
       return [...filtered].sort(
         (a, b) => b.updated.localeCompare(a.updated) || a.title.localeCompare(b.title),
@@ -319,9 +282,6 @@ function Gallery() {
           aria-label="Search portals"
         />
 
-        {/* Not SegmentedControl: it sizes every segment equally, clips
-            with overflow:hidden, and cannot wrap, so seven variable-length
-            labels collide at large text sizes. */}
         <div className="portals__filters" role="radiogroup" aria-label="Filter portals by category">
           {FILTERS.map((option) => (
             <button
@@ -334,8 +294,7 @@ function Gallery() {
                   ? 'portals__filter portals__filter--active'
                   : 'portals__filter'
               }
-              // Same three tokens the Chip of this colour uses, so the
-              // filter and the tag on the card are visibly one thing.
+              // The Chip tokens for this colour, so pill and chip match.
               style={
                 option.color
                   ? ({
@@ -353,8 +312,7 @@ function Gallery() {
         </div>
 
         <div className="portals__sort">
-          {/* `items` lets the closed trigger render the label rather than
-              the raw value -- Base UI has not mounted the popup yet. */}
+          {/* Without `items` the closed trigger shows the raw value. */}
           <Select.Root
             items={SORTS}
             value={sort}
@@ -425,8 +383,6 @@ function PortalCard({ portal }: { portal: Portal }) {
 
           <p className="portal-card__blurb">{portal.blurb}</p>
 
-          {/* Chips are facets and only facets, so every one of them is a
-              filter you can click above. */}
           <div className="portal-card__facets">
             {portal.facets.map((facet) => (
               <Chip key={facet.label} color={facet.color} onWhite>

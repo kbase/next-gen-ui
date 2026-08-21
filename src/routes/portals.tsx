@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link, createFileRoute } from '@tanstack/react-router';
-import { Chip, Frame, SearchBar, SegmentedControl, Select } from '@kbase/design-system';
+import { Chip, Frame, SearchBar, Select } from '@kbase/design-system';
 import type { ChipColor } from '@kbase/design-system';
 import { ArrowUpRight } from '@phosphor-icons/react';
 
@@ -324,7 +324,27 @@ function Gallery() {
           aria-label="Search portals"
         />
 
-        <SegmentedControl options={CATEGORIES} value={category} onChange={setCategory} />
+        {/* Not SegmentedControl: it sizes every segment equally, clips
+            with overflow:hidden, and cannot wrap, so seven variable-length
+            labels collide at large text sizes. */}
+        <div className="portals__filters" role="radiogroup" aria-label="Filter portals by category">
+          {CATEGORIES.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              role="radio"
+              aria-checked={option.value === category}
+              className={
+                option.value === category
+                  ? 'portals__filter portals__filter--active'
+                  : 'portals__filter'
+              }
+              onClick={() => setCategory(option.value)}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
 
         <div className="portals__sort">
           {/* `items` lets the closed trigger render the label rather than

@@ -47,6 +47,25 @@ describe('root gate', () => {
     });
   });
 
+  it('lets /portals render without an auth check', async () => {
+    const { router } = mountAt('/portals');
+    expect(
+      await screen.findByRole('heading', { level: 1, name: /published portals/i }),
+    ).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe('/portals');
+  });
+
+  // A pasted `/portals/`, or a browser replaying a cached 301 from a build
+  // whose try_files matched the public/portals/ directory, reaches the gate
+  // with the trailing slash intact. Exact matching sent it to /login.
+  it('treats a trailing-slash public route as public', async () => {
+    const { router } = mountAt('/portals/');
+    expect(
+      await screen.findByRole('heading', { level: 1, name: /published portals/i }),
+    ).toBeInTheDocument();
+    expect(router.state.location.pathname).not.toBe('/login');
+  });
+
   it('lets /login render without an auth check', async () => {
     const { router } = mountAt('/login');
     expect(await screen.findByRole('button', { name: /sign in with orcid/i })).toBeInTheDocument();

@@ -42,7 +42,11 @@ const PUBLIC_ROUTES: ReadonlyArray<string> = [
 ];
 
 function isPublic(pathname: string): boolean {
-  return PUBLIC_ROUTES.includes(pathname);
+  // Trailing slashes reach the gate verbatim -- a pasted `/portals/`, or a
+  // browser replaying a cached 301 from an older build. Exact matching would
+  // send those to /login even though the route is public.
+  const normalized = pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname;
+  return PUBLIC_ROUTES.includes(normalized);
 }
 
 export const Route = createRootRouteWithContext<RouterContext>()({

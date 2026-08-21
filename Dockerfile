@@ -16,17 +16,24 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
 
-# Substitute AUTH_ORIGIN / IDP_ORIGINS into nginx.conf at build time
-# (custom __VAR__ placeholders avoid colliding with $-prefixed nginx vars).
+# Substitute AUTH_ORIGIN / IDP_ORIGINS / SCRIPT_HASH into nginx.conf at build
+# time (custom __VAR__ placeholders avoid colliding with $-prefixed nginx vars).
 # Single source of truth: VITE_AUTH_ORIGIN matches the bundle's embedded
 # value. IDP_ORIGINS is space-separated if a multi-IDP build ever needs it.
+# SCRIPT_HASH comes from the build stage (vite.config.ts writes it) so the
+# CSP always names the theme-init script that actually shipped.
 FROM alpine:3 AS conf
 ARG VITE_AUTH_ORIGIN=https://kbase.us
 ARG IDP_ORIGINS=https://orcid.org
 COPY nginx.conf /tmp/nginx.conf
+COPY --from=build /app/.csp-script-hash /tmp/.csp-script-hash
 RUN sed -e "s#__AUTH_ORIGIN__#${VITE_AUTH_ORIGIN}#g" \
         -e "s#__IDP_ORIGINS__#${IDP_ORIGINS}#g" \
-        /tmp/nginx.conf > /tmp/default.conf
+        -e "s#__SCRIPT_HASH__#$(cat /tmp/.csp-script-hash)#g" \
+        /tmp/nginx.conf > /tmp/default.conf && \
+    grep -q "__" /tmp/default.conf && \
+      { echo "nginx.conf still has unsubstituted __PLACEHOLDER__:"; \
+        grep -o "__[A-Z_]*__" /tmp/default.conf; exit 1; } || true
 
 FROM nginxinc/nginx-unprivileged:${NGINX_VERSION} AS runtime
 COPY --from=conf /tmp/default.conf /etc/nginx/conf.d/default.conf

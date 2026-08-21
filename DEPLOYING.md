@@ -113,12 +113,40 @@ reaches the `try_files` fallback. The SPA fallback lives in
 `nginx.conf` inside the pod, and that is the only place it should
 live.
 
-The gallery branch makes the hazard concrete: `/portals` is a
-route rendered by the SPA, while `/portals/enigma-strata.svg` and
-its siblings are real files in `public/portals/`. The same prefix
-is both an application route and a static asset directory, and
-nginx resolves the difference per request via `try_files`. Any
-edge rule that special-cases part of that prefix will split them.
+The gallery makes the hazard concrete, and it is worth knowing
+that this one already bit: `/portals` is a route rendered by the
+SPA, while `/portals/enigma-strata.svg` and its siblings are real
+files in `public/portals/`. The same prefix is both an
+application route and a static asset directory. Any edge rule
+that special-cases part of that prefix will split them.
+
+It also has to be resolved correctly _inside_ the pod. The
+original fallback was `try_files $uri $uri/ /index.html`, and
+`$uri/` matched the `public/portals/` directory before the SPA
+fallback was ever reached — so `/portals` returned a 301 to
+`/portals/`, which returned 403, because autoindex is off. The
+gallery worked when clicked through from `/` and failed on every
+deep link, reload, and bookmark. Nothing here is served by
+directory listing, so `$uri/` has no legitimate use and the rule
+is now:
+
+```nginx
+try_files $uri /index.html;
+```
+
+Two follow-on hazards from that class of bug:
+
+- nginx builds redirects from its own `listen` port, so the 301
+  above pointed at `http://<host>:8080/portals/` — behind an
+  ingress terminating on 443, straight off the edge of the world.
+  `absolute_redirect off;` keeps redirects relative.
+- **Browsers cache 301s more or less permanently.** Anyone who
+  loaded the broken build keeps being sent to `/portals/` from
+  their own cache long after the server is fixed. That is why the
+  root gate normalises trailing slashes (`isPublic()` in
+  `src/routes/__root.tsx`) rather than matching pathnames
+  exactly: `/portals/` has to stay public, or those users land on
+  `/login` for a page that needs no account.
 
 Also preserve the query string and don't touch the method:
 `/login/continue?state=<json>` carries the OAuth state blob
@@ -383,9 +411,14 @@ Run these against the public hostname, not the Service.
 # 1. Health endpoint answers 204 through the ingress.
 curl -sS -o /dev/null -w '%{http_code}\n' https://<host>/healthz
 
-# 2. A deep link returns 200 and HTML, not a 404 — this is the
-#    single check that proves the router will work on reload.
-curl -sS -o /dev/null -w '%{http_code} %{content_type}\n' https://<host>/portals
+# 2. A deep link returns 200 and HTML directly — no redirect. This
+#    is the single check that proves the router works on reload,
+#    and the one that catches the try_files/directory collision.
+#    A 301 here means $uri/ is matching a directory again.
+curl -sS -o /dev/null -w '%{http_code} %{content_type} %{redirect_url}\n' \
+  https://<host>/portals                                   # 200 text/html
+curl -sS -o /dev/null -w '%{http_code} %{content_type}\n' \
+  https://<host>/portals/                                  # 200 text/html
 
 # 3. A route that does not exist ALSO returns 200 + HTML. That is
 #    correct for an SPA: the router renders its own not-found.
@@ -395,7 +428,8 @@ curl -sS -o /dev/null -w '%{http_code}\n' https://<host>/no-such-route
 curl -sSI https://<host>/ | grep -i cache-control          # no-cache
 curl -sSI https://<host>/assets/<file>.js | grep -i cache-control  # immutable
 
-# 5. Exactly one CSP header, and it names the right auth origin.
+# 5. Exactly one CSP header, naming the right auth origin, and
+#    carrying a script-src hash (no unsubstituted __PLACEHOLDER__).
 curl -sSI https://<host>/ | grep -ci content-security-policy   # 1
 curl -sSI https://<host>/ | grep -i content-security-policy
 
@@ -407,7 +441,10 @@ curl -sS -o /dev/null -w '%{http_code} %{content_type}\n' \
 Then, in a browser: load `/portals` directly (not by clicking
 through from `/`), reload it, and complete a full ORCID sign-in
 so the `/login/continue?state=…` callback is exercised end to
-end. Those three are what a misconfigured Ingress breaks, and
+end. **Check the console is clean while you do it** — CSP
+violations are invisible in `curl` and in dev (there is no CSP on
+the dev server), so the console is the only place a blocked
+inline script or font shows up. Those three are what a misconfigured Ingress breaks, and
 none of them break during ordinary click-through navigation —
 which is why an ingress problem here tends to be reported as
 "it works until you refresh".
@@ -423,6 +460,11 @@ which is why an ingress problem here tends to be reported as
 | Blank page only for returning users, fine in a private window   | `index.html` cached at the edge. It must be `no-cache` all the way through.                                             |
 | Route fails on hover, before any click                          | `defaultPreload: 'intent'` prefetching a chunk from a stale `index.html`, or asset skew mid-rollout.                    |
 | Fonts blocked, or the login form POST blocked, by CSP           | A second CSP header added at the edge; browsers intersect all of them.                                                  |
+| A route 301s to itself with a trailing slash, then 403s         | `try_files` has `$uri/` back, and a directory in `public/` shadows the route. Drop `$uri/`.                             |
+| A redirect sends the browser to port 8080                       | `absolute_redirect off;` is missing; nginx built the URL from its own listen port.                                      |
+| A public route bounces to `/login`, but only for some users     | They are replaying a cached 301 to the trailing-slash form. `isPublic()` normalises it; check the fix is deployed.      |
+| Console: "Executing inline script violates ... 'default-src'"   | `script-src` hash is stale or unsubstituted. It is emitted at build time to `.csp-script-hash`; check the `conf` stage. |
+| Console: font blocked from a `data:` URI                        | `font-src` lost `data:`. Vite inlines font subsets under 4 KB.                                                          |
 | Login redirects back and immediately bounces to `/login`        | Cookie didn't land: check the host against `.kbase.us`, and that the site is served over https.                         |
 | Login works, but signing in elsewhere on kbase.us doesn't carry | Hostname is outside `kbase.us`, so the cookie has no `Domain`. See [Hostname choice](#hostname-choice-is-not-cosmetic). |
 | Requests to the auth service blocked by CSP `connect-src`       | Image built with a different `VITE_AUTH_ORIGIN` than the environment expects. Rebuild; env vars won't fix it.           |

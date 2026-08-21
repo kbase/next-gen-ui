@@ -176,9 +176,16 @@ Multi-stage layout:
   `form-action` is `'self' <AUTH_ORIGIN> <IDP_ORIGINS>` (the IDP
   entry is required because modern browsers check `form-action`
   against every redirect target, and the ORCID hop falls under this);
-  `style-src` and `font-src` allowlist
-  `https://fonts.googleapis.com` / `https://fonts.gstatic.com` for
-  the design-system fonts.
+  `script-src` is `'self' '<sha256 of the theme-init script>'`
+  (that script is inlined into `index.html`, and CSP blocks inline
+  script unless it is named by hash; the hash is computed at build
+  time by the `theme-init` plugin in `vite.config.ts` and written
+  to `.csp-script-hash` for the Docker `conf` stage, so editing the
+  script cannot leave a stale hash behind); `font-src` is
+  `'self' data:`, because Vite inlines font subsets under 4 KB as
+  `data:` URIs while the rest ship as files. The fonts are
+  self-hosted via `@fontsource`, so no Google Fonts origin is
+  allowlisted.
 - `X-Content-Type-Options: nosniff`
 - `Referrer-Policy: strict-origin-when-cross-origin`
 - `X-Frame-Options: DENY`

@@ -139,6 +139,47 @@ body,
   margin: 0 auto;
 }
 
+/* The KBase logo, in two files. The wordmark is near-black and vanishes
+   on the dark theme, while the marks beside it must keep their brand
+   colours, so no single file and no CSS filter can serve both. Height is
+   set by the caller. Three rules, because the theme has three states: an
+   explicit choice stamps data-theme, and the default follows the OS with
+   no attribute set at all. */
+.kbase-logo {
+  display: block;
+  width: auto;
+}
+
+.kbase-logo--dark {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .kbase-logo--light {
+    display: none;
+  }
+
+  :root:not([data-theme='light']) .kbase-logo--dark {
+    display: block;
+  }
+}
+
+:root[data-theme='dark'] .kbase-logo--light {
+  display: none;
+}
+
+:root[data-theme='dark'] .kbase-logo--dark {
+  display: block;
+}
+
+:root[data-theme='light'] .kbase-logo--light {
+  display: block;
+}
+
+:root[data-theme='light'] .kbase-logo--dark {
+  display: none;
+}
+
 /* Login footer: quiet utility links that sit below the auth card.
    Smaller than body copy; muted ink-4 by default; underline only on
    hover. The visual weight should never compete with the primary
@@ -230,64 +271,8 @@ body,
   gap: var(--s-5);
 }
 
-.portals__logo {
-  display: block;
+.portals__brand .kbase-logo {
   height: 26px;
-  width: auto;
-}
-
-/* Three states, because the theme has three: an explicit choice stamps
-   data-theme, and the default follows the OS with no attribute set. */
-.portals__logo--dark {
-  display: none;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) .portals__logo--light {
-    display: none;
-  }
-
-  :root:not([data-theme='light']) .portals__logo--dark {
-    display: block;
-  }
-}
-
-:root[data-theme='dark'] .portals__logo--light {
-  display: none;
-}
-
-:root[data-theme='dark'] .portals__logo--dark {
-  display: block;
-}
-
-:root[data-theme='light'] .portals__logo--light {
-  display: block;
-}
-
-:root[data-theme='light'] .portals__logo--dark {
-  display: none;
-}
-
-.portals__signin {
-  font-size: var(--fs-5);
-  font-weight: 700;
-  color: var(--c-ink3);
-  text-decoration: none;
-  padding: var(--s-2) var(--s-5);
-  border-radius: var(--r-button);
-  transition:
-    background var(--t-fast),
-    color var(--t-fast);
-}
-
-.portals__signin:hover {
-  background: var(--c-raised);
-  color: var(--c-ink);
-}
-
-.portals__signin:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px var(--c-focus);
 }
 
 .portals__main {

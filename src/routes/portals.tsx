@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Link, createFileRoute } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 import { Chip, Frame, SearchBar, Select } from '@kbase/design-system';
 import type { ChipColor } from '@kbase/design-system';
 import { ArrowUpRight } from '@phosphor-icons/react';
@@ -238,14 +238,14 @@ function TopBar() {
               near-black and vanishes on the dark theme, while the marks
               beside it must keep their brand colours. */}
           <img
-            className="portals__logo portals__logo--light"
+            className="kbase-logo kbase-logo--light"
             src="/kbase-logo-ref.png"
             alt="KBase"
             width={251}
             height={64}
           />
           <img
-            className="portals__logo portals__logo--dark"
+            className="kbase-logo kbase-logo--dark"
             src="/kbase-logo-dark.png"
             alt=""
             aria-hidden="true"
@@ -253,9 +253,6 @@ function TopBar() {
             height={64}
           />
         </span>
-        <Link to="/login" className="portals__signin">
-          Sign in
-        </Link>
       </div>
     </header>
   );
@@ -481,7 +478,6 @@ function SiteFooter() {
         <a href="https://www.kbase.us/" target="_blank" rel="noopener noreferrer">
           About KBase
         </a>
-        <Link to="/login">Sign in</Link>
       </nav>
     </footer>
   );

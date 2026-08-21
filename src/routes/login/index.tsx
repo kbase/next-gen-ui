@@ -77,7 +77,25 @@ function LoginPage() {
             marginBottom: 'var(--s-10)',
           }}
         >
-          <img src="/kbase-logo-ref.png" alt="KBase" height={44} />
+          {/* Two files: the wordmark is near-black and disappears against
+              the card on the dark theme. See .kbase-logo in styles.css. */}
+          <img
+            className="kbase-logo kbase-logo--light"
+            src="/kbase-logo-ref.png"
+            alt="KBase"
+            width={251}
+            height={64}
+            style={{ height: 44 }}
+          />
+          <img
+            className="kbase-logo kbase-logo--dark"
+            src="/kbase-logo-dark.png"
+            alt=""
+            aria-hidden="true"
+            width={251}
+            height={64}
+            style={{ height: 44 }}
+          />
         </div>
 
         {mfaRequired && (

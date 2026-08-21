@@ -26,12 +26,10 @@ function cardLinks() {
 }
 
 describe('portal gallery', () => {
-  it('lists every cleared portal by default, and no others', async () => {
+  it('lists every portal by default', async () => {
     mountGallery();
     expect(await screen.findByRole('heading', { level: 1, name: /portal gallery/i })).toBeVisible();
     expect(cardLinks()).toHaveLength(5);
-    expect(screen.queryByRole('link', { name: /ENIGMA Strata/ })).toBeNull();
-    expect(screen.queryByRole('link', { name: /GenePool/ })).toBeNull();
   });
 
   // Every filter is a facet and every facet is a filter; the specific
@@ -44,7 +42,6 @@ describe('portal gallery', () => {
     }
     expect(screen.getAllByRole('radio')).toHaveLength(5);
     expect(screen.queryByRole('radio', { name: 'CAZymes' })).toBeNull();
-    expect(screen.queryByRole('radio', { name: 'Subsurface' })).toBeNull();
   });
 
   it('filters by free-text search across blurbs and credits', async () => {

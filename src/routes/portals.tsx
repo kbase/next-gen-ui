@@ -40,13 +40,13 @@ interface Portal {
   version: string;
   /** ISO 8601. */
   updated: string;
-  /** Not cleared for public display. Kept so restoring one is a flag flip. */
-  hidden?: true;
   /** Not rendered: the portal discloses its own caveats. */
   status?: string;
 }
 
-// Order is the `default` sort; hidden entries sit at the end.
+// Only portals cleared for public display belong here; the bundle is public,
+// so an uncleared entry is readable whether or not it is rendered.
+// Order is the `default` sort.
 // Titles, blurbs and versions come from KIND*AI (`plugins/*.json`,
 // `RELEASES.md` v2026.08.11). `credit` does NOT -- it is a placeholder,
 // unverified, and needs real values before this is shown outside a demo.
@@ -107,41 +107,14 @@ const PORTALS: readonly Portal[] = [
     version: 'v0.1.1',
     updated: '2026-08-11',
   },
-  {
-    slug: 'enigma-strata',
-    title: 'ENIGMA Strata',
-    blurb:
-      'A branded portal over the ENIGMA subsurface lakehouse — geology, hydrology, geochemistry, biogeography, and genomes of the Oak Ridge plume in one cross-linked focus.',
-    facets: [FACETS.environment, FACETS.genomes],
-    topics: ['Subsurface', 'Geochemistry', 'Biogeography'],
-    credit: 'ENIGMA SFA · Lawrence Berkeley National Laboratory',
-    version: 'v0.3.1',
-    updated: '2026-08-11',
-    hidden: true,
-  },
-  {
-    slug: 'genepool',
-    title: 'GenePool',
-    blurb:
-      "You versus the machine. Judge the AI annotator's calls on real proteins to build a certified, trust-weighted competence leaderboard.",
-    facets: [FACETS.proteins],
-    topics: ['Benchmarking', 'Annotation'],
-    credit: 'KBase',
-    version: 'v0.1.2',
-    updated: '2026-08-11',
-    hidden: true,
-  },
 ];
-
-// Everything downstream reads this, so a hidden portal leaves no filter behind.
-const VISIBLE_PORTALS = PORTALS.filter((p) => !p.hidden);
 
 const ALL = 'all';
 
 const FILTERS = [
   { value: ALL, label: 'All portals', color: null as ChipColor | null },
   ...Object.values(FACETS)
-    .filter((f) => VISIBLE_PORTALS.some((p) => p.facets.includes(f)))
+    .filter((f) => PORTALS.some((p) => p.facets.includes(f)))
     .map((f) => ({ value: f.label, label: f.label, color: f.color as ChipColor | null })),
 ];
 
@@ -250,7 +223,7 @@ function Gallery() {
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const filtered = VISIBLE_PORTALS.filter(
+    const filtered = PORTALS.filter(
       (p) =>
         (category === ALL || p.facets.some((f) => f.label === category)) &&
         (q === '' || haystack(p).includes(q)),
@@ -338,9 +311,9 @@ function Gallery() {
       </div>
 
       <p className="portals__count" role="status">
-        {visible.length === VISIBLE_PORTALS.length
-          ? `${VISIBLE_PORTALS.length} portals`
-          : `${visible.length} of ${VISIBLE_PORTALS.length} portals`}
+        {visible.length === PORTALS.length
+          ? `${PORTALS.length} portals`
+          : `${visible.length} of ${PORTALS.length} portals`}
       </p>
 
       {visible.length === 0 ? (
@@ -354,7 +327,7 @@ function Gallery() {
           >
             Clear search and filters
           </button>{' '}
-          to see all {VISIBLE_PORTALS.length}.
+          to see all {PORTALS.length}.
         </p>
       ) : (
         <ul className="portals__grid">

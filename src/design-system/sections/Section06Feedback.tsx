@@ -6,16 +6,34 @@ import { Skeleton } from '../components/Skeleton';
 import { Button } from '../components/Button';
 import { EmptyState } from '../components/EmptyState';
 import { Frame } from '../components/Frame';
+import { Chip } from '../components/Chip';
 import { CodeBlock } from '../components/CodeBlock';
 import { Table, Thead, Tbody, Tr, Th, Td } from '../components/Table';
 import {
   CheckCircle,
+  CircleDashed,
+  CircleNotch,
   Clock,
+  Prohibit,
   Warning,
   XCircle,
   MagnifyingGlass,
   ArrowCounterClockwise,
 } from '@phosphor-icons/react';
+import type { Icon } from '@phosphor-icons/react';
+import type { ChipColor } from '../components/Chip';
+
+/* Illustrative only: the system ships no status list, so the showcase keeps its
+   own the way a consuming app would. */
+const EXAMPLE = {
+  queued: { icon: Clock, label: 'Queued', color: 'primary' },
+  running: { icon: CircleNotch, label: 'Running', color: 'primary' },
+  complete: { icon: CheckCircle, label: 'Complete', color: 'green' },
+  warning: { icon: Warning, label: 'Warning', color: 'yellow' },
+  error: { icon: XCircle, label: 'Error', color: 'red' },
+  canceled: { icon: Prohibit, label: 'Canceled', color: 'orange' },
+  unknown: { icon: CircleDashed, label: 'Unknown', color: 'neutral' },
+} satisfies Record<string, { icon: Icon; label: string; color: ChipColor }>;
 
 interface Section06FeedbackProps {
   cvd: string;
@@ -29,6 +47,47 @@ export function Section06Feedback({ cvd }: Section06FeedbackProps) {
       <p className={s.sDesc}>
         Alert for something that happened. Progress for something measurable. Skeleton while the
         shape is known but the data isn't. Loader when you can't predict either.
+      </p>
+
+      <div className={s.sub}>Status</div>
+      <p className={s.note}>
+        A state is a shape first and a colour second. Green and red are the pair a colour-blind
+        reader loses first, so a bare coloured dot says nothing to them &mdash; the icon carries the
+        meaning and the colour reinforces it. Switch the filter at the top of this page to
+        deuteranopia: the states below still read.
+      </p>
+      <p className={s.note}>
+        There is no status component and no list of states, because states belong to whatever is
+        being reported on &mdash; a job, a connection, a validation. A status is a <code>Chip</code>
+        : boxed where it is a badge, <code>bare</code> where it sits inline. Keep the states in one
+        map in your app, so a new one cannot arrive without an icon &mdash; and so the whole set is
+        in one place to check that no two share a shape.
+      </p>
+      <div className={s.row} style={{ marginBottom: 'var(--s-7)' }}>
+        {(Object.keys(EXAMPLE) as (keyof typeof EXAMPLE)[]).map((k) => (
+          <Chip key={k} color={EXAMPLE[k].color} icon={EXAMPLE[k].icon} label={EXAMPLE[k].label} />
+        ))}
+      </div>
+      <CodeBlock
+        language="tsx"
+        code={`// In your app, not the design system.
+const STATUS = {
+  queued:   { icon: Clock,        label: 'Queued',   color: 'primary' },
+  running:  { icon: CircleNotch,  label: 'Running',  color: 'primary' },
+  complete: { icon: CheckCircle,  label: 'Complete', color: 'green' },
+  error:    { icon: XCircle,      label: 'Error',    color: 'red' },
+  unknown:  { icon: CircleDashed, label: 'Unknown',  color: 'neutral' },
+} satisfies Record<string, { icon: Icon; label: string; color: ChipColor }>;
+
+const { icon, label, color } = STATUS[state];
+
+<Chip color={color} icon={icon} label={label} />
+<Chip color={color} icon={icon} bare label={label} />`}
+      />
+      <p className={s.note}>
+        Where a row is too tight for the word, add <code>iconOnly</code> &mdash; the name stays. For
+        a running spinner reach for <code>Loader</code> below; it is the only one in the system.
+        Chip's own props are documented in section 07.
       </p>
 
       <div className={s.sub}>Alert</div>

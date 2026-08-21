@@ -120,11 +120,14 @@ export const t = {
 import { Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-type ChipColor = 'primary' | 'green' | 'red' | 'yellow' | 'purple';
+// The eight tinted families. neutral is not one of them: it takes
+// --c-raised / --c-border2 / --c-ink3, so it needs its own branch.
+type TintedColor = 'primary' | 'teal' | 'ocean' | 'green'
+  | 'yellow' | 'orange' | 'red' | 'purple';
 
 export const KBChip = styled(Box, {
   shouldForwardProp: (p) => p !== 'color',
-})<{ color: ChipColor }>(({ color }) => ({
+})<{ color: TintedColor }>(({ color }) => ({
   display: 'inline-flex',
   alignItems: 'center',
   gap: 3,
@@ -133,9 +136,10 @@ export const KBChip = styled(Box, {
   padding: '1px 6px',
   borderRadius: t.r.sm,
   background: \`var(--bg-\${color})\`,
-  borderColor: \`var(--bo-\${color})\`,
   color: \`var(--ct-\${color})\`,
+  // Shorthand first: after it, borderColor would be reset to currentColor.
   border: '1px solid',
+  borderColor: \`var(--bo-\${color})\`,
 }));`}
       />
     </div>

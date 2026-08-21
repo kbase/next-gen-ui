@@ -17,7 +17,7 @@ import {
   Thead,
   Tr,
 } from '@kbase/design-system';
-import { CheckCircle, Question, SignOut, X } from '@phosphor-icons/react';
+import { CheckCircle, CircleDashed, SignOut, XCircle } from '@phosphor-icons/react';
 
 import orcidIdUrl from '../assets/orcid-id.svg';
 
@@ -76,23 +76,13 @@ function operatingSystem(t: SessionToken): string {
 function MfaCell({ status }: { status: SessionToken['mfa'] }) {
   switch (status) {
     case 'Used':
-      return (
-        <Chip color="green" onWhite>
-          <CheckCircle size={10} weight="bold" /> Yes
-        </Chip>
-      );
+      return <Chip color="green" onWhite icon={CheckCircle} label="Yes" />;
     case 'NotUsed':
-      return (
-        <Chip color="red" onWhite>
-          <X size={10} weight="bold" /> No
-        </Chip>
-      );
+      return <Chip color="red" onWhite icon={XCircle} label="No" />;
     case 'Unknown':
-      return (
-        <Chip color="ocean" onWhite>
-          <Question size={10} weight="bold" /> Unknown
-        </Chip>
-      );
+      // Neutral: we did not ask and were not told. Tinting it would assert
+      // something about the session that this row does not know.
+      return <Chip color="neutral" onWhite icon={CircleDashed} label="Unknown" />;
     default:
       return null;
   }
@@ -132,9 +122,7 @@ function PublicProfileSection({ me }: { me: Me }) {
         <h2 className="h2" style={{ margin: 0 }}>
           Public profile
         </h2>
-        <Chip color="yellow" onWhite>
-          Coming soon
-        </Chip>
+        <Chip color="yellow" onWhite label="Coming soon" />
       </div>
 
       {/* Role/affiliation skeletons stand in until those fields exist on Me. */}

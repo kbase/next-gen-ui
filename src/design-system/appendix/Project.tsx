@@ -86,9 +86,9 @@ print(f"{len(records)} contigs loaded")`}
             elapsed="12:34"
             progress={45}
             stages={[
-              { label: 'Read filtering', status: 'completed' },
+              { label: 'Read filtering', status: 'complete' },
               { label: 'Assembly', status: 'running' },
-              { label: 'Stats', status: 'pending' },
+              { label: 'Stats', status: 'queued' },
             ]}
             onCancel={() => {}}
           />
@@ -134,14 +134,14 @@ print(f"{len(records)} contigs loaded")`}
           }}
         >
           <JobPanel
-            status="completed"
+            status="complete"
             title="Assembly Quality Report"
             submitted="2 hours ago"
             elapsed="1:23:45"
             stages={[
-              { label: 'Assembly', status: 'completed' },
-              { label: 'Quality check', status: 'completed' },
-              { label: 'Upload', status: 'completed' },
+              { label: 'Assembly', status: 'complete' },
+              { label: 'Quality check', status: 'complete' },
+              { label: 'Upload', status: 'complete' },
             ]}
           />
         </div>

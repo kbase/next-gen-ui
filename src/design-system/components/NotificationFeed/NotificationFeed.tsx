@@ -25,12 +25,14 @@ export interface NotificationFeedProps {
   className?: string;
 }
 
+/* --ct-* rather than the static --c-* fills: those are sized for solid shapes,
+   and as a thin glyph on the feed's surface --c-yellow lands at 1.45:1. */
 const TYPE_ICON: Record<NotificationType, ReactNode> = {
-  info: <Info size={14} weight="bold" style={{ color: 'var(--c-primary)' }} />,
-  success: <CheckCircle size={14} weight="bold" style={{ color: 'var(--c-green)' }} />,
-  warning: <Warning size={14} weight="bold" style={{ color: 'var(--c-yellow)' }} />,
-  error: <XCircle size={14} weight="bold" style={{ color: 'var(--c-red)' }} />,
-  job: <Briefcase size={14} weight="bold" style={{ color: 'var(--c-primary)' }} />,
+  info: <Info size={14} weight="bold" style={{ color: 'var(--ct-primary)' }} />,
+  success: <CheckCircle size={14} weight="bold" style={{ color: 'var(--ct-green)' }} />,
+  warning: <Warning size={14} weight="bold" style={{ color: 'var(--ct-yellow)' }} />,
+  error: <XCircle size={14} weight="bold" style={{ color: 'var(--ct-red)' }} />,
+  job: <Briefcase size={14} weight="bold" style={{ color: 'var(--ct-primary)' }} />,
 };
 
 function groupByTimestamp(items: NotificationItem[]) {

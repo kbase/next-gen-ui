@@ -163,8 +163,9 @@ export function Section10Icons() {
 <Notebook size={17} />
 <Notebook size={17} weight="fill" />
 
-// Status chips: bold at size 9
-<Chip color="green"><CheckCircle size={9} weight="bold" /> Complete</Chip>
+// Status chips: size 9, everything from your own status map
+const { icon: Icon, label, color } = STATUS[state];
+<Chip color={color} icon={Icon} label={label} />
 
 // Button icons: bold at size 14
 <Button variant="primary"><Play size={14} weight="bold" /> Run</Button>`}
@@ -172,26 +173,18 @@ export function Section10Icons() {
 
       <div className={s.sub}>Status chips</div>
       <p className={s.note}>
-        Each status has its own icon shape, so the state reads without colour. Bold weight at size 9
-        inside Chip. Green and red are the pair colour-blind readers lose first &mdash; the icon has
-        to carry the meaning, and the colour reinforces it.
+        Each status has its own icon shape, so the state reads without colour. Green and red are the
+        pair colour-blind readers lose first &mdash; the icon has to carry the meaning, and the
+        colour reinforces it. <code>XCircle</code> for error, not <code>X</code> &mdash; the
+        glossary below is what settles that. Keep a set like this in one map rather than choosing an
+        icon per call site &mdash; see section 06.
       </p>
       <div className={s.row}>
-        <Chip color="primary">
-          <Play size={9} weight="bold" /> Running
-        </Chip>
-        <Chip color="green">
-          <CheckCircle size={9} weight="bold" /> Complete
-        </Chip>
-        <Chip color="red">
-          <X size={9} weight="bold" /> Error
-        </Chip>
-        <Chip color="yellow">
-          <Warning size={9} weight="bold" /> Warning
-        </Chip>
-        <Chip color="primary">
-          <Clock size={9} weight="bold" /> Queued
-        </Chip>
+        <Chip color="primary" icon={CircleNotch} label="Running" />
+        <Chip color="green" icon={CheckCircle} label="Complete" />
+        <Chip color="red" icon={XCircle} label="Error" />
+        <Chip color="yellow" icon={Warning} label="Warning" />
+        <Chip color="primary" icon={Clock} label="Queued" />
       </div>
 
       <div className={s.sub}>Glossary</div>
@@ -231,11 +224,21 @@ export function Section10Icons() {
                   'Warning, needs attention',
                   'error',
                 ],
-                ['\u26d4', <Prohibit size={15} weight="bold" />, 'Blocked, not permitted', 'error'],
+                [
+                  '\u26d4',
+                  <Prohibit size={15} weight="bold" />,
+                  'Blocked, not permitted, canceled',
+                  'error',
+                ],
                 ['\u25cf', <Circle size={15} weight="fill" />, 'Active', ''],
                 ['\u25cb', <Circle size={15} weight="bold" />, 'Pending', ''],
                 ['\u25d0', <CircleHalf size={15} weight="bold" />, 'Half done', ''],
-                ['\u25d4', <CircleNotch size={15} weight="bold" />, 'Partial progress', ''],
+                [
+                  '\u25d4',
+                  <CircleNotch size={15} weight="bold" />,
+                  'Running, in progress',
+                  'partial progress — CircleHalf',
+                ],
                 ['\u25cd', <CircleDashed size={15} weight="bold" />, 'Indeterminate', ''],
                 [
                   '\u23f3',
@@ -271,8 +274,8 @@ export function Section10Icons() {
                 [
                   '\u25b6',
                   <Play size={15} weight="bold" />,
-                  'Running, in progress',
-                  'a play button',
+                  'Run, start',
+                  'a running job — CircleNotch',
                 ],
                 ['\u27f3', <ArrowClockwise size={15} weight="bold" />, 'Refresh', 'retry'],
                 ['\u21ba', <ArrowCounterClockwise size={15} weight="bold" />, 'Retry', 'undo'],

@@ -1,10 +1,16 @@
 .chip {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: var(--s-1);
   font-size: var(--fs-2);
   font-weight: 600;
   padding: 1px var(--s-3);
+  /* One line box plus the padding and border, so a chip is the same height
+     whether it holds words or a single icon. Without it the padding is sized
+     for text the icon does not have, and an icon-only chip is a flat lozenge
+     that steps out of line with its neighbours. */
+  min-height: calc(1lh + 2 * 1px + 2 * 1px);
   border-radius: var(--r-sm);
   border: 1px solid;
   white-space: nowrap;
@@ -34,6 +40,12 @@
   }
 }
 
+/* No tint set: unknown is the absence of information, not a mild severity. */
+.neutral {
+  background: var(--c-raised);
+  border-color: var(--c-border2);
+  color: var(--c-ink3);
+}
 .primary {
   background: var(--bg-primary);
   border-color: var(--bo-primary);
@@ -99,4 +111,29 @@
 }
 .purple.onWhite {
   background: var(--bgw-purple);
+}
+
+/* The name of an icon-only chip: read out, never drawn. Out of flow, so it
+   costs no width and draws no flex gap. */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Qualified with .chip to outrank the colour classes, and kept last in this
+   file: against .color.onWhite it ties on specificity and wins on order.
+   `border: none` rather than a transparent one — bare should occupy exactly
+   what it draws. */
+.chip.bare {
+  background: none;
+  border: none;
+  padding: 0;
+  min-height: 1lh;
 }

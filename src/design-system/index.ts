@@ -45,7 +45,7 @@ export type { SegmentedControlProps, SegmentOption } from './components/Segmente
 
 // Layout
 export { Frame } from './components/Frame';
-export type { FrameProps, FrameSpace } from './components/Frame';
+export type { FrameProps, FrameSpace, FrameAccent } from './components/Frame';
 export { Row } from './components/Row';
 export type { RowProps } from './components/Row';
 export { NavIcon } from './components/NavIcon';

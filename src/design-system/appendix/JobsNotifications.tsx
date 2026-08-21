@@ -81,7 +81,7 @@ export function JobsNotificationsAppendix() {
           </Tr>
           <Tr>
             <Td>Persistent</Td>
-            <Td>Until complete/terminated</Td>
+            <Td>Until complete/canceled</Td>
             <Td>Until dismissed</Td>
           </Tr>
           <Tr>
@@ -117,10 +117,10 @@ export function JobsNotificationsAppendix() {
           elapsed="45:12"
           progress={68}
           stages={[
-            { label: 'Assembly', status: 'completed' },
-            { label: 'Quality filtering', status: 'completed' },
+            { label: 'Assembly', status: 'complete' },
+            { label: 'Quality filtering', status: 'complete' },
             { label: 'Prokka annotation', status: 'running' },
-            { label: 'Upload results', status: 'pending' },
+            { label: 'Upload results', status: 'queued' },
           ]}
           onCancel={() => {}}
           cellId="cell-7"
@@ -133,9 +133,9 @@ export function JobsNotificationsAppendix() {
           submitted="1 hour ago"
           elapsed="0:47:22"
           stages={[
-            { label: 'Assembly', status: 'completed' },
+            { label: 'Assembly', status: 'complete' },
             { label: 'Binning', status: 'error' },
-            { label: 'Annotation', status: 'pending' },
+            { label: 'Annotation', status: 'queued' },
           ]}
           logLines={[
             '[14:23:01] Starting MetaBAT2 binning...',
@@ -150,6 +150,18 @@ export function JobsNotificationsAppendix() {
           title="Soil metagenome annotation"
           submitted="2 min ago"
           onCancel={() => {}}
+        />
+
+        <JobPanel
+          status="canceled"
+          title="Transcriptome differential expression"
+          submitted="20 min ago"
+          elapsed="3:41"
+          stages={[
+            { label: 'Alignment', status: 'complete' },
+            { label: 'Quantification', status: 'queued' },
+          ]}
+          onRetry={() => {}}
         />
       </div>
 

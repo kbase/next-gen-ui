@@ -4,14 +4,6 @@
   /* Frame supplies border, radius, background, overflow. */
 }
 
-.error {
-  border-color: var(--bo-red);
-}
-
-.terminated {
-  border-color: var(--bo-yellow);
-}
-
 .header {
   display: flex;
   align-items: center;
@@ -79,14 +71,14 @@
   border: 1.5px solid var(--c-ink5);
 }
 
-.st_pending {
+.st_queued {
   color: var(--c-ink5);
 }
 .st_running {
   color: var(--ct-primary);
   font-weight: 600;
 }
-.st_completed {
+.st_complete {
   color: var(--c-ink3);
 }
 .st_error {
@@ -205,4 +197,14 @@
   .logTrigger:not([data-panel-open]) & {
     transform: rotate(-90deg);
   }
+}
+
+/* Teal, not green: a finished stage inside a running job is a passive "done",
+   not the job's own success. */
+.markComplete {
+  color: var(--ct-teal);
+}
+
+.markError {
+  color: var(--ct-red);
 }

@@ -35,8 +35,9 @@ export function Section02Color() {
       </p>
       <p className={s.note}>
         When color conveys status, always pair it with a unique icon shape. Each status gets its own
-        (CheckCircle for success, XCircle for error, Warning for warning, Clock for queued, Play for
-        running). Shape is the discriminator, color is reinforcement.
+        (CheckCircle for success, XCircle for error, Warning for warning, Clock for queued,
+        CircleNotch for running, Prohibit for canceled, CircleDashed for unknown). Shape is the
+        discriminator, color is reinforcement.
       </p>
 
       <div className={s.sub}>Full palette</div>
@@ -131,16 +132,16 @@ export function Section02Color() {
 
       <div className={s.sub}>Tints in use</div>
       <div className={s.row}>
-        <Chip color="primary">primary</Chip>
-        <Chip color="green">green</Chip>
-        <Chip color="yellow">yellow</Chip>
-        <Chip color="red">red</Chip>
+        <Chip color="primary" label="primary" />
+        <Chip color="green" label="green" />
+        <Chip color="yellow" label="yellow" />
+        <Chip color="red" label="red" />
       </div>
       <div className={s.row} style={{ marginTop: 'var(--s-3)' }}>
-        <Chip color="purple">purple</Chip>
-        <Chip color="teal">teal</Chip>
-        <Chip color="ocean">ocean</Chip>
-        <Chip color="orange">orange</Chip>
+        <Chip color="purple" label="purple" />
+        <Chip color="teal" label="teal" />
+        <Chip color="ocean" label="ocean" />
+        <Chip color="orange" label="orange" />
       </div>
       <p className={s.note}>
         Purple marks tutorials, educational content, and special features: anything outside the
@@ -153,7 +154,8 @@ export function Section02Color() {
       <p className={s.note}>
         Ocean and orange appear primarily in data type badges: ocean for models and derived objects,
         orange for reads and raw sequencing data. They tie back to the logo's three circles
-        (microbes, plants, communities).
+        (microbes, plants, communities). Orange has one status use as well &mdash; canceled, which
+        ended without finishing but is nobody's fault, so red would overstate it.
       </p>
 
       <div className={s.sub}>Token reference</div>

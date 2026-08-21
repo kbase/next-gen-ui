@@ -2,6 +2,17 @@ import type { ReactNode, CSSProperties } from 'react';
 import styles from './Frame.module.scss';
 import { cx } from '../../util/cx';
 
+/** Colour family names from tokens.css. */
+export type FrameAccent =
+  | 'primary'
+  | 'teal'
+  | 'ocean'
+  | 'green'
+  | 'yellow'
+  | 'orange'
+  | 'red'
+  | 'purple';
+
 /** A step on the spacing scale; 0 is no padding. */
 export type FrameSpace = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
@@ -12,16 +23,29 @@ export interface FrameProps {
   /** Overrides padding on one axis. */
   paddingX?: FrameSpace;
   paddingY?: FrameSpace;
+  /**
+   * Colours the frame's border. Group or categorise with it, but never carry
+   * the only copy of a meaning in it — say the same thing in the content.
+   */
+  accent?: FrameAccent;
   className?: string;
   style?: CSSProperties;
 }
 
 const space = (v: FrameSpace) => (v === 0 ? '0' : `var(--s-${v})`);
 
-export function Frame({ children, padding = 7, paddingX, paddingY, className, style }: FrameProps) {
+export function Frame({
+  children,
+  padding = 7,
+  paddingX,
+  paddingY,
+  accent,
+  className,
+  style,
+}: FrameProps) {
   return (
     <div
-      className={cx(styles.frame, className)}
+      className={cx(styles.frame, accent && styles.accented, accent && styles[accent], className)}
       style={{
         // The logical properties, so the axes follow the writing mode.
         paddingBlock: space(paddingY ?? padding),

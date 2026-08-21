@@ -13,7 +13,7 @@ import { EmptyState } from '../components/EmptyState';
 import s from './appendix-shared.module.scss';
 import {
   CheckCircle,
-  Clock,
+  CircleNotch,
   XCircle,
   Table as TableIcon,
   SquaresFour,
@@ -116,13 +116,9 @@ const DATA: GenomeRow[] = [
 ];
 
 const STATUS_MAP = {
-  complete: {
-    color: 'green' as const,
-    icon: <CheckCircle size={10} weight="bold" />,
-    label: 'Complete',
-  },
-  running: { color: 'primary' as const, icon: <Clock size={10} weight="bold" />, label: 'Running' },
-  error: { color: 'red' as const, icon: <XCircle size={10} weight="bold" />, label: 'Error' },
+  complete: { color: 'green' as const, icon: CheckCircle, label: 'Complete' },
+  running: { color: 'primary' as const, icon: CircleNotch, label: 'Running' },
+  error: { color: 'red' as const, icon: XCircle, label: 'Error' },
 };
 
 const FACETS = [
@@ -276,9 +272,8 @@ export function DataExplorerAppendix() {
                   key={`${f.groupKey}:${f.value}`}
                   color="primary"
                   onDismiss={() => toggleFilter(f.groupKey, f.value)}
-                >
-                  {f.label}
-                </Chip>
+                  label={f.label}
+                />
               ))}
             </div>
           )}
@@ -375,9 +370,7 @@ export function DataExplorerAppendix() {
                           <span className={s.mono}>{row.size}</span>
                         </Td>
                         <Td>
-                          <Chip color={st.color}>
-                            {st.icon} {st.label}
-                          </Chip>
+                          <Chip color={st.color} icon={st.icon} label={st.label} />
                         </Td>
                       </Tr>
                     );

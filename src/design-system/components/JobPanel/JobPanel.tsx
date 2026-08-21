@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import type { Icon } from '@phosphor-icons/react';
 import styles from './JobPanel.module.scss';
 import { cx } from '../../util/cx';
 import { Frame } from '../Frame';
@@ -7,23 +8,38 @@ import { Progress } from '../Progress';
 import { Loader } from '../Loader';
 import * as Collapsible from '../Collapsible';
 import {
-  Play,
-  Clock,
-  CheckCircle,
-  XCircle,
-  Prohibit,
   ArrowCounterClockwise,
-  X,
   ArrowSquareOut,
   CaretDown,
+  CheckCircle,
+  CircleNotch,
+  Clock,
+  Prohibit,
+  X,
+  XCircle,
 } from '@phosphor-icons/react';
+import type { FrameAccent } from '../Frame';
 
-export type JobStatus = 'queued' | 'running' | 'completed' | 'error' | 'terminated';
+export type JobStatus = 'queued' | 'running' | 'complete' | 'error' | 'canceled';
 
 export interface JobStage {
   label: string;
-  status: 'pending' | 'running' | 'completed' | 'error';
+  status: Extract<JobStatus, 'queued' | 'running' | 'complete' | 'error'>;
 }
+
+/**
+ * A job's states, in one map so a new one cannot arrive without an icon.
+ * `color` is a FrameAccent, the eight tinted families, because the failed
+ * states colour the panel's border with it as well as the chip. A state that
+ * wanted Chip's neutral would have to stop doing that.
+ */
+const STATUS: Record<JobStatus, { icon: Icon; label: string; color: FrameAccent }> = {
+  queued: { icon: Clock, label: 'Queued', color: 'primary' },
+  running: { icon: CircleNotch, label: 'Running', color: 'primary' },
+  complete: { icon: CheckCircle, label: 'Complete', color: 'green' },
+  error: { icon: XCircle, label: 'Error', color: 'red' },
+  canceled: { icon: Prohibit, label: 'Canceled', color: 'orange' },
+};
 
 export interface JobPanelProps {
   status: JobStatus;
@@ -40,26 +56,11 @@ export interface JobPanelProps {
   className?: string;
 }
 
-const STATUS: Record<
-  JobStatus,
-  {
-    color: 'primary' | 'green' | 'red' | 'yellow';
-    icon: ReactNode;
-    label: string;
-  }
-> = {
-  queued: { color: 'primary', icon: <Clock size={9} weight="bold" />, label: 'Queued' },
-  running: { color: 'primary', icon: <Play size={9} weight="bold" />, label: 'Running' },
-  completed: { color: 'green', icon: <CheckCircle size={9} weight="bold" />, label: 'Completed' },
-  error: { color: 'red', icon: <XCircle size={9} weight="bold" />, label: 'Error' },
-  terminated: { color: 'yellow', icon: <Prohibit size={9} weight="bold" />, label: 'Terminated' },
-};
-
 const STAGE_MARK: Record<JobStage['status'], ReactNode> = {
-  pending: <span className={styles.dot} />,
+  queued: <span className={styles.dot} />,
   running: <Loader size={10} />,
-  completed: <CheckCircle size={10} weight="bold" style={{ color: 'var(--c-teal)' }} />,
-  error: <XCircle size={10} weight="bold" style={{ color: 'var(--c-red)' }} />,
+  complete: <CheckCircle size={10} weight="bold" className={styles.markComplete} />,
+  error: <XCircle size={10} weight="bold" className={styles.markError} />,
 };
 
 export function JobPanel({
@@ -78,18 +79,24 @@ export function JobPanel({
 }: JobPanelProps) {
   const cfg = STATUS[status];
   const active = status === 'queued' || status === 'running';
-  const failed = status === 'error' || status === 'terminated';
+  const failed = status === 'error' || status === 'canceled';
 
   return (
-    <Frame padding={0} className={cx(styles.root, failed && styles[status], className)}>
+    // The border repeats what the chip says. Frame's own accent rather than a
+    // border-color class here: both would be single-class selectors on one
+    // element from two css modules, so which won would come down to the order
+    // the bundler happened to emit them in.
+    <Frame
+      padding={0}
+      accent={failed ? cfg.color : undefined}
+      className={cx(styles.root, className)}
+    >
       <div className={cx(styles.header, active && !stages && styles.headerWithLoader)}>
         {active && !stages && <Loader size={12} />}
         <span className={styles.title}>{title}</span>
         <span style={{ flex: 1 }} />
         {elapsed && <span className={styles.mono}>{elapsed}</span>}
-        <Chip color={cfg.color} onWhite>
-          {cfg.icon} {cfg.label}
-        </Chip>
+        <Chip color={cfg.color} onWhite icon={cfg.icon} label={cfg.label} />
       </div>
 
       {active && progress != null && (

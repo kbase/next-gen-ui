@@ -139,9 +139,7 @@ function CoScientistHero() {
         <h2 className="h2" style={{ margin: 0 }}>
           Co-Scientist
         </h2>
-        <Chip color="yellow" onWhite>
-          Coming soon
-        </Chip>
+        <Chip color="yellow" onWhite label="Coming soon" />
       </div>
       <p className="body" style={{ color: 'var(--c-ink2)', maxWidth: '70ch', margin: 0 }}>
         Ask in plain English. The platform plans, queries the lakehouse, and writes back findings,
@@ -185,9 +183,7 @@ function DestinationCard({ icon, tint, title, description }: DestinationCardProp
         >
           {icon}
         </span>
-        <Chip color="yellow" onWhite>
-          Coming soon
-        </Chip>
+        <Chip color="yellow" onWhite label="Coming soon" />
       </div>
       <h3 className="h3">{title}</h3>
       <p className="body" style={{ color: 'var(--c-ink3)', marginTop: 'var(--s-3)' }}>

@@ -23,8 +23,40 @@ export function Section09Layout() {
       <div className={s.sNum}>09</div>
       <div className={s.sTitle}>Structure</div>
       <p className={s.sDesc}>
-        The pieces that frame content: collapsible sections, control strips, user identity, and
-        navigation context.
+        The pieces that frame content: the surface itself, collapsible sections, control strips,
+        user identity, and navigation context.
+      </p>
+
+      <div className={s.sub}>Frame</div>
+      <p className={s.note}>
+        A surface: background, border, radius, and padding from the spacing scale.{' '}
+        <code>padding</code> defaults to 7; <code>paddingX</code> and <code>paddingY</code> override
+        one axis. <code>padding={'{0}'}</code> for a frame whose children run to the edge, like a
+        table or a list.
+      </p>
+      <div className={s.row} style={{ alignItems: 'stretch', marginBottom: 'var(--s-7)' }}>
+        <Frame accent="primary" style={{ maxWidth: 240 }}>
+          <div className="h3">Assembly</div>
+          <p className={s.note} style={{ margin: 0 }}>
+            Accent groups this card with the others in its category.
+          </p>
+        </Frame>
+        <Frame accent="purple" style={{ maxWidth: 240 }}>
+          <div className="h3">Annotation</div>
+          <p className={s.note} style={{ margin: 0 }}>
+            A different category, so a different outline &mdash; and a different title.
+          </p>
+        </Frame>
+      </div>
+      <CodeBlock language="tsx" code={`<Frame accent="primary" padding={7}>…</Frame>`} />
+      <p className={s.note}>
+        <code>accent</code> colours the frame's own border, for grouping or categorising. The whole
+        outline reads as one object; a stripe down one edge reads as a marker stuck onto it, which
+        is a different claim. It may carry meaning; it may not carry it <em>alone</em> &mdash; the
+        card must say the same thing in its content, because a reader who does not see the hue sees
+        an ordinary border. That is also why it is a prop on Frame rather than a component of its
+        own: it is decoration that reinforces, not the thing doing the work. For state rather than
+        category, reach for a status Chip in section 06.
       </p>
 
       <div className={s.sub}>Accordion</div>

@@ -21,6 +21,159 @@ export function Section07Data() {
         identifier, color is reinforcement. Never rely on color alone.
       </p>
 
+      <div className={s.sub}>Chip</div>
+      <p className={s.note}>
+        A small coloured label. <code>color</code> is required: eight tinted families, plus{' '}
+        <code>neutral</code> for the state that means <em>no information</em>, which takes no tint
+        because it is not a rung on the severity scale. An icon goes in <code>icon</code> rather
+        alongside <code>label</code>, so the chip knows which part of it is words &mdash; it sizes
+        the icon and hides it from screen readers, which <code>label</code> already covers.
+      </p>
+      <div className={s.row} style={{ marginBottom: 'var(--s-7)' }}>
+        <Chip color="primary" label="primary" />
+        <Chip color="teal" label="teal" />
+        <Chip color="ocean" label="ocean" />
+        <Chip color="green" label="green" />
+        <Chip color="yellow" label="yellow" />
+        <Chip color="orange" label="orange" />
+        <Chip color="red" label="red" />
+        <Chip color="purple" label="purple" />
+        <Chip color="neutral" label="neutral" />
+      </div>
+
+      <p className={s.note}>
+        <code>onWhite</code> switches to the tint tuned for a white ground &mdash; inside a Frame or
+        a table row. The page-background tint used there looks washed out. The two tints are a
+        light-theme distinction: in dark theme the pair below is deliberately near-identical, since
+        there is no white ground to correct for.
+      </p>
+      <div className={s.row} style={{ alignItems: 'stretch', marginBottom: 'var(--s-7)' }}>
+        <Frame padding={5}>
+          <div className={s.row}>
+            <Chip color="red" onWhite label="Genome" />
+            <Chip color="primary" onWhite label="Assembly" />
+          </div>
+        </Frame>
+        <div className={s.row}>
+          <Chip color="red" label="Genome" />
+          <Chip color="primary" label="Assembly" />
+        </div>
+      </div>
+
+      <p className={s.note}>
+        <code>bare</code> drops the background, border and padding, leaving the icon and text in the
+        chip's colour, for a chip inline in running text or a dense row. A chip is one line box tall
+        either way, so a column that boxes some rows and not others still lines up.
+      </p>
+      <div className={s.row} style={{ marginBottom: 'var(--s-7)', alignItems: 'center' }}>
+        <Chip color="red" icon={Warning} label="Degraded" />
+        <Chip color="red" bare icon={Warning} label="Degraded" />
+      </div>
+
+      <p className={s.note}>
+        Where a row is too tight for the word, add <code>iconOnly</code>. The label is still there,
+        just not drawn, so the same call works in a wide row and a narrow one and nothing has to be
+        decided twice. It is read as the chip's content rather than set as <code>aria-label</code>,
+        which is prohibited on a plain <code>&lt;span&gt;</code> and unreliably announced.
+      </p>
+      <p className={s.note}>
+        Leave <code>label</code> off entirely for a chip that is decoration &mdash; one whose
+        meaning the row beside it already carries. It then says nothing, which is what decoration
+        should do; naming it would only make a screen reader read the same thing twice.
+      </p>
+      <div className={s.row} style={{ marginBottom: 'var(--s-7)', alignItems: 'center' }}>
+        <Chip color="red" label="Degraded" icon={Warning} iconOnly />
+        <Chip color="red" bare label="Degraded" icon={Warning} iconOnly />
+      </div>
+      <CodeBlock
+        language="tsx"
+        code={`<Chip color="red" label="Genome" />
+<Chip color="red" onWhite label="Genome" />              // inside a Frame or table row
+<Chip color="red" icon={Warning} bare label="Degraded" />
+<Chip color="red" icon={Warning} label="Degraded" iconOnly />   // icon drawn, name kept
+<Chip color="red" icon={Warning} />                             // decoration: says nothing
+<Chip color="primary" label="Genome" onDismiss={() => removeFilter('type', 'Genome')} />`}
+      />
+
+      <p className={s.note}>
+        <code>onDismiss</code> adds an X for active filter tags. It is a real button with its own
+        name, so it sits outside the chip's.
+      </p>
+      <div className={s.row} style={{ marginBottom: 'var(--s-7)' }}>
+        <Chip color="primary" onDismiss={() => {}} label="Genome" />
+        <Chip color="teal" onDismiss={() => {}} label="Assembly" />
+        <Chip color="red" onDismiss={() => {}} label="Error" />
+      </div>
+      <Table>
+        <Thead>
+          <Tr>
+            <Th>Prop</Th>
+            <Th>Type</Th>
+            <Th>Does</Th>
+          </Tr>
+        </Thead>
+        <Tbody>
+          <Tr>
+            <Td>
+              <code>color</code>
+            </Td>
+            <Td>
+              <code>ChipColor</code>
+            </Td>
+            <Td>Required. Eight tinted families, or neutral for no tint.</Td>
+          </Tr>
+          <Tr>
+            <Td>
+              <code>icon</code>
+            </Td>
+            <Td>
+              <code>Icon</code>
+            </Td>
+            <Td>An icon component. Drawn before the text, sized by the chip, hidden from AT.</Td>
+          </Tr>
+          <Tr>
+            <Td>
+              <code>onWhite</code>
+            </Td>
+            <Td>
+              <code>boolean</code>
+            </Td>
+            <Td>Uses the white-ground tint. No effect on neutral, which has no tint.</Td>
+          </Tr>
+          <Tr>
+            <Td>
+              <code>bare</code>
+            </Td>
+            <Td>
+              <code>boolean</code>
+            </Td>
+            <Td>Drops the box, keeping the colour and the height.</Td>
+          </Tr>
+          <Tr>
+            <Td>
+              <code>label</code>
+            </Td>
+            <Td>
+              <code>string</code>
+            </Td>
+            <Td>The chip's words. Omit for a chip that is decoration and should stay silent.</Td>
+          </Tr>
+          <Tr>
+            <Td>
+              <code>onDismiss</code>
+            </Td>
+            <Td>
+              <code>() =&gt; void</code>
+            </Td>
+            <Td>Adds a dismiss button named "Remove".</Td>
+          </Tr>
+        </Tbody>
+      </Table>
+      <p className={s.note}>
+        For status specifically &mdash; which icon, which colour, and why the system ships no list
+        of states &mdash; see section 06.
+      </p>
+
       <div className={s.sub}>Data-type marker (TypeBadge preset)</div>
       <p className={s.note}>
         A 28px square Avatar in <code>tint</code> variant, not a separate primitive. Use inside
@@ -48,7 +201,7 @@ export function Section07Data() {
       <div className={s.sub}>Table</div>
       <p className={s.note}>
         Styled rows. The table is stateless: sorting, filtering, and pagination are app concerns.
-        Use <code>Chip onWhite</code> for type tags inside white table rows.
+        Type tags in the rows are Chips, documented above.
       </p>
       <Table>
         <Thead>
@@ -63,9 +216,7 @@ export function Section07Data() {
           <Tr>
             <Td style={{ fontWeight: 600 }}>Escherichia coli K-12 MG1655</Td>
             <Td>
-              <Chip color="red" onWhite>
-                Gn
-              </Chip>
+              <Chip color="red" onWhite label="Gn" />
             </Td>
             <Td className="mono-secondary" style={{ textAlign: 'right' }}>
               4.6 Mb
@@ -77,9 +228,7 @@ export function Section07Data() {
           <Tr>
             <Td style={{ fontWeight: 600 }}>Soil sample contigs v2</Td>
             <Td>
-              <Chip color="primary" onWhite>
-                As
-              </Chip>
+              <Chip color="primary" onWhite label="As" />
             </Td>
             <Td className="mono-secondary" style={{ textAlign: 'right' }}>
               48.2 Mb
@@ -100,7 +249,7 @@ export function Section07Data() {
   <Tbody>
     <Tr>
       <Td>E. coli K-12</Td>
-      <Td><Chip color="red" onWhite>Gn</Chip></Td>
+      <Td><Chip color="red" onWhite label="Gn" /></Td>
     </Tr>
   </Tbody>
 </Table>
@@ -182,26 +331,6 @@ export function Section07Data() {
         code={`<Th sort={sortDir} onClick={() => toggleSort('name')}>Name</Th>
 <Th onClick={() => toggleSort('type')}>Type</Th>  // idle, no sort prop
 <Th>Status</Th>                                    // no onClick = not sortable`}
-      />
-
-      <div className={s.sub}>Dismissable chips</div>
-      <p className={s.note}>
-        Add <code>onDismiss</code> to Chip for active filter tags.
-      </p>
-      <div className={s.row}>
-        <Chip color="primary" onDismiss={() => {}}>
-          Genome
-        </Chip>
-        <Chip color="teal" onDismiss={() => {}}>
-          Assembly
-        </Chip>
-        <Chip color="red" onDismiss={() => {}}>
-          Error
-        </Chip>
-      </div>
-      <CodeBlock
-        language="tsx"
-        code={`<Chip color="primary" onDismiss={() => removeFilter('type', 'Genome')}>Genome</Chip>`}
       />
 
       <div className={s.sub}>Skeleton table</div>
@@ -298,11 +427,7 @@ export function Section07Data() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s-4)' }}>
         <VizContainer
           title="GC content by organism"
-          toolbar={
-            <Chip color="primary" onWhite>
-              <ChartBar size={9} weight="bold" /> Bar chart
-            </Chip>
-          }
+          toolbar={<Chip color="primary" onWhite icon={ChartBar} label="Bar chart" />}
           legend={
             <div style={{ display: 'flex', gap: 'var(--s-7)' }}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--s-2)' }}>

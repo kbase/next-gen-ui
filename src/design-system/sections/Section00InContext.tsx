@@ -8,9 +8,9 @@ import { NavIcon } from '../components/NavIcon';
 import * as Tabs from '../components/Tabs';
 import {
   CheckCircle,
-  X,
   Plus,
-  Play,
+  CircleNotch,
+  XCircle,
   MagnifyingGlass,
   Notebook,
   Database,
@@ -108,9 +108,7 @@ export function Section00InContext() {
                 }}
               >
                 <span className={css.mockRowTitle}>Soil Metagenome Assembly & Annotation</span>
-                <Chip color="primary" onWhite>
-                  <Play size={8} weight="bold" /> Running
-                </Chip>
+                <Chip color="primary" onWhite icon={CircleNotch} label="Running" />
               </div>
               <div className={css.mockRowMeta}>
                 14 cells · 2h ago · <span style={{ fontFamily: 'var(--f-mono)' }}>ws:45221</span>
@@ -130,9 +128,7 @@ export function Section00InContext() {
                 }}
               >
                 <span className={css.mockRowTitle}>Pangenome Analysis Tutorial</span>
-                <Chip color="purple" onWhite>
-                  <GraduationCap size={8} weight="bold" /> Tutorial
-                </Chip>
+                <Chip color="purple" onWhite icon={GraduationCap} label="Tutorial" />
               </div>
               <div className={css.mockRowMeta}>6 cells · Last week</div>
             </div>
@@ -146,9 +142,7 @@ export function Section00InContext() {
                 }}
               >
                 <span className={css.mockRowTitle}>Rhizosphere Community Metabolic Modeling</span>
-                <Chip color="green" onWhite>
-                  <CheckCircle size={8} weight="bold" /> Complete
-                </Chip>
+                <Chip color="green" onWhite icon={CheckCircle} label="Complete" />
               </div>
               <div className={css.mockRowMeta}>
                 22 cells · Yesterday · <span style={{ fontFamily: 'var(--f-mono)' }}>ws:44918</span>
@@ -168,9 +162,7 @@ export function Section00InContext() {
                 }}
               >
                 <span className={css.mockRowTitle}>Marine Sediment MAGs</span>
-                <Chip color="red" onWhite>
-                  <X size={8} weight="bold" /> Error
-                </Chip>
+                <Chip color="red" onWhite icon={XCircle} label="Error" />
               </div>
               <div className={css.mockRowMeta}>3 cells · 1h ago</div>
             </div>

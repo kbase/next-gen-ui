@@ -300,16 +300,6 @@ body,
   color: var(--c-ink3);
 }
 
-/* The asterisk is part of the name, not emphasis. Nudge it so the
-   wordmark reads as KIND*AI rather than KIND-star-AI. */
-.portals__kindai {
-  white-space: nowrap;
-  font-weight: 700;
-  /* Inherit, so the wordmark works on a tinted button as well as in
-     body copy. */
-  color: inherit;
-}
-
 .portals .sr-only {
   position: absolute;
   width: 1px;
@@ -353,12 +343,31 @@ body,
   display: flex;
   flex-wrap: wrap;
   gap: var(--s-4);
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+/* The radio itself is invisible; the label is the pill. Not display:none,
+   which would take it out of the tab order and off the a11y tree. */
+.portals__filter input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.portals__filter:has(input:focus-visible) {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
 }
 
 /* --filter-* are set inline per facet; "All portals" has none. */
 .portals__filter {
-  all: unset;
   cursor: pointer;
+  display: inline-block;
   padding: var(--s-3) var(--s-6);
   border: 1px solid var(--filter-bo, var(--c-border2));
   border-radius: var(--r-full);
@@ -372,11 +381,6 @@ body,
 
 .portals__filter:hover {
   background: var(--filter-bg, var(--c-raised));
-}
-
-.portals__filter:focus-visible {
-  outline: 2px solid var(--c-focus);
-  outline-offset: 2px;
 }
 
 .portals__filter--active {
@@ -425,32 +429,6 @@ body,
   text-decoration: none;
   color: inherit;
   border-radius: var(--r-lg);
-}
-
-/* The empty slot at the end of the grid. Not a link -- it stands in for
-   the publish flow that isn't built yet. */
-.portal-card--placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  min-height: 260px;
-  padding: var(--s-9);
-  border: 1px dashed var(--c-border2);
-  background: transparent;
-}
-
-.portal-card__placeholder-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 46px;
-  height: 46px;
-  border-radius: var(--r-full);
-  margin-bottom: var(--s-6);
-  background: var(--bg-yellow);
-  color: var(--ct-yellow);
 }
 
 .portal-card:focus-visible {

@@ -42,12 +42,18 @@ fi
 
 SCRIPT_HASH="$(cat "$HASH_FILE")"
 
-# `#` as the sed delimiter: these values are URLs.
+# `#` is the sed delimiter because these values are URLs and contain `/`.
+# An unescaped `&` in a replacement would insert the matched placeholder
+# instead of the value, which the leftover check below cannot detect.
+esc() {
+  printf '%s' "$1" | sed -e 's#[&\\]#\\&#g'
+}
+
 render() {
-  sed -e "s#__AUTH_ORIGIN__#${1}#g" \
-      -e "s#__IDP_ORIGINS__#${IDP_ORIGINS}#g" \
-      -e "s#__COOKIE_DOMAIN__#${COOKIE_DOMAIN_VALUE}#g" \
-      -e "s#__SCRIPT_HASH__#${SCRIPT_HASH}#g" \
+  sed -e "s#__AUTH_ORIGIN__#$(esc "$1")#g" \
+      -e "s#__IDP_ORIGINS__#$(esc "$IDP_ORIGINS")#g" \
+      -e "s#__COOKIE_DOMAIN__#$(esc "$COOKIE_DOMAIN_VALUE")#g" \
+      -e "s#__SCRIPT_HASH__#$(esc "$SCRIPT_HASH")#g" \
       "$2" > "$3"
 }
 

@@ -67,15 +67,17 @@ describe('portal gallery', () => {
     expect(cardLinks()).toHaveLength(2);
   });
 
-  it('reports when nothing matches and can be cleared', async () => {
+  // Clearing has to drop the filter too, or "see all 5" is a false promise.
+  it('reports when nothing matches, and clears both search and filter', async () => {
     const user = userEvent.setup();
     mountGallery();
     await screen.findByRole('heading', { level: 1, name: /portal gallery/i });
 
+    await user.click(screen.getByRole('radio', { name: 'Proteins' }));
     await user.type(screen.getByRole('textbox', { name: /search portals/i }), 'zzzznope');
     expect(cardLinks()).toHaveLength(0);
 
-    await user.click(screen.getByRole('button', { name: /clear the search/i }));
+    await user.click(screen.getByRole('button', { name: /clear search and filters/i }));
     expect(cardLinks()).toHaveLength(5);
   });
 

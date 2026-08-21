@@ -28,7 +28,7 @@ export default defineConfig(({ mode }) => {
       react(),
       {
         // Deploy config placeholders, substituted when the container starts
-        // (docker-entrypoint.d/10-render-config.sh) so one image serves every
+        // (docker-entrypoint.d/05-render-config.sh) so one image serves every
         // environment. Build-only: in dev the tags are absent and src/config.ts
         // falls back to import.meta.env. Meta rather than an inline script
         // because CSP would demand a per-environment hash for the latter.

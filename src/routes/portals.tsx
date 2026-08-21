@@ -282,13 +282,13 @@ function Gallery() {
           aria-label="Search portals"
         />
 
-        <div className="portals__filters" role="radiogroup" aria-label="Filter portals by category">
+        {/* Native radios, hidden behind their labels: arrow-key navigation
+            and group semantics come from the browser. */}
+        <fieldset className="portals__filters">
+          <legend className="sr-only">Filter portals</legend>
           {FILTERS.map((option) => (
-            <button
+            <label
               key={option.value}
-              type="button"
-              role="radio"
-              aria-checked={option.value === category}
               className={
                 option.value === category
                   ? 'portals__filter portals__filter--active'
@@ -304,12 +304,18 @@ function Gallery() {
                     } as React.CSSProperties)
                   : undefined
               }
-              onClick={() => setCategory(option.value)}
             >
+              <input
+                type="radio"
+                name="portal-filter"
+                value={option.value}
+                checked={option.value === category}
+                onChange={() => setCategory(option.value)}
+              />
               {option.label}
-            </button>
+            </label>
           ))}
-        </div>
+        </fieldset>
 
         <div className="portals__sort">
           {/* Without `items` the closed trigger shows the raw value. */}
@@ -339,9 +345,16 @@ function Gallery() {
 
       {visible.length === 0 ? (
         <p className="portals__empty">
-          No portals match that search.{' '}
-          <button onClick={() => setQuery('')}>Clear the search</button> to see all{' '}
-          {VISIBLE_PORTALS.length}.
+          No portals match.{' '}
+          <button
+            onClick={() => {
+              setQuery('');
+              setCategory(ALL);
+            }}
+          >
+            Clear search and filters
+          </button>{' '}
+          to see all {VISIBLE_PORTALS.length}.
         </p>
       ) : (
         <ul className="portals__grid">

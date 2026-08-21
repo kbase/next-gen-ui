@@ -7,6 +7,7 @@ import { Alert, Button, Frame, Loader } from '@kbase/design-system';
 import {
   MfaRequiredError,
   authErrorMessage,
+  AUTH_ENABLED,
   getLoginChoice,
   parseSafeRedirect,
   postLoginPick,
@@ -55,6 +56,13 @@ export const Route = createFileRoute('/login/continue')({
   loader: async ({ context, deps }): Promise<LoaderResult> => {
     const { nextRequest } = parseState(deps.stateRaw);
     const target = parseSafeRedirect(nextRequest);
+
+    // Nothing can have issued this callback with no auth service, so this
+    // is a stale bookmark. Without the guard the request goes to a relative
+    // path nginx answers with index.html, and the user gets a schema error.
+    if (!AUTH_ENABLED) {
+      return { kind: 'error', message: 'Sign-in is not available.' };
+    }
 
     try {
       const choice = await getLoginChoice();

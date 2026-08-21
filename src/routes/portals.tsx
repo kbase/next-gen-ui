@@ -449,9 +449,10 @@ function PortalCard({ portal }: { portal: Portal }) {
   );
 }
 
-// Terms are KIND*AI's, deliberately: an investigation is its user-facing
-// gloss for an arc, and a portal is one of the deliverable kinds a
-// finished one emits (portal / paper / slides / report).
+// Portals are apps -- every entry here is `"type": "app"` in KIND*AI's
+// plugins/*.json, launched from a manifest. ("Portal" also names a
+// deliverable kind an investigation emits, alongside paper and slides;
+// that is a different word for a different thing.)
 function AboutPortals() {
   return (
     <section className="portals__about" aria-labelledby="about-heading">
@@ -460,17 +461,17 @@ function AboutPortals() {
           About portals
         </h2>
         <p className="portals__about-body">
-          A portal is what a finished investigation leaves behind.
+          A portal is a KBase app that opens onto one body of science.
         </p>
         <p className="portals__about-body">
-          An investigation is one research question driven to an answer. Reaching that answer emits
-          a deliverable — a portal, a paper, slides, a report. The portal is the interactive one: it
-          keeps the data, the evidence, and the route taken through them live, so a reader can walk
-          the same path and then strike out from it.
+          Apps register by manifest rather than being built into the platform, so each portal is its
+          own versioned thing: it declares how it launches, and KBase starts it on demand and embeds
+          it. What opens is live software over governed KBase data — query it, follow the
+          cross-links, change what you are looking at.
         </p>
         <p className="portals__about-body">
-          Each is published into a content-addressed store of record, and carries both the version
-          of the code that built it and the vintage of the data behind it.
+          Each carries the version of the code it was built from and the vintage of the data behind
+          it.
         </p>
       </Frame>
     </section>

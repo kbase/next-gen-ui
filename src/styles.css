@@ -499,23 +499,8 @@ body,
 .portal-card__title-row {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--s-4);
-}
-
-.portal-card__title-row .h3 {
-  margin-right: auto;
-}
-
-/* A state, not a subject, so it sits by the title rather than among the
-   facet chips. */
-.portal-card__status {
-  padding: 1px var(--s-3);
-  border: 1px dashed var(--c-border2);
-  border-radius: var(--r-sm);
-  color: var(--c-ink4);
-  font-size: var(--fs-1);
-  font-weight: 600;
-  white-space: nowrap;
 }
 
 .portal-card__go {

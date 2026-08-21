@@ -55,7 +55,10 @@ interface Portal {
    * is a flag change rather than a retype.
    */
   hidden?: true;
-  /** Only set when the portal ships with caveats. */
+  /**
+   * Recorded, deliberately not rendered: a caveat we track internally
+   * rather than put in front of a public reader.
+   */
   status?: string;
 }
 
@@ -412,7 +415,6 @@ function PortalCard({ portal }: { portal: Portal }) {
         <div className="portal-card__body">
           <div className="portal-card__title-row">
             <h3 className="h3">{portal.title}</h3>
-            {portal.status && <span className="portal-card__status">{portal.status}</span>}
             <ArrowUpRight size={14} className="portal-card__go" aria-hidden="true" />
           </div>
 

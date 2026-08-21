@@ -164,9 +164,7 @@ The auth-related env vars have deeper context in
 
 ## Build & deploy
 
-Running this on a Rancher-managed cluster (workload spec, Ingress
-rules the router depends on, runtime config):
-[`DEPLOYING.md`](./DEPLOYING.md).
+Deploying on Rancher2: [`DEPLOYING.md`](./DEPLOYING.md).
 
 ```bash
 docker build -t frontend .
@@ -308,5 +306,5 @@ Set `VITE_DEV_ALLOWED_HOSTS` in `.env.development.local`
   contract, login flow, `safeRedirect`, cross-tab sync, token
   storage trade-off, local dev, troubleshooting.
 - [`DEPLOYING.md`](./DEPLOYING.md): Rancher2 deployment — image
-  tags, workload and Ingress manifests, why the router needs a
-  root-path Prefix rule, per-environment builds, verification.
+  tags, container facts, runtime configuration, what the Ingress
+  has to do, and how to verify it.

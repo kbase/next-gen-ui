@@ -234,15 +234,24 @@ function TopBar() {
     <header className="portals__topbar">
       <div className="portals__topbar-inner">
         <span className="portals__brand">
-          {/* The token-colored mark from the app shell, not the PNG
-              wordmark -- the PNG's dark lettering disappears on the
-              dark theme. */}
-          <svg width="30" height="20" viewBox="0 0 34 28" aria-hidden="true">
-            <circle cx="7" cy="14" r="8" fill="var(--c-yellow)" opacity="0.85" />
-            <circle cx="17" cy="14" r="8" fill="var(--c-grellow)" opacity="0.85" />
-            <circle cx="27" cy="14" r="8" fill="var(--c-ocean)" opacity="0.85" />
-          </svg>
-          <span className="portals__brand-name">KBase Lakehouse</span>
+          {/* Two files, not one recoloured by CSS: the wordmark is
+              near-black and vanishes on the dark theme, while the marks
+              beside it must keep their brand colours. */}
+          <img
+            className="portals__logo portals__logo--light"
+            src="/kbase-logo-ref.png"
+            alt="KBase"
+            width={251}
+            height={64}
+          />
+          <img
+            className="portals__logo portals__logo--dark"
+            src="/kbase-logo-dark.png"
+            alt=""
+            aria-hidden="true"
+            width={251}
+            height={64}
+          />
         </span>
         <Link to="/login" className="portals__signin">
           Sign in
@@ -433,9 +442,9 @@ function AboutPortals() {
       </h2>
       <p className="portals__about-body">
         A portal is one kind of KBase app: a self-contained, interactive view over governed data in
-        the KBase Lakehouse, built to answer a particular scientific question rather than to be a
-        general-purpose tool. Each one here is versioned and pinned to a release, and reports the
-        vintage of the data behind it.
+        KBase, built to answer a particular scientific question rather than to be a general-purpose
+        tool. Each one here is versioned and pinned to a release, and reports the vintage of the
+        data behind it.
       </p>
     </section>
   );
@@ -445,7 +454,7 @@ function SiteFooter() {
   return (
     <footer className="portals__footer">
       <span className="note">
-        KBase Lakehouse &middot; a DOE Biological and Environmental Research data platform
+        KBase &middot; a DOE Biological and Environmental Research data platform
       </span>
       <nav className="portals__footer-links">
         <a href="https://docs.lakehouse.kbase.us/" target="_blank" rel="noopener noreferrer">

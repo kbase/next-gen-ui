@@ -230,10 +230,42 @@ body,
   gap: var(--s-5);
 }
 
-.portals__brand-name {
-  font-size: var(--fs-7);
-  font-weight: 700;
-  color: var(--c-ink2);
+.portals__logo {
+  display: block;
+  height: 26px;
+  width: auto;
+}
+
+/* Three states, because the theme has three: an explicit choice stamps
+   data-theme, and the default follows the OS with no attribute set. */
+.portals__logo--dark {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .portals__logo--light {
+    display: none;
+  }
+
+  :root:not([data-theme='light']) .portals__logo--dark {
+    display: block;
+  }
+}
+
+:root[data-theme='dark'] .portals__logo--light {
+  display: none;
+}
+
+:root[data-theme='dark'] .portals__logo--dark {
+  display: block;
+}
+
+:root[data-theme='light'] .portals__logo--light {
+  display: block;
+}
+
+:root[data-theme='light'] .portals__logo--dark {
+  display: none;
 }
 
 .portals__signin {

@@ -181,7 +181,6 @@ const CATEGORIES = [
 ];
 
 const SORTS = [
-  { value: 'featured', label: 'Featured' },
   { value: 'name', label: 'Name (A–Z)' },
   { value: 'updated', label: 'Last updated' },
 ] as const;
@@ -285,7 +284,7 @@ function BetaNotice() {
 function Gallery() {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<string>(ALL);
-  const [sort, setSort] = useState<SortValue>('featured');
+  const [sort, setSort] = useState<SortValue>('name');
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -294,10 +293,15 @@ function Gallery() {
         (category === ALL || p.categories.includes(category)) &&
         (q === '' || haystack(p).includes(q)),
     );
-    // `featured` is the curated order PORTALS is already in.
-    if (sort === 'name') return [...filtered].sort((a, b) => a.title.localeCompare(b.title));
-    if (sort === 'updated') return [...filtered].sort((a, b) => b.updated.localeCompare(a.updated));
-    return filtered;
+    // localeCompare on the title as the tiebreak, so equal dates -- which
+    // is every portal today, all cut in the same release -- still order
+    // predictably rather than by array position.
+    if (sort === 'updated') {
+      return [...filtered].sort(
+        (a, b) => b.updated.localeCompare(a.updated) || a.title.localeCompare(b.title),
+      );
+    }
+    return [...filtered].sort((a, b) => a.title.localeCompare(b.title));
   }, [query, category, sort]);
 
   return (

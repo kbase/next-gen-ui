@@ -359,14 +359,16 @@ body,
   gap: var(--s-4);
 }
 
+/* Falls back to the neutral surface for "All portals", which has no tag
+   colour of its own. */
 .portals__filter {
   all: unset;
   cursor: pointer;
   padding: var(--s-3) var(--s-6);
-  border: 1px solid var(--c-border2);
+  border: 1px solid var(--filter-bo, var(--c-border2));
   border-radius: var(--r-full);
   background: var(--c-surface);
-  color: var(--c-ink3);
+  color: var(--filter-ct, var(--c-ink3));
   font-family: var(--f-sans);
   font-size: var(--fs-3);
   font-weight: 600;
@@ -374,8 +376,7 @@ body,
 }
 
 .portals__filter:hover {
-  color: var(--c-ink2);
-  background: var(--c-raised);
+  background: var(--filter-bg, var(--c-raised));
 }
 
 .portals__filter:focus-visible {
@@ -383,10 +384,13 @@ body,
   outline-offset: 2px;
 }
 
+/* Selected reads as the filled version of the same chip, so the colour
+   carries through from the filter to the tags on the cards below. */
 .portals__filter--active {
-  border-color: var(--c-primary);
-  background: var(--c-primary);
-  color: #fff;
+  background: var(--filter-bg, var(--c-primary));
+  border-color: var(--filter-bo, var(--c-primary));
+  color: var(--filter-ct, #fff);
+  box-shadow: inset 0 0 0 1px var(--filter-bo, var(--c-primary));
 }
 
 .portals__sort {

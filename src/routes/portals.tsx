@@ -30,7 +30,6 @@ interface Portal {
   slug: string;
   title: string;
   blurb: string;
-  categories: string[];
   tags: PortalTag[];
   credit: string;
   version: string;
@@ -55,7 +54,6 @@ const PORTALS: readonly Portal[] = [
     title: 'ENIGMA Strata',
     blurb:
       'A branded portal over the ENIGMA subsurface lakehouse — geology, hydrology, geochemistry, biogeography, and genomes of the Oak Ridge plume in one cross-linked focus.',
-    categories: ['Ecology', 'Atlas'],
     tags: [
       { label: 'Subsurface', color: 'orange' },
       { label: 'Geochemistry', color: 'teal' },
@@ -70,7 +68,6 @@ const PORTALS: readonly Portal[] = [
     title: 'Function Junction',
     blurb:
       'Paste a protein — id, sequence, gene, or name — and get every line of functional evidence converged on one page, scored for novelty and information density.',
-    categories: ['Proteins'],
     tags: [
       { label: 'Proteins', color: 'primary' },
       { label: 'Annotation', color: 'purple' },
@@ -85,7 +82,6 @@ const PORTALS: readonly Portal[] = [
     title: 'Diaspora',
     blurb:
       'A microbial-ecology atlas. Walk compendium → cohort → sample → MAG, linking metagenome observations to physicochemistry, geography, and pangenome-resolved function.',
-    categories: ['Ecology', 'Atlas'],
     tags: [
       { label: 'Metagenomics', color: 'teal' },
       { label: 'Ecology', color: 'green' },
@@ -99,7 +95,6 @@ const PORTALS: readonly Portal[] = [
     title: 'genKnown',
     blurb:
       'A taxonomic telescope. Search any node of the tree of life for a rank-relative evidence report: measured and predicted physiology, ecology, and metabolite exchange.',
-    categories: ['Taxonomy'],
     tags: [
       { label: 'Taxonomy', color: 'green' },
       { label: 'Physiology', color: 'teal' },
@@ -114,7 +109,6 @@ const PORTALS: readonly Portal[] = [
     title: 'Plant Terra',
     blurb:
       'Plant functional genomics with genomes in environmental context — a per-genome dossier spanning comparative genomics, metabolism, variation, and G×E.',
-    categories: ['Genomics'],
     tags: [
       { label: 'Plants', color: 'green' },
       { label: 'Genomics', color: 'primary' },
@@ -128,7 +122,6 @@ const PORTALS: readonly Portal[] = [
     title: 'Fungal Jungle',
     blurb:
       'Per-genome fungal functional genomics: CAZyme repertoire crossed with ecological guild, plus model-organism deep dives, structure, and biogeography.',
-    categories: ['Genomics'],
     tags: [
       { label: 'Fungi', color: 'yellow' },
       { label: 'CAZymes', color: 'orange' },
@@ -142,7 +135,6 @@ const PORTALS: readonly Portal[] = [
     title: 'GenePool',
     blurb:
       "You versus the machine. Judge the AI annotator's calls on real proteins to build a certified, trust-weighted competence leaderboard.",
-    categories: ['Proteins', 'Benchmarking'],
     tags: [
       { label: 'Benchmarking', color: 'purple' },
       { label: 'Annotation', color: 'primary' },
@@ -155,11 +147,20 @@ const PORTALS: readonly Portal[] = [
 
 const ALL = 'all';
 
-// Derived, so adding a portal with a new category cannot leave it
-// unreachable behind a filter list nobody updated.
-const CATEGORIES = [
-  { value: ALL, label: 'All portals' },
-  ...[...new Set(PORTALS.flatMap((p) => p.categories))].sort().map((c) => ({ value: c, label: c })),
+// One vocabulary: the filter list is the tags themselves, each keeping the
+// colour it has on the card. A tag with no filter, or a filter matching no
+// tag, would be two vocabularies pretending to be one.
+const TAG_COLORS = new Map<string, ChipColor>(
+  PORTALS.flatMap((p) => p.tags).map((t) => [t.label, t.color]),
+);
+
+const FILTERS = [
+  { value: ALL, label: 'All portals', color: null },
+  ...[...TAG_COLORS.keys()].sort().map((label) => ({
+    value: label,
+    label,
+    color: TAG_COLORS.get(label) ?? null,
+  })),
 ];
 
 const SORTS = [
@@ -181,13 +182,7 @@ function formatUpdated(iso: string): string {
 }
 
 function haystack(portal: Portal): string {
-  return [
-    portal.title,
-    portal.blurb,
-    portal.credit,
-    ...portal.categories,
-    ...portal.tags.map((t) => t.label),
-  ]
+  return [portal.title, portal.blurb, portal.credit, ...portal.tags.map((t) => t.label)]
     .join(' ')
     .toLowerCase();
 }
@@ -270,7 +265,7 @@ function Gallery() {
     const q = query.trim().toLowerCase();
     const filtered = PORTALS.filter(
       (p) =>
-        (category === ALL || p.categories.includes(category)) &&
+        (category === ALL || p.tags.some((t) => t.label === category)) &&
         (q === '' || haystack(p).includes(q)),
     );
     // localeCompare on the title as the tiebreak, so equal dates -- which
@@ -305,7 +300,7 @@ function Gallery() {
             with overflow:hidden, and cannot wrap, so seven variable-length
             labels collide at large text sizes. */}
         <div className="portals__filters" role="radiogroup" aria-label="Filter portals by category">
-          {CATEGORIES.map((option) => (
+          {FILTERS.map((option) => (
             <button
               key={option.value}
               type="button"
@@ -315,6 +310,17 @@ function Gallery() {
                 option.value === category
                   ? 'portals__filter portals__filter--active'
                   : 'portals__filter'
+              }
+              // Same three tokens the Chip of this colour uses, so the
+              // filter and the tag on the card are visibly one thing.
+              style={
+                option.color
+                  ? ({
+                      '--filter-bg': `var(--bg-${option.color})`,
+                      '--filter-bo': `var(--bo-${option.color})`,
+                      '--filter-ct': `var(--ct-${option.color})`,
+                    } as React.CSSProperties)
+                  : undefined
               }
               onClick={() => setCategory(option.value)}
             >

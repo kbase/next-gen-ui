@@ -64,12 +64,12 @@ describe('portal gallery', () => {
     expect(cardLinks()).toHaveLength(7);
   });
 
-  it('filters by category', async () => {
+  it('filters by tag', async () => {
     const user = userEvent.setup();
     mountGallery();
     await screen.findByRole('heading', { level: 1, name: /portal gallery/i });
 
-    await user.click(screen.getByRole('radio', { name: 'Genomics' }));
+    await user.click(screen.getByRole('radio', { name: 'Annotation' }));
     expect(cardLinks()).toHaveLength(2);
   });
 

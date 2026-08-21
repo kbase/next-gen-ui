@@ -114,14 +114,13 @@ live.
 
 The gallery makes the hazard concrete, and it is worth knowing
 that this one already bit: `/portals` is a route rendered by the
-SPA, while `/portals/enigma-strata.svg` and its siblings are real
-files in `public/portals/`. The same prefix is both an
-application route and a static asset directory. Any edge rule
-that special-cases part of that prefix will split them.
+SPA, while the card thumbnails were once real files served from
+the same prefix. They now live in `public/portal-thumbs/`, out
+from under it.
 
 It also has to be resolved correctly _inside_ the pod. The
 original fallback was `try_files $uri $uri/ /index.html`, and
-`$uri/` matched the `public/portals/` directory before the SPA
+`$uri/` matched a same-named directory in the doc root before the SPA
 fallback was ever reached — so `/portals` returned a 301 to
 `/portals/`, which returned 403, because autoindex is off. The
 gallery worked when clicked through from `/` and failed on every
@@ -506,9 +505,9 @@ curl -sSI https://<host>/assets/<file>.js | grep -i cache-control  # immutable
 curl -sSI https://<host>/ | grep -ci content-security-policy   # 1
 curl -sSI https://<host>/ | grep -i content-security-policy
 
-# 6. The static assets that share the /portals prefix still resolve.
+# 6. Card thumbnails resolve (they sit outside the /portals prefix).
 curl -sS -o /dev/null -w '%{http_code} %{content_type}\n' \
-  https://<host>/portals/enigma-strata.svg                 # 200 image/svg+xml
+  https://<host>/portal-thumbs/enigma-strata.svg           # 200 image/svg+xml
 ```
 
 Then, in a browser: load `/portals` directly (not by clicking

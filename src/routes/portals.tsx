@@ -10,12 +10,12 @@ export const Route = createFileRoute('/portals')({
 });
 
 /**
- * Placeholder deep links. Published portals have no public URL yet --
- * today each one launches per-user through the hub proxy on an
- * allocated port. Swap this (and the per-portal `slug`) for the real
- * published-portal endpoint once publishing exists.
+ * Portals are served by a different backend on the same origin, so the
+ * edge splits this prefix: `/portals` reaches this app, `/portals/<slug>`
+ * reaches the portal server. Nothing this app serves can live under the
+ * prefix -- hence `public/portal-thumbs/` rather than `public/portals/`.
  */
-const PORTAL_BASE = 'https://hub.berdl.kbase.us/portals/';
+const PORTAL_BASE = 'https://gen2.kbase.us/portals/';
 
 /** Where questions and concerns go while this is a soft launch. */
 const CONTACT_URL = 'https://www.kbase.us/support/';
@@ -26,7 +26,7 @@ interface PortalTag {
 }
 
 interface Portal {
-  /** Also the thumbnail filename: `public/portals/<slug>.svg`. */
+  /** Also the thumbnail filename: `public/portal-thumbs/<slug>.svg`. */
   slug: string;
   title: string;
   blurb: string;
@@ -397,7 +397,7 @@ function PortalCard({ portal }: { portal: Portal }) {
       <Frame padding={0} className="portal-card__frame">
         <img
           className="portal-card__shot"
-          src={`/portals/${portal.slug}.svg`}
+          src={`/portal-thumbs/${portal.slug}.svg`}
           alt={`Screenshot of the ${portal.title} portal`}
           width={640}
           height={400}
@@ -472,9 +472,6 @@ function SiteFooter() {
         KBase &middot; a DOE Biological and Environmental Research data platform
       </span>
       <nav className="portals__footer-links">
-        <a href="https://docs.lakehouse.kbase.us/" target="_blank" rel="noopener noreferrer">
-          Documentation
-        </a>
         <a href="https://www.kbase.us/" target="_blank" rel="noopener noreferrer">
           About KBase
         </a>

@@ -56,7 +56,7 @@ describe('root gate', () => {
   });
 
   // A pasted `/portals/`, or a browser replaying a cached 301 from a build
-  // whose try_files matched the public/portals/ directory, reaches the gate
+  // whose try_files matched a same-named doc-root directory, reaches the gate
   // with the trailing slash intact. Exact matching sent it to /login.
   it('treats a trailing-slash public route as public', async () => {
     const { router } = mountAt('/portals/');

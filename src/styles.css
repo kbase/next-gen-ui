@@ -536,36 +536,6 @@ body,
   gap: var(--s-3);
   margin-top: var(--s-6);
 }
-
-.portal-card__credit {
-  margin-top: var(--s-5);
-  color: var(--c-ink3);
-  font-size: var(--fs-1);
-}
-
-.portal-card__open {
-  margin-left: auto;
-  color: var(--c-primary);
-  font-weight: 500;
-}
-
-.portals__about {
-  margin-top: var(--s-11);
-}
-
-.portals__about-body {
-  margin-top: var(--s-6);
-  max-width: 72ch;
-  color: var(--c-ink2);
-  font-size: var(--fs-4);
-}
-
-/* The opening line is the definition; the rest expands on it. */
-.portals__about-body:first-of-type {
-  font-size: var(--fs-6);
-  color: var(--c-ink);
-}
-
 .portal-card__meta {
   display: flex;
   align-items: center;

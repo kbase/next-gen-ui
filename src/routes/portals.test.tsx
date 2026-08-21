@@ -88,6 +88,5 @@ describe('portal gallery', () => {
 
     expect(screen.getByText(/soft launch/i)).toBeVisible();
     expect(screen.getByRole('link', { name: /contact us/i })).toBeVisible();
-    expect(screen.getByRole('heading', { name: /about portals/i })).toBeVisible();
   });
 });

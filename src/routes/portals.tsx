@@ -195,7 +195,6 @@ function PortalsPage() {
       <main className="portals__main">
         <Hero />
         <Gallery />
-        <AboutPortals />
       </main>
 
       <SiteFooter />
@@ -426,32 +425,6 @@ function PortalCard({ portal }: { portal: Portal }) {
         </div>
       </Frame>
     </a>
-  );
-}
-
-// Portals are apps -- every entry here is `"type": "app"` in KIND*AI's
-// plugins/*.json. ("Portal" also names a deliverable kind an
-// investigation emits, alongside paper and slides. Different thing.)
-function AboutPortals() {
-  return (
-    <section className="portals__about" aria-labelledby="about-heading">
-      <Frame paddingY={9} paddingX={9}>
-        <h2 id="about-heading" className="h2">
-          About portals
-        </h2>
-        <p className="portals__about-body">
-          A portal is a KBase app that presents one area of science.
-        </p>
-        <p className="portals__about-body">
-          Each portal is a separate program. KBase starts it when you open it and displays it in
-          your browser. Inside a portal you can search the data, follow links between records, and
-          change what is shown.
-        </p>
-        <p className="portals__about-body">
-          Each portal lists its version and the date it was last updated.
-        </p>
-      </Frame>
-    </section>
   );
 }
 

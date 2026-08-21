@@ -449,8 +449,9 @@ function PortalCard({ portal }: { portal: Portal }) {
   );
 }
 
-// "Portal" also names an unrelated Arc concept, and readers arrive
-// carrying it, so the distinction is stated rather than assumed.
+// Terms are KIND*AI's, deliberately: an investigation is its user-facing
+// gloss for an arc, and a portal is one of the deliverable kinds a
+// finished one emits (portal / paper / slides / report).
 function AboutPortals() {
   return (
     <section className="portals__about" aria-labelledby="about-heading">
@@ -459,10 +460,17 @@ function AboutPortals() {
           About portals
         </h2>
         <p className="portals__about-body">
-          A portal is one kind of KBase app: a self-contained, interactive view over governed data
-          in KBase, built to answer a particular scientific question rather than to be a
-          general-purpose tool. Each one here is versioned and pinned to a release, and reports the
-          vintage of the data behind it.
+          A portal is what a finished investigation leaves behind.
+        </p>
+        <p className="portals__about-body">
+          An investigation is one research question driven to an answer. Reaching that answer emits
+          a deliverable — a portal, a paper, slides, a report. The portal is the interactive one: it
+          keeps the data, the evidence, and the route taken through them live, so a reader can walk
+          the same path and then strike out from it.
+        </p>
+        <p className="portals__about-body">
+          Each is published into a content-addressed store of record, and carries both the version
+          of the code that built it and the vintage of the data behind it.
         </p>
       </Frame>
     </section>

@@ -556,6 +556,12 @@ body,
   font-size: var(--fs-4);
 }
 
+/* The opening line is the definition; the rest expands on it. */
+.portals__about-body:first-of-type {
+  font-size: var(--fs-6);
+  color: var(--c-ink);
+}
+
 .portal-card__meta {
   display: flex;
   align-items: center;

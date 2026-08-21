@@ -450,9 +450,8 @@ function PortalCard({ portal }: { portal: Portal }) {
 }
 
 // Portals are apps -- every entry here is `"type": "app"` in KIND*AI's
-// plugins/*.json, launched from a manifest. ("Portal" also names a
-// deliverable kind an investigation emits, alongside paper and slides;
-// that is a different word for a different thing.)
+// plugins/*.json. ("Portal" also names a deliverable kind an
+// investigation emits, alongside paper and slides. Different thing.)
 function AboutPortals() {
   return (
     <section className="portals__about" aria-labelledby="about-heading">
@@ -461,17 +460,16 @@ function AboutPortals() {
           About portals
         </h2>
         <p className="portals__about-body">
-          A portal is a KBase app that opens onto one body of science.
+          A portal is a KBase app that presents one area of science.
         </p>
         <p className="portals__about-body">
-          Apps register by manifest rather than being built into the platform, so each portal is its
-          own versioned thing: it declares how it launches, and KBase starts it on demand and embeds
-          it. What opens is live software over governed KBase data — query it, follow the
-          cross-links, change what you are looking at.
+          The portals in this gallery cover subsurface geochemistry, fungal and plant genomes,
+          protein function, and microbial ecology. Each one is a separate program. KBase starts it
+          when you open it and displays it in your browser, where you can search the data, follow
+          links between records, and change what is shown.
         </p>
         <p className="portals__about-body">
-          Each carries the version of the code it was built from and the vintage of the data behind
-          it.
+          Each portal lists its version and the date it was last updated.
         </p>
       </Frame>
     </section>

@@ -275,16 +275,12 @@ function Hero() {
 function BetaNotice() {
   return (
     <p className="portals__beta">
-      <Chip color="yellow" onWhite>
-        Beta
-      </Chip>
-      <span>
-        This gallery is a soft launch. If you have questions or concerns about anything here,{' '}
-        <a href={CONTACT_URL} target="_blank" rel="noopener noreferrer">
-          contact us
-        </a>
-        .
-      </span>
+      <span className="portals__beta-tag">Beta</span> This gallery is a soft launch. If you have
+      questions or concerns about anything here,{' '}
+      <a className="link" href={CONTACT_URL} target="_blank" rel="noopener noreferrer">
+        contact us
+      </a>
+      .
     </p>
   );
 }
@@ -457,15 +453,17 @@ function PortalCard({ portal }: { portal: Portal }) {
 function AboutPortals() {
   return (
     <section className="portals__about" aria-labelledby="about-heading">
-      <h2 id="about-heading" className="h2">
-        About portals
-      </h2>
-      <p className="portals__about-body">
-        A portal is one kind of KBase app: a self-contained, interactive view over governed data in
-        KBase, built to answer a particular scientific question rather than to be a general-purpose
-        tool. Each one here is versioned and pinned to a release, and reports the vintage of the
-        data behind it.
-      </p>
+      <Frame paddingY={9} paddingX={9}>
+        <h2 id="about-heading" className="h2">
+          About portals
+        </h2>
+        <p className="portals__about-body">
+          A portal is one kind of KBase app: a self-contained, interactive view over governed data
+          in KBase, built to answer a particular scientific question rather than to be a
+          general-purpose tool. Each one here is versioned and pinned to a release, and reports the
+          vintage of the data behind it.
+        </p>
+      </Frame>
     </section>
   );
 }

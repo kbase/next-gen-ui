@@ -341,15 +341,16 @@ body,
 /* --- gallery --- */
 
 .portals__beta {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--s-5);
-  padding: var(--s-6) var(--s-7);
-  border: 1px solid var(--c-border);
-  border-radius: var(--r-md);
-  background: var(--c-surface);
-  color: var(--c-ink3);
+  color: var(--c-ink4);
   font-size: var(--fs-2);
+  max-width: 78ch;
+}
+
+.portals__beta-tag {
+  font-weight: 700;
+  color: var(--c-ink3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .portals__controls {
@@ -561,14 +562,13 @@ body,
 
 .portals__about {
   margin-top: var(--s-11);
-  padding-top: var(--s-9);
-  border-top: 1px solid var(--c-border);
 }
 
 .portals__about-body {
   margin-top: var(--s-6);
-  max-width: 68ch;
-  color: var(--c-ink3);
+  max-width: 72ch;
+  color: var(--c-ink2);
+  font-size: var(--fs-4);
 }
 
 .portal-card__meta {

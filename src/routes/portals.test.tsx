@@ -34,12 +34,17 @@ describe('portal gallery', () => {
     expect(screen.queryByRole('link', { name: /GenePool/ })).toBeNull();
   });
 
-  // A hidden portal's tags must not survive as filters that match nothing.
-  it("offers no filter for a hidden portal's tags", async () => {
+  // Every filter is a facet and every facet is a filter; the specific
+  // topic words are plain text and deliberately not filterable.
+  it('offers a filter for every facet and nothing else', async () => {
     mountGallery();
     await screen.findByRole('heading', { level: 1, name: /portal gallery/i });
+    for (const facet of ['Genomes', 'Ecology', 'Environment', 'Proteins']) {
+      expect(screen.getByRole('radio', { name: facet })).toBeVisible();
+    }
+    expect(screen.getAllByRole('radio')).toHaveLength(5);
+    expect(screen.queryByRole('radio', { name: 'CAZymes' })).toBeNull();
     expect(screen.queryByRole('radio', { name: 'Subsurface' })).toBeNull();
-    expect(screen.queryByRole('radio', { name: 'Benchmarking' })).toBeNull();
   });
 
   it('filters by free-text search across blurbs and credits', async () => {
@@ -79,9 +84,8 @@ describe('portal gallery', () => {
     mountGallery();
     await screen.findByRole('heading', { level: 1, name: /portal gallery/i });
 
-    await user.click(screen.getByRole('radio', { name: 'Metagenomics' }));
-    expect(cardLinks()).toHaveLength(1);
-    expect(screen.getByRole('link', { name: /Diaspora/ })).toBeVisible();
+    await user.click(screen.getByRole('radio', { name: 'Genomes' }));
+    expect(cardLinks()).toHaveLength(3);
   });
 
   it('has no call-to-action buttons', async () => {

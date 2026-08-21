@@ -499,8 +499,23 @@ body,
 .portal-card__title-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--s-4);
+}
+
+.portal-card__title-row .h3 {
+  margin-right: auto;
+}
+
+/* A state, not a subject, so it sits by the title rather than among the
+   facet chips. */
+.portal-card__status {
+  padding: 1px var(--s-3);
+  border: 1px dashed var(--c-border2);
+  border-radius: var(--r-sm);
+  color: var(--c-ink4);
+  font-size: var(--fs-1);
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .portal-card__go {
@@ -530,12 +545,32 @@ body,
   overflow: hidden;
 }
 
-.portal-card__tags {
+.portal-card__facets {
   display: flex;
   flex-wrap: wrap;
   gap: var(--s-3);
   margin-top: var(--s-6);
 }
+
+/* Plain text, deliberately: these are not filters, and anything shaped
+   like a chip here would read as one. */
+.portal-card__topics {
+  margin-top: var(--s-5);
+  color: var(--c-ink4);
+  font-size: var(--fs-2);
+}
+.portal-card__credit {
+  margin-top: var(--s-4);
+  color: var(--c-ink3);
+  font-size: var(--fs-1);
+}
+
+.portal-card__open {
+  margin-left: auto;
+  color: var(--c-primary);
+  font-weight: 500;
+}
+
 .portal-card__meta {
   display: flex;
   align-items: center;

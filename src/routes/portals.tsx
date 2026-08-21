@@ -20,17 +20,31 @@ const PORTAL_BASE = 'https://gen2.kbase.us/portals/';
 /** Where questions and concerns go while this is a soft launch. */
 const CONTACT_URL = 'https://www.kbase.us/support/';
 
-interface PortalTag {
+interface PortalFacet {
   label: string;
   color: ChipColor;
 }
+
+/**
+ * The four filterable facets, defined once. Every chip on a card is one of
+ * these, and every filter is one of these, so nothing that looks like a
+ * filter fails to be one.
+ */
+const FACETS = {
+  genomes: { label: 'Genomes', color: 'primary' },
+  ecology: { label: 'Ecology', color: 'green' },
+  environment: { label: 'Environment', color: 'teal' },
+  proteins: { label: 'Proteins', color: 'purple' },
+} as const satisfies Record<string, PortalFacet>;
 
 interface Portal {
   /** Also the thumbnail filename: `public/portal-thumbs/<slug>.svg`. */
   slug: string;
   title: string;
   blurb: string;
-  tags: PortalTag[];
+  facets: PortalFacet[];
+  /** Specific subject terms. Not filterable -- rendered as plain text. */
+  topics: string[];
   credit: string;
   version: string;
   /** ISO 8601. */
@@ -63,10 +77,8 @@ const PORTALS: readonly Portal[] = [
     title: 'genKnown',
     blurb:
       'A taxonomic telescope. Search any node of the tree of life for a rank-relative evidence report: measured and predicted physiology, ecology, and metabolite exchange.',
-    tags: [
-      { label: 'Taxonomy', color: 'green' },
-      { label: 'Physiology', color: 'teal' },
-    ],
+    facets: [FACETS.genomes, FACETS.ecology],
+    topics: ['Taxonomy', 'Physiology', 'Metabolite exchange'],
     credit: 'KBase',
     version: 'v0.1.2',
     updated: '2026-08-11',
@@ -77,10 +89,8 @@ const PORTALS: readonly Portal[] = [
     title: 'Diaspora',
     blurb:
       'A microbial-ecology atlas. Walk compendium → cohort → sample → MAG, linking metagenome observations to physicochemistry, geography, and pangenome-resolved function.',
-    tags: [
-      { label: 'Metagenomics', color: 'teal' },
-      { label: 'Ecology', color: 'green' },
-    ],
+    facets: [FACETS.ecology, FACETS.environment],
+    topics: ['Metagenomics', 'Biogeography', 'Pangenomes'],
     credit: 'KBase · Microbe Atlas',
     version: 'v0.1.4',
     updated: '2026-08-11',
@@ -90,10 +100,8 @@ const PORTALS: readonly Portal[] = [
     title: 'Plant Terra',
     blurb:
       'Plant functional genomics with genomes in environmental context — a per-genome dossier spanning comparative genomics, metabolism, variation, and G×E.',
-    tags: [
-      { label: 'Plants', color: 'green' },
-      { label: 'Genomics', color: 'primary' },
-    ],
+    facets: [FACETS.genomes, FACETS.environment],
+    topics: ['Plants', 'Metabolism', 'G×E'],
     credit: 'JGI Phytozome',
     version: 'v0.1.3',
     updated: '2026-08-11',
@@ -103,10 +111,8 @@ const PORTALS: readonly Portal[] = [
     title: 'Fungal Jungle',
     blurb:
       'Per-genome fungal functional genomics: CAZyme repertoire crossed with ecological guild, plus model-organism deep dives, structure, and biogeography.',
-    tags: [
-      { label: 'Fungi', color: 'yellow' },
-      { label: 'CAZymes', color: 'orange' },
-    ],
+    facets: [FACETS.genomes, FACETS.ecology, FACETS.proteins],
+    topics: ['Fungi', 'CAZymes', 'Structure'],
     credit: 'JGI MycoCosm · GBIF',
     version: 'v0.5.1',
     updated: '2026-08-11',
@@ -116,11 +122,8 @@ const PORTALS: readonly Portal[] = [
     title: 'Function Junction',
     blurb:
       'Paste a protein — id, sequence, gene, or name — and get every line of functional evidence converged on one page, scored for novelty and information density.',
-    tags: [
-      { label: 'Proteins', color: 'primary' },
-      { label: 'Annotation', color: 'purple' },
-      { label: 'Structure', color: 'ocean' },
-    ],
+    facets: [FACETS.proteins],
+    topics: ['Annotation', 'Structure', 'Homologs'],
     credit: 'KBase',
     version: 'v0.1.1',
     updated: '2026-08-11',
@@ -130,11 +133,8 @@ const PORTALS: readonly Portal[] = [
     title: 'ENIGMA Strata',
     blurb:
       'A branded portal over the ENIGMA subsurface lakehouse — geology, hydrology, geochemistry, biogeography, and genomes of the Oak Ridge plume in one cross-linked focus.',
-    tags: [
-      { label: 'Subsurface', color: 'orange' },
-      { label: 'Geochemistry', color: 'teal' },
-      { label: 'Biogeography', color: 'green' },
-    ],
+    facets: [FACETS.environment, FACETS.genomes],
+    topics: ['Subsurface', 'Geochemistry', 'Biogeography'],
     credit: 'ENIGMA SFA · Lawrence Berkeley National Laboratory',
     version: 'v0.3.1',
     updated: '2026-08-11',
@@ -145,10 +145,8 @@ const PORTALS: readonly Portal[] = [
     title: 'GenePool',
     blurb:
       "You versus the machine. Judge the AI annotator's calls on real proteins to build a certified, trust-weighted competence leaderboard.",
-    tags: [
-      { label: 'Benchmarking', color: 'purple' },
-      { label: 'Annotation', color: 'primary' },
-    ],
+    facets: [FACETS.proteins],
+    topics: ['Benchmarking', 'Annotation'],
     credit: 'KBase',
     version: 'v0.1.2',
     updated: '2026-08-11',
@@ -166,17 +164,11 @@ const ALL = 'all';
 // One vocabulary: the filter list is the tags themselves, each keeping the
 // colour it has on the card. A tag with no filter, or a filter matching no
 // tag, would be two vocabularies pretending to be one.
-const TAG_COLORS = new Map<string, ChipColor>(
-  VISIBLE_PORTALS.flatMap((p) => p.tags).map((t) => [t.label, t.color]),
-);
-
 const FILTERS = [
-  { value: ALL, label: 'All portals', color: null },
-  ...[...TAG_COLORS.keys()].sort().map((label) => ({
-    value: label,
-    label,
-    color: TAG_COLORS.get(label) ?? null,
-  })),
+  { value: ALL, label: 'All portals', color: null as ChipColor | null },
+  ...Object.values(FACETS)
+    .filter((f) => VISIBLE_PORTALS.some((p) => p.facets.includes(f)))
+    .map((f) => ({ value: f.label, label: f.label, color: f.color as ChipColor | null })),
 ];
 
 const SORTS = [
@@ -199,7 +191,13 @@ function formatUpdated(iso: string): string {
 }
 
 function haystack(portal: Portal): string {
-  return [portal.title, portal.blurb, portal.credit, ...portal.tags.map((t) => t.label)]
+  return [
+    portal.title,
+    portal.blurb,
+    portal.credit,
+    ...portal.facets.map((f) => f.label),
+    ...portal.topics,
+  ]
     .join(' ')
     .toLowerCase();
 }
@@ -281,7 +279,7 @@ function Gallery() {
     const q = query.trim().toLowerCase();
     const filtered = VISIBLE_PORTALS.filter(
       (p) =>
-        (category === ALL || p.tags.some((t) => t.label === category)) &&
+        (category === ALL || p.facets.some((f) => f.label === category)) &&
         (q === '' || haystack(p).includes(q)),
     );
     if (sort === 'name') return [...filtered].sort((a, b) => a.title.localeCompare(b.title));
@@ -414,23 +412,23 @@ function PortalCard({ portal }: { portal: Portal }) {
         <div className="portal-card__body">
           <div className="portal-card__title-row">
             <h3 className="h3">{portal.title}</h3>
+            {portal.status && <span className="portal-card__status">{portal.status}</span>}
             <ArrowUpRight size={14} className="portal-card__go" aria-hidden="true" />
           </div>
 
           <p className="portal-card__blurb">{portal.blurb}</p>
 
-          <div className="portal-card__tags">
-            {portal.tags.map((tag) => (
-              <Chip key={tag.label} color={tag.color} onWhite>
-                {tag.label}
+          {/* Chips are facets and only facets, so every one of them is a
+              filter you can click above. */}
+          <div className="portal-card__facets">
+            {portal.facets.map((facet) => (
+              <Chip key={facet.label} color={facet.color} onWhite>
+                {facet.label}
               </Chip>
             ))}
-            {portal.status && (
-              <Chip color="yellow" onWhite>
-                {portal.status}
-              </Chip>
-            )}
           </div>
+
+          <p className="portal-card__topics">{portal.topics.join(' · ')}</p>
 
           <p className="portal-card__credit">{portal.credit}</p>
         </div>

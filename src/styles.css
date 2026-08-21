@@ -230,12 +230,6 @@ body,
   gap: var(--s-5);
 }
 
-.portals__brand-divider {
-  width: 1px;
-  height: 20px;
-  background: var(--c-border2);
-}
-
 .portals__brand-name {
   font-size: var(--fs-7);
   font-weight: 700;
@@ -275,8 +269,8 @@ body,
 /* --- hero --- */
 
 .portals__hero {
-  padding: var(--s-12) 0 var(--s-11);
-  max-width: 68ch;
+  padding: var(--s-11) 0 var(--s-10);
+  max-width: 62ch;
 }
 
 .portals__headline {
@@ -284,7 +278,7 @@ body,
   font-weight: 700;
   line-height: 1.12;
   color: var(--c-ink);
-  margin: var(--s-6) 0 var(--s-6);
+  margin: 0 0 var(--s-6);
 }
 
 .portals__lead {
@@ -311,8 +305,7 @@ body,
   margin-top: var(--s-9);
 }
 
-.portals__cta-row a,
-.portals__band-actions a {
+.portals__cta-row a {
   text-decoration: none;
 }
 
@@ -320,51 +313,6 @@ body,
   display: inline-flex;
   align-items: center;
   gap: var(--s-4);
-}
-
-.portals__cta-note {
-  margin-top: var(--s-6);
-  font-size: var(--fs-4);
-  color: var(--c-ink4);
-  max-width: 56ch;
-  line-height: 1.6;
-}
-
-/* --- how it works --- */
-
-.portals__how {
-  padding-bottom: var(--s-11);
-}
-
-.portals__steps {
-  list-style: none;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: var(--s-7);
-  margin-top: var(--s-6);
-}
-
-.portals__step-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--s-6);
-}
-
-.portals__step-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: var(--r-md);
-}
-
-.portals__step-num {
-  font-family: var(--f-mono);
-  font-size: var(--fs-6);
-  font-weight: 700;
-  color: var(--c-ink5);
 }
 
 /* --- gallery --- */
@@ -507,39 +455,6 @@ body,
   background: var(--c-raised);
   font-size: var(--fs-3);
   color: var(--c-ink4);
-}
-
-/* --- publish band --- */
-
-.portals__band {
-  padding-top: var(--s-12);
-}
-
-.portals__band-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s-9);
-  flex-wrap: wrap;
-}
-
-.portals__band-inner > div:first-child {
-  flex: 1 1 380px;
-  max-width: 62ch;
-}
-
-.portals__band-head {
-  display: flex;
-  align-items: center;
-  gap: var(--s-5);
-  flex-wrap: wrap;
-}
-
-.portals__band-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--s-5);
-  flex-wrap: wrap;
 }
 
 /* --- footer --- */

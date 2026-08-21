@@ -1,14 +1,7 @@
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { Button, Chip, Frame } from '@kbase/design-system';
 import type { ChipColor } from '@kbase/design-system';
-import {
-  ArrowUpRight,
-  ChatCircleDots,
-  Database,
-  Sparkle,
-  Stack,
-  UploadSimple,
-} from '@phosphor-icons/react';
+import { ArrowUpRight, Sparkle, UploadSimple } from '@phosphor-icons/react';
 
 export const Route = createFileRoute('/portals')({
   component: PortalsPage,
@@ -159,9 +152,7 @@ function PortalsPage() {
 
       <main className="portals__main">
         <Hero />
-        <HowItWorks />
         <Gallery />
-        <PublishBand />
       </main>
 
       <SiteFooter />
@@ -174,9 +165,15 @@ function TopBar() {
     <header className="portals__topbar">
       <div className="portals__topbar-inner">
         <span className="portals__brand">
-          <img src="/kbase-logo-ref.png" alt="KBase" height={26} />
-          <span className="portals__brand-divider" aria-hidden="true" />
-          <span className="portals__brand-name">Lakehouse</span>
+          {/* The token-colored mark from the app shell, not the PNG
+              wordmark -- the PNG's dark lettering disappears on the
+              dark theme. */}
+          <svg width="30" height="20" viewBox="0 0 34 28" aria-hidden="true">
+            <circle cx="7" cy="14" r="8" fill="var(--c-yellow)" opacity="0.85" />
+            <circle cx="17" cy="14" r="8" fill="var(--c-grellow)" opacity="0.85" />
+            <circle cx="27" cy="14" r="8" fill="var(--c-ocean)" opacity="0.85" />
+          </svg>
+          <span className="portals__brand-name">KBase Lakehouse</span>
         </span>
         <Link to="/login" className="portals__signin">
           Sign in
@@ -189,16 +186,12 @@ function TopBar() {
 function Hero() {
   return (
     <section className="portals__hero">
-      <Chip color="teal">
-        <Database size={11} weight="fill" aria-hidden="true" /> Built on the KBase Lakehouse
-      </Chip>
-
       <h1 className="portals__headline">KBase Published Portals</h1>
 
       <p className="portals__lead">
-        Interactive research portals over DOE Biological and Environmental Research data — assembled
-        from the KBase Lakehouse, built with <Kindai />, and published here for anyone to explore.
-        No account needed to look around.
+        Interactive research portals over DOE Biological and Environmental Research data. Each is
+        built with <Kindai /> on governed KBase Lakehouse data, then published here for anyone to
+        explore.
       </p>
 
       <div className="portals__cta-row">
@@ -222,11 +215,6 @@ function Hero() {
           <Chip color="yellow">Coming soon</Chip>
         </span>
       </div>
-
-      <p className="portals__cta-note">
-        Publishing a portal you have built to this page is not switched on yet. For now, portals
-        reach the gallery through the <Kindai /> publish gate.
-      </p>
     </section>
   );
 }
@@ -237,60 +225,6 @@ function Kindai() {
     <span className="portals__kindai">
       KIND<span aria-hidden="true">*</span>AI
     </span>
-  );
-}
-
-function HowItWorks() {
-  const steps = [
-    {
-      icon: <ChatCircleDots size={18} weight="fill" />,
-      tint: 'primary' as const,
-      title: 'Ask a research question',
-      body: 'Describe what you want to know in plain language. KIND*AI drives the research session and shows you the plan, the decisions, and the results.',
-    },
-    {
-      icon: <Database size={18} weight="fill" />,
-      tint: 'teal' as const,
-      title: 'It builds on Lakehouse data',
-      body: 'Governed, FAIR-compliant data from across the BER ecosystem — JGI, NMDC, EMSL, ESS-DIVE, ARM — queried in place, with provenance carried through.',
-    },
-    {
-      icon: <Stack size={18} weight="fill" />,
-      tint: 'green' as const,
-      title: 'The portal gets published',
-      body: 'A finished project produces a portal. Once it clears the review panel, it is published, attributed by ORCID, and lands in this gallery.',
-    },
-  ];
-
-  return (
-    <section className="portals__how">
-      <h2 className="section-label">How a portal gets here</h2>
-      <ol className="portals__steps">
-        {steps.map((step, i) => (
-          <li key={step.title}>
-            <Frame paddingY={8} paddingX={8} style={{ height: '100%' }}>
-              <div className="portals__step-head">
-                <span
-                  className="portals__step-icon"
-                  aria-hidden="true"
-                  style={{
-                    background: `var(--bgw-${step.tint})`,
-                    color: `var(--ct-${step.tint})`,
-                  }}
-                >
-                  {step.icon}
-                </span>
-                <span className="portals__step-num">{i + 1}</span>
-              </div>
-              <h3 className="h4">{step.title}</h3>
-              <p className="note" style={{ marginTop: 'var(--s-3)' }}>
-                {step.body}
-              </p>
-            </Frame>
-          </li>
-        ))}
-      </ol>
-    </section>
   );
 }
 
@@ -390,54 +324,6 @@ function PlaceholderCard() {
         </Chip>
       </span>
     </div>
-  );
-}
-
-function PublishBand() {
-  return (
-    <section className="portals__band">
-      <Frame
-        paddingY={10}
-        paddingX={10}
-        style={{ background: 'var(--bg-yellow)', borderColor: 'var(--bo-yellow)' }}
-      >
-        <div className="portals__band-inner">
-          <div>
-            <div className="portals__band-head">
-              <h2 className="h2" style={{ margin: 0 }}>
-                Publish a portal of your own
-              </h2>
-              <Chip color="yellow" onWhite>
-                Coming soon
-              </Chip>
-            </div>
-            <p className="body" style={{ color: 'var(--c-ink2)', marginTop: 'var(--s-4)' }}>
-              Self-service publishing to this page is on the way. Build your portal in <Kindai />{' '}
-              today — when publishing opens, finished portals will land here with your ORCID on
-              them.
-            </p>
-          </div>
-
-          <div className="portals__band-actions">
-            <Button size="md" variant="outline" disabled>
-              <UploadSimple size={16} weight="fill" aria-hidden="true" />
-              Publish your portal
-            </Button>
-            <Button
-              size="md"
-              variant="ghost"
-              nativeButton={false}
-              render={<a href={KINDAI_URL} target="_blank" rel="noopener noreferrer" />}
-            >
-              <span>
-                Start in <Kindai />
-              </span>
-              <ArrowUpRight size={14} aria-hidden="true" />
-            </Button>
-          </div>
-        </div>
-      </Frame>
-    </section>
   );
 }
 

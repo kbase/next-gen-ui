@@ -28,10 +28,8 @@ export interface JobStage {
 }
 
 /**
- * A job's states, in one map so a new one cannot arrive without an icon.
- * `color` is a FrameAccent, the eight tinted families, because the failed
- * states colour the panel's border with it as well as the chip. A state that
- * wanted Chip's neutral would have to stop doing that.
+ * Every state in one map, so none can be added without an icon. `color` is a
+ * FrameAccent, not a ChipColor, because failed states also tint the border.
  */
 const STATUS: Record<JobStatus, { icon: Icon; label: string; color: FrameAccent }> = {
   queued: { icon: Clock, label: 'Queued', color: 'primary' },
@@ -82,10 +80,8 @@ export function JobPanel({
   const failed = status === 'error' || status === 'canceled';
 
   return (
-    // The border repeats what the chip says. Frame's own accent rather than a
-    // border-color class here: both would be single-class selectors on one
-    // element from two css modules, so which won would come down to the order
-    // the bundler happened to emit them in.
+    // Frame's accent rather than a local border-color class: both are
+    // single-class selectors, so the winner would depend on bundler order.
     <Frame
       padding={0}
       accent={failed ? cfg.color : undefined}

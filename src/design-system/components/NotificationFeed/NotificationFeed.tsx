@@ -25,8 +25,7 @@ export interface NotificationFeedProps {
   className?: string;
 }
 
-/* --ct-* rather than the static --c-* fills: those are sized for solid shapes,
-   and as a thin glyph on the feed's surface --c-yellow lands at 1.45:1. */
+/* --ct-*, not the static --c-* fills: as a thin glyph, --c-yellow is 1.45:1. */
 const TYPE_ICON: Record<NotificationType, ReactNode> = {
   info: <Info size={14} weight="bold" style={{ color: 'var(--ct-primary)' }} />,
   success: <CheckCircle size={14} weight="bold" style={{ color: 'var(--ct-green)' }} />,

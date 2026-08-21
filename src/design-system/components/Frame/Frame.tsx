@@ -23,10 +23,7 @@ export interface FrameProps {
   /** Overrides padding on one axis. */
   paddingX?: FrameSpace;
   paddingY?: FrameSpace;
-  /**
-   * Colours the frame's border. Group or categorise with it, but never carry
-   * the only copy of a meaning in it — say the same thing in the content.
-   */
+  /** Colours the border, for grouping. Reinforcement only, never the sole cue. */
   accent?: FrameAccent;
   className?: string;
   style?: CSSProperties;
@@ -47,7 +44,7 @@ export function Frame({
     <div
       className={cx(styles.frame, accent && styles.accented, accent && styles[accent], className)}
       style={{
-        // The logical properties, so the axes follow the writing mode.
+        // Logical properties, so the axes follow the writing mode.
         paddingBlock: space(paddingY ?? padding),
         paddingInline: space(paddingX ?? padding),
         ...style,

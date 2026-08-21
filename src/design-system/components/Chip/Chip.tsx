@@ -16,21 +16,11 @@ export type ChipColor =
 
 export interface ChipProps {
   color: ChipColor;
-  /**
-   * The chip's words. Omit it for a chip that is decoration — one whose
-   * meaning the row beside it already carries — so it stays silent instead of
-   * saying the same thing twice.
-   */
+  /** The chip's words. Omit for a decorative chip, which is then not announced. */
   label?: string;
-  /**
-   * Drawn at the chip's own size and hidden from screen readers, since `label`
-   * already names the chip.
-   */
+  /** Sized by the chip and hidden from screen readers; `label` names it. */
   icon?: Icon;
-  /**
-   * Draw the icon alone. The label stays for screen readers, so a tight row
-   * can drop the word without dropping the name. Needs an `icon`.
-   */
+  /** Hide the words, keeping them for screen readers. Requires `icon`. */
   iconOnly?: boolean;
   /** Use on-white tint when inside a white card/frame. No effect on `neutral`, which has no tint. */
   onWhite?: boolean;
@@ -62,9 +52,7 @@ export function Chip({
       )}
     >
       {Glyph && <Glyph size={9} weight="bold" aria-hidden />}
-      {/* Hidden rather than dropped: the name is the same either way, so the
-          same call works in a wide row and a narrow one. No label at all is a
-          chip that says nothing, which is what decoration should do. */}
+      {/* Hidden, not removed, so the name survives iconOnly. */}
       {label && <span className={cx(iconOnly && Glyph && styles.srOnly)}>{label}</span>}
       {onDismiss && (
         <button type="button" className={styles.dismiss} onClick={onDismiss} aria-label="Remove">

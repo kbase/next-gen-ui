@@ -5,12 +5,9 @@
   overflow: hidden;
 }
 
-/* The frame's own border, recoloured — not a rail down one edge. The whole
-   outline reads as one object at a glance; an edge stripe reads as a marker
-   stuck onto it. The --ct-* tier, which is the only one resolved against the
-   surface per theme: --bo-* is a border for a tinted background and vanishes
-   on a plain one, and the static --c-* fills leave yellow near-invisible in
-   light and purple weak in dark. */
+/* --ct-*: the only tier that meets contrast on a plain surface. --bo-* is
+   drawn for tinted backgrounds and disappears without one; the static --c-*
+   fills leave yellow at 1.45:1 in light and purple at 2.43:1 in dark. */
 .accented {
   border-color: var(--frame-accent);
 }

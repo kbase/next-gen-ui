@@ -1,4 +1,4 @@
-/* Composes Frame, Chip, Progress, Loader, Accordion; layout-glue only. */
+/* Layout only. Appearance comes from Frame, Chip, Progress, Loader. */
 
 .root {
   /* Frame supplies border, radius, background, overflow. */
@@ -159,8 +159,7 @@
   }
 }
 
-/* Quieter than the default disclosure trigger: ink, not link colour, and no
-   underline. */
+/* Ink rather than link colour, and no underline. */
 .logTrigger {
   width: 100%;
   display: flex;
@@ -199,8 +198,7 @@
   }
 }
 
-/* Teal, not green: a finished stage inside a running job is a passive "done",
-   not the job's own success. */
+/* Teal: a completed stage is a passive done, not the job's own success. */
 .markComplete {
   color: var(--ct-teal);
 }

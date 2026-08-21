@@ -42,15 +42,19 @@ describe('portal gallery', () => {
     expect(screen.getByRole('link', { name: /Fungal Jungle/ })).toBeVisible();
   });
 
-  // The credit line is placeholder metadata, but it is searchable, so a
-  // funder query has to reach it the same way a subject query does.
-  it('matches on funder and program as well as subject', async () => {
+  // Funder and credit are searchable, not just subject tags and blurbs.
+  it('matches on funder and credit as well as subject', async () => {
     const user = userEvent.setup();
     mountGallery();
     await screen.findByRole('heading', { level: 1, name: /portal gallery/i });
 
-    await user.type(screen.getByRole('textbox', { name: /search portals/i }), 'user facility');
+    const search = screen.getByRole('textbox', { name: /search portals/i });
+    await user.type(search, 'jgi');
     expect(cardLinks()).toHaveLength(2);
+
+    await user.clear(search);
+    await user.type(search, 'doe');
+    expect(cardLinks()).toHaveLength(7);
   });
 
   it('reports when nothing matches and can be cleared', async () => {

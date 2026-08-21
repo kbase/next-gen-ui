@@ -107,7 +107,7 @@
   /* Underlined at rest rather than on hover: a link marked only by its colour
      is invisible to a reader who does not see the colour. */
   text-decoration: underline;
-  text-underline-offset: 0.15em;
+  text-underline-offset: 2px;
   /* The one variant that overrides the size box: it sits beside text rather
      than in a box of its own, so it keeps only the size's font-size and gap.
      Still inline-flex, so it will not wrap mid-label inside a paragraph. */
@@ -115,11 +115,10 @@
   border-width: 0;
   letter-spacing: inherit;
 
-  /* Toward the ink rather than to --c-primary-dim, which is a button-fill
-     token: on a dark ground it sits below --ct-primary and hover would lose
-     contrast instead of gaining it. */
+  /* Thickens rather than recolours, matching the .link utility in
+     utilities.css. A shape change reads for everyone; a hue change does not. */
   &:hover:not([data-disabled]) {
-    color: color-mix(in oklch, var(--ct-primary), var(--c-ink) 35%);
+    text-decoration-thickness: 2px;
   }
 
   &:active,
@@ -127,10 +126,13 @@
     transform: none;
   }
 
+  /* Restates the disabled colour, which .btn[data-disabled] sets at the same
+     specificity and loses to source order. The underline stays: it is the only
+     thing marking this as a link, and disabling is not a reason to drop it. */
   &[data-disabled] {
+    color: var(--c-ink5);
     background: none;
     border-color: transparent;
-    text-decoration-color: transparent;
   }
 }
 

@@ -123,8 +123,9 @@ export function Section04Forms() {
       <div className={s.sub}>SearchBar</div>
       <p className={s.note}>
         A filter field: it narrows a list someone else is already rendering. Not a combobox &mdash;
-        it owns no list of its own and picks nothing, so it has no listbox and no active option.
-        Reach for <code>Combobox</code> when the field <em>is</em> the list.
+        it owns no list of its own and picks nothing, so it has no listbox and no active option. A
+        field that <em>is</em> the list, owning a listbox and an active option, is a combobox and is
+        not in the system yet.
       </p>
       <SearchBar
         value=""
@@ -138,9 +139,9 @@ export function Section04Forms() {
 
       <div className={s.sub}>Prompt input</div>
       <p className={s.note}>
-        A layout pattern, not a component: a Frame around a <code>Textarea</code> and its action. For
-        open-ended input &mdash; AI assist, natural language, chat (see appendix E). Type a few lines
-        to see <code>autoGrow</code>; Enter sends and Shift+Enter breaks the line.
+        A layout pattern, not a component: a Frame around a <code>Textarea</code> and its action.
+        For open-ended input &mdash; AI assist, natural language, chat (see appendix E). Type a few
+        lines to see <code>autoGrow</code>; Enter sends and Shift+Enter breaks the line.
       </p>
       <Frame paddingY={5} paddingX={6} className={css.promptInput}>
         <Textarea
@@ -154,12 +155,7 @@ export function Section04Forms() {
           aria-label="Prompt"
           className={css.textarea}
         />
-        <Button
-          variant="primary"
-          size="sm"
-          aria-label="Run prompt"
-          onClick={() => setPrompt('')}
-        >
+        <Button variant="primary" size="sm" aria-label="Run prompt" onClick={() => setPrompt('')}>
           <PaperPlaneRight size={12} weight="bold" />
         </Button>
       </Frame>
@@ -171,7 +167,13 @@ export function Section04Forms() {
   value={prompt}
   onValueChange={setPrompt}
   onSubmit={send}
-/>`}
+/>
+
+/* Stripping the chrome? Tell the cap. */
+.myTextarea {
+  --textarea-border: 0px;
+  border: none;
+}`}
       />
 
       <div className={s.sub}>Composed form</div>

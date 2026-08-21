@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Frame } from '../components/Frame';
 import { Avatar } from '../components/Avatar';
 import { Button } from '../components/Button';
@@ -29,6 +30,7 @@ function MsgHeader({
 }
 
 export function ChatAppendix() {
+  const [draft, setDraft] = useState('');
   return (
     <div className={s.root}>
       <div className={s.num}>E</div>
@@ -156,6 +158,9 @@ export function ChatAppendix() {
               maxRows={6}
               aria-label="Message"
               placeholder="Message Rhizosphere Assembly…"
+              value={draft}
+              onValueChange={setDraft}
+              onSubmit={() => setDraft('')}
               style={{
                 flex: 1,
                 fontSize: 'var(--fs-6)',
@@ -167,7 +172,7 @@ export function ChatAppendix() {
                 ['--textarea-border' as string]: '0px',
               }}
             />
-            <Button variant="primary" size="sm" aria-label="Send">
+            <Button variant="primary" size="sm" aria-label="Send" onClick={() => setDraft('')}>
               <PaperPlaneRight size={14} weight="bold" />
             </Button>
           </div>

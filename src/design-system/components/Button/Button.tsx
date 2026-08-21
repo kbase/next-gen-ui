@@ -27,6 +27,8 @@ export function Button({
 }
 
 export interface ButtonLinkProps extends Omit<ComponentPropsWithRef<'a'>, 'className'> {
+  /** Required: an anchor without one is neither focusable nor a link. */
+  href: string;
   variant?: ButtonVariant;
   size?: ButtonSize;
   className?: string;

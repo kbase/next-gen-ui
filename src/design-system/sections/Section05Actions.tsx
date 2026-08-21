@@ -87,9 +87,9 @@ export function Section05Actions() {
       <p className={s.note}>
         The link variant is underlined at rest, not on hover: a link marked only by its colour is
         not marked at all for a reader who does not see the colour. It is also the one variant that
-        drops the size padding, since it sits beside text rather than in a box of its own. It stays
-        inline-flex, so it will not wrap mid-label inside a paragraph &mdash; use a plain{' '}
-        <code>&lt;a&gt;</code> for links in prose.
+        drops the size padding, since it sits beside text rather than in a box of its own. Its label
+        will not wrap, so it sits beside a paragraph rather than inside one &mdash; use the{' '}
+        <code>.link</code> utility on a plain <code>&lt;a&gt;</code> for links in prose.
       </p>
 
       <div className={s.sub}>Sizes</div>

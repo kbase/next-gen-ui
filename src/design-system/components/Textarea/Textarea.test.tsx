@@ -29,7 +29,7 @@ describe('Textarea', () => {
     await user.click(screen.getByLabelText('Prompt'));
     await user.keyboard('hello{Enter}');
 
-    expect(onSubmit).toHaveBeenCalledOnce();
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith('hello');
     expect(screen.getByLabelText('Prompt')).toHaveValue('hello');
   });
 
@@ -45,7 +45,7 @@ describe('Textarea', () => {
     expect(screen.getByLabelText('Prompt')).toHaveValue('a\nb');
   });
 
-  it('leaves Enter alone when there is nothing to submit', async () => {
+  it('leaves Enter alone when no onSubmit is given', async () => {
     const user = userEvent.setup();
     render(<Textarea aria-label="Prompt" />);
 

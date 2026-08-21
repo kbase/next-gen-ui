@@ -3,14 +3,17 @@ import { Input as BaseInput } from '@base-ui/react/input';
 import styles from './Textarea.module.scss';
 import { cx } from '../../util/cx';
 
-export interface TextareaProps extends Omit<BaseInput.Props, 'className' | 'render'> {
+/* onSubmit is omitted and redefined: a textarea never fires a native submit
+   event, so the DOM prop is dead here and the name is the one consumers reach
+   for. */
+export interface TextareaProps extends Omit<BaseInput.Props, 'className' | 'render' | 'onSubmit'> {
   rows?: number;
   /** Grows with its content rather than scrolling, up to `maxRows`. */
   autoGrow?: boolean;
-  /** Ceiling for `autoGrow`. Past it the field scrolls. */
+  /** Ceiling for `autoGrow`, in rows. Defaults to 8. Past it the field scrolls. */
   maxRows?: number;
-  /** Called on Enter. Shift+Enter still inserts a newline. */
-  onSubmit?: () => void;
+  /** Called with the current value on Enter. Shift+Enter still inserts a newline. */
+  onSubmit?: (value: string) => void;
   className?: string;
 }
 
@@ -19,7 +22,7 @@ export interface TextareaProps extends Omit<BaseInput.Props, 'className' | 'rend
 export function Textarea({
   rows,
   autoGrow,
-  maxRows = 8,
+  maxRows,
   onSubmit,
   onKeyDown,
   onInput,
@@ -35,8 +38,8 @@ export function Textarea({
     if (!el) return;
     // Collapse first, or scrollHeight only ever reports the current height.
     el.style.height = 'auto';
-    // A field in a hidden container measures zero; leave it be rather than
-    // pinning it shut until the next keystroke.
+    // A field in a hidden container measures zero; drop the pin rather than
+    // freezing it shut, and let the next input re-measure.
     if (el.scrollHeight === 0) {
       el.style.height = '';
       return;
@@ -56,11 +59,12 @@ export function Textarea({
       return;
     }
     // Set on the element rather than merged into `style`, which Base UI also
-    // allows to be a function of state.
-    el.style.setProperty('--textarea-max-rows', String(maxRows));
+    // allows to be a function of state. Left unset, the stylesheet's default
+    // applies, so the number lives in one place.
+    if (maxRows != null) el.style.setProperty('--textarea-max-rows', String(maxRows));
     measure();
-    // `value` covers a controlled field set from outside; typing is handled by
-    // onInput below, which an uncontrolled field never reaches this effect for.
+    // `value` covers a controlled field set from outside. Typing is handled by
+    // onInput, which is the only trigger an uncontrolled field has.
   }, [autoGrow, maxRows, measure, value]);
 
   const handleInput: NonNullable<BaseInput.Props['onInput']> = (event) => {
@@ -73,10 +77,13 @@ export function Textarea({
   const handleKeyDown: NonNullable<BaseInput.Props['onKeyDown']> = (event) => {
     onKeyDown?.(event);
     if (!onSubmit || event.defaultPrevented) return;
-    // isComposing guards an IME: mid-composition Enter commits the candidate.
-    if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
+    // Both guards are an IME: mid-composition Enter commits the candidate, and
+    // Safari reports the committing keystroke as 229 with isComposing already
+    // false.
+    const composing = event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229;
+    if (event.key === 'Enter' && !event.shiftKey && !composing) {
       event.preventDefault();
-      onSubmit();
+      onSubmit(event.currentTarget.value);
     }
   };
 

@@ -12,7 +12,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 28px;
+  /* Total width, not content width: `all: unset` drops the global border-box,
+     so this is 28px + the horizontal padding as it measured before. */
+  min-width: 48px;
   height: 28px;
   padding: 0 var(--s-4);
   color: var(--c-ink4);

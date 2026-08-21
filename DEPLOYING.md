@@ -16,17 +16,19 @@ those three rules.
 A static single-page app. `npm run build` emits `dist/`; the
 image bakes `dist/` into `nginxinc/nginx-unprivileged` and serves
 it on port 8080. There is no server-side rendering, no Node
-process, no API layer of our own. Every backend call the browser
-makes goes directly to `AUTH_ORIGIN`
-(`https://kbase.us/services/auth/...`), not through this pod.
+process, no API layer of our own. The browser calls KBase services
+directly rather than through this pod, which proxies nothing — today
+that is the auth service at `AUTH_ORIGIN`, and every service added
+later reaches the browser the same way.
 
 Two consequences that shape the whole deployment:
 
 - **Configuration is rendered when the container starts**, from
-  the workload's environment. The image carries no environment
-  identity, so one tag is promoted from CI to prod rather than
-  rebuilt per environment, and the Rancher workload's environment
-  tab does what everyone expects it to. See
+  the environment set on the **workload** — Rancher's term for the
+  Deployment, and the vocabulary this doc uses throughout. The image
+  carries no environment identity, so one tag is promoted from CI to
+  prod rather than rebuilt per environment, and the workload's
+  Environment Variables tab does what everyone expects it to. See
   [Runtime configuration](#runtime-configuration).
 - **All routing below the hostname is the browser's job.** The
   pod's only routing rule is "serve the file if it exists,

@@ -190,3 +190,405 @@ body,
   max-width: 60ch;
   line-height: 1.6;
 }
+
+/* ---------------------------------------------------------------
+   Published portals -- the unauthenticated landing page (/portals).
+   Public routes render through AuthLayout with no app chrome, so this
+   page owns its own topbar, width, and footer.
+   --------------------------------------------------------------- */
+
+.portals {
+  --portals-max: 1180px;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--c-bg);
+}
+
+.portals__topbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-raised);
+  border-bottom: 1px solid var(--c-border);
+  background: color-mix(in srgb, var(--c-bg) 88%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.portals__topbar-inner {
+  max-width: var(--portals-max);
+  margin: 0 auto;
+  padding: var(--s-5) var(--s-9);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-7);
+}
+
+.portals__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-5);
+}
+
+.portals__brand-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--c-border2);
+}
+
+.portals__brand-name {
+  font-size: var(--fs-7);
+  font-weight: 700;
+  color: var(--c-ink2);
+}
+
+.portals__signin {
+  font-size: var(--fs-5);
+  font-weight: 700;
+  color: var(--c-ink3);
+  text-decoration: none;
+  padding: var(--s-2) var(--s-5);
+  border-radius: var(--r-button);
+  transition:
+    background var(--t-fast),
+    color var(--t-fast);
+}
+
+.portals__signin:hover {
+  background: var(--c-raised);
+  color: var(--c-ink);
+}
+
+.portals__signin:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--c-focus);
+}
+
+.portals__main {
+  flex: 1;
+  width: 100%;
+  max-width: var(--portals-max);
+  margin: 0 auto;
+  padding: 0 var(--s-9) var(--s-12);
+}
+
+/* --- hero --- */
+
+.portals__hero {
+  padding: var(--s-12) 0 var(--s-11);
+  max-width: 68ch;
+}
+
+.portals__headline {
+  font-size: var(--fs-hero);
+  font-weight: 700;
+  line-height: 1.12;
+  color: var(--c-ink);
+  margin: var(--s-6) 0 var(--s-6);
+}
+
+.portals__lead {
+  font-size: var(--fs-7);
+  line-height: 1.65;
+  color: var(--c-ink3);
+}
+
+/* The asterisk is part of the name, not emphasis. Nudge it so the
+   wordmark reads as KIND*AI rather than KIND-star-AI. */
+.portals__kindai {
+  white-space: nowrap;
+  font-weight: 700;
+  /* Inherit, so the wordmark works on a tinted button as well as in
+     body copy. */
+  color: inherit;
+}
+
+.portals__cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-6);
+  margin-top: var(--s-9);
+}
+
+.portals__cta-row a,
+.portals__band-actions a {
+  text-decoration: none;
+}
+
+.portals__cta-disabled {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-4);
+}
+
+.portals__cta-note {
+  margin-top: var(--s-6);
+  font-size: var(--fs-4);
+  color: var(--c-ink4);
+  max-width: 56ch;
+  line-height: 1.6;
+}
+
+/* --- how it works --- */
+
+.portals__how {
+  padding-bottom: var(--s-11);
+}
+
+.portals__steps {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--s-7);
+  margin-top: var(--s-6);
+}
+
+.portals__step-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--s-6);
+}
+
+.portals__step-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r-md);
+}
+
+.portals__step-num {
+  font-family: var(--f-mono);
+  font-size: var(--fs-6);
+  font-weight: 700;
+  color: var(--c-ink5);
+}
+
+/* --- gallery --- */
+
+.portals__gallery-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-7);
+  flex-wrap: wrap;
+  padding-bottom: var(--s-7);
+  border-bottom: 1px solid var(--c-border);
+}
+
+.portals__grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: var(--s-8);
+  margin-top: var(--s-8);
+}
+
+.portal-card {
+  display: block;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--r-lg);
+}
+
+/* The empty slot at the end of the grid. Not a link -- it stands in for
+   the publish flow that isn't built yet. */
+.portal-card--placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 260px;
+  padding: var(--s-9);
+  border: 1px dashed var(--c-border2);
+  background: transparent;
+}
+
+.portal-card__placeholder-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: var(--r-full);
+  margin-bottom: var(--s-6);
+  background: var(--bg-yellow);
+  color: var(--ct-yellow);
+}
+
+.portal-card:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--c-focus);
+}
+
+.portal-card__frame {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition:
+    border-color var(--t-base),
+    box-shadow var(--t-base),
+    transform var(--t-base);
+}
+
+.portal-card:hover .portal-card__frame {
+  border-color: var(--c-border2);
+  box-shadow: var(--e-3);
+  transform: translateY(-2px);
+}
+
+.portal-card__shot {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 8 / 5;
+  object-fit: cover;
+  border-bottom: 1px solid var(--c-border);
+  background: var(--c-bg);
+}
+
+.portal-card__body {
+  flex: 1;
+  padding: var(--s-7);
+}
+
+.portal-card__title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+}
+
+.portal-card__go {
+  color: var(--c-ink5);
+  flex-shrink: 0;
+  transition:
+    color var(--t-fast),
+    transform var(--t-fast);
+}
+
+.portal-card:hover .portal-card__go {
+  color: var(--c-primary);
+  transform: translate(1px, -1px);
+}
+
+.portal-card__blurb {
+  margin-top: var(--s-4);
+  font-size: var(--fs-4);
+  line-height: 1.6;
+  color: var(--c-ink3);
+  /* Keep every card's text block the same height so the tag row and
+     meta strip line up across the grid. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  overflow: hidden;
+}
+
+.portal-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+  margin-top: var(--s-6);
+}
+
+.portal-card__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-5) var(--s-7);
+  border-top: 1px solid var(--c-border);
+  background: var(--c-raised);
+  font-size: var(--fs-3);
+  color: var(--c-ink4);
+}
+
+/* --- publish band --- */
+
+.portals__band {
+  padding-top: var(--s-12);
+}
+
+.portals__band-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-9);
+  flex-wrap: wrap;
+}
+
+.portals__band-inner > div:first-child {
+  flex: 1 1 380px;
+  max-width: 62ch;
+}
+
+.portals__band-head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-5);
+  flex-wrap: wrap;
+}
+
+.portals__band-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--s-5);
+  flex-wrap: wrap;
+}
+
+/* --- footer --- */
+
+.portals__footer {
+  border-top: 1px solid var(--c-border);
+  padding: var(--s-9);
+}
+
+.portals__footer,
+.portals__footer-links {
+  display: flex;
+  align-items: center;
+  gap: var(--s-8);
+  flex-wrap: wrap;
+}
+
+.portals__footer {
+  max-width: var(--portals-max);
+  margin: 0 auto;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.portals__footer-links a {
+  font-size: var(--fs-4);
+  color: var(--c-ink4);
+  text-decoration: none;
+  transition: color var(--t-fast);
+}
+
+.portals__footer-links a:hover {
+  color: var(--c-ink2);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .portals__main {
+    padding-left: var(--s-7);
+    padding-right: var(--s-7);
+  }
+
+  .portals__topbar-inner {
+    padding-left: var(--s-7);
+    padding-right: var(--s-7);
+  }
+
+  .portals__hero {
+    padding-top: var(--s-10);
+  }
+}

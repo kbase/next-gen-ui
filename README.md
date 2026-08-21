@@ -91,6 +91,7 @@ src/
                            AppLayout (sidebar+header) and AuthLayout (no chrome).
     index.tsx              `/`        KBERDL home page.
     account.tsx            `/account` Identity + sessions.
+    portals.tsx            `/portals` Public. Published-portals gallery.
     design-system.tsx      `/design-system` Hidden. Design-system showcase.
     login/
       index.tsx            `/login`           Public. ORCID button + dev token paste.

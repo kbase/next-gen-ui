@@ -32,7 +32,14 @@ export interface RouterContext {
 }
 
 // The design system is documentation, so it is readable without an account.
-const PUBLIC_ROUTES: ReadonlyArray<string> = ['/login', '/login/continue', '/design-system'];
+// /portals is the public front door: a gallery of published portals that
+// anyone can browse before they have a KBase identity.
+const PUBLIC_ROUTES: ReadonlyArray<string> = [
+  '/login',
+  '/login/continue',
+  '/design-system',
+  '/portals',
+];
 
 function isPublic(pathname: string): boolean {
   return PUBLIC_ROUTES.includes(pathname);

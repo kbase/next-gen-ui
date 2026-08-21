@@ -9,12 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PortalsRouteImport } from './routes/portals'
 import { Route as DesignSystemRouteImport } from './routes/design-system'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LoginIndexRouteImport } from './routes/login/index'
 import { Route as LoginContinueRouteImport } from './routes/login/continue'
 
+const PortalsRoute = PortalsRouteImport.update({
+  id: '/portals',
+  path: '/portals',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DesignSystemRoute = DesignSystemRouteImport.update({
   id: '/design-system',
   path: '/design-system',
@@ -45,6 +51,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/design-system': typeof DesignSystemRoute
+  '/portals': typeof PortalsRoute
   '/login/continue': typeof LoginContinueRoute
   '/login/': typeof LoginIndexRoute
 }
@@ -52,6 +59,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/design-system': typeof DesignSystemRoute
+  '/portals': typeof PortalsRoute
   '/login/continue': typeof LoginContinueRoute
   '/login': typeof LoginIndexRoute
 }
@@ -60,19 +68,33 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/design-system': typeof DesignSystemRoute
+  '/portals': typeof PortalsRoute
   '/login/continue': typeof LoginContinueRoute
   '/login/': typeof LoginIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/account' | '/design-system' | '/login/continue' | '/login/'
+  fullPaths:
+    | '/'
+    | '/account'
+    | '/design-system'
+    | '/portals'
+    | '/login/continue'
+    | '/login/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/account' | '/design-system' | '/login/continue' | '/login'
+  to:
+    | '/'
+    | '/account'
+    | '/design-system'
+    | '/portals'
+    | '/login/continue'
+    | '/login'
   id:
     | '__root__'
     | '/'
     | '/account'
     | '/design-system'
+    | '/portals'
     | '/login/continue'
     | '/login/'
   fileRoutesById: FileRoutesById
@@ -81,12 +103,20 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountRoute: typeof AccountRoute
   DesignSystemRoute: typeof DesignSystemRoute
+  PortalsRoute: typeof PortalsRoute
   LoginContinueRoute: typeof LoginContinueRoute
   LoginIndexRoute: typeof LoginIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/portals': {
+      id: '/portals'
+      path: '/portals'
+      fullPath: '/portals'
+      preLoaderRoute: typeof PortalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/design-system': {
       id: '/design-system'
       path: '/design-system'
@@ -129,6 +159,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountRoute: AccountRoute,
   DesignSystemRoute: DesignSystemRoute,
+  PortalsRoute: PortalsRoute,
   LoginContinueRoute: LoginContinueRoute,
   LoginIndexRoute: LoginIndexRoute,
 }

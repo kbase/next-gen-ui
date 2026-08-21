@@ -42,19 +42,14 @@ describe('portal gallery', () => {
     expect(screen.getByRole('link', { name: /Fungal Jungle/ })).toBeVisible();
   });
 
-  // Funder and credit are searchable, not just subject tags and blurbs.
-  it('matches on funder and credit as well as subject', async () => {
+  // The credit line is searchable, not just subject tags and blurbs.
+  it('matches on the credit line as well as subject', async () => {
     const user = userEvent.setup();
     mountGallery();
     await screen.findByRole('heading', { level: 1, name: /portal gallery/i });
 
-    const search = screen.getByRole('textbox', { name: /search portals/i });
-    await user.type(search, 'jgi');
+    await user.type(screen.getByRole('textbox', { name: /search portals/i }), 'jgi');
     expect(cardLinks()).toHaveLength(2);
-
-    await user.clear(search);
-    await user.type(search, 'doe');
-    expect(cardLinks()).toHaveLength(7);
   });
 
   it('reports when nothing matches and can be cleared', async () => {

@@ -32,7 +32,6 @@ interface Portal {
   blurb: string;
   categories: string[];
   tags: PortalTag[];
-  funder: string;
   credit: string;
   version: string;
   /** ISO 8601. */
@@ -46,11 +45,10 @@ interface Portal {
 // cut-plan pins from the `v2026.08.11` release, which is also the `updated`
 // date for every entry -- they were cut together.
 //
-// PLACEHOLDER, pending real metadata: `funder` and `credit`.
-// The app manifests carry no such fields today (they hold type/id/title/
-// description/launch only), so these are our best reading of each app's
-// data sources rather than a recorded fact. Confirm before this is shown
-// outside a demo.
+// PLACEHOLDER, pending real metadata: `credit`. The app manifests carry
+// no authorship field today (they hold type/id/title/description/launch
+// only), so these are our best reading of each app's data sources rather
+// than a recorded fact. Confirm before this is shown outside a demo.
 const PORTALS: readonly Portal[] = [
   {
     slug: 'enigma-strata',
@@ -63,7 +61,6 @@ const PORTALS: readonly Portal[] = [
       { label: 'Geochemistry', color: 'teal' },
       { label: 'Biogeography', color: 'green' },
     ],
-    funder: 'DOE',
     credit: 'ENIGMA SFA · Lawrence Berkeley National Laboratory',
     version: 'v0.3.1',
     updated: '2026-08-11',
@@ -79,7 +76,6 @@ const PORTALS: readonly Portal[] = [
       { label: 'Annotation', color: 'purple' },
       { label: 'Structure', color: 'ocean' },
     ],
-    funder: 'DOE',
     credit: 'KBase',
     version: 'v0.1.1',
     updated: '2026-08-11',
@@ -94,7 +90,6 @@ const PORTALS: readonly Portal[] = [
       { label: 'Metagenomics', color: 'teal' },
       { label: 'Ecology', color: 'green' },
     ],
-    funder: 'DOE',
     credit: 'KBase · Microbe Atlas',
     version: 'v0.1.4',
     updated: '2026-08-11',
@@ -109,7 +104,6 @@ const PORTALS: readonly Portal[] = [
       { label: 'Taxonomy', color: 'green' },
       { label: 'Physiology', color: 'teal' },
     ],
-    funder: 'DOE',
     credit: 'KBase',
     version: 'v0.1.2',
     updated: '2026-08-11',
@@ -125,7 +119,6 @@ const PORTALS: readonly Portal[] = [
       { label: 'Plants', color: 'green' },
       { label: 'Genomics', color: 'primary' },
     ],
-    funder: 'DOE',
     credit: 'JGI Phytozome',
     version: 'v0.1.3',
     updated: '2026-08-11',
@@ -140,7 +133,6 @@ const PORTALS: readonly Portal[] = [
       { label: 'Fungi', color: 'yellow' },
       { label: 'CAZymes', color: 'orange' },
     ],
-    funder: 'DOE',
     credit: 'JGI MycoCosm · GBIF',
     version: 'v0.5.1',
     updated: '2026-08-11',
@@ -155,7 +147,6 @@ const PORTALS: readonly Portal[] = [
       { label: 'Benchmarking', color: 'purple' },
       { label: 'Annotation', color: 'primary' },
     ],
-    funder: 'DOE',
     credit: 'KBase',
     version: 'v0.1.2',
     updated: '2026-08-11',
@@ -194,7 +185,6 @@ function haystack(portal: Portal): string {
     portal.title,
     portal.blurb,
     portal.credit,
-    portal.funder,
     ...portal.categories,
     ...portal.tags.map((t) => t.label),
   ]
@@ -407,9 +397,6 @@ function PortalCard({ portal }: { portal: Portal }) {
           <p className="portal-card__blurb">{portal.blurb}</p>
 
           <div className="portal-card__tags">
-            <Chip color="ocean" onWhite>
-              {portal.funder}
-            </Chip>
             {portal.tags.map((tag) => (
               <Chip key={tag.label} color={tag.color} onWhite>
                 {tag.label}

@@ -137,16 +137,18 @@ them.
 `nginx.conf` and `index.html` at start. Set these on the workload;
 no rebuild is involved.
 
-| Var             | Unset means                        | `''` means                             |
-| --------------- | ---------------------------------- | -------------------------------------- |
-| `AUTH_ORIGIN`   | no auth service in this deployment | same-origin (something proxies it)     |
-| `COOKIE_DOMAIN` | derive from the current host       | omit the Domain attribute entirely     |
-| `IDP_ORIGINS`   | `https://orcid.org`                | — (space-separated, for `form-action`) |
+Unset and empty mean the same thing.
 
-Leaving `AUTH_ORIGIN` unset is a supported deployment, not a broken
-one: public routes serve normally and sign-in reports itself as
-unavailable rather than posting to a path that does not exist. That
-is the initial rollout, before an auth route exists.
+| Var             | Not set means                                            |
+| --------------- | -------------------------------------------------------- |
+| `AUTH_ORIGIN`   | no auth service in this deployment                       |
+| `COOKIE_DOMAIN` | derive from the current host                             |
+| `IDP_ORIGINS`   | `https://orcid.org` (space-separated, for `form-action`) |
+
+Leaving `AUTH_ORIGIN` out is a supported deployment, not a broken one:
+public routes serve normally and sign-in reports itself as unavailable
+rather than posting to a path that does not exist. That is the initial
+rollout, before an auth route exists.
 
 `src/config.ts` reads the rendered values from `<meta name="config:*">`
 tags. An absent tag means a dev build, and falls back to the `VITE_*`

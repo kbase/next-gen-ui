@@ -39,13 +39,13 @@ in the document root, so an `emptyDir` there would replace the app.
 ## Configuration
 
 Set these on the workload. Rendered at container start; no rebuild is
-involved. For each one, unset and empty mean different things.
+involved. Unset and empty mean the same thing.
 
-| Var             | Unset                              | `''`                       |
-| --------------- | ---------------------------------- | -------------------------- |
-| `AUTH_ORIGIN`   | no auth service in this deployment | same-origin                |
-| `COOKIE_DOMAIN` | derived from the current host      | `Domain` attribute omitted |
-| `IDP_ORIGINS`   | `https://orcid.org`                | —                          |
+| Var             | Not set                            |
+| --------------- | ---------------------------------- |
+| `AUTH_ORIGIN`   | no auth service in this deployment |
+| `COOKIE_DOMAIN` | derived from the current host      |
+| `IDP_ORIGINS`   | `https://orcid.org`                |
 
 ```yaml
 env:
@@ -55,9 +55,9 @@ env:
     value: .kbase.us
 ```
 
-Leaving `AUTH_ORIGIN` unset is supported. The public routes work and
-sign-in reports that it is unavailable. This is the state before an
-auth route exists.
+Leaving `AUTH_ORIGIN` out is supported: there is no auth service, the
+public routes work, and sign-in reports that it is unavailable. This is
+the state before an auth route exists.
 
 The container exits non-zero if a template placeholder is left
 unsubstituted, so a misconfigured pod does not serve traffic.

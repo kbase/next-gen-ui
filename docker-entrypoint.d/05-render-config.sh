@@ -23,31 +23,18 @@ HASH_FILE=/etc/nginx/.csp-script-hash
 # Optional, with the same defaults the app assumed when config was baked in.
 IDP_ORIGINS="${IDP_ORIGINS:-https://orcid.org}"
 
-# Three states for each optional value, and the difference is load-bearing:
-#
-#   set to a value -> that value
-#   set to ''      -> an explicit empty override
-#   unset          -> the placeholder is left in place, and src/config.ts
-#                     reads a surviving __PLACEHOLDER__ as "not configured"
-#
-# For AUTH_ORIGIN that third state is a deployment with no auth service at
-# all -- the initial rollout, before an auth route exists. Public routes must
-# keep working there, so this is a supported configuration and not an error.
-# '' stays distinct from it: same-origin, for a deployment that proxies
-# /services/auth itself.
-AUTH_ORIGIN_META="${AUTH_ORIGIN-__AUTH_ORIGIN__}"
-# Unset COOKIE_DOMAIN means "derive from the current host" -- see
-# src/api/auth/cookie.ts. Distinct from '', which omits the attribute.
-COOKIE_DOMAIN_VALUE="${COOKIE_DOMAIN-__COOKIE_DOMAIN__}"
+# Unset and empty mean the same thing: not configured. The placeholder is
+# left in place and src/config.ts reads a surviving __PLACEHOLDER__ as
+# absent. For AUTH_ORIGIN that means no auth service, which is a supported
+# deployment rather than an error.
+AUTH_ORIGIN_META="${AUTH_ORIGIN:-__AUTH_ORIGIN__}"
+COOKIE_DOMAIN_VALUE="${COOKIE_DOMAIN:-__COOKIE_DOMAIN__}"
 
-# The CSP is a different matter: a literal __AUTH_ORIGIN__ there is not a
-# valid source expression, and would invalidate the whole directive. With no
-# auth service there is no origin to allow, so it collapses to 'self'.
-#
-# The templates write `'self'__AUTH_ORIGIN__` with no space, and the space
-# is carried here by the value, so an absent origin leaves `'self'` clean
-# rather than `'self' ;`.
-if [ -n "${AUTH_ORIGIN-}" ]; then
+# A literal __AUTH_ORIGIN__ is not a valid CSP source expression, so with no
+# auth service the directive collapses to 'self'. The templates write
+# `'self'__AUTH_ORIGIN__` with no space and the space is carried by the
+# value, so an absent origin leaves `'self';` rather than `'self' ;`.
+if [ -n "${AUTH_ORIGIN:-}" ]; then
   AUTH_ORIGIN_CSP=" ${AUTH_ORIGIN}"
 else
   AUTH_ORIGIN_CSP=""
@@ -81,10 +68,9 @@ if [ -n "$leftover" ]; then
   exit 1
 fi
 
-if [ -z "${AUTH_ORIGIN+x}" ]; then
-  echo "05-render-config: AUTH_ORIGIN is not set -- serving with no auth" \
-       "service. Public routes work; sign-in reports itself unavailable."
+if [ -z "${AUTH_ORIGIN:-}" ]; then
+  echo "05-render-config: no AUTH_ORIGIN -- serving with no auth service." \
+       "Public routes work; sign-in reports itself unavailable."
 else
-  echo "05-render-config: AUTH_ORIGIN=${AUTH_ORIGIN:-(same-origin)}" \
-       "IDP_ORIGINS=${IDP_ORIGINS}"
+  echo "05-render-config: AUTH_ORIGIN=${AUTH_ORIGIN} IDP_ORIGINS=${IDP_ORIGINS}"
 fi

@@ -7,13 +7,9 @@
 import { z } from 'zod';
 
 const ConfigSchema = z.object({
-  // Three distinct states:
-  //   'https://…' -> that auth service
-  //   ''          -> same-origin; the client emits relative paths and
-  //                  something in front (the Vite dev proxy today) forwards
-  //   null        -> no auth service in this deployment. Public routes must
-  //                  keep working; sign-in reports itself as unavailable
-  //                  rather than posting into the void.
+  // null means this deployment has no auth service: public routes keep
+  // working and sign-in reports itself unavailable. In dev an empty
+  // VITE_AUTH_ORIGIN is still a value -- relative paths through the proxy.
   authOrigin: z.string().nullable(),
   // undefined -> derive from the current host; '' -> omit the Domain
   // attribute entirely. See api/auth/cookie.ts.
@@ -29,20 +25,16 @@ function hasMeta(name: string): boolean {
   return document.querySelector(`meta[name="config:${name}"]`) !== null;
 }
 
-/**
- * undefined when the tag is absent or still holds its `__PLACEHOLDER__`.
- * An empty `content` is a real value, not an absent one.
- */
+/** undefined when the tag is absent, empty, or still a `__PLACEHOLDER__`. */
 function readMeta(name: string): string | undefined {
   const content = document.querySelector(`meta[name="config:${name}"]`)?.getAttribute('content');
-  if (content == null || PLACEHOLDER.test(content)) return undefined;
+  if (!content || PLACEHOLDER.test(content)) return undefined;
   return content;
 }
 
 /**
- * Absent tag  -> dev or `npm run preview`: use the build-time env, as before.
- * Placeholder -> a container started without AUTH_ORIGIN: no auth service.
- * Value       -> that value (including '' for same-origin).
+ * No tag at all means a dev build, which falls back to the build-time env.
+ * A container always has the tag: a value, or nothing, meaning no auth.
  */
 function resolveAuthOrigin(): string | null {
   const value = readMeta('auth-origin');

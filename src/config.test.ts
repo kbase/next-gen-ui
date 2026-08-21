@@ -54,20 +54,19 @@ describe('runtime config', () => {
     expect(mod.authEnabled).toBe(true);
   });
 
-  // Empty is a real value, not an absent one: it means same-origin, which is
-  // how dev talks to the Vite proxy. It must not collapse to the default.
-  it('treats an empty auth origin as same-origin, not as unset', async () => {
+  // An operator who sets AUTH_ORIGIN='' means the same as one who never set
+  // it at all; the entrypoint and the app agree on that.
+  it('reads an empty auth origin as no auth service', async () => {
     setMeta('auth-origin', '');
-    const config = await loadConfig();
-    expect(config.authOrigin).toBe('');
+    const mod = await import('./config');
+    expect(mod.config.authOrigin).toBeNull();
+    expect(mod.authEnabled).toBe(false);
   });
 
-  // Distinct from absent: '' means omit the Domain attribute entirely,
-  // absent means derive it from the current host.
-  it('treats an empty cookie domain as an explicit override', async () => {
+  it('reads an empty cookie domain as unset', async () => {
     setMeta('auth-origin', 'https://kbase.us');
     setMeta('cookie-domain', '');
     const config = await loadConfig();
-    expect(config.cookieDomain).toBe('');
+    expect(config.cookieDomain).toBeUndefined();
   });
 });

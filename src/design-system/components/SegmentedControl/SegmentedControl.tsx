@@ -1,10 +1,13 @@
 import type { ReactNode } from 'react';
+import { Radio } from '@base-ui/react/radio';
+import { RadioGroup } from '@base-ui/react/radio-group';
 import styles from './SegmentedControl.module.scss';
 import { cx } from '../../util/cx';
 
 export interface SegmentOption {
   value: string;
   label: string;
+  /** Shown instead of the label; the label then names the segment for screen readers. */
   icon?: ReactNode;
 }
 
@@ -12,25 +15,40 @@ export interface SegmentedControlProps {
   options: SegmentOption[];
   value: string;
   onChange: (value: string) => void;
+  /** Names the group. Required unless a visible label points at it. */
+  'aria-label'?: string;
+  'aria-labelledby'?: string;
   className?: string;
 }
 
-export function SegmentedControl({ options, value, onChange, className }: SegmentedControlProps) {
+/**
+ * One choice from a short, always-visible set. A radio group, not a toolbar:
+ * one tab stop, and the arrow keys move between segments.
+ */
+export function SegmentedControl({
+  options,
+  value,
+  onChange,
+  className,
+  ...props
+}: SegmentedControlProps) {
   return (
-    <div className={cx(styles.root, className)} role="radiogroup">
+    <RadioGroup
+      className={cx(styles.root, className)}
+      value={value}
+      onValueChange={(next: string) => onChange(next)}
+      {...props}
+    >
       {options.map((opt) => (
-        <button
+        <Radio.Root
           key={opt.value}
-          type="button"
-          className={cx(styles.btn, opt.value === value && styles.active)}
-          onClick={() => onChange(opt.value)}
-          aria-label={opt.label}
-          aria-checked={opt.value === value}
-          role="radio"
+          value={opt.value}
+          className={styles.btn}
+          aria-label={opt.icon ? opt.label : undefined}
         >
           {opt.icon ?? opt.label}
-        </button>
+        </Radio.Root>
       ))}
-    </div>
+    </RadioGroup>
   );
 }

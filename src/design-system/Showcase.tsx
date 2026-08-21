@@ -209,6 +209,7 @@ function ThemeToggle() {
   const { theme, setTheme } = useTheme();
   return (
     <SegmentedControl
+      aria-label="Theme"
       options={THEME_OPTIONS}
       value={theme}
       onChange={(v) => setTheme(v as ThemeChoice)}

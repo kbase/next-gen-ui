@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import s from './showcase.module.scss';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
@@ -15,6 +16,7 @@ import { Play, PaperPlaneRight } from '@phosphor-icons/react';
 import css from './Section04Forms.module.scss';
 
 export function Section04Forms() {
+  const [prompt, setPrompt] = useState('');
   return (
     <div className={s.section}>
       <div className={s.sNum}>04</div>
@@ -120,8 +122,9 @@ export function Section04Forms() {
 
       <div className={s.sub}>SearchBar</div>
       <p className={s.note}>
-        Controlled pill with search icon and clear-on-type. For filtering data, not open-ended
-        queries.
+        A filter field: it narrows a list someone else is already rendering. Not a combobox &mdash;
+        it owns no list of its own and picks nothing, so it has no listbox and no active option.
+        Reach for <code>Combobox</code> when the field <em>is</em> the list.
       </p>
       <SearchBar
         value=""
@@ -135,19 +138,41 @@ export function Section04Forms() {
 
       <div className={s.sub}>Prompt input</div>
       <p className={s.note}>
-        A layout pattern, not a component. Frame + textarea + border + action footer. For open-ended
-        input: AI assist, natural language, chat (see appendix E).
+        A layout pattern, not a component: a Frame around a <code>Textarea</code> and its action. For
+        open-ended input &mdash; AI assist, natural language, chat (see appendix E). Type a few lines
+        to see <code>autoGrow</code>; Enter sends and Shift+Enter breaks the line.
       </p>
       <Frame paddingY={5} paddingX={6} className={css.promptInput}>
-        <textarea
+        <Textarea
           rows={2}
+          autoGrow
+          maxRows={6}
+          value={prompt}
+          onValueChange={setPrompt}
+          onSubmit={() => setPrompt('')}
           placeholder="Describe the analysis you want to run, or search for data…"
+          aria-label="Prompt"
           className={css.textarea}
         />
-        <Button variant="primary" size="sm" aria-label="Run prompt">
+        <Button
+          variant="primary"
+          size="sm"
+          aria-label="Run prompt"
+          onClick={() => setPrompt('')}
+        >
           <PaperPlaneRight size={12} weight="bold" />
         </Button>
       </Frame>
+      <CodeBlock
+        language="tsx"
+        code={`<Textarea
+  autoGrow
+  maxRows={6}
+  value={prompt}
+  onValueChange={setPrompt}
+  onSubmit={send}
+/>`}
+      />
 
       <div className={s.sub}>Composed form</div>
       <p className={s.note}>

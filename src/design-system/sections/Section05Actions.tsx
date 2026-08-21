@@ -1,5 +1,5 @@
 import s from './showcase.module.scss';
-import { Button } from '../components/Button';
+import { Button, ButtonLink } from '../components/Button';
 import { SegmentedControl } from '../components/SegmentedControl';
 import { CodeBlock } from '../components/CodeBlock';
 import {
@@ -10,6 +10,7 @@ import {
   Table as TableIcon,
   SquaresFour,
   List,
+  ArrowSquareOut,
 } from '@phosphor-icons/react';
 
 export function Section05Actions() {
@@ -24,7 +25,7 @@ export function Section05Actions() {
 
       <div className={s.sub}>Button</div>
       <p className={s.note}>
-        Six variants. Default to ghost or outline. Primary is for the main action on the page.
+        Seven variants. Default to ghost or outline. Primary is for the main action on the page.
       </p>
       <div className={s.row} style={{ marginBottom: 'var(--s-7)' }}>
         <Button variant="primary">
@@ -58,6 +59,35 @@ export function Section05Actions() {
         discovery/exploration affordances; it sits next to primary in weight without competing for
         "the main action." Danger gets a red border and text, no fill, so it doesn't scream until
         hovered.
+      </p>
+
+      <div className={s.sub}>Buttons that are links, links that are buttons</div>
+      <p className={s.note}>
+        Two different things, and the difference is what happens on click. <code>link</code> is a
+        variant of Button: it looks like a link and runs code. <code>ButtonLink</code> is an anchor:
+        it looks like a button and navigates &mdash; so it opens in a new tab on middle-click, has a
+        URL to copy, and is announced as a link.
+      </p>
+      <div className={s.row} style={{ marginBottom: 'var(--s-7)', alignItems: 'center' }}>
+        <Button variant="link" onClick={() => {}}>
+          Show advanced options
+        </Button>
+        <Button variant="link" size="sm" onClick={() => {}}>
+          Reset filters
+        </Button>
+        <ButtonLink variant="outline" href="https://base-ui.com" target="_blank" rel="noreferrer">
+          Base UI docs <ArrowSquareOut size={14} />
+        </ButtonLink>
+      </div>
+      <CodeBlock
+        language="tsx"
+        code={`<Button variant="link" onClick={reset}>Reset filters</Button>
+<ButtonLink variant="outline" href="/docs">Documentation</ButtonLink>`}
+      />
+      <p className={s.note}>
+        The link variant is underlined at rest, not on hover: a link marked only by its colour is
+        not marked at all for a reader who does not see the colour. It is also the one variant that
+        drops the size padding, since it sits in a line of text.
       </p>
 
       <div className={s.sub}>Sizes</div>
@@ -105,10 +135,14 @@ export function Section05Actions() {
 
       <div className={s.sub}>Segmented control</div>
       <p className={s.note}>
-        Toggle between views or time ranges. Supports icon + label or label only.
+        One choice from a short, always-visible set &mdash; a view, a time range. It is a radio
+        group: one tab stop, and the arrow keys move between segments. An icon-only segment takes
+        its accessible name from <code>label</code>, and the group itself needs an{' '}
+        <code>aria-label</code> unless a visible label points at it.
       </p>
       <div className={s.row}>
         <SegmentedControl
+          aria-label="Layout"
           value="table"
           onChange={() => {}}
           options={[
@@ -118,6 +152,7 @@ export function Section05Actions() {
           ]}
         />
         <SegmentedControl
+          aria-label="Time range"
           value="week"
           onChange={() => {}}
           options={[
@@ -130,6 +165,7 @@ export function Section05Actions() {
       <CodeBlock
         language="tsx"
         code={`<SegmentedControl
+  aria-label="Layout"
   value={view}
   onChange={setView}
   options={[

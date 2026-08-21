@@ -30,3 +30,9 @@
     cursor: not-allowed;
   }
 }
+
+/* A dragged height would be overwritten on the next keystroke. */
+.autoGrow {
+  resize: none;
+  overflow-y: auto;
+}

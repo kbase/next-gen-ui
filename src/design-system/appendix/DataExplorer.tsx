@@ -290,6 +290,7 @@ export function DataExplorerAppendix() {
               {filtered.length}
             </span>
             <SegmentedControl
+              aria-label="Layout"
               value={view}
               onChange={setView}
               options={[

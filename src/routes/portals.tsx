@@ -45,6 +45,9 @@ interface Portal {
   status?: string;
 }
 
+// Array order is the stakeholders' priority order, which the `default` sort
+// renders as-is. The two hidden entries sit at the end, out of its way.
+//
 // Titles, blurbs, and versions track the app manifests and release pins in
 // the KIND*AI repo (`plugins/*.json`, `RELEASES.md`). Versions are the
 // cut-plan pins from the `v2026.08.11` release, which is also the `updated`
@@ -55,48 +58,6 @@ interface Portal {
 // only), so these are our best reading of each app's data sources rather
 // than a recorded fact. Confirm before this is shown outside a demo.
 const PORTALS: readonly Portal[] = [
-  {
-    slug: 'enigma-strata',
-    title: 'ENIGMA Strata',
-    blurb:
-      'A branded portal over the ENIGMA subsurface lakehouse — geology, hydrology, geochemistry, biogeography, and genomes of the Oak Ridge plume in one cross-linked focus.',
-    tags: [
-      { label: 'Subsurface', color: 'orange' },
-      { label: 'Geochemistry', color: 'teal' },
-      { label: 'Biogeography', color: 'green' },
-    ],
-    credit: 'ENIGMA SFA · Lawrence Berkeley National Laboratory',
-    version: 'v0.3.1',
-    updated: '2026-08-11',
-    hidden: true,
-  },
-  {
-    slug: 'function-junction',
-    title: 'Function Junction',
-    blurb:
-      'Paste a protein — id, sequence, gene, or name — and get every line of functional evidence converged on one page, scored for novelty and information density.',
-    tags: [
-      { label: 'Proteins', color: 'primary' },
-      { label: 'Annotation', color: 'purple' },
-      { label: 'Structure', color: 'ocean' },
-    ],
-    credit: 'KBase',
-    version: 'v0.1.1',
-    updated: '2026-08-11',
-  },
-  {
-    slug: 'diaspora',
-    title: 'Diaspora',
-    blurb:
-      'A microbial-ecology atlas. Walk compendium → cohort → sample → MAG, linking metagenome observations to physicochemistry, geography, and pangenome-resolved function.',
-    tags: [
-      { label: 'Metagenomics', color: 'teal' },
-      { label: 'Ecology', color: 'green' },
-    ],
-    credit: 'KBase · Microbe Atlas',
-    version: 'v0.1.4',
-    updated: '2026-08-11',
-  },
   {
     slug: 'genknown',
     title: 'genKnown',
@@ -110,6 +71,19 @@ const PORTALS: readonly Portal[] = [
     version: 'v0.1.2',
     updated: '2026-08-11',
     status: 'Tester preview',
+  },
+  {
+    slug: 'diaspora',
+    title: 'Diaspora',
+    blurb:
+      'A microbial-ecology atlas. Walk compendium → cohort → sample → MAG, linking metagenome observations to physicochemistry, geography, and pangenome-resolved function.',
+    tags: [
+      { label: 'Metagenomics', color: 'teal' },
+      { label: 'Ecology', color: 'green' },
+    ],
+    credit: 'KBase · Microbe Atlas',
+    version: 'v0.1.4',
+    updated: '2026-08-11',
   },
   {
     slug: 'plant-terra',
@@ -136,6 +110,35 @@ const PORTALS: readonly Portal[] = [
     credit: 'JGI MycoCosm · GBIF',
     version: 'v0.5.1',
     updated: '2026-08-11',
+  },
+  {
+    slug: 'function-junction',
+    title: 'Function Junction',
+    blurb:
+      'Paste a protein — id, sequence, gene, or name — and get every line of functional evidence converged on one page, scored for novelty and information density.',
+    tags: [
+      { label: 'Proteins', color: 'primary' },
+      { label: 'Annotation', color: 'purple' },
+      { label: 'Structure', color: 'ocean' },
+    ],
+    credit: 'KBase',
+    version: 'v0.1.1',
+    updated: '2026-08-11',
+  },
+  {
+    slug: 'enigma-strata',
+    title: 'ENIGMA Strata',
+    blurb:
+      'A branded portal over the ENIGMA subsurface lakehouse — geology, hydrology, geochemistry, biogeography, and genomes of the Oak Ridge plume in one cross-linked focus.',
+    tags: [
+      { label: 'Subsurface', color: 'orange' },
+      { label: 'Geochemistry', color: 'teal' },
+      { label: 'Biogeography', color: 'green' },
+    ],
+    credit: 'ENIGMA SFA · Lawrence Berkeley National Laboratory',
+    version: 'v0.3.1',
+    updated: '2026-08-11',
+    hidden: true,
   },
   {
     slug: 'genepool',
@@ -177,6 +180,7 @@ const FILTERS = [
 ];
 
 const SORTS = [
+  { value: 'default', label: 'Default' },
   { value: 'name', label: 'Name (A–Z)' },
   { value: 'updated', label: 'Last updated' },
 ] as const;
@@ -271,7 +275,7 @@ function BetaNotice() {
 function Gallery() {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<string>(ALL);
-  const [sort, setSort] = useState<SortValue>('name');
+  const [sort, setSort] = useState<SortValue>('default');
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -280,15 +284,16 @@ function Gallery() {
         (category === ALL || p.tags.some((t) => t.label === category)) &&
         (q === '' || haystack(p).includes(q)),
     );
-    // localeCompare on the title as the tiebreak, so equal dates -- which
-    // is every portal today, all cut in the same release -- still order
-    // predictably rather than by array position.
+    if (sort === 'name') return [...filtered].sort((a, b) => a.title.localeCompare(b.title));
+    // Title as the tiebreak, so equal dates -- which is every portal today,
+    // all cut in the same release -- order predictably rather than by
+    // array position.
     if (sort === 'updated') {
       return [...filtered].sort(
         (a, b) => b.updated.localeCompare(a.updated) || a.title.localeCompare(b.title),
       );
     }
-    return [...filtered].sort((a, b) => a.title.localeCompare(b.title));
+    return filtered;
   }, [query, category, sort]);
 
   return (

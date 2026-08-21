@@ -2,7 +2,7 @@
 
 # next-gen-ui
 
-KBase / KBERDL web app. Vite + React 19 + TypeScript, file-based
+KBase 2.0 web app. Vite + React 19 + TypeScript, file-based
 TanStack Router with TanStack Query, ORCID-only auth against the
 kbase auth service. Source repo for the KBase design system.
 
@@ -89,7 +89,7 @@ src/
     __root.tsx             Root route. Auth gate (beforeLoad), error +
                            pending boundaries, layout split between
                            AppLayout (sidebar+header) and AuthLayout (no chrome).
-    index.tsx              `/`        KBERDL home page.
+    index.tsx              `/`        KBase 2.0 home page.
     account.tsx            `/account` Identity + sessions.
     portals.tsx            `/portals` Public. Published-portals gallery.
     design-system.tsx      `/design-system` Hidden. Design-system showcase.

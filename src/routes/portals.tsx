@@ -56,8 +56,13 @@ interface Portal {
    */
   hidden?: true;
   /**
-   * Recorded, deliberately not rendered: a caveat we track internally
-   * rather than put in front of a public reader.
+   * Recorded, deliberately not rendered. genKnown's "tester preview" is a
+   * correctness disclosure, not a maturity label -- some enrichment and
+   * association statistics are approximate, and KIND*AI's RELEASES.md
+   * ships it that way on purpose ("transparency over silence", Adam's
+   * call, 2026-07-27). The gallery leaves it out because those
+   * limitations are surfaced inside the portal itself, where a reader
+   * meets them next to the numbers they qualify.
    */
   status?: string;
 }

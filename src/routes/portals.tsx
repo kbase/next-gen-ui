@@ -35,6 +35,12 @@ interface Portal {
   version: string;
   /** ISO 8601. */
   updated: string;
+  /**
+   * Kept in the list but not rendered. Only the portals cleared as having
+   * no private-data issues are shown; the rest stay here so restoring one
+   * is a flag change rather than a retype.
+   */
+  hidden?: true;
   /** Only set when the portal ships with caveats. */
   status?: string;
 }
@@ -62,6 +68,7 @@ const PORTALS: readonly Portal[] = [
     credit: 'ENIGMA SFA · Lawrence Berkeley National Laboratory',
     version: 'v0.3.1',
     updated: '2026-08-11',
+    hidden: true,
   },
   {
     slug: 'function-junction',
@@ -142,8 +149,14 @@ const PORTALS: readonly Portal[] = [
     credit: 'KBase',
     version: 'v0.1.2',
     updated: '2026-08-11',
+    hidden: true,
   },
 ];
+
+// Only the portals cleared for public deployment. Everything downstream --
+// the grid, the count, and the filter vocabulary -- reads this, so a hidden
+// portal cannot leave a filter behind that matches no visible card.
+const VISIBLE_PORTALS = PORTALS.filter((p) => !p.hidden);
 
 const ALL = 'all';
 
@@ -151,7 +164,7 @@ const ALL = 'all';
 // colour it has on the card. A tag with no filter, or a filter matching no
 // tag, would be two vocabularies pretending to be one.
 const TAG_COLORS = new Map<string, ChipColor>(
-  PORTALS.flatMap((p) => p.tags).map((t) => [t.label, t.color]),
+  VISIBLE_PORTALS.flatMap((p) => p.tags).map((t) => [t.label, t.color]),
 );
 
 const FILTERS = [
@@ -262,7 +275,7 @@ function Gallery() {
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const filtered = PORTALS.filter(
+    const filtered = VISIBLE_PORTALS.filter(
       (p) =>
         (category === ALL || p.tags.some((t) => t.label === category)) &&
         (q === '' || haystack(p).includes(q)),
@@ -350,16 +363,16 @@ function Gallery() {
       </div>
 
       <p className="portals__count" role="status">
-        {visible.length === PORTALS.length
-          ? `${PORTALS.length} portals`
-          : `${visible.length} of ${PORTALS.length} portals`}
+        {visible.length === VISIBLE_PORTALS.length
+          ? `${VISIBLE_PORTALS.length} portals`
+          : `${visible.length} of ${VISIBLE_PORTALS.length} portals`}
       </p>
 
       {visible.length === 0 ? (
         <p className="portals__empty">
           No portals match that search.{' '}
-          <button onClick={() => setQuery('')}>Clear the search</button> to see all {PORTALS.length}
-          .
+          <button onClick={() => setQuery('')}>Clear the search</button> to see all{' '}
+          {VISIBLE_PORTALS.length}.
         </p>
       ) : (
         <ul className="portals__grid">

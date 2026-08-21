@@ -26,10 +26,20 @@ function cardLinks() {
 }
 
 describe('portal gallery', () => {
-  it('lists every portal by default', async () => {
+  it('lists every cleared portal by default, and no others', async () => {
     mountGallery();
     expect(await screen.findByRole('heading', { level: 1, name: /portal gallery/i })).toBeVisible();
-    expect(cardLinks()).toHaveLength(7);
+    expect(cardLinks()).toHaveLength(5);
+    expect(screen.queryByRole('link', { name: /ENIGMA Strata/ })).toBeNull();
+    expect(screen.queryByRole('link', { name: /GenePool/ })).toBeNull();
+  });
+
+  // A hidden portal's tags must not survive as filters that match nothing.
+  it("offers no filter for a hidden portal's tags", async () => {
+    mountGallery();
+    await screen.findByRole('heading', { level: 1, name: /portal gallery/i });
+    expect(screen.queryByRole('radio', { name: 'Subsurface' })).toBeNull();
+    expect(screen.queryByRole('radio', { name: 'Benchmarking' })).toBeNull();
   });
 
   it('filters by free-text search across blurbs and credits', async () => {
@@ -61,7 +71,7 @@ describe('portal gallery', () => {
     expect(cardLinks()).toHaveLength(0);
 
     await user.click(screen.getByRole('button', { name: /clear the search/i }));
-    expect(cardLinks()).toHaveLength(7);
+    expect(cardLinks()).toHaveLength(5);
   });
 
   it('filters by tag', async () => {
@@ -69,8 +79,9 @@ describe('portal gallery', () => {
     mountGallery();
     await screen.findByRole('heading', { level: 1, name: /portal gallery/i });
 
-    await user.click(screen.getByRole('radio', { name: 'Annotation' }));
-    expect(cardLinks()).toHaveLength(2);
+    await user.click(screen.getByRole('radio', { name: 'Metagenomics' }));
+    expect(cardLinks()).toHaveLength(1);
+    expect(screen.getByRole('link', { name: /Diaspora/ })).toBeVisible();
   });
 
   it('has no call-to-action buttons', async () => {

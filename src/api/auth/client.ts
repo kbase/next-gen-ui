@@ -20,10 +20,12 @@ import {
   type MeUpdate,
   type TokenInfo,
 } from './schemas';
+import { config } from '../../config';
 
 // Empty string in dev is intentional: client emits relative paths
-// and the Vite dev proxy forwards to VITE_DEV_AUTH_PROXY.
-export const AUTH_ORIGIN: string = import.meta.env.VITE_AUTH_ORIGIN ?? 'https://kbase.us';
+// and the Vite dev proxy forwards to VITE_DEV_AUTH_PROXY. In a
+// container this comes from the rendered meta tag, not the bundle.
+export const AUTH_ORIGIN: string = config.authOrigin;
 
 if (import.meta.env.DEV && import.meta.env.VITE_AUTH_ORIGIN === undefined) {
   console.warn(

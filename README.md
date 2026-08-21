@@ -121,15 +121,32 @@ the deepest matched route.
 
 ## Environment variables
 
-All client-side env vars are prefixed `VITE_` (Vite's convention)
-so they're embedded at build time. Server-side runtime config
-doesn't exist; this is a static SPA.
+Two sets, and the distinction matters.
+
+**Dev-time `VITE_*`**, read from `.env*` files and inlined by Vite.
+These configure `npm run dev` only — a production image ignores
+them.
 
 | Var                      | Default (in code)  | Notes                                                                                   |
 | ------------------------ | ------------------ | --------------------------------------------------------------------------------------- |
-| `VITE_AUTH_ORIGIN`       | `https://kbase.us` | Auth service origin. Production `--build-arg` baked into bundle and nginx CSP.          |
+| `VITE_AUTH_ORIGIN`       | `https://kbase.us` | Auth service origin. Empty means relative paths through the dev proxy.                  |
 | `VITE_COOKIE_DOMAIN`     | unset              | Optional. `.kbase.us` for prod-like deploys; leave unset locally.                       |
 | `VITE_DEV_ALLOWED_HOSTS` | unset              | Comma-separated; leading dot is Vite's subdomain wildcard. For non-localhost dev hosts. |
+
+**Runtime**, read by the container's entrypoint and rendered into
+`nginx.conf` and `index.html` at start. Set these on the workload;
+no rebuild is involved.
+
+| Var             | Required | Notes                                                                                       |
+| --------------- | -------- | ------------------------------------------------------------------------------------------- |
+| `AUTH_ORIGIN`   | yes      | Auth service origin. May be empty (same-origin), but must be _set_ — unset exits 1 at boot. |
+| `COOKIE_DOMAIN` | no       | Unset derives from the host; `''` omits the Domain attribute; a value overrides both.       |
+| `IDP_ORIGINS`   | no       | Space-separated, for CSP `form-action`. Defaults to `https://orcid.org`.                    |
+
+`src/config.ts` reads the rendered values from `<meta name="config:*">`
+tags and falls back to the `VITE_*` build-time values when those tags
+are absent or still hold their placeholders — which is what happens
+under `npm run dev` and `npm run preview`.
 
 `.env.example` is the documentation; `.env.development` overrides
 for `npm run dev` and is committed. Personal overrides go in
@@ -143,32 +160,39 @@ The auth-related env vars have deeper context in
 ## Build & deploy
 
 Running this on a Rancher-managed cluster (workload spec, Ingress
-rules the router depends on, per-environment builds):
+rules the router depends on, runtime config):
 [`DEPLOYING.md`](./DEPLOYING.md).
 
 ```bash
-docker build \
-  --build-arg VITE_AUTH_ORIGIN=https://kbase.us \
-  -t frontend .
+docker build -t frontend .
+docker run -e AUTH_ORIGIN=https://kbase.us -p 8080:8080 frontend
 ```
 
-`VITE_AUTH_ORIGIN` is the single source of truth for both the
-bundle (Vite's `import.meta.env`) and the runtime CSP
-(`connect-src`, `form-action`); the build stage substitutes it
-into `nginx.conf` alongside `IDP_ORIGINS` (defaults to
-`https://orcid.org`). Both are `--build-arg`s; pass
-`--build-arg IDP_ORIGINS="https://orcid.org https://other.idp"` if a
-multi-IDP build is needed. A staging build that needs `ci.kbase.us`
-overrides `VITE_AUTH_ORIGIN` via `--build-arg`.
+**No build args.** The image is environment-agnostic: the same
+bytes run on CI, staging, and prod, and get promoted by tag. Deploy
+config is rendered when the container starts, not baked into the
+bundle, so the artifact you tested is the artifact you ship.
 
 Multi-stage layout:
 
 1. `deps`: `npm ci` against `package*.json` with the npm cache mounted.
-2. `build`: `npm run build` → `dist/`. Receives `VITE_AUTH_ORIGIN`.
-3. `conf`: substitutes `__AUTH_ORIGIN__` / `__IDP_ORIGINS__`
-   placeholders in `nginx.conf`.
-4. `runtime`: `nginxinc/nginx-unprivileged:1.27-alpine` on port
+2. `build`: `npm run build` → `dist/`, plus `.csp-script-hash`.
+3. `runtime`: `nginxinc/nginx-unprivileged:1.27-alpine` on port
    8080, serves `dist/` with the SPA fallback.
+
+At start, `docker-entrypoint.d/05-render-config.sh` renders both
+`nginx.conf` and `index.html` from pristine templates kept outside
+the doc root. From templates rather than in place so the render is
+idempotent — the entrypoint runs again on every restart, and an
+in-place edit would consume its own placeholders. It exits non-zero if `AUTH_ORIGIN` is unset, or if any
+`__PLACEHOLDER__` survives substitution; a container that cannot be
+configured correctly should not serve traffic.
+
+`AUTH_ORIGIN` lands in two places at once — the CSP's `connect-src`
+and `form-action`, and the `<meta name="config:auth-origin">` the
+bundle reads. That coupling is the point: a bundle calling one
+origin while the CSP allows another produces a blocked request with
+a confusing console message.
 
 `nginx.conf` sets:
 
@@ -180,7 +204,7 @@ Multi-stage layout:
   (that script is inlined into `index.html`, and CSP blocks inline
   script unless it is named by hash; the hash is computed at build
   time by the `theme-init` plugin in `vite.config.ts` and written
-  to `.csp-script-hash` for the Docker `conf` stage, so editing the
+  to `.csp-script-hash` for the container entrypoint, so editing the
   script cannot leave a stale hash behind); `font-src` is
   `'self' data:`, because Vite inlines font subsets under 4 KB as
   `data:` URIs while the rest ship as files. The fonts are

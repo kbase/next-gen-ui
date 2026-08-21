@@ -27,6 +27,27 @@ export default defineConfig(({ mode }) => {
       }),
       react(),
       {
+        // Deploy config placeholders, substituted when the container starts
+        // (docker-entrypoint.d/10-render-config.sh) so one image serves every
+        // environment. Build-only: in dev the tags are absent and src/config.ts
+        // falls back to import.meta.env. Meta rather than an inline script
+        // because CSP would demand a per-environment hash for the latter.
+        name: 'runtime-config',
+        apply: 'build' as const,
+        transformIndexHtml: () => [
+          {
+            tag: 'meta',
+            attrs: { name: 'config:auth-origin', content: '__AUTH_ORIGIN__' },
+            injectTo: 'head-prepend' as const,
+          },
+          {
+            tag: 'meta',
+            attrs: { name: 'config:cookie-domain', content: '__COOKIE_DOMAIN__' },
+            injectTo: 'head-prepend' as const,
+          },
+        ],
+      },
+      {
         // Stamps data-theme from localStorage before the first paint, so a
         // dark-theme user gets no light flash. Inlined rather than imported
         // because it has to run before the bundle loads.

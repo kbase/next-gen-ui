@@ -17,18 +17,17 @@ A static single-page app. `npm run build` emits `dist/`; the
 image bakes `dist/` into `nginxinc/nginx-unprivileged` and serves
 it on port 8080. There is no server-side rendering, no Node
 process, no API layer of our own. Every backend call the browser
-makes goes directly to `VITE_AUTH_ORIGIN`
+makes goes directly to `AUTH_ORIGIN`
 (`https://kbase.us/services/auth/...`), not through this pod.
 
 Two consequences that shape the whole deployment:
 
-- **Configuration is baked at image build time.** Vite inlines
-  `import.meta.env.VITE_*` into the bundle, and the Dockerfile
-  substitutes the same value into the nginx CSP. Environment
-  variables set on the Rancher workload reach nginx, not the
-  bundle, and nothing in `nginx.conf` reads them. Changing
-  `VITE_AUTH_ORIGIN` means rebuilding the image, not editing the
-  Deployment. See [Per-environment builds](#per-environment-builds).
+- **Configuration is rendered when the container starts**, from
+  the workload's environment. The image carries no environment
+  identity, so one tag is promoted from CI to prod rather than
+  rebuilt per environment, and the Rancher workload's environment
+  tab does what everyone expects it to. See
+  [Runtime configuration](#runtime-configuration).
 - **All routing below the hostname is the browser's job.** The
   pod's only routing rule is "serve the file if it exists,
   otherwise serve `index.html`". The Ingress must not try to help.
@@ -339,38 +338,79 @@ builds, not to tune the Ingress.
 
 ---
 
-## Per-environment builds
+## Runtime configuration
 
-Because config is inlined at build time, **each environment needs
-its own image build**, not its own Deployment env vars.
+The image carries no environment identity. `docker build` takes no
+build args, and the same tag is promoted from CI to staging to
+prod — so the bytes you tested are the bytes you ship, which is
+not true of a per-environment build.
 
-```bash
-# production
-docker build \
-  --build-arg VITE_AUTH_ORIGIN=https://kbase.us \
-  -t ghcr.io/kbase/next-gen-ui:0.1.0 .
+Set these on the workload:
 
-# CI / staging
-docker build \
-  --build-arg VITE_AUTH_ORIGIN=https://ci.kbase.us \
-  -t ghcr.io/kbase/next-gen-ui:0.1.0-ci .
+| Var             | Required | Meaning                                                                               |
+| --------------- | -------- | ------------------------------------------------------------------------------------- |
+| `AUTH_ORIGIN`   | **yes**  | Auth service origin. May be empty (same-origin), but must be _set_.                   |
+| `COOKIE_DOMAIN` | no       | Unset derives from the host; `''` omits the Domain attribute; a value overrides both. |
+| `IDP_ORIGINS`   | no       | Space-separated, for CSP `form-action`. Defaults to `https://orcid.org`.              |
+
+```yaml
+env:
+  - name: AUTH_ORIGIN
+    value: https://kbase.us
+  - name: COOKIE_DOMAIN
+    value: .kbase.us
 ```
 
-`VITE_AUTH_ORIGIN` is one value used twice: Vite inlines it into
-the bundle, and the `conf` stage substitutes it into the CSP's
-`connect-src` and `form-action`. That coupling is the point — a
-bundle calling one origin while the CSP allows another produces a
-blocked request with a confusing console message. Pass
-`--build-arg IDP_ORIGINS="https://orcid.org https://other.idp"`
-if a build ever needs more than ORCID in `form-action`.
+### How it works
 
-`.github/workflows/docker.yml` currently builds with the default
-`VITE_AUTH_ORIGIN=https://kbase.us`. A CI-pointed image is a
-manual build (or a workflow change) until that's parameterised.
+`docker-entrypoint.d/05-render-config.sh` runs before nginx starts
+— the nginx image execs everything in `/docker-entrypoint.d` — and
+renders two files from pristine templates:
 
-If someone adds a `VITE_*` value to the Rancher workload's
-environment tab expecting it to take effect: it won't, and there
-will be no error. The bundle was already written.
+- `nginx.conf` → `/etc/nginx/conf.d/default.conf`, filling the
+  CSP's `connect-src`, `form-action`, and the theme-init
+  `script-src` hash.
+- `index.html`, filling `<meta name="config:auth-origin">` and
+  `<meta name="config:cookie-domain">`, which `src/config.ts`
+  reads synchronously at module load.
+
+Meta tags rather than an inline `<script>` because the CSP blocks
+inline script unless it is named by hash, and a hash over
+per-environment values would have to be recomputed inside the boot
+script. Meta content is not script. And unlike a fetched
+`config.json`, the values are there before the bundle parses, so
+`AUTH_ORIGIN` stays a plain `const` and the auth client never
+becomes async.
+
+Rendering from pristine templates rather than editing in place
+keeps the operation idempotent: the entrypoint runs again on every
+container restart, and an in-place edit would consume its own
+placeholders, so the second run could no longer tell a correct
+render from a failed one. The templates live outside the doc root
+(`/etc/nginx/*.in`), so they are never served.
+
+### It fails fast
+
+The script exits non-zero — so the pod never serves traffic — if:
+
+- `AUTH_ORIGIN` is unset. Empty is allowed and means same-origin;
+  unset is a misconfigured deployment, and an app quietly talking
+  to the wrong auth service is far more expensive than a
+  CrashLoopBackOff with a clear message.
+- Any `__PLACEHOLDER__` survives substitution, which is what
+  happens when a new one is added to a template without being
+  wired into the script.
+
+This is the one part worth not economising on. Runtime config
+trades a build-time failure for a runtime failure; the fail-fast
+check is what buys that trade back.
+
+### What is still baked
+
+Only `.csp-script-hash` — the sha256 of the inlined theme-init
+script, emitted by `vite.config.ts` during the build. That is a
+property of the bundle, not of the deployment, so it belongs in
+the image.
 
 ---
 
@@ -463,11 +503,11 @@ which is why an ingress problem here tends to be reported as
 | A route 301s to itself with a trailing slash, then 403s         | `try_files` has `$uri/` back, and a directory in `public/` shadows the route. Drop `$uri/`.                             |
 | A redirect sends the browser to port 8080                       | `absolute_redirect off;` is missing; nginx built the URL from its own listen port.                                      |
 | A public route bounces to `/login`, but only for some users     | They are replaying a cached 301 to the trailing-slash form. `isPublic()` normalises it; check the fix is deployed.      |
-| Console: "Executing inline script violates ... 'default-src'"   | `script-src` hash is stale or unsubstituted. It is emitted at build time to `.csp-script-hash`; check the `conf` stage. |
+| Console: "Executing inline script violates ... 'default-src'"   | `script-src` hash is stale or unsubstituted. Emitted to `.csp-script-hash` at build; check the entrypoint rendered it.  |
 | Console: font blocked from a `data:` URI                        | `font-src` lost `data:`. Vite inlines font subsets under 4 KB.                                                          |
 | Login redirects back and immediately bounces to `/login`        | Cookie didn't land: check the host against `.kbase.us`, and that the site is served over https.                         |
 | Login works, but signing in elsewhere on kbase.us doesn't carry | Hostname is outside `kbase.us`, so the cookie has no `Domain`. See [Hostname choice](#hostname-choice-is-not-cosmetic). |
-| Requests to the auth service blocked by CSP `connect-src`       | Image built with a different `VITE_AUTH_ORIGIN` than the environment expects. Rebuild; env vars won't fix it.           |
+| Requests to the auth service blocked by CSP `connect-src`       | `AUTH_ORIGIN` on the workload does not match the origin the app calls. Fix the env var and restart; no rebuild needed.  |
 | Pod CrashLoopBackOff after enabling `readOnlyRootFilesystem`    | Missing `emptyDir` on `/tmp` or `/var/cache/nginx`.                                                                     |
 
 ---

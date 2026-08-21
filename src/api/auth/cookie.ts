@@ -5,6 +5,8 @@
 // it that way during its own redirect chain). Cross-subdomain SSO
 // requires it readable from JS on every kbase subdomain.
 
+import { config } from '../../config';
+
 export const COOKIE_NAME = 'kbase_session';
 
 // Cookies don't fire cross-tab events; localStorage does. We mirror
@@ -18,9 +20,11 @@ export const AUTH_SIGNAL_KEY = 'kbase_session_signal';
 // eviction and rearms it after page reload.
 export const EXPIRY_KEY = 'kbase_session_expires_at';
 
-// VITE_COOKIE_DOMAIN: unset → ".kbase.us" on kbase.us hosts, omitted
+// Cookie domain: unset → ".kbase.us" on kbase.us hosts, omitted
 // elsewhere; explicit value → that value; empty string → omitted.
-const DOMAIN_OVERRIDE = import.meta.env.VITE_COOKIE_DOMAIN;
+// Rendered into index.html at container start; falls back to
+// VITE_COOKIE_DOMAIN in dev. See src/config.ts.
+const DOMAIN_OVERRIDE = config.cookieDomain;
 
 function effectiveDomain(): string | undefined {
   if (DOMAIN_OVERRIDE !== undefined) return DOMAIN_OVERRIDE || undefined;

@@ -22,6 +22,7 @@ export function Textarea({
   maxRows = 8,
   onSubmit,
   onKeyDown,
+  onInput,
   value,
   className,
   style,
@@ -34,16 +35,38 @@ export function Textarea({
     if (!el) return;
     // Collapse first, or scrollHeight only ever reports the current height.
     el.style.height = 'auto';
-    // scrollHeight is the content box; the element is border-box, so the
-    // borders have to be added back or the field ends up one line short.
+    // A field in a hidden container measures zero; leave it be rather than
+    // pinning it shut until the next keystroke.
+    if (el.scrollHeight === 0) {
+      el.style.height = '';
+      return;
+    }
+    // scrollHeight is content plus padding; the element is border-box, so the
+    // borders have to be added back or the field ends up a line short. The
+    // ceiling is max-height in the stylesheet, which clamps this.
     el.style.height = `${el.scrollHeight + el.offsetHeight - el.clientHeight}px`;
   }, []);
 
-  // Runs after every render rather than on input, so a value set from outside
-  // grows the field too.
   useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (!autoGrow) {
+      // Drop the pinned height, or `resize` has nothing to move.
+      el.style.height = '';
+      return;
+    }
+    // Set on the element rather than merged into `style`, which Base UI also
+    // allows to be a function of state.
+    el.style.setProperty('--textarea-max-rows', String(maxRows));
+    measure();
+    // `value` covers a controlled field set from outside; typing is handled by
+    // onInput below, which an uncontrolled field never reaches this effect for.
+  }, [autoGrow, maxRows, measure, value]);
+
+  const handleInput: NonNullable<BaseInput.Props['onInput']> = (event) => {
+    onInput?.(event);
     if (autoGrow) measure();
-  }, [autoGrow, measure, value, props.defaultValue]);
+  };
 
   // Typed from the Input part: the events it emits say HTMLInputElement even
   // where the rendered element is a textarea.
@@ -62,8 +85,9 @@ export function Textarea({
       render={<textarea ref={ref} rows={rows} />}
       className={cx(styles.textarea, autoGrow && styles.autoGrow, className)}
       value={value}
+      onInput={handleInput}
       onKeyDown={handleKeyDown}
-      style={autoGrow ? { maxHeight: `calc(${maxRows} * 1lh + 2 * var(--s-2))`, ...style } : style}
+      style={style}
       {...props}
     />
   );

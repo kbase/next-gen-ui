@@ -1,6 +1,8 @@
 .btn {
   font-family: var(--f-sans);
   font-weight: 600;
+  /* ButtonLink renders an anchor, which the UA underlines. */
+  text-decoration: none;
   /* Transparent border on the base so primary/teal/purple/ghost sit
      at the same height as outline/danger (which add a real color).
      Otherwise variants without a border are 2px shorter. */
@@ -106,18 +108,20 @@
      is invisible to a reader who does not see the colour. */
   text-decoration: underline;
   text-underline-offset: 0.15em;
-  /* The one variant that overrides the size box. An inline link sits in a line
-     of text, so it cannot carry a button's padding — it keeps only the size's
-     font-size and gap. */
+  /* The one variant that overrides the size box: it sits beside text rather
+     than in a box of its own, so it keeps only the size's font-size and gap.
+     Still inline-flex, so it will not wrap mid-label inside a paragraph. */
   padding: 0;
   border-width: 0;
   letter-spacing: inherit;
 
+  /* Toward the ink rather than to --c-primary-dim, which is a button-fill
+     token: on a dark ground it sits below --ct-primary and hover would lose
+     contrast instead of gaining it. */
   &:hover:not([data-disabled]) {
-    color: var(--c-primary-dim);
+    color: color-mix(in oklch, var(--ct-primary), var(--c-ink) 35%);
   }
 
-  /* Nothing to press. */
   &:active,
   &[data-pressed] {
     transform: none;
@@ -133,7 +137,7 @@
 /* Sizes own padding, font-size, gap. Variants own color/border only;
    no padding overrides, so a primary md and a ghost md sit identically
    in space. All sizes share --r-button radius for visual consistency
-   (no per-size radius drift). `link` is the exception, and says why. */
+   (no per-size radius drift). `link` overrides padding; see its rule. */
 .md {
   padding: var(--s-3) var(--s-6);
   font-size: var(--fs-5);

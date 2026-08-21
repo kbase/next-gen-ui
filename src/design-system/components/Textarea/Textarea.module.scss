@@ -1,8 +1,12 @@
 .textarea {
+  /* autoGrow's cap is derived from these, so overriding either keeps it exact. */
+  --textarea-pad-y: var(--s-2);
+  --textarea-border: 1px;
+
   font-family: var(--f-sans);
   font-size: var(--fs-4);
-  padding: var(--s-2) var(--s-4);
-  border: 1px solid var(--c-border2);
+  padding: var(--textarea-pad-y) var(--s-4);
+  border: var(--textarea-border) solid var(--c-border2);
   border-radius: var(--r-md);
   background: var(--c-surface);
   color: var(--c-ink);
@@ -35,4 +39,11 @@
 .autoGrow {
   resize: none;
   overflow-y: auto;
+  /* 1lh is the used line height, so this tracks a line-height override and
+     works where line-height is `normal` — neither of which getComputedStyle
+     reports in a form arithmetic can use. --textarea-max-rows is set inline.
+     Border-box, so padding and border count toward the cap. */
+  max-height: calc(
+    var(--textarea-max-rows, 8) * 1lh + 2 * var(--textarea-pad-y) + 2 * var(--textarea-border)
+  );
 }

@@ -1,6 +1,7 @@
 import { Frame } from '../components/Frame';
 import { Avatar } from '../components/Avatar';
 import { Button } from '../components/Button';
+import { Textarea } from '../components/Textarea';
 import { CodeBlock } from '../components/CodeBlock';
 import { PaperPlaneRight } from '@phosphor-icons/react';
 import s from './appendix-shared.module.scss';
@@ -149,20 +150,21 @@ export function ChatAppendix() {
               background: 'var(--c-surface)',
             }}
           >
-            <textarea
+            <Textarea
               rows={1}
+              autoGrow
+              maxRows={6}
+              aria-label="Message"
               placeholder="Message Rhizosphere Assembly…"
               style={{
                 flex: 1,
-                fontFamily: 'var(--f-sans)',
                 fontSize: 'var(--fs-6)',
-                color: 'var(--c-ink)',
                 background: 'transparent',
                 border: 'none',
-                outline: 'none',
-                resize: 'none',
                 lineHeight: 1.55,
                 padding: 'var(--s-2) 0',
+                // Keeps autoGrow's cap exact against the overrides above.
+                ['--textarea-border' as string]: '0px',
               }}
             />
             <Button variant="primary" size="sm" aria-label="Send">

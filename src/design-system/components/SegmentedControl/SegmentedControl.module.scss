@@ -30,7 +30,9 @@
     box-shadow: inset 0 0 0 2px var(--c-focus);
   }
 
-  & + & {
+  /* General sibling, not adjacent: each Radio.Root renders a hidden input
+     after its span, so no two spans are adjacent. */
+  & ~ & {
     border-left: 1px solid var(--c-border);
   }
 

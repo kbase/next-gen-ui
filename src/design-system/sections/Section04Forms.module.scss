@@ -1,6 +1,8 @@
 /* Doubled to outrank the Textarea component's own class, which brings a
    border and a background the Frame is already providing. */
 .textarea.textarea {
+  --textarea-border: 0px;
+
   font-family: var(--f-sans);
   font-size: var(--fs-6);
   border: none;

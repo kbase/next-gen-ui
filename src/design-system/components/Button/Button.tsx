@@ -1,4 +1,4 @@
-import type { AnchorHTMLAttributes } from 'react';
+import type { ComponentPropsWithRef } from 'react';
 import { Button as BaseButton } from '@base-ui/react/button';
 import styles from './Button.module.scss';
 import { cx } from '../../util/cx';
@@ -26,7 +26,7 @@ export function Button({
   );
 }
 
-export interface ButtonLinkProps extends Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'className'> {
+export interface ButtonLinkProps extends Omit<ComponentPropsWithRef<'a'>, 'className'> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   className?: string;

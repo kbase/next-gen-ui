@@ -463,10 +463,9 @@ function AboutPortals() {
           A portal is a KBase app that presents one area of science.
         </p>
         <p className="portals__about-body">
-          The portals in this gallery cover subsurface geochemistry, fungal and plant genomes,
-          protein function, and microbial ecology. Each one is a separate program. KBase starts it
-          when you open it and displays it in your browser, where you can search the data, follow
-          links between records, and change what is shown.
+          Each portal is a separate program. KBase starts it when you open it and displays it in
+          your browser. Inside a portal you can search the data, follow links between records, and
+          change what is shown.
         </p>
         <p className="portals__about-body">
           Each portal lists its version and the date it was last updated.

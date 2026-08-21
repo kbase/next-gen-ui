@@ -50,7 +50,7 @@ describe('root gate', () => {
   it('lets /portals render without an auth check', async () => {
     const { router } = mountAt('/portals');
     expect(
-      await screen.findByRole('heading', { level: 1, name: /published portals/i }),
+      await screen.findByRole('heading', { level: 1, name: /portal gallery/i }),
     ).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/portals');
   });
@@ -61,7 +61,7 @@ describe('root gate', () => {
   it('treats a trailing-slash public route as public', async () => {
     const { router } = mountAt('/portals/');
     expect(
-      await screen.findByRole('heading', { level: 1, name: /published portals/i }),
+      await screen.findByRole('heading', { level: 1, name: /portal gallery/i }),
     ).toBeInTheDocument();
     expect(router.state.location.pathname).not.toBe('/login');
   });

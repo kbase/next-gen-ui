@@ -297,34 +297,67 @@ body,
   color: inherit;
 }
 
-.portals__cta-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--s-6);
-  margin-top: var(--s-9);
-}
-
-.portals__cta-row a {
-  text-decoration: none;
-}
-
-.portals__cta-disabled {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-4);
+.portals .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 /* --- gallery --- */
 
-.portals__gallery-head {
+.portals__beta {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--s-7);
+  align-items: flex-start;
+  gap: var(--s-5);
+  padding: var(--s-6) var(--s-7);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+  background: var(--c-surface);
+  color: var(--c-ink3);
+  font-size: var(--fs-2);
+}
+
+.portals__controls {
+  display: flex;
+  align-items: center;
   flex-wrap: wrap;
+  gap: var(--s-6);
+  margin-top: var(--s-8);
   padding-bottom: var(--s-7);
   border-bottom: 1px solid var(--c-border);
+}
+
+.portals__search {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.portals__sort {
+  margin-left: auto;
+}
+
+.portals__count {
+  margin-top: var(--s-7);
+  color: var(--c-ink3);
+  font-size: var(--fs-2);
+}
+
+.portals__empty {
+  margin-top: var(--s-9);
+  color: var(--c-ink3);
+}
+
+.portals__empty button {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  color: var(--c-primary);
+  font: inherit;
+  text-decoration: underline;
 }
 
 .portals__grid {
@@ -332,7 +365,7 @@ body,
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
   gap: var(--s-8);
-  margin-top: var(--s-8);
+  margin-top: var(--s-7);
 }
 
 .portal-card {
@@ -444,6 +477,30 @@ body,
   flex-wrap: wrap;
   gap: var(--s-3);
   margin-top: var(--s-6);
+}
+
+.portal-card__credit {
+  margin-top: var(--s-5);
+  color: var(--c-ink3);
+  font-size: var(--fs-1);
+}
+
+.portal-card__open {
+  margin-left: auto;
+  color: var(--c-primary);
+  font-weight: 500;
+}
+
+.portals__about {
+  margin-top: var(--s-11);
+  padding-top: var(--s-9);
+  border-top: 1px solid var(--c-border);
+}
+
+.portals__about-body {
+  margin-top: var(--s-6);
+  max-width: 68ch;
+  color: var(--c-ink3);
 }
 
 .portal-card__meta {

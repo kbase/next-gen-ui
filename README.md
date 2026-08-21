@@ -142,6 +142,10 @@ The auth-related env vars have deeper context in
 
 ## Build & deploy
 
+Running this on a Rancher-managed cluster (workload spec, Ingress
+rules the router depends on, per-environment builds):
+[`DEPLOYING.md`](./DEPLOYING.md).
+
 ```bash
 docker build \
   --build-arg VITE_AUTH_ORIGIN=https://kbase.us \
@@ -266,3 +270,6 @@ Set `VITE_DEV_ALLOWED_HOSTS` in `.env.development.local`
 - [`src/api/auth/README.md`](./src/api/auth/README.md): wire
   contract, login flow, `safeRedirect`, cross-tab sync, token
   storage trade-off, local dev, troubleshooting.
+- [`DEPLOYING.md`](./DEPLOYING.md): Rancher2 deployment — image
+  tags, workload and Ingress manifests, why the router needs a
+  root-path Prefix rule, per-environment builds, verification.

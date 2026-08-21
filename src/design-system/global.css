@@ -15,6 +15,10 @@ html {
      you turn the device. Pin to 100% so CSS sizes are honored. */
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  /* On <html>, not just <body>. A background set only on body reaches the
+     canvas by propagation, but iOS Safari paints the overscroll area behind
+     the rubber band from <html>, so it stays UA white in dark theme. */
+  background: var(--c-bg);
 }
 body {
   font-family: var(--f-sans);

@@ -20,12 +20,19 @@ import {
   type MeUpdate,
   type TokenInfo,
 } from './schemas';
-import { config } from '../../config';
+import { authEnabled, config } from '../../config';
 
 // Empty string in dev is intentional: client emits relative paths
 // and the Vite dev proxy forwards to VITE_DEV_AUTH_PROXY. In a
 // container this comes from the rendered meta tag, not the bundle.
-export const AUTH_ORIGIN: string = config.authOrigin;
+export const AUTH_ORIGIN: string = config.authOrigin ?? '';
+
+/**
+ * False when no auth service is configured for this deployment. Public
+ * routes still render; sign-in reports itself as unavailable. Re-exported
+ * from config so callers have one auth-facing import.
+ */
+export const AUTH_ENABLED = authEnabled;
 
 if (import.meta.env.DEV && import.meta.env.VITE_AUTH_ORIGIN === undefined) {
   console.warn(
@@ -83,6 +90,10 @@ function apiFailure(label: string, res: Response, detail: string): AuthApiError 
 }
 
 export async function validateToken(token: string | null, opts: CallOpts = {}): Promise<Me | null> {
+  // No auth service: nobody is signed in, and a stale cookie must not
+  // provoke a request at a URL that does not exist. Same shape as an
+  // unrecognised token, so every caller already handles it.
+  if (!AUTH_ENABLED) return null;
   if (!token) return null;
   const res = await bearerFetch(`${AUTH_ORIGIN}/services/auth/api/V2/me`, {
     method: 'GET',

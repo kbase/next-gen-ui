@@ -18,9 +18,14 @@
 import { z } from 'zod';
 
 const ConfigSchema = z.object({
-  // '' is meaningful: the client emits relative paths and something
-  // same-origin (the Vite dev proxy today) forwards them.
-  authOrigin: z.string(),
+  // Three distinct states:
+  //   'https://…' -> that auth service
+  //   ''          -> same-origin; the client emits relative paths and
+  //                  something in front (the Vite dev proxy today) forwards
+  //   null        -> no auth service in this deployment. Public routes must
+  //                  keep working; sign-in reports itself as unavailable
+  //                  rather than posting into the void.
+  authOrigin: z.string().nullable(),
   // undefined -> derive from the current host; '' -> omit the Domain
   // attribute entirely. See api/auth/cookie.ts.
   cookieDomain: z.string().optional(),
@@ -30,11 +35,17 @@ export type AppConfig = z.infer<typeof ConfigSchema>;
 
 const PLACEHOLDER = /^__[A-Z_]+__$/;
 
+/** Whether the build injected config tags at all. Only builds have them. */
+function hasMeta(name: string): boolean {
+  return document.querySelector(`meta[name="config:${name}"]`) !== null;
+}
+
 /**
  * Reads one `<meta name="config:NAME">`. Returns undefined when the tag is
- * absent (dev build) or still holds its `__PLACEHOLDER__` (`npm run
- * preview`, or an image whose entrypoint did not run), so callers fall
- * through to the build-time env. An empty `content` is a real value.
+ * absent (dev build) or still holds its `__PLACEHOLDER__` — the entrypoint
+ * leaves the placeholder in place for a variable the operator did not set,
+ * so "not configured" survives as a distinct state from "set to empty".
+ * An empty `content` is a real value.
  */
 function readMeta(name: string): string | undefined {
   const content = document.querySelector(`meta[name="config:${name}"]`)?.getAttribute('content');
@@ -42,7 +53,26 @@ function readMeta(name: string): string | undefined {
   return content;
 }
 
+/**
+ * Absent tag  -> dev or `npm run preview`: use the build-time env, as before.
+ * Placeholder -> a container started without AUTH_ORIGIN: no auth service.
+ * Value       -> that value (including '' for same-origin).
+ */
+function resolveAuthOrigin(): string | null {
+  const value = readMeta('auth-origin');
+  if (value !== undefined) return value;
+  if (hasMeta('auth-origin')) return null;
+  return import.meta.env.VITE_AUTH_ORIGIN ?? 'https://kbase.us';
+}
+
 export const config: AppConfig = ConfigSchema.parse({
-  authOrigin: readMeta('auth-origin') ?? import.meta.env.VITE_AUTH_ORIGIN ?? 'https://kbase.us',
+  authOrigin: resolveAuthOrigin(),
   cookieDomain: readMeta('cookie-domain') ?? import.meta.env.VITE_COOKIE_DOMAIN,
 });
+
+/**
+ * False when this deployment has no auth service. Public routes must render
+ * normally; anything that would talk to the auth service reports itself as
+ * unavailable instead.
+ */
+export const authEnabled: boolean = config.authOrigin !== null;

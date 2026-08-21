@@ -28,20 +28,30 @@ describe('runtime config', () => {
     expect(config.cookieDomain).toBe('.kbase.us');
   });
 
-  // `npm run preview`, or an image whose entrypoint never ran.
-  it('ignores unsubstituted placeholders and falls back', async () => {
+  // A container started without AUTH_ORIGIN: the entrypoint leaves the
+  // placeholder, and that is a supported deployment, not a broken one.
+  it('reads a surviving auth-origin placeholder as no auth service', async () => {
     setMeta('auth-origin', '__AUTH_ORIGIN__');
     setMeta('cookie-domain', '__COOKIE_DOMAIN__');
-    const config = await loadConfig();
-    expect(config.authOrigin).toBe('https://kbase.us');
-    expect(config.cookieDomain).toBeUndefined();
+    const mod = await import('./config');
+    expect(mod.config.authOrigin).toBeNull();
+    expect(mod.config.cookieDomain).toBeUndefined();
+    expect(mod.authEnabled).toBe(false);
   });
 
-  // No tags at all is the dev build; the plugin is build-only.
+  it('reports auth as enabled when an origin is configured', async () => {
+    setMeta('auth-origin', 'https://kbase.us');
+    const mod = await import('./config');
+    expect(mod.authEnabled).toBe(true);
+  });
+
+  // No tags at all is the dev build; the plugin is build-only. Distinct
+  // from a surviving placeholder, which only a container produces.
   it('falls back to the default when no meta tags are present', async () => {
-    const config = await loadConfig();
-    expect(config.authOrigin).toBe('https://kbase.us');
-    expect(config.cookieDomain).toBeUndefined();
+    const mod = await import('./config');
+    expect(mod.config.authOrigin).toBe('https://kbase.us');
+    expect(mod.config.cookieDomain).toBeUndefined();
+    expect(mod.authEnabled).toBe(true);
   });
 
   // Empty is a real value, not an absent one: it means same-origin, which is

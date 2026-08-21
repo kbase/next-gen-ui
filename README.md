@@ -137,16 +137,21 @@ them.
 `nginx.conf` and `index.html` at start. Set these on the workload;
 no rebuild is involved.
 
-| Var             | Required | Notes                                                                                       |
-| --------------- | -------- | ------------------------------------------------------------------------------------------- |
-| `AUTH_ORIGIN`   | yes      | Auth service origin. May be empty (same-origin), but must be _set_ — unset exits 1 at boot. |
-| `COOKIE_DOMAIN` | no       | Unset derives from the host; `''` omits the Domain attribute; a value overrides both.       |
-| `IDP_ORIGINS`   | no       | Space-separated, for CSP `form-action`. Defaults to `https://orcid.org`.                    |
+| Var             | Unset means                        | `''` means                             |
+| --------------- | ---------------------------------- | -------------------------------------- |
+| `AUTH_ORIGIN`   | no auth service in this deployment | same-origin (something proxies it)     |
+| `COOKIE_DOMAIN` | derive from the current host       | omit the Domain attribute entirely     |
+| `IDP_ORIGINS`   | `https://orcid.org`                | — (space-separated, for `form-action`) |
+
+Leaving `AUTH_ORIGIN` unset is a supported deployment, not a broken
+one: public routes serve normally and sign-in reports itself as
+unavailable rather than posting to a path that does not exist. That
+is the initial rollout, before an auth route exists.
 
 `src/config.ts` reads the rendered values from `<meta name="config:*">`
-tags and falls back to the `VITE_*` build-time values when those tags
-are absent or still hold their placeholders — which is what happens
-under `npm run dev` and `npm run preview`.
+tags. An absent tag means a dev build, and falls back to the `VITE_*`
+value; a tag still holding its `__PLACEHOLDER__` means a container
+whose operator did not set that variable, and reads as not configured.
 
 `.env.example` is the documentation; `.env.development` overrides
 for `npm run dev` and is committed. Personal overrides go in
@@ -184,9 +189,10 @@ At start, `docker-entrypoint.d/05-render-config.sh` renders both
 `nginx.conf` and `index.html` from pristine templates kept outside
 the doc root. From templates rather than in place so the render is
 idempotent — the entrypoint runs again on every restart, and an
-in-place edit would consume its own placeholders. It exits non-zero if `AUTH_ORIGIN` is unset, or if any
-`__PLACEHOLDER__` survives substitution; a container that cannot be
-configured correctly should not serve traffic.
+in-place edit would consume its own placeholders. It exits non-zero
+if a `__PLACEHOLDER__` survives where a real value was required — a
+stray one in a CSP is a broken policy — so a container that cannot be
+configured correctly does not serve traffic.
 
 `AUTH_ORIGIN` lands in two places at once — the CSP's `connect-src`
 and `form-action`, and the `<meta name="config:auth-origin">` the

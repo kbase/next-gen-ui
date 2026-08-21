@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { Alert, Button, Field, Frame, Input } from '@kbase/design-system';
 
 import {
+  AUTH_ENABLED,
   AUTH_ORIGIN,
   parseSafeRedirect,
   primeAuthCache,
@@ -110,22 +111,34 @@ function LoginPage() {
           </div>
         )}
 
-        <form action={actionUrl} method="post">
-          <input type="hidden" name="redirecturl" value={continueUrl} />
-          <Button
-            type="submit"
-            name="provider"
-            value="ORCID"
-            variant="primary"
-            disabled={isSignedIn}
-            style={{ width: '100%', justifyContent: 'center', gap: 'var(--s-3)' }}
-          >
-            <img src={orcidIdUrl} alt="" width={16} height={16} aria-hidden="true" />
-            Sign in with ORCID
-          </Button>
-        </form>
+        {AUTH_ENABLED ? (
+          <form action={actionUrl} method="post">
+            <input type="hidden" name="redirecturl" value={continueUrl} />
+            <Button
+              type="submit"
+              name="provider"
+              value="ORCID"
+              variant="primary"
+              disabled={isSignedIn}
+              style={{ width: '100%', justifyContent: 'center', gap: 'var(--s-3)' }}
+            >
+              <img src={orcidIdUrl} alt="" width={16} height={16} aria-hidden="true" />
+              Sign in with ORCID
+            </Button>
+          </form>
+        ) : (
+          // No auth service in this deployment. Posting the form would hit a
+          // path nginx answers with index.html, so the user would land on a
+          // copy of this page with no explanation. Say so instead.
+          <Alert color="yellow">
+            <strong>Sign-in is not available.</strong> This deployment has no auth service
+            configured.
+          </Alert>
+        )}
 
-        {import.meta.env.DEV && <DevSignIn nextRequest={nextRequest} disabled={isSignedIn} />}
+        {import.meta.env.DEV && AUTH_ENABLED && (
+          <DevSignIn nextRequest={nextRequest} disabled={isSignedIn} />
+        )}
       </Frame>
 
       <footer className="login__footer">

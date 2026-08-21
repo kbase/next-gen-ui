@@ -347,11 +347,14 @@ not true of a per-environment build.
 
 Set these on the workload:
 
-| Var             | Required | Meaning                                                                               |
-| --------------- | -------- | ------------------------------------------------------------------------------------- |
-| `AUTH_ORIGIN`   | **yes**  | Auth service origin. May be empty (same-origin), but must be _set_.                   |
-| `COOKIE_DOMAIN` | no       | Unset derives from the host; `''` omits the Domain attribute; a value overrides both. |
-| `IDP_ORIGINS`   | no       | Space-separated, for CSP `form-action`. Defaults to `https://orcid.org`.              |
+Every one of these is optional, and for each the difference between
+unset and empty is load-bearing:
+
+| Var             | Unset means                        | `''` means                             |
+| --------------- | ---------------------------------- | -------------------------------------- |
+| `AUTH_ORIGIN`   | no auth service in this deployment | same-origin (something proxies it)     |
+| `COOKIE_DOMAIN` | derive from the current host       | omit the Domain attribute entirely     |
+| `IDP_ORIGINS`   | `https://orcid.org`                | — (space-separated, for `form-action`) |
 
 ```yaml
 env:
@@ -360,6 +363,35 @@ env:
   - name: COOKIE_DOMAIN
     value: .kbase.us
 ```
+
+### Deploying without an auth service
+
+Leaving `AUTH_ORIGIN` unset is a supported configuration, not a
+misconfiguration — it is the initial rollout, before an auth route
+exists. The container starts normally and logs which mode it is in.
+
+What changes:
+
+- Public routes (`/portals`, `/login`, `/login/continue`,
+  `/design-system`) render exactly as they otherwise would. They do
+  not call the auth service at all: the root gate returns early for
+  them before any query runs.
+- `/login` replaces the ORCID button with a plain statement that
+  sign-in is unavailable. This matters more than it sounds: with no
+  auth origin the form would POST to a same-origin path, nginx
+  would answer it with `index.html`, and the user would land on a
+  copy of the login page with no explanation of what went wrong.
+- `validateToken` short-circuits to `null` — the same answer it
+  gives for an unrecognised token — so a stale `kbase_session`
+  cookie cannot provoke a request to a URL that does not exist.
+  Private routes therefore bounce to `/login`, which explains
+  itself.
+- The CSP's `connect-src` and `form-action` collapse to `'self'`,
+  since there is no auth origin to allow.
+
+Only public routes are treated as needing to work in this mode.
+Private routes are reachable only by someone who could not have
+signed in.
 
 ### How it works
 
@@ -391,19 +423,20 @@ render from a failed one. The templates live outside the doc root
 
 ### It fails fast
 
-The script exits non-zero — so the pod never serves traffic — if:
+The rendered `nginx.conf` must contain no `__PLACEHOLDER__` at all;
+if one survives, the script exits non-zero and the pod never serves
+traffic. A stray placeholder in a CSP is not a cosmetic problem —
+it is not a valid source expression, and it invalidates the
+directive it sits in.
 
-- `AUTH_ORIGIN` is unset. Empty is allowed and means same-origin;
-  unset is a misconfigured deployment, and an app quietly talking
-  to the wrong auth service is far more expensive than a
-  CrashLoopBackOff with a clear message.
-- Any `__PLACEHOLDER__` survives substitution, which is what
-  happens when a new one is added to a template without being
-  wired into the script.
+`index.html` is the exception: `__AUTH_ORIGIN__` and
+`__COOKIE_DOMAIN__` are allowed to survive there, because that is
+precisely how "the operator did not set this" reaches the app.
+Anything else surviving is a placeholder someone added to a
+template without wiring it into the script, and is fatal.
 
-This is the one part worth not economising on. Runtime config
-trades a build-time failure for a runtime failure; the fail-fast
-check is what buys that trade back.
+Runtime config trades a build-time failure for a runtime failure;
+this check is what buys that trade back.
 
 ### What is still baked
 

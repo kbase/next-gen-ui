@@ -32,7 +32,7 @@ function MsgHeader({
 export function ChatAppendix() {
   const [draft, setDraft] = useState('');
 
-  // Enter and the button are the same action, so they share one guard.
+  // The button is disabled when blank, Enter is not, so the guard lives here.
   function sendDraft() {
     if (draft.trim()) setDraft('');
   }

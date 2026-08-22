@@ -27,7 +27,7 @@ export function Section04Forms() {
   const [prompt, setPrompt] = useState('');
   const [project, setProject] = useState('Soil Carbon Flux');
 
-  // Enter and the button are the same action, so they share one guard.
+  // The button is disabled when blank, Enter is not, so the guard lives here.
   function sendPrompt() {
     if (prompt.trim()) setPrompt('');
   }

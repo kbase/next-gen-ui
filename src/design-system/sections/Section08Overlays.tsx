@@ -197,30 +197,17 @@ toasts.add({
         Current name: <strong>{projectName}</strong>
       </p>
       <p className={s.note}>
-        A dialog that collects a value is a form, not a pair of buttons. The form is what makes
-        Enter submit and what gives the browser a value to validate; without it, Save only closes
-        the dialog and discards the value. Four things are easy to get wrong. Cancel needs{' '}
-        <code>type=&quot;button&quot;</code>, since a button inside a form submits by default. Save
-        is a plain Button rather than a Dialog.Close, because closing has to wait for the submit
-        handler; set <code>open</code> yourself. The field is seeded when the dialog opens, not from
-        the live value, because the popup is still mounted while it closes and changing an
-        uncontrolled field&apos;s <code>defaultValue</code> while mounted is an error. And{' '}
-        <code>autoFocus</code> is not needed: Base UI focuses the first tabbable element already,
-        except on touch, where it focuses the popup so the keyboard does not cover the dialog.
-      </p>
-      <p className={s.note}>
-        This replaces <code>window.prompt</code>, which the system has no component for because
-        every design system leaves it as a dialog containing a form. Three shapes cover what the app
-        asks for: a rename, prefilled with the current value; a reason, enforced by{' '}
-        <code>required</code>; and an optional note, where <code>required</code> is absent. Only{' '}
-        <code>window.confirm</code> has a fixed enough shape to be a component, and that is
-        AlertDialog, below.
+        A dialog that collects a value is a form &mdash; that is what makes Enter submit and gives
+        the browser something to validate. It replaces <code>window.prompt</code>, which no design
+        system ships as a component; <code>window.confirm</code> is AlertDialog, below.
       </p>
       <CodeBlock
         language="tsx"
         code={`const [open, setOpen] = useState(false);
 const [seed, setSeed] = useState(project.name);
 
+// Seed on open: the popup is still mounted while it closes, and an
+// uncontrolled field's defaultValue cannot change while mounted.
 function handleOpenChange(next: boolean) {
   if (next) setSeed(project.name);
   setOpen(next);
@@ -235,6 +222,8 @@ function handleSubmit(event: FormEvent<HTMLFormElement>) {
 
 <Dialog.Root open={open} onOpenChange={handleOpenChange}>
   <Dialog.Trigger>Rename</Dialog.Trigger>
+  {/* No autoFocus: Base UI focuses the first tabbable element, except on
+      touch, where it focuses the popup so the keyboard stays down. */}
   <Dialog.Popup>
     <form onSubmit={handleSubmit}>
       <Dialog.Title>Rename project</Dialog.Title>
@@ -243,7 +232,9 @@ function handleSubmit(event: FormEvent<HTMLFormElement>) {
         <Field.Label>Project name</Field.Label>
         <Input name="name" defaultValue={seed} required />
       </Field.Root>
+      {/* type="button", or Cancel submits the form too. */}
       <Dialog.Close render={<Button variant="ghost" type="button">Cancel</Button>} />
+      {/* A plain Button, not a Dialog.Close: closing waits for the handler. */}
       <Button type="submit">Save</Button>
     </form>
   </Dialog.Popup>

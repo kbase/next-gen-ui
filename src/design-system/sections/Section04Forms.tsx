@@ -11,12 +11,21 @@ import { Textarea } from '../components/Textarea';
 import { Frame } from '../components/Frame';
 import { Separator } from '../components/Separator';
 import { SearchBar } from '../components/SearchBar';
+import { Autocomplete } from '../components/Autocomplete';
 import { CodeBlock } from '../components/CodeBlock';
 import { Play, PaperPlaneRight } from '@phosphor-icons/react';
 import css from './Section04Forms.module.scss';
 
+const PROJECTS = [
+  'Soil Metagenome Assembly',
+  'Ocean Sampling 2025',
+  'Soil Carbon Flux',
+  'Permafrost Cores',
+];
+
 export function Section04Forms() {
   const [prompt, setPrompt] = useState('');
+  const [project, setProject] = useState('Soil Carbon Flux');
   return (
     <div className={s.section}>
       <div className={s.sNum}>04</div>
@@ -122,10 +131,9 @@ export function Section04Forms() {
 
       <div className={s.sub}>SearchBar</div>
       <p className={s.note}>
-        A filter field: it narrows a list someone else is already rendering. Not a combobox &mdash;
-        it owns no list of its own and picks nothing, so it has no listbox and no active option. A
-        field that <em>is</em> the list, owning a listbox and an active option, is a combobox and is
-        not in the system yet.
+        A filter field: it narrows a list someone else is already rendering. It owns no list of its
+        own and picks nothing, so it has no listbox and no active option. A field that <em>is</em>{' '}
+        the list is an Autocomplete, below.
       </p>
       <SearchBar
         value=""
@@ -135,6 +143,40 @@ export function Section04Forms() {
       <CodeBlock
         language="tsx"
         code={`<SearchBar value={query} onValueChange={setQuery} placeholder="Search genomes..." />`}
+      />
+
+      <div className={s.sub}>Autocomplete</div>
+      <p className={s.note}>
+        For &ldquo;pick an existing one or name a new one&rdquo;. The suggestions narrow as you
+        type, and anything you type is a valid value &mdash; that is what separates it from Select,
+        which admits only what it lists. Screen readers call it a combobox. Use{' '}
+        <code>emptyMessage</code> to say what happens to a value that matches nothing, since an
+        empty list otherwise reads as a rejection.
+      </p>
+      <div style={{ maxWidth: 320 }}>
+        <Field.Root>
+          <Field.Label>Project</Field.Label>
+          <Autocomplete
+            items={PROJECTS}
+            value={project}
+            onValueChange={setProject}
+            emptyMessage="No project by that name. It is created on save."
+            placeholder="Existing project, or a new name"
+          />
+          <Field.Description>Filed under {project.trim() || 'no project'}.</Field.Description>
+        </Field.Root>
+      </div>
+      <CodeBlock
+        language="tsx"
+        code={`<Field.Root>
+  <Field.Label>Project</Field.Label>
+  <Autocomplete
+    items={projectNames}
+    value={project}
+    onValueChange={setProject}
+    emptyMessage="No project by that name. It is created on save."
+  />
+</Field.Root>`}
       />
 
       <div className={s.sub}>Prompt input</div>

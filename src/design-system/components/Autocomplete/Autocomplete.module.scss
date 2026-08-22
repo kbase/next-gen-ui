@@ -1,0 +1,44 @@
+/* The field is an Input, so it takes Input's appearance rather than a copy. */
+.input {
+  composes: input from '../Input/Input.module.scss';
+}
+
+.positioner {
+  /* Base UI measures the input and sets this. */
+  width: var(--anchor-width);
+}
+
+.popup {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  padding: var(--s-2);
+  box-shadow: var(--e-3);
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.item {
+  font-size: var(--fs-4);
+  padding: var(--s-2) var(--s-4);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  outline: none;
+  color: var(--c-ink2);
+
+  &[data-highlighted] {
+    background: var(--c-raised);
+  }
+}
+
+.empty {
+  font-size: var(--fs-3);
+  color: var(--c-ink4);
+
+  /* Base UI announces this element, so it stays mounted and visible even
+     when it has nothing to say. Padding only when it does, or it leaves a
+     gap above the list. */
+  &:not(:empty) {
+    padding: var(--s-2) var(--s-4);
+  }
+}

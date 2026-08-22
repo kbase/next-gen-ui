@@ -3,6 +3,8 @@ import s from './showcase.module.scss';
 import { Frame } from '../components/Frame';
 import * as Tree from '../components/Tree';
 import * as Stepper from '../components/Stepper';
+import { SearchBar } from '../components/SearchBar';
+import { CodeBlock } from '../components/CodeBlock';
 import { Folder, FileText, FileCode, Eye, DotsThree } from '@phosphor-icons/react';
 
 const treeBtn = (icon: ReactNode) => <button onClick={(e) => e.stopPropagation()}>{icon}</button>;
@@ -73,8 +75,29 @@ const treeItems: Tree.TreeNode[] = [
   { id: 'README.md', label: 'README.md', icon: <FileText size={13} /> },
 ];
 
+/** Ids of every branch holding a match, so the match can be seen. */
+function branchesMatching(nodes: Tree.TreeNode[], query: string): string[] {
+  if (!query) return [];
+  const needle = query.toLowerCase();
+  const found: string[] = [];
+  const walk = (node: Tree.TreeNode): boolean => {
+    const childMatched = (node.children ?? []).map(walk).some(Boolean);
+    if (childMatched) found.push(node.id);
+    return childMatched || node.label.toLowerCase().includes(needle);
+  };
+  nodes.forEach(walk);
+  return found;
+}
+
 export function Section12Navigation() {
   const [treeSelected, setTreeSelected] = useState<string | undefined>('src/components/Tree.tsx');
+  const [filter, setFilter] = useState('');
+  const [expandedIds, setExpandedIds] = useState<string[]>(['src']);
+
+  function handleFilter(query: string) {
+    setFilter(query);
+    setExpandedIds((prev) => [...new Set([...prev, ...branchesMatching(treeItems, query)])]);
+  }
 
   return (
     <div className={s.section}>
@@ -113,6 +136,58 @@ export function Section12Navigation() {
           </div>
         </div>
       </div>
+
+      <div className={s.sub} style={{ marginTop: 'var(--s-9)' }}>
+        Tree, controlled expansion
+      </div>
+      <p className={s.note}>
+        Pass <code>expanded</code> and <code>onExpandedChange</code> to decide what is open. Here a
+        search opens every branch holding a match. Because expansion stays state rather than being
+        derived from the query, a branch the search opened can still be collapsed by hand.
+      </p>
+      <div style={{ display: 'flex', gap: 'var(--s-9)', flexWrap: 'wrap' }}>
+        <Frame padding={4} style={{ width: 260 }}>
+          <SearchBar
+            value={filter}
+            onValueChange={handleFilter}
+            placeholder="Search files..."
+            style={{ marginBottom: 'var(--s-4)' }}
+          />
+          <Tree.Root
+            items={treeItems}
+            selected={treeSelected}
+            onSelect={setTreeSelected}
+            expanded={expandedIds}
+            onExpandedChange={setExpandedIds}
+          />
+        </Frame>
+        <div style={{ flex: 1, minWidth: 200 }}>
+          <div className="mono-secondary" style={{ marginBottom: 'var(--s-2)' }}>
+            Expanded
+          </div>
+          <div
+            style={{
+              fontSize: 'var(--fs-6)',
+              color: 'var(--c-ink2)',
+              fontFamily: 'var(--f-mono)',
+            }}
+          >
+            {expandedIds.join(', ') || 'none'}
+          </div>
+        </div>
+      </div>
+      <CodeBlock
+        language="tsx"
+        code={`const [expanded, setExpanded] = useState(['src']);
+
+function handleFilter(query: string) {
+  setFilter(query);
+  // Open the branches holding a match, without closing anything.
+  setExpanded((prev) => [...new Set([...prev, ...branchesMatching(items, query)])]);
+}
+
+<Tree.Root items={items} expanded={expanded} onExpandedChange={setExpanded} />`}
+      />
 
       <div className={s.sub} style={{ marginTop: 'var(--s-9)' }}>
         Stepper, Horizontal

@@ -41,6 +41,8 @@ export { Switch } from './components/Switch';
 export type { SwitchProps } from './components/Switch';
 export * as Radio from './components/Radio';
 export * as Select from './components/Select';
+export { Autocomplete } from './components/Autocomplete';
+export type { AutocompleteProps } from './components/Autocomplete';
 export * as Field from './components/Field';
 export { SearchBar } from './components/SearchBar';
 export type { SearchBarProps } from './components/SearchBar';

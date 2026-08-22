@@ -29,12 +29,11 @@ describe('Autocomplete', () => {
 
     await userEvent.click(screen.getByRole('combobox'));
 
-    // Filtering by the current value would leave only the current value.
     expect(await screen.findAllByRole('option')).toHaveLength(PROJECTS.length);
   });
 
   it('lists every item whatever case the value is in', async () => {
-    // The values are free text, so an app can hold any variant of an item.
+    // Values are free text, so any case can arrive.
     render(<Autocomplete items={PROJECTS} defaultValue="ocean sampling" aria-label="Project" />);
 
     await userEvent.click(screen.getByRole('combobox'));
@@ -45,8 +44,7 @@ describe('Autocomplete', () => {
   it('narrows while typing, even onto a whole item', async () => {
     render(<Autocomplete items={PROJECTS} aria-label="Project" />);
 
-    // Reaching an item by typing is still typing; the list must not jump back
-    // to everything on the keystroke that completes the name.
+    // Completing an item name is still typing.
     await userEvent.type(screen.getByRole('combobox'), 'Ocean Sampling');
 
     expect(await screen.findAllByRole('option')).toHaveLength(1);

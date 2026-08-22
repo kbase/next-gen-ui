@@ -139,8 +139,8 @@
 }
 
 /* Doubled to outrank the Textarea component's own class. The custom
-   properties are zeroed too, or autoGrow's cap counts padding and a border
-   that are not drawn. */
+   properties are zeroed too: autoGrow's max-height is computed from them,
+   and would count padding and a border that are no longer drawn. */
 .composerInput.composerInput {
   --textarea-pad-y: 0px;
   --textarea-border: 0px;

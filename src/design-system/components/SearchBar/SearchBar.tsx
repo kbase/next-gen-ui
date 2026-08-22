@@ -16,8 +16,7 @@ export function SearchBar({
   value,
   onValueChange,
   className,
-  // Paired with className on the root. Left in props it would reach the inner
-  // input instead, where a margin or width applies inside the pill.
+  // Paired with className on the root; in props it reaches the inner input.
   style,
   placeholder = 'Search...',
   ...props

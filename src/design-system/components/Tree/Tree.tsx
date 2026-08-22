@@ -68,8 +68,7 @@ export function Root({
     [controlled, expandedProp, ownExpanded],
   );
 
-  // What toggle reads, so two toggles in one event compose rather than the
-  // second dropping the first.
+  // Toggle reads this, so two toggles in one event compose.
   const latest = useRef(expanded);
   useEffect(() => {
     latest.current = expanded;

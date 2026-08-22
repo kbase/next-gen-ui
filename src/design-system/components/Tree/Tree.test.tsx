@@ -42,8 +42,6 @@ describe('Tree', () => {
   });
 
   it('reports the change when uncontrolled too', async () => {
-    // The prop is documented as firing either way, but only the controlled
-    // path was covered.
     const onExpandedChange = vi.fn();
     render(<Tree items={ITEMS} onExpandedChange={onExpandedChange} />);
 

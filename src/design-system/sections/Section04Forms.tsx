@@ -223,8 +223,9 @@ export function Section04Forms() {
   onSubmit={send}
 />
 
-/* Stripping the chrome? Tell the cap, or autoGrow counts padding
-   and a border that are not drawn. */
+/* Removing the border or padding? Zero these too. autoGrow's
+   max-height is computed from them and would count what is
+   no longer there. */
 .myTextarea {
   --textarea-pad-y: 0px;
   --textarea-border: 0px;

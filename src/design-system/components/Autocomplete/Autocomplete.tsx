@@ -4,9 +4,8 @@ import styles from './Autocomplete.module.scss';
 import { cx } from '../../util/cx';
 
 /**
- * Opens that mean "show me what there is" rather than "I am typing". Typed as
- * strings because Base UI's published union omits `input-press`, which the
- * runtime emits when `openOnInputClick` fires.
+ * Open reasons that mean browse, not type. Strings because Base UI's published
+ * union omits `input-press`, which its runtime emits for `openOnInputClick`.
  */
 const BROWSE_REASONS: readonly string[] = ['input-press', 'trigger-press'];
 
@@ -40,9 +39,8 @@ export function Autocomplete({
   // The list keys on the string, and Base UI does not dedupe.
   const options = useMemo(() => [...new Set(items)], [items]);
 
-  // Opening a filled field should offer the alternatives rather than the one
-  // value already in it; a keystroke should narrow. True from the moment the
-  // popup opens until the value changes.
+  // Browsing lists every item; typing narrows. Set while the popup is open and
+  // the value has not changed.
   const [browsing, setBrowsing] = useState(false);
 
   const filter = useCallback(
@@ -60,10 +58,6 @@ export function Autocomplete({
         setBrowsing(false);
         onValueChange?.(next, details);
       }}
-      // Only a pointer opens into browsing; clicking the input reports
-      // trigger-press. A keystroke opens the popup too, and that also fires
-      // onValueChange, so leaving the flag alone there keeps the result
-      // independent of which handler lands first.
       onOpenChange={(open, details) => {
         if (!open) setBrowsing(false);
         else if (BROWSE_REASONS.includes(details.reason)) setBrowsing(true);

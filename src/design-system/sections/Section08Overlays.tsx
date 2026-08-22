@@ -29,9 +29,8 @@ export function Section08Overlays({ onShowToast }: Section08OverlaysProps) {
   const [renameSeed, setRenameSeed] = useState(projectName);
 
   function handleOpenChange(open: boolean) {
-    // Seed the field on open rather than on every render: the popup is still
-    // mounted while it closes, and changing an uncontrolled field's
-    // defaultValue while it is mounted is an error.
+    // Seeded on open, not per render: the popup outlives the close, and Base
+    // UI errors when a mounted uncontrolled field's defaultValue changes.
     if (open) setRenameSeed(projectName);
     setRenameOpen(open);
   }
@@ -182,8 +181,7 @@ toasts.add({
                 name="name"
                 defaultValue={renameSeed}
                 required
-                // required alone accepts "   ". The pattern makes the browser
-                // block a name that is only whitespace.
+                // required accepts "   "; the pattern does not.
                 pattern=".*\S.*"
                 title="A name needs at least one non-space character."
               />
@@ -214,8 +212,8 @@ toasts.add({
         code={`const [open, setOpen] = useState(false);
 const [seed, setSeed] = useState(project.name);
 
-// Seed on open: the popup is still mounted while it closes, and an
-// uncontrolled field's defaultValue cannot change while mounted.
+// Seeded on open, not per render: the popup outlives the close, and Base
+// UI errors when a mounted uncontrolled field's defaultValue changes.
 function handleOpenChange(next: boolean) {
   if (next) setSeed(project.name);
   setOpen(next);

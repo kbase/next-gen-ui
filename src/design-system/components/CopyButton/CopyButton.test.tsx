@@ -1,10 +1,11 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import copyToClipboard from 'copy-to-clipboard';
+import styles from './CopyButton.module.scss';
 import { CopyButton } from './CopyButton';
 
-// Mocked at the library boundary: under jsdom isSecureContext is false, so
-// the library uses execCommand and never touches navigator.clipboard.
+// Mocked at the library boundary: jsdom does not implement isSecureContext,
+// so the library uses execCommand and never touches navigator.clipboard.
 vi.mock('copy-to-clipboard', () => ({ default: vi.fn() }));
 const copyMock = vi.mocked(copyToClipboard);
 
@@ -14,8 +15,8 @@ describe('CopyButton', () => {
   it('passes its text to the clipboard', async () => {
     copyMock.mockResolvedValue(true);
 
-    render(<CopyButton text="s3://bucket/key">copy</CopyButton>);
-    await userEvent.click(screen.getByRole('button', { name: /copy/i }));
+    render(<CopyButton text="s3://bucket/key" label="Copy path" />);
+    await userEvent.click(screen.getByRole('button', { name: /copy path/i }));
 
     expect(copyMock).toHaveBeenCalledWith('s3://bucket/key');
   });
@@ -23,10 +24,10 @@ describe('CopyButton', () => {
   it('announces success, which the icon alone cannot', async () => {
     copyMock.mockResolvedValue(true);
 
-    render(<CopyButton text="x">copy</CopyButton>);
+    render(<CopyButton text="x" label="Copy path" />);
     expect(screen.getByRole('status')).toBeEmptyDOMElement();
 
-    await userEvent.click(screen.getByRole('button', { name: /copy/i }));
+    await userEvent.click(screen.getByRole('button', { name: /copy path/i }));
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Copied'));
   });
 
@@ -34,8 +35,8 @@ describe('CopyButton', () => {
     // False when execCommand is unavailable or permission is denied.
     copyMock.mockResolvedValue(false);
 
-    render(<CopyButton text="x">copy</CopyButton>);
-    await userEvent.click(screen.getByRole('button', { name: /copy/i }));
+    render(<CopyButton text="x" label="Copy path" />);
+    await userEvent.click(screen.getByRole('button', { name: /copy path/i }));
 
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Copy failed'));
   });
@@ -44,8 +45,8 @@ describe('CopyButton', () => {
     // Real timers: fake ones deadlock with user-event's async click.
     copyMock.mockResolvedValue(true);
 
-    render(<CopyButton text="x">copy</CopyButton>);
-    await userEvent.click(screen.getByRole('button', { name: /copy/i }));
+    render(<CopyButton text="x" label="Copy path" />);
+    await userEvent.click(screen.getByRole('button', { name: /copy path/i }));
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Copied'));
 
     await waitFor(() => expect(screen.getByRole('status')).toBeEmptyDOMElement(), {
@@ -53,8 +54,11 @@ describe('CopyButton', () => {
     });
   });
 
-  it('names an icon-only button', () => {
-    render(<CopyButton text="x" label="Copy instruction" />);
+  it('keeps its name when the words are hidden', () => {
+    render(<CopyButton text="x" label="Copy instruction" iconOnly />);
     expect(screen.getByRole('button', { name: 'Copy instruction' })).toBeInTheDocument();
+    // The class itself, because a mistyped key resolves to undefined, cx drops
+    // it, and the words render visibly with every other assertion still green.
+    expect(screen.getByText('Copy instruction')).toHaveClass(styles.srOnly);
   });
 });

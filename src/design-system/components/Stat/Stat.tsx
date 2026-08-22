@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import styles from './Stat.module.scss';
 import { cx } from '../../util/cx';
 import { Frame } from '../Frame';
-import type { ChipColor } from '../Chip';
+import type { FrameAccent } from '../Frame';
 
 export interface StatProps {
   /** Already formatted. Only the caller knows the units. */
@@ -11,7 +11,7 @@ export interface StatProps {
   /** For the no-data case, where the value is a dash rather than a number. */
   muted?: boolean;
   /** Tints the value. Reinforcement only: the number must read without it. */
-  color?: ChipColor;
+  color?: FrameAccent;
   className?: string;
 }
 

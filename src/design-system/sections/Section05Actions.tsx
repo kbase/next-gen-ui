@@ -139,29 +139,36 @@ export function Section05Actions() {
       <div className={s.sub}>Copy button</div>
       <p className={s.note}>
         Writes <code>text</code> to the clipboard and confirms it. The component owns the whole
-        confirmation: the tick, how long it shows, and the announcement.
+        confirmation: the icon, how long it shows, and the announcement. It uses{' '}
+        <code>copy-to-clipboard</code>, because <code>navigator.clipboard</code> does not exist on
+        insecure origins &mdash; including any dev server reached over http.
       </p>
       <div className={s.row} style={{ marginBottom: 'var(--s-7)', alignItems: 'center' }}>
-        <CopyButton text="s3://cdm-lake/users-general-warehouse/alice/" variant="outline" size="sm">
-          Copy path
-        </CopyButton>
+        <CopyButton
+          text="s3://cdm-lake/users-general-warehouse/alice/"
+          variant="outline"
+          size="sm"
+          label="Copy path"
+        />
         <CopyButton
           text="s3://cdm-lake/users-general-warehouse/alice/"
           variant="ghost"
           size="sm"
           label="Copy path"
+          iconOnly
         />
       </div>
       <CodeBlock
         language="tsx"
-        code={`<CopyButton text={path} variant="outline" size="sm">Copy path</CopyButton>
-<CopyButton text={path} variant="ghost" size="sm" label="Copy path" />   // icon only`}
+        code={`<CopyButton text={path} label="Copy path" variant="outline" size="sm" />
+<CopyButton text={path} label="Copy path" variant="ghost" size="sm" iconOnly />`}
       />
       <p className={s.note}>
-        The tick is <code>aria-hidden</code>, so the result is also announced in a polite live
-        region. The button stays in its resting state if the copy fails &mdash; the clipboard API is
-        missing on insecure origins, and rejects when the document is not focused or permission is
-        denied. Takes Button's <code>variant</code>, <code>size</code>, and its other props.
+        The icon is <code>aria-hidden</code>, so the result is also announced in a polite live
+        region. A failed copy shows <code>XCircle</code> and says so &mdash; silence is
+        indistinguishable from a dead button. <code>label</code> is required, because a button is
+        operable and always needs a name; <code>iconOnly</code> hides the words and keeps it. Takes
+        Button's <code>variant</code>, <code>size</code>, and its other props.
       </p>
 
       <div className={s.sub}>Segmented control</div>

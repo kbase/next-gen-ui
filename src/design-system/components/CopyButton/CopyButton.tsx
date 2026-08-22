@@ -5,26 +5,26 @@ import styles from './CopyButton.module.scss';
 import { cx } from '../../util/cx';
 import { Button, type ButtonProps } from '../Button';
 
-/** How long the result shows before the button returns to its resting state. */
+/** How long the result shows before resetting. */
 const RESULT_MS = 1500;
 
 type Result = 'idle' | 'copied' | 'failed';
 
 export interface CopyButtonProps extends Omit<ButtonProps, 'children' | 'onClick'> {
-  /** What lands on the clipboard. */
+  /** The text to copy. */
   text: string;
-  /** The button's text. Omit for an icon-only button, which needs `label`. */
-  children?: string;
-  /** The accessible name. Required when there are no words to read. */
-  label?: string;
+  /** The button's words. Name what is being copied, not just "Copy". */
+  label: string;
+  /** Draw the icon alone, keeping the words for screen readers. */
+  iconOnly?: boolean;
   /** What the live region says on success. Defaults to "Copied". */
   confirmation?: string;
 }
 
 export function CopyButton({
   text,
-  children,
   label,
+  iconOnly,
   confirmation = 'Copied',
   className,
   ...props
@@ -48,14 +48,10 @@ export function CopyButton({
 
   return (
     <>
-      <Button
-        onClick={copy}
-        aria-label={children ? undefined : label}
-        className={cx(styles.btn, result === 'failed' && styles.failed, className)}
-        {...props}
-      >
+      <Button onClick={copy} className={cx(styles.btn, className)} {...props}>
         <Glyph weight="bold" aria-hidden />
-        {children}
+        {/* Hidden rather than removed, so iconOnly keeps the name. */}
+        <span className={cx(iconOnly && styles.srOnly)}>{label}</span>
       </Button>
       {/* The icon is aria-hidden, so this is the only announcement. */}
       <span role="status" aria-live="polite" className={styles.srOnly}>

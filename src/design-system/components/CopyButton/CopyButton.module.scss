@@ -6,13 +6,8 @@
   }
 }
 
-/* Failed state. */
-.failed {
-  color: var(--ct-red);
-}
-
-/* Read by screen readers, not displayed. Duplicated from Chip: no component
-   stylesheet uses @use, and the system has no shared partials. */
+/* Read by screen readers, not displayed. Also in Chip; the system has no
+   shared partials yet. */
 .srOnly {
   position: absolute;
   width: 1px;

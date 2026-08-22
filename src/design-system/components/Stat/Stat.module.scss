@@ -8,7 +8,7 @@
   font-weight: 700;
   line-height: 1.2;
   font-variant-numeric: tabular-nums; /* digits align across a row */
-  color: var(--c-primary);
+  color: var(--ct-primary);
 }
 
 /* Weight as well as colour, so no data does not read as a small value. */
@@ -23,9 +23,6 @@
 }
 
 /* --ct-*: the tier that meets contrast on a plain surface. */
-.neutral {
-  color: var(--c-ink3);
-}
 .primary {
   color: var(--ct-primary);
 }

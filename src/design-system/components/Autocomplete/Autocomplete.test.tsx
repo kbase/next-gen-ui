@@ -41,6 +41,15 @@ describe('Autocomplete', () => {
     expect(await screen.findAllByRole('option')).toHaveLength(PROJECTS.length);
   });
 
+  it('lists every item when opened from the keyboard', async () => {
+    render(<Autocomplete items={PROJECTS} defaultValue="Ocean Sampling" aria-label="Project" />);
+
+    screen.getByRole('combobox').focus();
+    await userEvent.keyboard('{ArrowDown}');
+
+    expect(await screen.findAllByRole('option')).toHaveLength(PROJECTS.length);
+  });
+
   it('narrows while typing, even onto a whole item', async () => {
     render(<Autocomplete items={PROJECTS} aria-label="Project" />);
 

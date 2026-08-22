@@ -144,6 +144,7 @@ export function Section04Forms() {
         value=""
         onValueChange={() => {}}
         placeholder="Search genomes, assemblies, models..."
+        aria-label="Search genomes"
       />
       <CodeBlock
         language="tsx"
@@ -223,17 +224,17 @@ export function Section04Forms() {
   onSubmit={send}
 />
 
-/* Removing the border or padding? Zero these too. autoGrow's
-   max-height is computed from them and would count what is
-   no longer there. */
-.myTextarea {
+/* Doubled: a single class ties with Textarea's own and falls to
+   emit order. Zero the custom properties too, or autoGrow's
+   max-height counts a border and padding that are no longer drawn. */
+.myTextarea.myTextarea {
   --textarea-pad-y: 0px;
   --textarea-border: 0px;
   padding: 0;
   border: none;
 }
 
-/* :focus is (0,2,0), so a doubled class only ties with it. */
+/* :focus and :disabled are (0,2,0) as well, so match them. */
 .myTextarea.myTextarea:focus {
   box-shadow: none;
 }`}

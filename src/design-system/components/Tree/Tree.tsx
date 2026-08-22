@@ -68,23 +68,27 @@ export function Root({
     [controlled, expandedProp, ownExpanded],
   );
 
-  // Toggle reads this, so two toggles in one event compose.
-  const latest = useRef(expanded);
+  // Uncontrolled toggling reads this, so two toggles in one event compose.
+  const latestOwn = useRef(ownExpanded);
   useEffect(() => {
-    latest.current = expanded;
-  }, [expanded]);
+    latestOwn.current = ownExpanded;
+  }, [ownExpanded]);
 
   const toggle = useCallback(
     (id: string) => {
-      const next = new Set(latest.current);
+      // Controlled toggling reads the prop instead: a parent that ignores the
+      // callback re-renders nothing, and a ref would then hold an expansion
+      // the tree never showed.
+      const next = new Set(controlled ? expandedProp : latestOwn.current);
       if (next.has(id)) next.delete(id);
       else next.add(id);
-      latest.current = next;
-      // When controlled, only the parent changes what is expanded.
-      if (!controlled) setOwnExpanded(next);
+      if (!controlled) {
+        latestOwn.current = next;
+        setOwnExpanded(next);
+      }
       onExpandedChange?.([...next]);
     },
-    [controlled, onExpandedChange],
+    [controlled, expandedProp, onExpandedChange],
   );
 
   const getAllVisibleIds = useCallback((): string[] => {

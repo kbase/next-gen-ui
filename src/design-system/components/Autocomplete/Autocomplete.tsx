@@ -4,10 +4,11 @@ import styles from './Autocomplete.module.scss';
 import { cx } from '../../util/cx';
 
 /**
- * Open reasons that mean browse, not type. Strings because Base UI's published
- * union omits `input-press`, which its runtime emits for `openOnInputClick`.
+ * Open reasons that mean browse, not type: a pointer on the field, or ArrowDown
+ * from it. Strings because Base UI's published union omits `input-press`, which
+ * its runtime emits for `openOnInputClick`.
  */
-const BROWSE_REASONS: readonly string[] = ['input-press', 'trigger-press'];
+const BROWSE_REASONS: readonly string[] = ['input-press', 'trigger-press', 'list-navigation'];
 
 export interface AutocompleteProps extends Omit<
   BaseAutocomplete.Input.Props,

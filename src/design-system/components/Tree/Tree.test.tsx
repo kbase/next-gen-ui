@@ -64,6 +64,18 @@ describe('Tree', () => {
     expect(onExpandedChange).toHaveBeenLastCalledWith(['genomes', 'assemblies']);
   });
 
+  it('keeps asking to open when the parent ignores the ask', async () => {
+    const onExpandedChange = vi.fn();
+    render(<Tree items={ITEMS} expanded={[]} onExpandedChange={onExpandedChange} />);
+
+    await userEvent.click(screen.getByText('Genomes'));
+    await userEvent.click(screen.getByText('Genomes'));
+
+    // The branch is still collapsed on screen, so the second click is another
+    // request to open it, not a request to close.
+    expect(onExpandedChange.mock.calls).toEqual([[['genomes']], [['genomes']]]);
+  });
+
   it('reports a branch closing as well as opening', async () => {
     const onExpandedChange = vi.fn();
     render(<Tree items={ITEMS} expanded={['genomes']} onExpandedChange={onExpandedChange} />);

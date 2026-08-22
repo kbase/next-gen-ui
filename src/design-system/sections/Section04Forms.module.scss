@@ -9,7 +9,6 @@
   font-size: var(--fs-6);
   padding: 0;
   border: none;
-  outline: none;
   width: 100%;
   resize: none;
   color: var(--c-ink);
@@ -25,6 +24,11 @@
 .textarea.textarea:disabled {
   background: transparent;
   box-shadow: none;
+}
+
+/* The base rule sets color, which ties with the component's :disabled. */
+.textarea.textarea:disabled {
+  color: var(--c-ink5);
 }
 
 /* Prompt input layout. Two-column grid (textarea + run button) so the

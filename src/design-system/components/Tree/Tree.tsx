@@ -70,14 +70,15 @@ export function Root({
     [controlled, expandedProp, ownExpanded],
   );
 
-  // Uncontrolled toggling reads this so two toggles in one event compose.
-  // toggle is its only writer, and sets it alongside ownExpanded.
+  // Uncontrolled toggling reads this, so two toggles in one event compose.
+  // toggle is its only writer and updates it together with ownExpanded.
   const latestOwn = useRef(ownExpanded);
 
   const toggle = useCallback(
     (id: string) => {
-      // Controlled reads the prop: a parent that ignores the callback never
-      // re-renders, so a ref would hold an expansion the tree never showed.
+      // Controlled toggling reads the prop instead. A parent that ignores the
+      // callback does not re-render, so a ref would hold an expansion that was
+      // never displayed.
       const next = new Set(controlled ? expandedProp : latestOwn.current);
       if (next.has(id)) next.delete(id);
       else next.add(id);

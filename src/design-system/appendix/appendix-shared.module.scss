@@ -119,8 +119,7 @@
   padding: var(--s-3) 0;
 }
 
-/* Chat composer. The surface takes the focus ring; the textarea inside it
-   takes none. */
+/* Chat composer. The focus ring is on this element, not on the textarea. */
 .composer {
   display: flex;
   align-items: flex-end;
@@ -130,17 +129,16 @@
   background: var(--c-surface);
   transition: box-shadow var(--t-base);
 
-  /* Inset, unlike section 04's ring: this bar sits flush against the panel
-     edge, so an outer ring would spill past it. Keyed on the textarea: a
-     focused Send shows its own ring, not this one. */
+  /* Inset because this bar is flush with the panel edge, where an outer ring
+     would overflow. Uses textarea:focus rather than :focus-within, so that
+     focusing Send does not also draw this ring. */
   &:has(textarea:focus) {
     box-shadow: inset 0 0 0 2px var(--c-focus);
   }
 }
 
-/* Doubled to outrank the Textarea component's own class. autoGrow's
-   max-height is computed from the two custom properties, so zero them or it
-   counts a border and padding that are no longer drawn. */
+/* The class is doubled to outrank Textarea's own class. The custom properties
+   must be zeroed as well, because autoGrow computes max-height from them. */
 .composerInput.composerInput {
   --textarea-pad-y: 0px;
   --textarea-border: 0px;
@@ -153,15 +151,16 @@
   line-height: 1.55;
 }
 
-/* Textarea's :focus and :disabled are (0,2,0), so the doubled class alone
-   ties with them and falls to emit order. */
+/* Textarea's :focus and :disabled rules have the same specificity as the
+   doubled class, so they must be matched by pseudo-class to be overridden. */
 .composerInput.composerInput:focus,
 .composerInput.composerInput:disabled {
   background: transparent;
   box-shadow: none;
 }
 
-/* Doubled to outrank Button's size class; square, like section 04's send. */
+/* The class is doubled to outrank Button's size class. Equal padding and
+   aspect-ratio give a square at any icon size. */
 .composerSend.composerSend {
   padding: var(--s-2);
   aspect-ratio: 1;

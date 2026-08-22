@@ -3,7 +3,7 @@
 }
 
 .positioner {
-  /* Base UI measures the input and sets this. */
+  /* Base UI sets this from the input's measured width. */
   width: var(--anchor-width);
 }
 
@@ -34,8 +34,8 @@
   font-size: var(--fs-3);
   color: var(--c-ink4);
 
-  /* Stays mounted and visible when empty, because Base UI announces it, so
-     pad only when it has text. */
+  /* The element stays mounted and visible when empty, because Base UI
+     announces it, so padding applies only when it has text. */
   &:not(:empty) {
     padding: var(--s-2) var(--s-4);
   }

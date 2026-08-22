@@ -187,7 +187,7 @@ export function Section04Forms() {
       </p>
       <Frame paddingY={5} paddingX={6} className={css.promptInput}>
         <Textarea
-          rows={2}
+          rows={1}
           autoGrow
           maxRows={6}
           value={prompt}
@@ -197,8 +197,15 @@ export function Section04Forms() {
           aria-label="Prompt"
           className={css.textarea}
         />
-        <Button variant="primary" size="sm" aria-label="Run prompt" onClick={() => setPrompt('')}>
-          <PaperPlaneRight size={12} weight="bold" />
+        <Button
+          variant="primary"
+          size="sm"
+          aria-label="Run prompt"
+          disabled={!prompt.trim()}
+          onClick={() => setPrompt('')}
+          className={css.send}
+        >
+          <PaperPlaneRight size={14} weight="bold" />
         </Button>
       </Frame>
       <CodeBlock

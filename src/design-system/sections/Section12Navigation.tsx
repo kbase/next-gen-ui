@@ -5,6 +5,7 @@ import * as Tree from '../components/Tree';
 import * as Stepper from '../components/Stepper';
 import { SearchBar } from '../components/SearchBar';
 import { CodeBlock } from '../components/CodeBlock';
+import css from './Section12Navigation.module.scss';
 import { Folder, FileText, FileCode, Eye, DotsThree } from '@phosphor-icons/react';
 
 const treeBtn = (icon: ReactNode) => <button onClick={(e) => e.stopPropagation()}>{icon}</button>;
@@ -145,14 +146,9 @@ export function Section12Navigation() {
         search opens every branch containing a match. Because expansion is state rather than derived
         from the query, a branch the search opened can still be collapsed by hand.
       </p>
-      <div style={{ display: 'flex', gap: 'var(--s-9)', flexWrap: 'wrap' }}>
-        <Frame padding={4} style={{ width: 260 }}>
-          <SearchBar
-            value={filter}
-            onValueChange={handleFilter}
-            placeholder="Search files..."
-            style={{ marginBottom: 'var(--s-4)' }}
-          />
+      <div className={css.treePanel}>
+        <SearchBar value={filter} onValueChange={handleFilter} placeholder="Search files..." />
+        <Frame padding={4}>
           <Tree.Root
             items={treeItems}
             selected={treeSelected}
@@ -161,19 +157,8 @@ export function Section12Navigation() {
             onExpandedChange={setExpandedIds}
           />
         </Frame>
-        <div style={{ flex: 1, minWidth: 200 }}>
-          <div className="mono-secondary" style={{ marginBottom: 'var(--s-2)' }}>
-            Expanded
-          </div>
-          <div
-            style={{
-              fontSize: 'var(--fs-6)',
-              color: 'var(--c-ink2)',
-              fontFamily: 'var(--f-mono)',
-            }}
-          >
-            {expandedIds.join(', ') || 'none'}
-          </div>
+        <div className={css.treeState}>
+          <span className="mono-secondary">Expanded</span> {expandedIds.join(', ') || 'none'}
         </div>
       </div>
       <CodeBlock

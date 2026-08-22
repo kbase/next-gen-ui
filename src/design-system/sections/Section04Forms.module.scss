@@ -1,12 +1,17 @@
-/* Doubled to outrank the Textarea component's own class, which brings a
-   border and a background the Frame is already providing. */
+/* Doubled to outrank the Textarea component's own class. The custom
+   properties are zeroed too, or autoGrow's cap counts padding and a border
+   that are not drawn. */
 .textarea.textarea {
+  --textarea-pad-y: 0px;
   --textarea-border: 0px;
 
   font-family: var(--f-sans);
   font-size: var(--fs-6);
+  padding: 0;
   border: none;
   outline: none;
+  /* The ring belongs to the surface; see .promptInput. */
+  box-shadow: none;
   width: 100%;
   resize: none;
   color: var(--c-ink);
@@ -14,13 +19,29 @@
   line-height: 1.55;
 }
 
-/* Prompt input layout. Two-column grid (textarea + run button) so
-   the textarea owns its row and the action sits at the end without
-   reserved-padding hacks. align-items: end keeps the button on the
-   bottom edge as the textarea height grows. */
+/* Prompt input layout. Two-column grid (textarea + run button) so the
+   textarea owns its row and the action sits at the end. align-items: end
+   keeps the button on the bottom edge as the textarea grows. */
 .promptInput {
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: end;
-  gap: var(--s-3);
+  gap: var(--s-4);
+  transition:
+    border-color var(--t-base),
+    box-shadow var(--t-base);
+
+  /* The composer is one field, so the ring goes on its outer edge. */
+  &:focus-within {
+    border-color: var(--c-primary);
+    box-shadow: 0 0 0 3px var(--c-focus);
+  }
+}
+
+/* Doubled to outrank Button's size class, which pads for a label. Even
+   padding plus aspect-ratio keeps the icon button square at any icon size. */
+.send.send {
+  padding: var(--s-2);
+  aspect-ratio: 1;
+  justify-content: center;
 }

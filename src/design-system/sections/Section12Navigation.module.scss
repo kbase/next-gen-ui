@@ -1,0 +1,15 @@
+/* Filter, panel and readout stack in one column so they stay associated at
+   any width. Capped rather than fixed, so a phone gets the full width. */
+.treePanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  max-width: 320px;
+}
+
+.treeState {
+  font-family: var(--f-mono);
+  font-size: var(--fs-4);
+  color: var(--c-ink2);
+  overflow-wrap: anywhere;
+}

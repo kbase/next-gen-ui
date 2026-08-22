@@ -118,3 +118,42 @@
 .paginationWrap {
   padding: var(--s-3) 0;
 }
+
+/* Chat composer. The surface takes the focus ring; the textarea inside it
+   takes none. */
+.composer {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--s-4);
+  padding: var(--s-4) var(--s-5);
+  border-top: 1px solid var(--c-border);
+  background: var(--c-surface);
+  transition: box-shadow var(--t-base);
+
+  &:focus-within {
+    box-shadow: inset 0 0 0 2px var(--c-focus);
+  }
+}
+
+/* Doubled to outrank the Textarea component's own class. The custom
+   properties are zeroed too, or autoGrow's cap counts padding and a border
+   that are not drawn. */
+.composerInput.composerInput {
+  --textarea-pad-y: 0px;
+  --textarea-border: 0px;
+
+  flex: 1;
+  font-size: var(--fs-6);
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  line-height: 1.55;
+}
+
+/* Doubled to outrank Button's size class; square, like section 04's send. */
+.composerSend.composerSend {
+  padding: var(--s-2);
+  aspect-ratio: 1;
+  justify-content: center;
+}

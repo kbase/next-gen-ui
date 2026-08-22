@@ -142,16 +142,7 @@ export function ChatAppendix() {
             </div>
           </div>
 
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'flex-end',
-              gap: 'var(--s-4)',
-              padding: 'var(--s-4) var(--s-5)',
-              borderTop: '1px solid var(--c-border)',
-              background: 'var(--c-surface)',
-            }}
-          >
+          <div className={s.composer}>
             <Textarea
               rows={1}
               autoGrow
@@ -161,18 +152,16 @@ export function ChatAppendix() {
               value={draft}
               onValueChange={setDraft}
               onSubmit={() => setDraft('')}
-              style={{
-                flex: 1,
-                fontSize: 'var(--fs-6)',
-                background: 'transparent',
-                border: 'none',
-                lineHeight: 1.55,
-                padding: 'var(--s-2) 0',
-                // Keeps autoGrow's cap exact against the overrides above.
-                ['--textarea-border' as string]: '0px',
-              }}
+              className={s.composerInput}
             />
-            <Button variant="primary" size="sm" aria-label="Send" onClick={() => setDraft('')}>
+            <Button
+              variant="primary"
+              size="sm"
+              aria-label="Send"
+              disabled={!draft.trim()}
+              onClick={() => setDraft('')}
+              className={s.composerSend}
+            >
               <PaperPlaneRight size={14} weight="bold" />
             </Button>
           </div>

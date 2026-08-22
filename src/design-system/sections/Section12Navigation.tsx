@@ -95,8 +95,7 @@ export function Section12Navigation() {
   const [treeSelected, setTreeSelected] = useState<string | undefined>('src/components/Tree.tsx');
   const [filter, setFilter] = useState('');
   const [expandedIds, setExpandedIds] = useState<string[]>(['src']);
-  // Its own selection: sharing one with the demo above moves the highlight in
-  // both trees, and can leave it on a node this tree has collapsed.
+  // Its own selection, so the two demos do not move each other's highlight.
   const [filteredSelected, setFilteredSelected] = useState<string | undefined>();
 
   function handleFilter(query: string) {

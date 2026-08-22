@@ -17,10 +17,10 @@
   line-height: 1.55;
 }
 
-/* Textarea's own :focus and :disabled rules are (0,2,0) — the same weight as
-   .textarea.textarea, so those two would tie and fall to emit order. Matching
-   the pseudo-class wins outright. The ring belongs to the surface; see
-   .promptInput. */
+/* Textarea's own :focus and :disabled rules are (0,2,0), the same weight as
+   .textarea.textarea, so the doubled class alone only ties and falls to emit
+   order. Matching the pseudo-class wins outright. The ring belongs to the
+   surface; see .promptInput. */
 .textarea.textarea:focus,
 .textarea.textarea:disabled {
   background: transparent;
@@ -40,8 +40,7 @@
     box-shadow var(--t-base);
 
   /* The composer is one field, so the ring goes on its outer edge. Keyed on
-     the textarea rather than :focus-within, or focusing the send button draws
-     this ring around its own. */
+     the textarea: a focused send button shows its own ring, not this one. */
   &:has(textarea:focus) {
     border-color: var(--c-primary);
     box-shadow: 0 0 0 3px var(--c-focus);

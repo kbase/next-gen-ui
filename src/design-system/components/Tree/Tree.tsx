@@ -1,6 +1,7 @@
 import {
   useState,
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   type ReactNode,
@@ -67,16 +68,24 @@ export function Root({
     [controlled, expandedProp, ownExpanded],
   );
 
+  // What toggle reads, so two toggles in one event compose rather than the
+  // second dropping the first.
+  const latest = useRef(expanded);
+  useEffect(() => {
+    latest.current = expanded;
+  }, [expanded]);
+
   const toggle = useCallback(
     (id: string) => {
-      const next = new Set(expanded);
+      const next = new Set(latest.current);
       if (next.has(id)) next.delete(id);
       else next.add(id);
+      latest.current = next;
       // When controlled, only the parent changes what is expanded.
       if (!controlled) setOwnExpanded(next);
       onExpandedChange?.([...next]);
     },
-    [expanded, controlled, onExpandedChange],
+    [controlled, onExpandedChange],
   );
 
   const getAllVisibleIds = useCallback((): string[] => {

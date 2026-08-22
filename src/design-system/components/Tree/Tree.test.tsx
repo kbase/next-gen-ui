@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Root as Tree } from './Tree';
 
@@ -7,6 +7,11 @@ const ITEMS = [
     id: 'genomes',
     label: 'Genomes',
     children: [{ id: 'ecoli', label: 'E. coli K-12' }],
+  },
+  {
+    id: 'assemblies',
+    label: 'Assemblies',
+    children: [{ id: 'spades', label: 'SPAdes run' }],
   },
 ];
 
@@ -46,6 +51,19 @@ describe('Tree', () => {
 
     expect(onExpandedChange).toHaveBeenCalledWith(['genomes']);
     expect(screen.getByText('E. coli K-12')).toBeInTheDocument();
+  });
+
+  it('composes two toggles landing in one batch', async () => {
+    const onExpandedChange = vi.fn();
+    render(<Tree items={ITEMS} onExpandedChange={onExpandedChange} />);
+
+    // One batch, so the second toggle has to see the first's result.
+    await act(async () => {
+      screen.getByText('Genomes').click();
+      screen.getByText('Assemblies').click();
+    });
+
+    expect(onExpandedChange).toHaveBeenLastCalledWith(['genomes', 'assemblies']);
   });
 
   it('reports a branch closing as well as opening', async () => {

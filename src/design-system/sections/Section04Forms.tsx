@@ -27,8 +27,7 @@ export function Section04Forms() {
   const [prompt, setPrompt] = useState('');
   const [project, setProject] = useState('Soil Carbon Flux');
 
-  // Enter and the button are the same action, so they share the same guard.
-  // Without it Enter sends a blank prompt while the button says it cannot.
+  // Enter and the button are the same action, so they share one guard.
   function sendPrompt() {
     if (prompt.trim()) setPrompt('');
   }
@@ -224,8 +223,8 @@ export function Section04Forms() {
   onSubmit={send}
 />
 
-/* Stripping the chrome? Tell the cap, or autoGrow keeps counting
-   padding and a border that are no longer drawn. */
+/* Stripping the chrome? Tell the cap, or autoGrow counts padding
+   and a border that are not drawn. */
 .myTextarea {
   --textarea-pad-y: 0px;
   --textarea-border: 0px;

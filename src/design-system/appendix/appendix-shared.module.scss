@@ -131,8 +131,8 @@
   transition: box-shadow var(--t-base);
 
   /* Inset, unlike section 04's ring: this bar sits flush against the panel
-     edge, so an outer ring would spill past it. Keyed on the textarea, or
-     focusing Send draws this ring around its own. */
+     edge, so an outer ring would spill past it. Keyed on the textarea: a
+     focused Send shows its own ring, not this one. */
   &:has(textarea:focus) {
     box-shadow: inset 0 0 0 2px var(--c-focus);
   }

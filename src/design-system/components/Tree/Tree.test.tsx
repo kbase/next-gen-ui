@@ -51,7 +51,7 @@ describe('Tree', () => {
     expect(screen.getByText('E. coli K-12')).toBeInTheDocument();
   });
 
-  it('composes two toggles landing in one batch', async () => {
+  it('composes two uncontrolled toggles landing in one batch', async () => {
     const onExpandedChange = vi.fn();
     render(<Tree items={ITEMS} onExpandedChange={onExpandedChange} />);
 

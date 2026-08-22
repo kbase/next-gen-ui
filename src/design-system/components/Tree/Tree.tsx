@@ -1,7 +1,6 @@
 import {
   useState,
   useCallback,
-  useEffect,
   useMemo,
   useRef,
   type ReactNode,
@@ -69,10 +68,8 @@ export function Root({
   );
 
   // Uncontrolled toggling reads this, so two toggles in one event compose.
+  // toggle is the only writer of ownExpanded and updates both together.
   const latestOwn = useRef(ownExpanded);
-  useEffect(() => {
-    latestOwn.current = ownExpanded;
-  }, [ownExpanded]);
 
   const toggle = useCallback(
     (id: string) => {

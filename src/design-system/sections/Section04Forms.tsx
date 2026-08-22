@@ -216,27 +216,38 @@ export function Section04Forms() {
       </Frame>
       <CodeBlock
         language="tsx"
-        code={`<Textarea
-  autoGrow
-  maxRows={6}
-  value={prompt}
-  onValueChange={setPrompt}
-  onSubmit={send}
-/>
+        code={`<Frame className={styles.composer}>
+  <Textarea
+    autoGrow
+    maxRows={6}
+    value={prompt}
+    onValueChange={setPrompt}
+    onSubmit={send}
+    className={styles.field}
+  />
+  <Button disabled={!prompt.trim()} onClick={send}>Run</Button>
+</Frame>
 
 /* Doubled: a single class ties with Textarea's own and falls to
    emit order. Zero the custom properties too, or autoGrow's
    max-height counts a border and padding that are no longer drawn. */
-.myTextarea.myTextarea {
+.field.field {
   --textarea-pad-y: 0px;
   --textarea-border: 0px;
   padding: 0;
   border: none;
 }
 
-/* :focus and :disabled are (0,2,0) as well, so match them. */
-.myTextarea.myTextarea:focus {
+/* :focus and :disabled are (0,2,0) too, so match them. */
+.field.field:focus,
+.field.field:disabled {
   box-shadow: none;
+}
+
+/* The field has no border left to light, so the surface shows focus.
+   Keyed on the textarea: a focused Run shows its own ring. */
+.composer:has(textarea:focus) {
+  box-shadow: 0 0 0 3px var(--c-focus);
 }`}
       />
 

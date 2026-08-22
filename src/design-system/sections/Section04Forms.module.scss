@@ -5,15 +5,12 @@
   --textarea-pad-y: 0px;
   --textarea-border: 0px;
 
-  font-family: var(--f-sans);
+  /* Only what differs from the component; the rest is inherited from it. */
   font-size: var(--fs-6);
   padding: 0;
   border: none;
-  width: 100%;
   resize: none;
-  color: var(--c-ink);
   background: transparent;
-  line-height: 1.55;
 }
 
 /* Textarea's own :focus and :disabled rules are (0,2,0), the same weight as
@@ -24,11 +21,6 @@
 .textarea.textarea:disabled {
   background: transparent;
   box-shadow: none;
-}
-
-/* The base rule sets color, which ties with the component's :disabled. */
-.textarea.textarea:disabled {
-  color: var(--c-ink5);
 }
 
 /* Prompt input layout. Two-column grid (textarea + run button) so the

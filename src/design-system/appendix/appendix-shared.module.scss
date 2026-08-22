@@ -138,9 +138,9 @@
   }
 }
 
-/* Doubled to outrank the Textarea component's own class. The custom
-   properties are zeroed too: autoGrow's max-height is computed from them,
-   and would count padding and a border that are no longer drawn. */
+/* Doubled to outrank the Textarea component's own class. autoGrow's
+   max-height is computed from the two custom properties, so zero them or it
+   counts a border and padding that are no longer drawn. */
 .composerInput.composerInput {
   --textarea-pad-y: 0px;
   --textarea-border: 0px;
@@ -153,8 +153,8 @@
   line-height: 1.55;
 }
 
-/* Textarea's own :focus and :disabled rules are (0,2,0), the same weight as
-   the doubled class, so those ties would fall to emit order. */
+/* Textarea's :focus and :disabled are (0,2,0), so the doubled class alone
+   ties with them and falls to emit order. */
 .composerInput.composerInput:focus,
 .composerInput.composerInput:disabled {
   background: transparent;

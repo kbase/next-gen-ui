@@ -4,9 +4,8 @@ import styles from './Autocomplete.module.scss';
 import { cx } from '../../util/cx';
 
 /**
- * Open reasons that mean browse, not type: a pointer on the field, or an arrow
- * key from it. Strings because Base UI's published union omits `input-press`,
- * which its runtime emits for `openOnInputClick`.
+ * Plain strings because Base UI's published union omits `input-press`, which
+ * its runtime emits for `openOnInputClick`.
  */
 const BROWSE_REASONS: readonly string[] = ['input-press', 'list-navigation'];
 
@@ -40,8 +39,7 @@ export function Autocomplete({
   // The list keys on the string, and Base UI does not dedupe.
   const options = useMemo(() => [...new Set(items)], [items]);
 
-  // Browsing lists every item; typing narrows. Set while the popup is open and
-  // the value has not changed.
+  // Browsing lists every item; typing narrows.
   const [browsing, setBrowsing] = useState(false);
 
   const filter = useCallback(
@@ -63,15 +61,13 @@ export function Autocomplete({
         if (!open) setBrowsing(false);
         else if (BROWSE_REASONS.includes(details.reason)) setBrowsing(true);
       }}
-      // Show the suggestions on click, not only after typing.
       openOnInputClick
     >
       <BaseAutocomplete.Input className={cx(styles.input, className)} {...props} />
       <BaseAutocomplete.Portal>
         <BaseAutocomplete.Positioner sideOffset={4} className={styles.positioner}>
           <BaseAutocomplete.Popup className={styles.popup}>
-            {/* Base UI announces this; it must stay mounted rather than be
-                rendered conditionally. */}
+            {/* Must stay mounted: Base UI announces it. */}
             <BaseAutocomplete.Empty className={styles.empty}>{emptyMessage}</BaseAutocomplete.Empty>
             <BaseAutocomplete.List>
               {(item: string) => (

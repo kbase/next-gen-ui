@@ -76,7 +76,7 @@ const treeItems: Tree.TreeNode[] = [
   { id: 'README.md', label: 'README.md', icon: <FileText size={13} /> },
 ];
 
-/** Ids of every branch containing a match, so the match can be shown. */
+/** Ids of every branch containing a match. */
 function branchesMatching(nodes: Tree.TreeNode[], query: string): string[] {
   // Trimmed, or a lone space matches every label containing one.
   const needle = query.trim().toLowerCase();

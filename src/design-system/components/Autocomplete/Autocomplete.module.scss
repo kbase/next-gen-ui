@@ -1,4 +1,3 @@
-/* The appearance is Input's, not a copy of it. */
 .input {
   composes: input from '../Input/Input.module.scss';
 }
@@ -35,9 +34,8 @@
   font-size: var(--fs-3);
   color: var(--c-ink4);
 
-  /* Base UI announces this element, so it stays mounted and visible even
-     when empty. Padding only when it has text, or it leaves a gap above
-     the list. */
+  /* Stays mounted and visible when empty, because Base UI announces it, so
+     pad only when it has text. */
   &:not(:empty) {
     padding: var(--s-2) var(--s-4);
   }

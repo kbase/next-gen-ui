@@ -32,7 +32,7 @@ export interface TreeProps {
   expanded?: string[];
   /** Called with the ids after a toggle, controlled or not. */
   onExpandedChange?: (ids: string[]) => void;
-  /** Names the tree. Without one it is announced as "tree" and nothing else. */
+  /** Names the tree; without one it is announced only as "tree". */
   'aria-label'?: string;
   className?: string;
 }
@@ -70,15 +70,14 @@ export function Root({
     [controlled, expandedProp, ownExpanded],
   );
 
-  // Uncontrolled toggling reads this, so two toggles in one event compose.
-  // toggle is the only writer of ownExpanded and updates both together.
+  // Uncontrolled toggling reads this so two toggles in one event compose.
+  // toggle is its only writer, and sets it alongside ownExpanded.
   const latestOwn = useRef(ownExpanded);
 
   const toggle = useCallback(
     (id: string) => {
-      // Controlled toggling reads the prop instead: a parent that ignores the
-      // callback re-renders nothing, and a ref would then hold an expansion
-      // the tree never showed.
+      // Controlled reads the prop: a parent that ignores the callback never
+      // re-renders, so a ref would hold an expansion the tree never showed.
       const next = new Set(controlled ? expandedProp : latestOwn.current);
       if (next.has(id)) next.delete(id);
       else next.add(id);

@@ -1,5 +1,5 @@
-/* Filter, panel and readout stack in one column so they stay associated at
-   any width. Capped rather than fixed, so a phone gets the full width. */
+/* One column so filter, panel and readout stay together at any width.
+   Capped rather than fixed, so a phone gets the full width. */
 .treePanel {
   display: flex;
   flex-direction: column;

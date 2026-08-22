@@ -53,7 +53,6 @@ describe('Autocomplete', () => {
   it('narrows while typing, even onto a whole item', async () => {
     render(<Autocomplete items={PROJECTS} aria-label="Project" />);
 
-    // Completing an item name is still typing.
     await userEvent.type(screen.getByRole('combobox'), 'Ocean Sampling');
 
     expect(await screen.findAllByRole('option')).toHaveLength(1);

@@ -119,6 +119,7 @@ export function Section12Navigation() {
             selected={treeSelected}
             onSelect={setTreeSelected}
             defaultExpanded={['src', 'src/components']}
+            aria-label="Project files"
           />
         </Frame>
         <div style={{ flex: 1, minWidth: 200 }}>
@@ -163,6 +164,7 @@ export function Section12Navigation() {
             onSelect={setFilteredSelected}
             expanded={expandedIds}
             onExpandedChange={setExpandedIds}
+            aria-label="Filtered project files"
           />
         </Frame>
         <div className={css.treeState}>

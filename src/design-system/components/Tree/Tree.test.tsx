@@ -25,6 +25,12 @@ describe('Tree', () => {
     expect(screen.getByText('E. coli K-12')).toBeInTheDocument();
   });
 
+  it('takes a name', () => {
+    render(<Tree items={ITEMS} aria-label="Project files" />);
+
+    expect(screen.getByRole('tree', { name: 'Project files' })).toBeInTheDocument();
+  });
+
   it('shows the branches the parent lists', () => {
     render(<Tree items={ITEMS} expanded={['genomes']} />);
 

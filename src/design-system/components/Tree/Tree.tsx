@@ -32,6 +32,8 @@ export interface TreeProps {
   expanded?: string[];
   /** Called with the ids after a toggle, controlled or not. */
   onExpandedChange?: (ids: string[]) => void;
+  /** Names the tree. Without one it is announced as "tree" and nothing else. */
+  'aria-label'?: string;
   className?: string;
 }
 
@@ -56,6 +58,7 @@ export function Root({
   defaultExpanded = [],
   expanded: expandedProp,
   onExpandedChange,
+  'aria-label': ariaLabel,
   className,
 }: TreeProps) {
   const [ownExpanded, setOwnExpanded] = useState<Set<string>>(new Set(defaultExpanded));
@@ -154,6 +157,7 @@ export function Root({
     <ul
       ref={listRef}
       role="tree"
+      aria-label={ariaLabel}
       className={cx(styles.root, className)}
       onKeyDown={handleKeyDown}
       tabIndex={0}

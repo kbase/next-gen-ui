@@ -36,6 +36,18 @@ describe('Tree', () => {
     expect(screen.queryByText('E. coli K-12')).not.toBeInTheDocument();
   });
 
+  it('reports the change when uncontrolled too', async () => {
+    // The prop is documented as firing either way, but only the controlled
+    // path was covered.
+    const onExpandedChange = vi.fn();
+    render(<Tree items={ITEMS} onExpandedChange={onExpandedChange} />);
+
+    await userEvent.click(screen.getByText('Genomes'));
+
+    expect(onExpandedChange).toHaveBeenCalledWith(['genomes']);
+    expect(screen.getByText('E. coli K-12')).toBeInTheDocument();
+  });
+
   it('reports a branch closing as well as opening', async () => {
     const onExpandedChange = vi.fn();
     render(<Tree items={ITEMS} expanded={['genomes']} onExpandedChange={onExpandedChange} />);

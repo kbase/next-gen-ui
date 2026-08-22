@@ -78,8 +78,9 @@ const treeItems: Tree.TreeNode[] = [
 
 /** Ids of every branch containing a match, so the match can be shown. */
 function branchesMatching(nodes: Tree.TreeNode[], query: string): string[] {
-  if (!query) return [];
-  const needle = query.toLowerCase();
+  // Trimmed, or a lone space matches every label containing one.
+  const needle = query.trim().toLowerCase();
+  if (!needle) return [];
   const found: string[] = [];
   const walk = (node: Tree.TreeNode): boolean => {
     const childMatched = (node.children ?? []).map(walk).some(Boolean);
@@ -94,6 +95,9 @@ export function Section12Navigation() {
   const [treeSelected, setTreeSelected] = useState<string | undefined>('src/components/Tree.tsx');
   const [filter, setFilter] = useState('');
   const [expandedIds, setExpandedIds] = useState<string[]>(['src']);
+  // Its own selection: sharing one with the demo above moves the highlight in
+  // both trees, and can leave it on a node this tree has collapsed.
+  const [filteredSelected, setFilteredSelected] = useState<string | undefined>();
 
   function handleFilter(query: string) {
     setFilter(query);
@@ -147,12 +151,17 @@ export function Section12Navigation() {
         from the query, a branch the search opened can still be collapsed by hand.
       </p>
       <div className={css.treePanel}>
-        <SearchBar value={filter} onValueChange={handleFilter} placeholder="Search files..." />
+        <SearchBar
+          value={filter}
+          onValueChange={handleFilter}
+          placeholder="Search files..."
+          aria-label="Search files"
+        />
         <Frame padding={4}>
           <Tree.Root
             items={treeItems}
-            selected={treeSelected}
-            onSelect={setTreeSelected}
+            selected={filteredSelected}
+            onSelect={setFilteredSelected}
             expanded={expandedIds}
             onExpandedChange={setExpandedIds}
           />

@@ -63,8 +63,8 @@ export function Root({
 
   const controlled = expandedProp !== undefined;
   const expanded = useMemo(
-    () => (expandedProp ? new Set(expandedProp) : ownExpanded),
-    [expandedProp, ownExpanded],
+    () => (controlled ? new Set(expandedProp) : ownExpanded),
+    [controlled, expandedProp, ownExpanded],
   );
 
   const toggle = useCallback(

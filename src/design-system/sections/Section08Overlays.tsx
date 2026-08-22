@@ -178,7 +178,15 @@ toasts.add({
             </Dialog.Description>
             <Field.Root>
               <Field.Label>Project name</Field.Label>
-              <Input name="name" defaultValue={renameSeed} required />
+              <Input
+                name="name"
+                defaultValue={renameSeed}
+                required
+                // required alone accepts "   ". The pattern makes the browser
+                // block a name that is only whitespace.
+                pattern=".*\S.*"
+                title="A name needs at least one non-space character."
+              />
             </Field.Root>
             <div className={s.row} style={{ justifyContent: 'flex-end', marginTop: 'var(--s-7)' }}>
               <Dialog.Close
@@ -230,7 +238,8 @@ function handleSubmit(event: FormEvent<HTMLFormElement>) {
       <Dialog.Description>The new name is shown everywhere.</Dialog.Description>
       <Field.Root>
         <Field.Label>Project name</Field.Label>
-        <Input name="name" defaultValue={seed} required />
+        {/* required alone accepts "   "; the pattern rejects whitespace. */}
+        <Input name="name" defaultValue={seed} required pattern=".*\\S.*" />
       </Field.Root>
       {/* type="button", or Cancel submits the form too. */}
       <Dialog.Close render={<Button variant="ghost" type="button">Cancel</Button>} />

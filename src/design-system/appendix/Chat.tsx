@@ -31,6 +31,11 @@ function MsgHeader({
 
 export function ChatAppendix() {
   const [draft, setDraft] = useState('');
+
+  // Enter and the button are the same action, so they share the same guard.
+  function sendDraft() {
+    if (draft.trim()) setDraft('');
+  }
   return (
     <div className={s.root}>
       <div className={s.num}>E</div>
@@ -151,7 +156,7 @@ export function ChatAppendix() {
               placeholder="Message Rhizosphere Assembly…"
               value={draft}
               onValueChange={setDraft}
-              onSubmit={() => setDraft('')}
+              onSubmit={sendDraft}
               className={s.composerInput}
             />
             <Button
@@ -159,7 +164,7 @@ export function ChatAppendix() {
               size="sm"
               aria-label="Send"
               disabled={!draft.trim()}
-              onClick={() => setDraft('')}
+              onClick={sendDraft}
               className={s.composerSend}
             >
               <PaperPlaneRight size={14} weight="bold" />

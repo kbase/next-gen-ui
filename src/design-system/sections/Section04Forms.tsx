@@ -26,6 +26,12 @@ const PROJECTS = [
 export function Section04Forms() {
   const [prompt, setPrompt] = useState('');
   const [project, setProject] = useState('Soil Carbon Flux');
+
+  // Enter and the button are the same action, so they share the same guard.
+  // Without it Enter sends a blank prompt while the button says it cannot.
+  function sendPrompt() {
+    if (prompt.trim()) setPrompt('');
+  }
   return (
     <div className={s.section}>
       <div className={s.sNum}>04</div>
@@ -192,7 +198,7 @@ export function Section04Forms() {
           maxRows={6}
           value={prompt}
           onValueChange={setPrompt}
-          onSubmit={() => setPrompt('')}
+          onSubmit={sendPrompt}
           placeholder="Describe the analysis you want to run, or search for data…"
           aria-label="Prompt"
           className={css.textarea}
@@ -202,7 +208,7 @@ export function Section04Forms() {
           size="sm"
           aria-label="Run prompt"
           disabled={!prompt.trim()}
-          onClick={() => setPrompt('')}
+          onClick={sendPrompt}
           className={css.send}
         >
           <PaperPlaneRight size={14} weight="bold" />
@@ -218,10 +224,18 @@ export function Section04Forms() {
   onSubmit={send}
 />
 
-/* Stripping the chrome? Tell the cap. */
+/* Stripping the chrome? Tell the cap, or autoGrow keeps counting
+   padding and a border that are no longer drawn. */
 .myTextarea {
+  --textarea-pad-y: 0px;
   --textarea-border: 0px;
+  padding: 0;
   border: none;
+}
+
+/* :focus is (0,2,0), so a doubled class only ties with it. */
+.myTextarea.myTextarea:focus {
+  box-shadow: none;
 }`}
       />
 

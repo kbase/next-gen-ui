@@ -130,7 +130,10 @@
   background: var(--c-surface);
   transition: box-shadow var(--t-base);
 
-  &:focus-within {
+  /* Inset, unlike section 04's ring: this bar sits flush against the panel
+     edge, so an outer ring would spill past it. Keyed on the textarea, or
+     focusing Send draws this ring around its own. */
+  &:has(textarea:focus) {
     box-shadow: inset 0 0 0 2px var(--c-focus);
   }
 }
@@ -147,8 +150,15 @@
   padding: 0;
   border: none;
   background: transparent;
-  box-shadow: none;
   line-height: 1.55;
+}
+
+/* Textarea's own :focus and :disabled rules are (0,2,0), the same weight as
+   the doubled class, so those ties would fall to emit order. */
+.composerInput.composerInput:focus,
+.composerInput.composerInput:disabled {
+  background: transparent;
+  box-shadow: none;
 }
 
 /* Doubled to outrank Button's size class; square, like section 04's send. */

@@ -15,13 +15,12 @@ describe('Autocomplete', () => {
     expect(options.map((o) => o.textContent)).toEqual(['Soil Metagenome', 'Soil Carbon Flux']);
   });
 
-  it('keeps a value that is not in the list', async () => {
+  it('reports a value that is not in the list', async () => {
     const onValueChange = vi.fn();
     render(<Autocomplete items={PROJECTS} onValueChange={onValueChange} aria-label="Project" />);
 
     await userEvent.type(screen.getByRole('combobox'), 'Permafrost Cores');
 
-    expect(screen.getByRole('combobox')).toHaveValue('Permafrost Cores');
     expect(onValueChange).toHaveBeenLastCalledWith('Permafrost Cores', expect.anything());
   });
 

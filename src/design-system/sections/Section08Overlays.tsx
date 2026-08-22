@@ -30,8 +30,8 @@ export function Section08Overlays({ onShowToast }: Section08OverlaysProps) {
 
   function handleOpenChange(open: boolean) {
     // Seed the field on open rather than on every render: the popup is still
-    // mounted while it closes, and an uncontrolled field whose defaultValue
-    // changes under it is an error.
+    // mounted while it closes, and changing an uncontrolled field's
+    // defaultValue while it is mounted is an error.
     if (open) setRenameSeed(projectName);
     setRenameOpen(open);
   }
@@ -198,22 +198,21 @@ toasts.add({
       </p>
       <p className={s.note}>
         A dialog that collects a value is a form, not a pair of buttons. The form is what makes
-        Enter submit and what gives the browser a value to validate; without it, Save is a Close
-        that discards. Four points are easy to miss. Cancel needs{' '}
-        <code>type=&quot;button&quot;</code> &mdash; a button inside a form submits by default, so
-        the two buttons would do the same thing. Save is a plain Button, not a Dialog.Close, because
-        closing has to wait for the submit handler; close by setting <code>open</code> yourself. The
-        field is seeded when the dialog opens, not from the live value: the popup is still mounted
-        while it closes, and an uncontrolled field whose <code>defaultValue</code> changes under it
-        is an error. And do not add <code>autoFocus</code>: Base UI already focuses the first
-        tabbable element, except on touch, where it focuses the popup so the keyboard does not cover
-        the dialog.
+        Enter submit and what gives the browser a value to validate; without it, Save only closes
+        the dialog and discards the value. Four things are easy to get wrong. Cancel needs{' '}
+        <code>type=&quot;button&quot;</code>, since a button inside a form submits by default. Save
+        is a plain Button rather than a Dialog.Close, because closing has to wait for the submit
+        handler; set <code>open</code> yourself. The field is seeded when the dialog opens, not from
+        the live value, because the popup is still mounted while it closes and changing an
+        uncontrolled field&apos;s <code>defaultValue</code> while mounted is an error. And{' '}
+        <code>autoFocus</code> is not needed: Base UI focuses the first tabbable element already,
+        except on touch, where it focuses the popup so the keyboard does not cover the dialog.
       </p>
       <p className={s.note}>
         This replaces <code>window.prompt</code>, which the system has no component for because
         every design system leaves it as a dialog containing a form. Three shapes cover what the app
-        asks for: a rename, prefilled with the current value; a required reason, where{' '}
-        <code>required</code> is doing the work; and an optional note, where it is absent. Only{' '}
+        asks for: a rename, prefilled with the current value; a reason, enforced by{' '}
+        <code>required</code>; and an optional note, where <code>required</code> is absent. Only{' '}
         <code>window.confirm</code> has a fixed enough shape to be a component, and that is
         AlertDialog, below.
       </p>

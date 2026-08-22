@@ -30,7 +30,7 @@ export function Autocomplete({
   const { contains } = BaseAutocomplete.useFilter();
 
   // With a whole item in the field, the default filter matches only that
-  // item, so opening the list offers nothing to change to.
+  // item, so the list would show one option: the one already chosen.
   const filter = useCallback(
     (item: string, query: string) => items.includes(query) || contains(item, query),
     [items, contains],
@@ -43,8 +43,7 @@ export function Autocomplete({
       value={value}
       defaultValue={defaultValue}
       onValueChange={onValueChange}
-      // The suggestions are the reason to use this over a plain input, so
-      // show them on click rather than waiting for a keystroke.
+      // Show the suggestions on click, not only after typing.
       openOnInputClick
     >
       <BaseAutocomplete.Input className={cx(styles.input, className)} {...props} />

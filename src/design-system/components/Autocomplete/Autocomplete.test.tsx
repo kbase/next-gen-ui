@@ -25,7 +25,7 @@ describe('Autocomplete', () => {
     expect(onValueChange).toHaveBeenLastCalledWith('Permafrost Cores', expect.anything());
   });
 
-  it('offers the alternatives when the field already holds one', async () => {
+  it('lists every item when the field already holds one', async () => {
     render(<Autocomplete items={PROJECTS} defaultValue="Ocean Sampling" aria-label="Project" />);
 
     await userEvent.click(screen.getByRole('combobox'));

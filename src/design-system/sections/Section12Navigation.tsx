@@ -75,7 +75,7 @@ const treeItems: Tree.TreeNode[] = [
   { id: 'README.md', label: 'README.md', icon: <FileText size={13} /> },
 ];
 
-/** Ids of every branch holding a match, so the match can be seen. */
+/** Ids of every branch containing a match, so the match can be shown. */
 function branchesMatching(nodes: Tree.TreeNode[], query: string): string[] {
   if (!query) return [];
   const needle = query.toLowerCase();
@@ -142,8 +142,8 @@ export function Section12Navigation() {
       </div>
       <p className={s.note}>
         Pass <code>expanded</code> and <code>onExpandedChange</code> to decide what is open. Here a
-        search opens every branch holding a match. Because expansion stays state rather than being
-        derived from the query, a branch the search opened can still be collapsed by hand.
+        search opens every branch containing a match. Because expansion is state rather than derived
+        from the query, a branch the search opened can still be collapsed by hand.
       </p>
       <div style={{ display: 'flex', gap: 'var(--s-9)', flexWrap: 'wrap' }}>
         <Frame padding={4} style={{ width: 260 }}>
@@ -182,7 +182,7 @@ export function Section12Navigation() {
 
 function handleFilter(query: string) {
   setFilter(query);
-  // Open the branches holding a match, without closing anything.
+  // Open the branches containing a match, without closing anything.
   setExpanded((prev) => [...new Set([...prev, ...branchesMatching(items, query)])]);
 }
 

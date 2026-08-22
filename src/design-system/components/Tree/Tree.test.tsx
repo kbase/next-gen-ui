@@ -11,7 +11,7 @@ const ITEMS = [
 ];
 
 describe('Tree', () => {
-  it('opens a branch on its own when uncontrolled', async () => {
+  it('expands a branch itself when uncontrolled', async () => {
     render(<Tree items={ITEMS} />);
     expect(screen.queryByText('E. coli K-12')).not.toBeInTheDocument();
 
@@ -26,7 +26,7 @@ describe('Tree', () => {
     expect(screen.getByText('E. coli K-12')).toBeInTheDocument();
   });
 
-  it('asks rather than moves when controlled', async () => {
+  it('does not expand itself when controlled', async () => {
     const onExpandedChange = vi.fn();
     render(<Tree items={ITEMS} expanded={[]} onExpandedChange={onExpandedChange} />);
 
@@ -36,7 +36,7 @@ describe('Tree', () => {
     expect(screen.queryByText('E. coli K-12')).not.toBeInTheDocument();
   });
 
-  it('reports the branch closing too', async () => {
+  it('reports a branch closing as well as opening', async () => {
     const onExpandedChange = vi.fn();
     render(<Tree items={ITEMS} expanded={['genomes']} onExpandedChange={onExpandedChange} />);
 

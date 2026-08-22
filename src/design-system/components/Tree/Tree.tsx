@@ -28,7 +28,7 @@ export interface TreeProps {
   onSelect?: (id: string) => void;
   onContextMenu?: (id: string, event: MouseEvent) => void;
   defaultExpanded?: string[];
-  /** The expanded ids. Use when the parent decides what is open. */
+  /** The expanded ids. Use when controlled. */
   expanded?: string[];
   /** Called with the ids after a toggle, controlled or not. */
   onExpandedChange?: (ids: string[]) => void;
@@ -72,7 +72,7 @@ export function Root({
       const next = new Set(expanded);
       if (next.has(id)) next.delete(id);
       else next.add(id);
-      // Controlled trees move only when the parent says so.
+      // When controlled, only the parent changes what is expanded.
       if (!controlled) setOwnExpanded(next);
       onExpandedChange?.([...next]);
     },

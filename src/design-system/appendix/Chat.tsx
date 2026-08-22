@@ -1,10 +1,8 @@
 import { useState } from 'react';
 import { Frame } from '../components/Frame';
 import { Avatar } from '../components/Avatar';
-import { Button } from '../components/Button';
-import { Textarea } from '../components/Textarea';
+import { PromptInput } from '../components/PromptInput';
 import { CodeBlock } from '../components/CodeBlock';
-import { PaperPlaneRight } from '@phosphor-icons/react';
 import s from './appendix-shared.module.scss';
 
 const indent = { marginLeft: 'calc(24px + var(--s-4))' };
@@ -147,29 +145,15 @@ export function ChatAppendix() {
             </div>
           </div>
 
-          <div className={s.composer}>
-            <Textarea
-              rows={1}
-              autoGrow
-              maxRows={6}
-              aria-label="Message"
-              placeholder="Message Rhizosphere Assembly…"
-              value={draft}
-              onValueChange={setDraft}
-              onSubmit={sendDraft}
-              className={s.composerInput}
-            />
-            <Button
-              variant="primary"
-              size="sm"
-              aria-label="Send"
-              disabled={!draft.trim()}
-              onClick={sendDraft}
-              className={s.composerSend}
-            >
-              <PaperPlaneRight size={14} weight="bold" />
-            </Button>
-          </div>
+          <PromptInput
+            flush
+            label="Message"
+            placeholder="Message Rhizosphere Assembly…"
+            value={draft}
+            onValueChange={setDraft}
+            onSubmit={sendDraft}
+            hint="Enter to send · Shift+Enter for a new line"
+          />
         </Frame>
       </div>
     </div>

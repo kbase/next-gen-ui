@@ -39,6 +39,9 @@
 .autoGrow {
   resize: none;
   overflow-y: auto;
+  /* Where unsupported the component measures instead; `rows` is the floor
+     either way. */
+  field-sizing: content;
   /* 1lh is the used line height, so the cap holds for any line-height,
      including `normal`. Border-box, so padding and border count toward it.
      --textarea-max-rows is set on the element; 8 is the default. */

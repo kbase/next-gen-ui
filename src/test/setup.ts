@@ -3,6 +3,51 @@ import { afterAll, afterEach, beforeAll } from 'vitest';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 
+// jsdom has no matchMedia. These defaults describe a desktop browser; a test
+// that needs otherwise calls setMedia.
+const MEDIA_DEFAULTS: Record<string, boolean> = {
+  '(any-pointer: fine)': true,
+  '(pointer: coarse)': false,
+};
+
+type MediaListener = EventListenerOrEventListenerObject;
+
+const mediaOverrides = new Map<string, boolean>();
+const mediaListeners = new Map<string, Set<MediaListener>>();
+
+const notify = (listener: MediaListener) =>
+  typeof listener === 'function'
+    ? listener(new Event('change'))
+    : listener.handleEvent(new Event('change'));
+
+/** Override one query for the current test. Cleared after each. */
+export function setMedia(query: string, matches: boolean) {
+  mediaOverrides.set(query, matches);
+  mediaListeners.get(query)?.forEach(notify);
+}
+
+window.matchMedia = (query: string) =>
+  ({
+    get matches() {
+      return mediaOverrides.get(query) ?? MEDIA_DEFAULTS[query] ?? false;
+    },
+    media: query,
+    onchange: null,
+    addEventListener: (_type: string, listener: MediaListener) => {
+      let set = mediaListeners.get(query);
+      if (!set) mediaListeners.set(query, (set = new Set()));
+      set.add(listener);
+    },
+    removeEventListener: (_type: string, listener: MediaListener) => {
+      mediaListeners.get(query)?.delete(listener);
+    },
+    addListener: () => {},
+    removeListener: () => {},
+    dispatchEvent: () => false,
+  }) as unknown as MediaQueryList;
+
+afterEach(() => mediaOverrides.clear());
+
 // Default handler set: a happy /api/V2/me. Tests override per-case
 // via `server.use(...)`. The wildcard host avoids depending on the
 // resolved VITE_AUTH_ORIGIN at test time. `idents`, `created`,

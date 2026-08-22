@@ -2,6 +2,14 @@ import { useCallback, useLayoutEffect, useRef } from 'react';
 import { Input as BaseInput } from '@base-ui/react/input';
 import styles from './Textarea.module.scss';
 import { cx } from '../../util/cx';
+import { useMediaQuery } from '../../util/useMediaQuery';
+
+/** Which keystroke fires `onSubmit`. */
+export type SubmitOn = 'enter' | 'modifier';
+
+/* CSS sizes the field where the property is supported; measure() is the
+   fallback. Read once — support does not change within a document. */
+const CSS_SIZED = typeof CSS !== 'undefined' && !!CSS.supports?.('field-sizing', 'content');
 
 /* onSubmit is omitted and redefined: a textarea never fires a native submit
    event, so the DOM prop is dead here and the name is the one consumers reach
@@ -12,8 +20,14 @@ export interface TextareaProps extends Omit<BaseInput.Props, 'className' | 'rend
   autoGrow?: boolean;
   /** Ceiling for `autoGrow`, in rows. Defaults to 8. Past it the field scrolls. */
   maxRows?: number;
-  /** Called with the current value on Enter. Shift+Enter still inserts a newline. */
+  /** Called with the current value. Never with a blank one. */
   onSubmit?: (value: string) => void;
+  /**
+   * `'enter'` submits on Enter and breaks the line on Shift+Enter;
+   * `'modifier'` breaks the line on Enter and submits on Ctrl/⌘+Enter.
+   * A soft keyboard has neither modifier, so it always gets `'modifier'`.
+   */
+  submitOn?: SubmitOn;
   className?: string;
 }
 
@@ -24,6 +38,7 @@ export function Textarea({
   autoGrow,
   maxRows,
   onSubmit,
+  submitOn = 'enter',
   onKeyDown,
   onInput,
   value,
@@ -32,6 +47,13 @@ export function Textarea({
   ...props
 }: TextareaProps) {
   const ref = useRef<HTMLTextAreaElement>(null);
+
+  // A fine pointer detects a mouse or trackpad, the closest available signal
+  // for a hardware keyboard. Where there is none, the button is the only way
+  // to submit; that is the safer error, since the other direction sends an
+  // unfinished message.
+  const finePointer = useMediaQuery('(any-pointer: fine)');
+  const mode = finePointer ? submitOn : 'modifier';
 
   const measure = useCallback(() => {
     const el = ref.current;
@@ -62,35 +84,43 @@ export function Textarea({
     // allows to be a function of state. Left unset, the stylesheet's default
     // applies, so the number lives in one place.
     if (maxRows != null) el.style.setProperty('--textarea-max-rows', String(maxRows));
-    measure();
+    // Where field-sizing applies, a pinned height would override it.
+    if (!CSS_SIZED) measure();
     // `value` covers a controlled field set from outside. Typing is handled by
     // onInput, which is the only trigger an uncontrolled field has.
   }, [autoGrow, maxRows, measure, value]);
 
   const handleInput: NonNullable<BaseInput.Props['onInput']> = (event) => {
     onInput?.(event);
-    if (autoGrow) measure();
+    if (autoGrow && !CSS_SIZED) measure();
   };
 
   // Typed from the Input part: the events it emits say HTMLInputElement even
   // where the rendered element is a textarea.
   const handleKeyDown: NonNullable<BaseInput.Props['onKeyDown']> = (event) => {
     onKeyDown?.(event);
-    if (!onSubmit || event.defaultPrevented) return;
+    if (!onSubmit || event.defaultPrevented || event.key !== 'Enter') return;
     // Both guards are an IME: mid-composition Enter commits the candidate, and
     // Safari reports the committing keystroke as 229 with isComposing already
     // false.
-    const composing = event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229;
-    if (event.key === 'Enter' && !event.shiftKey && !composing) {
-      event.preventDefault();
-      onSubmit(event.currentTarget.value);
-    }
+    if (event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229) return;
+
+    const modifier = event.ctrlKey || event.metaKey;
+    if (mode === 'enter' ? event.shiftKey || modifier : !modifier) return;
+
+    // Before the blank check, so a submit keystroke does not insert a newline
+    // when there is nothing to send.
+    event.preventDefault();
+    const next = event.currentTarget.value;
+    if (next.trim()) onSubmit(next);
   };
 
   return (
     <BaseInput
       render={<textarea ref={ref} rows={rows} />}
       className={cx(styles.textarea, autoGrow && styles.autoGrow, className)}
+      // Labels the return key on a soft keyboard, and only where it sends.
+      enterKeyHint={onSubmit && mode === 'enter' ? 'send' : undefined}
       value={value}
       onInput={handleInput}
       onKeyDown={handleKeyDown}

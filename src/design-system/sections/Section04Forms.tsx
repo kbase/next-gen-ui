@@ -8,13 +8,13 @@ import * as Radio from '../components/Radio';
 import * as Select from '../components/Select';
 import * as Field from '../components/Field';
 import { Textarea } from '../components/Textarea';
+import { PromptInput } from '../components/PromptInput';
 import { Frame } from '../components/Frame';
 import { Separator } from '../components/Separator';
 import { SearchBar } from '../components/SearchBar';
 import { Autocomplete } from '../components/Autocomplete';
 import { CodeBlock } from '../components/CodeBlock';
-import { Play, PaperPlaneRight } from '@phosphor-icons/react';
-import css from './Section04Forms.module.scss';
+import { Play } from '@phosphor-icons/react';
 
 const PROJECTS = [
   'Soil Metagenome Assembly',
@@ -187,68 +187,33 @@ export function Section04Forms() {
 
       <div className={s.sub}>Prompt input</div>
       <p className={s.note}>
-        A layout pattern, not a component: a Frame around a <code>Textarea</code> and its action.
-        For open-ended input &mdash; AI assist, natural language, chat (see appendix E). Type a few
-        lines to see <code>autoGrow</code>; Enter sends and Shift+Enter breaks the line.
+        Open-ended input &mdash; AI assist, natural language, chat (see appendix E). Owns the
+        border, the focus ring, the send button and the error region, so a consumer supplies text
+        and a callback. Type a few lines to see it grow.
       </p>
-      <Frame paddingY={5} paddingX={6} className={css.promptInput}>
-        <Textarea
-          rows={1}
-          autoGrow
-          maxRows={6}
-          value={prompt}
-          onValueChange={setPrompt}
-          onSubmit={sendPrompt}
-          placeholder="Describe the analysis you want to run, or search for data…"
-          aria-label="Prompt"
-          className={css.textarea}
-        />
-        <Button
-          variant="primary"
-          size="sm"
-          aria-label="Run prompt"
-          disabled={!prompt.trim()}
-          onClick={sendPrompt}
-          className={css.send}
-        >
-          <PaperPlaneRight size={14} weight="bold" />
-        </Button>
-      </Frame>
+      <PromptInput
+        label="Prompt"
+        value={prompt}
+        onValueChange={setPrompt}
+        onSubmit={sendPrompt}
+        placeholder="Describe the analysis you want to run, or search for data…"
+        hint="Enter to send · Shift+Enter for a new line"
+      />
       <CodeBlock
         language="tsx"
-        code={`<Frame className={styles.composer}>
-  <Textarea
-    autoGrow
-    maxRows={6}
-    value={prompt}
-    onValueChange={setPrompt}
-    onSubmit={send}
-    className={styles.field}
-  />
-  <Button disabled={!prompt.trim()} onClick={send}>Run</Button>
-</Frame>
+        code={`<PromptInput
+  label="Prompt"
+  value={prompt}
+  onValueChange={setPrompt}
+  onSubmit={send}
+  placeholder="Describe the analysis you want to run…"
+  hint="Enter to send · Shift+Enter for a new line"
+  error={failure}
+/>
 
-/* Doubled: a single class ties with Textarea's own and falls to
-   emit order. Zero the custom properties too, or autoGrow's
-   max-height counts a border and padding that are no longer drawn. */
-.field.field {
-  --textarea-pad-y: 0px;
-  --textarea-border: 0px;
-  padding: 0;
-  border: none;
-}
-
-/* :focus and :disabled are (0,2,0) too, so match them. */
-.field.field:focus,
-.field.field:disabled {
-  box-shadow: none;
-}
-
-/* The field has no border left to light, so the surface shows focus.
-   Keyed on the textarea: a focused Run shows its own ring. */
-.composer:has(textarea:focus) {
-  box-shadow: 0 0 0 3px var(--c-focus);
-}`}
+/* submitOn="modifier" makes Enter a newline and Ctrl/⌘+Enter the send,
+   for long-form prose. A soft keyboard has neither modifier, so it
+   gets that behaviour in both modes and the button is the only send. */`}
       />
 
       <div className={s.sub}>Composed form</div>

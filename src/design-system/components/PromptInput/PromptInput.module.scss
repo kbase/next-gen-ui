@@ -1,0 +1,103 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.surface {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  /* Holds the button at the bottom edge as the field grows. */
+  align-items: end;
+  gap: var(--s-4);
+  transition:
+    border-color var(--t-base),
+    box-shadow var(--t-base);
+
+  /* Keyed on the field rather than :focus-within, so focusing the button does
+     not also draw this. */
+  &:has(textarea:focus) {
+    border-color: var(--c-primary);
+    box-shadow: 0 0 0 3px var(--c-focus);
+  }
+}
+
+/* The class is doubled to outrank Frame's own. */
+.flush.flush {
+  border: none;
+  border-top: 1px solid var(--c-border);
+  border-radius: 0;
+
+  &:has(textarea:focus) {
+    box-shadow: inset 0 0 0 2px var(--c-focus);
+  }
+}
+
+/* The class is doubled to outrank Textarea's own. Its custom properties are
+   zeroed as well, because the autoGrow ceiling is derived from them. */
+.field.field {
+  --textarea-pad-y: 0px;
+  --textarea-border: 0px;
+
+  font-size: var(--fs-6);
+  padding: 0;
+  border: none;
+  background: transparent;
+
+  /* iOS Safari zooms the page when a field under 16px takes focus. */
+  @media (pointer: coarse) {
+    font-size: var(--fs-7);
+  }
+}
+
+/* Textarea's :focus and :disabled rules tie with the doubled class, so they
+   have to be matched by pseudo-class. The focus ring is on .surface. */
+.field.field:focus,
+.field.field:disabled {
+  background: transparent;
+  box-shadow: none;
+}
+
+/* The class is doubled to outrank Button's size class. Equal padding with
+   aspect-ratio gives a square at any icon size. */
+.send.send {
+  padding: var(--s-2);
+  aspect-ratio: 1;
+  justify-content: center;
+  /* Comfortably clear of the 24px minimum in WCAG 2.5.8, and a square that
+     does not change with the icon. */
+  min-width: 32px;
+  min-height: 32px;
+
+  /* On touch this is the only way to submit, so it takes the platform touch
+     target rather than the 24px accessibility minimum. */
+  @media (pointer: coarse) {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+.hint {
+  font-size: var(--fs-3);
+  color: var(--c-ink4);
+}
+
+/* Flush against a container edge, the root has no padding of its own, so the
+   hint takes the surface's. */
+.flush + .hint {
+  padding: 0 var(--s-6) var(--s-5);
+}
+
+/* Read by screen readers, not displayed. Also in Chip and CopyButton; the
+   system has no shared partials yet. */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

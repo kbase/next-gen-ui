@@ -25,11 +25,39 @@ function cardLinks() {
   return screen.queryAllByRole('link', { name: /^Open the .* portal/ });
 }
 
+function cardTitles() {
+  return screen.queryAllByRole('heading', { level: 3 }).map((h) => h.textContent);
+}
+
 describe('portal gallery', () => {
   it('lists every portal by default', async () => {
     mountGallery();
     expect(await screen.findByRole('heading', { level: 1, name: /portal gallery/i })).toBeVisible();
+    expect(cardTitles()).toHaveLength(7);
+  });
+
+  // An undeployed portal has nothing to open, so it must not be a link.
+  it('does not link a portal that is not deployed yet', async () => {
+    mountGallery();
+    await screen.findByRole('heading', { level: 1, name: /portal gallery/i });
+
     expect(cardLinks()).toHaveLength(5);
+    expect(screen.queryByRole('link', { name: /Open the Phagecast portal/ })).toBeNull();
+    expect(screen.getAllByText(/not yet deployed/i)).toHaveLength(2);
+  });
+
+  // Sources come from each app's registry; an app without one shows nothing
+  // rather than a guess.
+  it('shows a source list only where the app publishes one', async () => {
+    const user = userEvent.setup();
+    mountGallery();
+    await screen.findByRole('heading', { level: 1, name: /portal gallery/i });
+
+    const disclosures = screen.getAllByText(/^Data sources/);
+    expect(disclosures).toHaveLength(6);
+
+    await user.click(disclosures[0]);
+    expect(screen.getByText('GTDB')).toBeVisible();
   });
 
   // Every filter is a facet and every facet is a filter; the specific
@@ -75,7 +103,7 @@ describe('portal gallery', () => {
     expect(cardLinks()).toHaveLength(0);
 
     await user.click(screen.getByRole('button', { name: /clear search and filters/i }));
-    expect(cardLinks()).toHaveLength(5);
+    expect(cardTitles()).toHaveLength(7);
   });
 
   it('filters by tag', async () => {
@@ -84,7 +112,7 @@ describe('portal gallery', () => {
     await screen.findByRole('heading', { level: 1, name: /portal gallery/i });
 
     await user.click(screen.getByRole('radio', { name: 'Genomes' }));
-    expect(cardLinks()).toHaveLength(3);
+    expect(cardTitles()).toHaveLength(5);
   });
 
   it('has no call-to-action buttons', async () => {

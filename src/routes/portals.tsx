@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { Chip, Frame, SearchBar, Select } from '@kbase/design-system';
 import type { ChipColor } from '@kbase/design-system';
@@ -36,23 +36,76 @@ interface Portal {
   facets: PortalFacet[];
   /** Not filterable; rendered as plain text so it reads as prose. */
   topics: string[];
-  credit: string;
+  /** Live data providers. See the note above PORTALS for where these come from. */
+  sources: string[];
   version: string;
   /** ISO 8601: the commit date of this version's tag. */
   updated: string;
   /** Not rendered: the portal discloses its own caveats. */
   status?: string;
+  /** Cleared for release but not yet serving at PORTAL_BASE. */
+  undeployed?: true;
 }
 
-// Only portals cleared for public display belong here; the bundle is public,
-// so an uncleared entry is readable whether or not it is rendered.
-// Order is the `default` sort.
-// Titles, blurbs and versions come from KIND*AI (`plugins/*.json`,
-// `RELEASES.md` v2026.08.11), except where the deployed portal reports a
-// newer version than any release note records -- those come from the
-// running app, which leaves them with no sourceable `updated` date.
-// `credit` is a placeholder: unverified, and needs real values before this
-// is shown outside a demo.
+// ══════════════════════════════════════════════════════════════════════════
+// ADDING OR UPDATING A PORTAL CARD
+//
+// Every field below is copied from somewhere authoritative. None of it is
+// written from memory, and none of it is inferred. Where each comes from:
+//
+//   slug        the app's id -- its repo name under kbaseincubator, its key
+//               in the KIND*AI manifest, and its thumbnail filename.
+//   title       manifest `title`, in the KIND*AI repo at plugins/<slug>.json.
+//   blurb       manifest `description`, condensed. RELEASES.md often carries
+//               detail worth folding in.
+//   facets      chosen from FACETS above. The filter row is derived from
+//               these, so a new facet is only worth adding if it groups more
+//               than one portal.
+//   topics      free text. Not filterable, deliberately.
+//   version     what the DEPLOYED portal prints in its own header at
+//               PORTAL_BASE + slug. Several repos are tagged ahead of what
+//               is live, and this page must say what a visitor gets. For an
+//               undeployed portal, use the newest tag.
+//   updated     the commit date of that version's tag:
+//                 gh api repos/kbaseincubator/<repo>/tags
+//                 gh api repos/kbaseincubator/<repo>/commits/<sha>
+//   undeployed  set while the slug 404s at PORTAL_BASE. Drops the link and
+//               replaces the thumbnail with an empty state.
+//
+// SOURCES
+//
+// The mesh has a ratified machine-readable standard for attribution,
+// OBS-20260812-cite-json-schema. In order of preference:
+//
+//   1. `<app> sources --json` -- the CLI verb each app exposes (genknown,
+//      diaspora, plantterra, fungaljungle, funcjunction).
+//        envelope  { app, version, subject, note, sources: [ … ] }
+//        record    required id · name · homepage · citation
+//                  optional provider · license · use · group
+//   2. src/<app>/sources.py -- the registry behind that verb. Function
+//      Junction's is the reference implementation and states the rule: it is
+//      the single source of truth, and the in-app footer is derived from it
+//      so the two never drift. ENIGMA Strata has one too.
+//   3. docs/DATA_SOURCES.md -- Plant Terra and Fungal Jungle. Read it as an
+//      ingest plan, not an attribution list: only rows marked have/ingested/
+//      SHIPPED are live.
+//   4. The "data sources" disclosure the running portal renders.
+//
+// Credit only what the live app actually draws on. Plant Terra's doc lists
+// JGI Phytozome (embargoed, no redistribution) and TAIR (paywalled); an
+// embargoed source is not a credit. Leave `sources` empty rather than guess.
+//
+// THUMBNAILS
+//
+// public/portal-thumbs/<slug>.webp at 1280x800, captured from the live
+// portal driven to a view with data in it. Cloudflare at gen2.kbase.us
+// challenges browser user-agents and admits tool ones, so a headless
+// browser needs a proxy presenting a tool UA to load the page at all.
+//
+// Only portals cleared for public display belong here: the bundle is public,
+// so an uncleared entry is readable whether or not it is rendered. Array
+// order is the `default` sort.
+// ══════════════════════════════════════════════════════════════════════════
 const PORTALS: readonly Portal[] = [
   {
     slug: 'genknown',
@@ -61,7 +114,22 @@ const PORTALS: readonly Portal[] = [
       'A taxonomic telescope. Search any node of the tree of life for a rank-relative evidence report: measured and predicted physiology, ecology, and metabolite exchange.',
     facets: [FACETS.genomes, FACETS.ecology],
     topics: ['Taxonomy', 'Physiology', 'Metabolite exchange'],
-    credit: 'KBase',
+    sources: [
+      'GTDB',
+      'NCBI Taxonomy',
+      'KBase KE-pangenome',
+      'Fitness Browser (RB-TnSeq)',
+      'BacDive',
+      'KBase carbon-source growth panel',
+      'ENIGMA CORAL growth curves (LBNL)',
+      'GenomeSPOT',
+      'GapMind',
+      'Web of Microbes',
+      'Rhea / ChEBI',
+      'Microbe Atlas',
+      'NMDC',
+      'GOLD',
+    ],
     version: 'v0.1.2',
     updated: '2026-08-11',
     status: 'Tester preview',
@@ -73,7 +141,21 @@ const PORTALS: readonly Portal[] = [
       'A microbial-ecology atlas. Walk compendium → cohort → sample → MAG, linking metagenome observations to physicochemistry, geography, and pangenome-resolved function.',
     facets: [FACETS.ecology, FACETS.environment],
     topics: ['Metagenomics', 'Biogeography', 'Pangenomes'],
-    credit: 'KBase · Microbe Atlas',
+    sources: [
+      'NMDC',
+      'NEON',
+      'EMP',
+      'GROWdb (USGS)',
+      'PlanetMicrobe',
+      'agmicrobiome',
+      'MGnify',
+      'SPIRE',
+      'SMAG',
+      'JGI-GEM',
+      'Tara Oceans',
+      'Microbe Atlas',
+      'KBase KE-pangenome',
+    ],
     version: 'v0.1.4',
     updated: '2026-08-11',
   },
@@ -84,7 +166,21 @@ const PORTALS: readonly Portal[] = [
       'Plant functional genomics with genomes in environmental context — a per-genome dossier spanning comparative genomics, metabolism, variation, and G×E.',
     facets: [FACETS.genomes, FACETS.environment],
     topics: ['Plants', 'Metabolism', 'G×E'],
-    credit: 'JGI Phytozome',
+    sources: [
+      'Ensembl Plants',
+      'UniProt',
+      'InterPro',
+      'GO',
+      'Rhea',
+      'Ensembl plant VCF',
+      'USDA NRCS PLANTS',
+      'USDA NASS QuickStats',
+      'WorldClim',
+      'SoilGrids',
+      'CHELSA',
+      'SSURGO',
+      'GBIF',
+    ],
     version: 'v0.1.3',
     updated: '2026-08-11',
   },
@@ -95,7 +191,27 @@ const PORTALS: readonly Portal[] = [
       'Per-genome fungal functional genomics: CAZyme repertoire crossed with ecological guild, plus model-organism deep dives, structure, and biogeography.',
     facets: [FACETS.genomes, FACETS.ecology, FACETS.proteins],
     topics: ['Fungi', 'CAZymes', 'Structure'],
-    credit: 'JGI MycoCosm · GBIF',
+    sources: [
+      'Ensembl Fungi',
+      'JGI MycoCosm',
+      'SGD',
+      'PomBase',
+      'CGD',
+      'NCBI Datasets / Taxonomy',
+      'GBIF backbone',
+      'CAZy',
+      'dbCAN',
+      'MEROPS',
+      'TCDB',
+      'InterPro',
+      'MIBiG',
+      'antiSMASH-DB',
+      'FunGuild',
+      'AlphaFold DB',
+      'UniProt',
+      'WorldClim v2',
+      'SoilGrids',
+    ],
     version: 'v0.6.0',
     updated: '2026-08-21',
   },
@@ -106,9 +222,65 @@ const PORTALS: readonly Portal[] = [
       'Paste a protein — id, sequence, gene, or name — and get every line of functional evidence converged on one page, scored for novelty and information density.',
     facets: [FACETS.proteins],
     topics: ['Annotation', 'Structure', 'Homologs'],
-    credit: 'KBase',
+    sources: [
+      'UniProtKB',
+      'InterPro',
+      'Reactome',
+      'Rhea',
+      'ModelSEED',
+      'PubChem',
+      'AlphaFold DB',
+      'RCSB PDB',
+      'Foldseek',
+      'ESM-2',
+      'GTDB / NCBI Taxonomy',
+      'KBase KE-pangenome',
+      'GenomeDepot (LBNL)',
+      'DIAMOND DeepClust',
+      'Fitness Browser',
+      'BacDive',
+      'BRENDA',
+      'STRING',
+      'PaperBLAST',
+      'NMDC',
+      'SPIRE / GBIF',
+    ],
     version: 'v0.2.0',
     updated: '2026-08-21',
+  },
+  {
+    slug: 'enigma-strata',
+    title: 'ENIGMA Strata',
+    blurb:
+      'A branded portal over the ENIGMA subsurface lakehouse — geology, hydrology, geochemistry, biogeography, and genomes of the Oak Ridge plume in one cross-linked focus.',
+    facets: [FACETS.environment, FACETS.genomes],
+    topics: ['Subsurface', 'Geochemistry', 'Biogeography'],
+    sources: [
+      'ENIGMA (LBNL)',
+      'CORAL',
+      'GenomeDepot',
+      'Fitness Browser (RB-TnSeq)',
+      'Microbe Atlas',
+      'MGnify',
+      'NMDC',
+      'Web of Microbes',
+      'NOAA GHCN-Daily',
+    ],
+    version: 'v0.4.0',
+    updated: '2026-08-21',
+    undeployed: true,
+  },
+  {
+    slug: 'phagecast',
+    title: 'Phagecast',
+    blurb:
+      'Phage and host genomics over the Phage Foundry tenant — browse genomes and phage–host interactions, with on-demand receptor and host-range prediction.',
+    facets: [FACETS.genomes, FACETS.proteins],
+    topics: ['Phage', 'Host range', 'Receptors'],
+    sources: [],
+    version: 'v0.45.5',
+    updated: '2026-08-23',
+    undeployed: true,
   },
 ];
 
@@ -144,7 +316,7 @@ function haystack(portal: Portal): string {
   return [
     portal.title,
     portal.blurb,
-    portal.credit,
+    ...portal.sources,
     ...portal.facets.map((f) => f.label),
     ...portal.topics,
   ]
@@ -346,28 +518,18 @@ function Gallery() {
 }
 
 function PortalCard({ portal }: { portal: Portal }) {
+  // Nothing to open and nothing to screenshot until it is serving, so the
+  // card is not a link and the thumbnail is replaced by its own state.
+  const Shell = portal.undeployed ? UndeployedShell : DeployedLink;
   return (
-    <a
-      className="portal-card"
-      href={`${PORTAL_BASE}${portal.slug}/`}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label={`Open the ${portal.title} portal (opens in a new tab)`}
-    >
-      <Frame padding={0} className="portal-card__frame">
-        <img
-          className="portal-card__shot"
-          src={`/portal-thumbs/${portal.slug}.webp`}
-          alt={`Screenshot of the ${portal.title} portal`}
-          width={640}
-          height={400}
-          loading="lazy"
-        />
-
+    <Frame padding={0} className="portal-card">
+      <Shell portal={portal}>
         <div className="portal-card__body">
           <div className="portal-card__title-row">
             <h3 className="h3">{portal.title}</h3>
-            <ArrowUpRight size={14} className="portal-card__go" aria-hidden="true" />
+            {!portal.undeployed && (
+              <ArrowUpRight size={14} className="portal-card__go" aria-hidden="true" />
+            )}
           </div>
 
           <p className="portal-card__blurb">{portal.blurb}</p>
@@ -379,18 +541,65 @@ function PortalCard({ portal }: { portal: Portal }) {
           </div>
 
           <p className="portal-card__topics">{portal.topics.join(' · ')}</p>
-
-          <p className="portal-card__credit">{portal.credit}</p>
         </div>
+      </Shell>
 
-        <div className="portal-card__meta">
-          <span className="mono-secondary">{portal.version}</span>
-          <span aria-hidden="true">&middot;</span>
-          <span>Updated {formatUpdated(portal.updated)}</span>
-          <span className="portal-card__open">Open portal</span>
-        </div>
-      </Frame>
+      {portal.sources.length > 0 && (
+        <details className="portal-card__sources">
+          <summary>
+            Data sources <span className="portal-card__count">{portal.sources.length}</span>
+          </summary>
+          <ul>
+            {portal.sources.map((source) => (
+              <li key={source}>{source}</li>
+            ))}
+          </ul>
+          <p className="portal-card__cite">Cite the provider, not just the portal.</p>
+        </details>
+      )}
+
+      <div className="portal-card__meta">
+        <span className="mono-secondary">{portal.version}</span>
+        <span aria-hidden="true">&middot;</span>
+        <span>Updated {formatUpdated(portal.updated)}</span>
+      </div>
+    </Frame>
+  );
+}
+
+function DeployedLink({ portal, children }: { portal: Portal; children: ReactNode }) {
+  return (
+    <a
+      className="portal-card__link"
+      href={`${PORTAL_BASE}${portal.slug}/`}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`Open the ${portal.title} portal (opens in a new tab)`}
+    >
+      <img
+        className="portal-card__shot"
+        src={`/portal-thumbs/${portal.slug}.webp`}
+        alt={`Screenshot of the ${portal.title} portal`}
+        width={640}
+        height={400}
+        loading="lazy"
+      />
+      {children}
     </a>
+  );
+}
+
+function UndeployedShell({ portal, children }: { portal: Portal; children: ReactNode }) {
+  return (
+    <div className="portal-card__link portal-card__link--undeployed">
+      <div className="portal-card__shot portal-card__shot--empty">
+        <span>Not yet deployed</span>
+        <span className="portal-card__empty-note">
+          Cleared for release; {portal.version} is tagged
+        </span>
+      </div>
+      {children}
+    </div>
   );
 }
 

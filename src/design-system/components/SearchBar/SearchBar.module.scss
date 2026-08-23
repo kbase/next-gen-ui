@@ -4,7 +4,7 @@
   gap: var(--s-3);
   border: 1px solid var(--c-border2);
   border-radius: var(--r-full);
-  padding: var(--s-3) var(--s-6);
+  padding: var(--s-2) var(--s-4);
   background: var(--c-surface);
   transition: border-color var(--t-base);
   min-width: 180px;
@@ -27,7 +27,7 @@
 .input {
   all: unset;
   font-family: var(--f-sans);
-  font-size: var(--fs-6);
+  font-size: var(--fs-4);
   color: var(--c-ink);
   flex: 1;
   min-width: 0;

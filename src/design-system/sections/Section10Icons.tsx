@@ -174,11 +174,10 @@ const { icon: Icon, label, color } = STATUS[state];
 
       <div className={s.sub}>Status chips</div>
       <p className={s.note}>
-        Each status has its own icon shape, so the state reads without colour. Green and red are the
-        pair colour-blind readers lose first &mdash; the icon has to carry the meaning, and the
-        colour reinforces it. <code>XCircle</code> for error, not <code>X</code> &mdash; the
-        glossary below is what settles that. Keep a set like this in one map rather than choosing an
-        icon per call site &mdash; see section 06.
+        Each status has its own icon shape, so the state reads without color. Use{' '}
+        <code>XCircle</code> for error and <code>X</code> for close; the glossary below settles
+        cases like that. Keep a set like this in one map rather than choosing an icon per call site
+        &mdash; see section 06.
       </p>
       <div className={s.row}>
         <Chip color="primary" icon={CircleNotch} label="Running" />
@@ -191,7 +190,7 @@ const { icon: Icon, label, color } = STATUS[state];
       <div className={s.sub}>Glossary</div>
       <p className={s.note}>
         One icon per meaning, across the system. Look a meaning up here before choosing an icon: two
-        meanings sharing an icon is how a set stops being readable.
+        meanings sharing an icon makes the whole set unreadable.
       </p>
       <Frame padding={0}>
         <Table compact>
@@ -293,7 +292,7 @@ const { icon: Icon, label, color } = STATUS[state];
                 ['', <Trash size={15} weight="bold" />, 'Delete permanently', 'remove from a list'],
                 ['', <ShareNetwork size={15} weight="bold" />, 'Share, publish', ''],
                 ['\u{1f5c4}', <Archive size={15} weight="bold" />, 'Archive', 'delete'],
-                ['\u2605', <Star size={15} weight="fill" />, 'Favourite', ''],
+                ['\u2605', <Star size={15} weight="fill" />, 'Favorite', ''],
                 ['\uff0b', <Plus size={15} weight="bold" />, 'Add', ''],
                 ['\u270e', <PencilSimple size={15} weight="bold" />, 'Rename, edit', ''],
                 ['\u2935', <ArrowBendDownRight size={15} weight="bold" />, 'Move, file under', ''],
@@ -353,14 +352,15 @@ const { icon: Icon, label, color } = STATUS[state];
       </Frame>
       <div className={s.sub}>Categories</div>
       <p className={s.note}>
-        When colour identifies a kind rather than a state, give each kind its own icon and keep the
+        When color identifies a kind rather than a state, give each kind its own icon and keep the
         pairs in one map, so a new kind cannot arrive without one. Two kinds may share a hue if
         their icons differ; two kinds may not share an icon. Check any set with the deuteranopia
-        filter at the top of this page &mdash; if a distinction disappears, it was never encoded.
+        filter at the top of this page &mdash; a distinction that disappears under it was carried by
+        color alone.
       </p>
 
       <div className={s.sub}>Science</div>
-      <p className={s.note}>Phosphor includes science-relevant icons out of the box.</p>
+      <p className={s.note}>Phosphor includes science-relevant icons.</p>
       <div
         style={{
           display: 'flex',

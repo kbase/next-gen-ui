@@ -8,9 +8,8 @@ export function Section01Tokens() {
       <div className={s.sNum}>01</div>
       <div className={s.sTitle}>Spacing & Layout</div>
       <p className={s.sDesc}>
-        4px grid for spacing, concentric radii for nesting. All CSS custom properties in{' '}
-        <code>tokens.css</code>; no raw pixel values, because that's how 13px and 7px end up in your
-        components.
+        4px grid for spacing, concentric radii for nesting. Both are CSS custom properties in{' '}
+        <code>tokens.css</code>.
       </p>
 
       <div className={s.sub}>Spacing</div>
@@ -37,7 +36,7 @@ export function Section01Tokens() {
         ))}
       </div>
       <p className={s.note}>
-        SCSS: <code>padding: var(--s-5) var(--s-7);</code> -- JSX:{' '}
+        SCSS: <code>padding: var(--s-5) var(--s-7);</code> &mdash; JSX:{' '}
         <code>{`padding: 'var(--s-5) var(--s-7)'`}</code>
       </p>
       <p className={s.note}>
@@ -47,9 +46,9 @@ export function Section01Tokens() {
 
       <p className={s.note}>
         Font sizes are tokens too: <code>--fs-1</code> through <code>--fs-11</code>, plus{' '}
-        <code>--fs-hero</code> for the showcase headline. Sequential index, smallest to largest;
-        rescaling the system is a single-file diff in <code>tokens.css</code>. Roles, CSS classes,
-        and naming rules in §03.
+        <code>--fs-hero</code> for the showcase headline. The index runs smallest to largest, so
+        rescaling the system means editing only <code>tokens.css</code>. Roles, CSS classes, and
+        naming rules in section 03.
       </p>
 
       <div className={s.sub}>Radius</div>
@@ -124,8 +123,7 @@ export function Section01Tokens() {
       </p>
 
       <p className={s.note}>
-        Color palette, ink hierarchy, tint tokens, and CVD rules in §02. Typography scale, CSS
-        classes, and naming conventions in §03.
+        Color palette, ink hierarchy, tint tokens, and CVD rules in section 02.
       </p>
     </div>
   );

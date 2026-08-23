@@ -52,12 +52,11 @@ export function JobsNotificationsAppendix() {
       <div className={s.num}>B</div>
       <div className={s.title}>Jobs & Notifications</div>
       <p className={s.desc}>
-        Jobs are active: user-initiated, with progress. Notifications are passive: system events, no
-        progress bar.
+        Not a component. Apps compose JobPanel, NotificationFeed, and existing primitives for their
+        context.
       </p>
       <p className={s.note}>
-        Not components to copy. It's a composition recipe: apps arrange JobPanel, NotificationFeed,
-        and existing primitives for their context.
+        Jobs are user-initiated and report progress. Notifications are system events and do not.
       </p>
 
       <Table>

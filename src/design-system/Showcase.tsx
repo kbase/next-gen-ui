@@ -352,12 +352,12 @@ export function Showcase() {
         <hr className={s.divider} />
         <div className={s.vibesGrid}>
           {[
-            ['Warm, not gray', 'Brown undertones. Cream bg is the brand.'],
-            ['Color + shape + label', 'Never color alone. CVD-safe by design.'],
-            ["Mono is data's voice", 'Refs, sizes, IDs. It earns its place.'],
-            ['Dense, not dramatic', '22px headings. 15px body. Science app.'],
-            ['Glow, not outline', 'Soft primary halo on focus.'],
-            ['Prompt-native', 'First-class text area for search and AI.'],
+            ['Warm, not gray', 'Every neutral has a brown undertone.'],
+            ['Color + shape + label', 'Never color alone. Checked under CVD.'],
+            ['Mono for data', 'Refs, sizes, IDs, code.'],
+            ['Dense, not dramatic', '22px headings. 15px body.'],
+            ['Glow, not outline', 'Focus is a soft primary glow.'],
+            ['Prompt input', 'A Frame around a text area, for search and AI.'],
           ].map(([title, desc]) => (
             <div key={title}>
               <div className="h4" style={{ marginBottom: 'var(--s-1)' }}>

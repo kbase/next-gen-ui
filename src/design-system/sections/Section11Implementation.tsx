@@ -8,8 +8,8 @@ export function Section11Implementation() {
       <div className={s.sNum}>11</div>
       <div className={s.sTitle}>Code theme</div>
       <p className={s.sDesc}>
-        Custom Prism syntax-highlighting theme built from design tokens. Tuned for the warm-neutral
-        cream palette so code samples sit naturally inside the rest of the surface.
+        A Prism syntax-highlighting theme built from the design tokens, so code samples use the same
+        palette as the surface around them.
       </p>
 
       <div className={s.sub}>Python (KBase SDK pattern)</div>

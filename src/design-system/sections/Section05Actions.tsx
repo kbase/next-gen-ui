@@ -20,8 +20,8 @@ export function Section05Actions() {
       <div className={s.sNum}>05</div>
       <div className={s.sTitle}>Actions</div>
       <p className={s.sDesc}>
-        Most actions are quiet. Primary fill is rare, reserved for the one thing the user came to
-        do.
+        Most actions are low-contrast. The primary fill is rare, reserved for the one thing the user
+        came to do.
       </p>
 
       <div className={s.sub}>Button</div>
@@ -56,10 +56,9 @@ export function Section05Actions() {
 <Button variant="danger"><Trash size={14} /> Delete</Button>`}
       />
       <p className={s.note}>
-        Teal is for positive secondary actions (share, publish). Purple is reserved for
-        discovery/exploration affordances; it sits next to primary in weight without competing for
-        "the main action." Danger gets a red border and text, no fill, so it doesn't scream until
-        hovered.
+        Teal is for positive secondary actions such as share and publish. Purple is for discovery
+        and exploration; it carries similar weight to primary without claiming the main action.
+        Danger has a red border and red text but no fill, so it only fills on hover.
       </p>
 
       <div className={s.sub}>Buttons that are links, links that are buttons</div>
@@ -86,18 +85,18 @@ export function Section05Actions() {
 <ButtonLink variant="outline" href="/docs">Documentation</ButtonLink>`}
       />
       <p className={s.note}>
-        The link variant is underlined at rest, not on hover: a link marked only by its colour is
-        not marked at all for a reader who does not see the colour. It is also the one variant that
-        drops the size padding, since it sits beside text rather than in a box of its own. Its label
-        will not wrap, so it sits beside a paragraph rather than inside one &mdash; use the{' '}
+        The link variant is underlined at rest, not on hover: a link marked only by its color is not
+        marked at all for a reader who does not see the color. It is also the one variant that drops
+        the size padding, since it appears beside text rather than in a box of its own. Its label
+        does not wrap, so keep it next to a paragraph rather than inside one &mdash; use the{' '}
         <code>.link</code> utility on a plain <code>&lt;a&gt;</code> for links in prose.
       </p>
 
       <div className={s.sub}>Sizes</div>
       <p className={s.note}>
-        Three sizes: <code>md</code> (default), <code>sm</code>, and <code>xs</code>. Drop to{' '}
-        <code>sm</code> in toolbars and table rows; reach for <code>xs</code> in dense filter bars
-        and inline metadata. Sizing is orthogonal to variant.
+        Three sizes: <code>md</code> (default), <code>sm</code>, and <code>xs</code>. Use{' '}
+        <code>sm</code> in toolbars and table rows, <code>xs</code> in dense filter bars and inline
+        metadata. Size and variant are independent.
       </p>
       <div className={s.row} style={{ marginBottom: 'var(--s-7)', alignItems: 'center' }}>
         <Button size="md" variant="primary">
@@ -138,7 +137,7 @@ export function Section05Actions() {
 
       <div className={s.sub}>Copy button</div>
       <p className={s.note}>
-        Writes <code>text</code> to the clipboard and confirms it. The component owns the whole
+        Writes <code>text</code> to the clipboard and confirms it. The component handles the whole
         confirmation: the icon, how long it shows, and the announcement. It uses{' '}
         <code>copy-to-clipboard</code>, because <code>navigator.clipboard</code> does not exist on
         insecure origins &mdash; including any dev server reached over http.
@@ -165,10 +164,10 @@ export function Section05Actions() {
       />
       <p className={s.note}>
         The icon is <code>aria-hidden</code>, so the result is also announced in a polite live
-        region. A failed copy shows <code>XCircle</code> and says so &mdash; silence is
-        indistinguishable from a dead button. <code>label</code> is required, because a button is
-        operable and always needs a name; <code>iconOnly</code> hides the words and keeps it. Takes
-        Button's <code>variant</code>, <code>size</code>, and its other props.
+        region. A failed copy shows <code>XCircle</code> and says so, rather than showing nothing.{' '}
+        <code>label</code> is required, because a button is operable and always needs a name;{' '}
+        <code>iconOnly</code> hides the words and keeps it. Takes Button's <code>variant</code>,{' '}
+        <code>size</code>, and its other props.
       </p>
 
       <div className={s.sub}>Segmented control</div>

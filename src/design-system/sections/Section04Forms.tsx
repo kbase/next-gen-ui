@@ -38,8 +38,8 @@ export function Section04Forms() {
       <div className={s.sNum}>04</div>
       <div className={s.sTitle}>Forms</div>
       <p className={s.sDesc}>
-        Thin wrappers over Base UI with KBase styling. See Base UI docs for the full control API;
-        below covers what we add and how controls compose.
+        Thin wrappers over Base UI with KBase styling. Base UI documents the full control API; this
+        section covers the additions and how the controls compose.
       </p>
 
       <div className={s.sub}>Field</div>
@@ -133,14 +133,14 @@ export function Section04Forms() {
         </div>
       </div>
       <p className={s.note}>
-        Disabled controls use dashed border. The border tells you before the cursor does.
+        Disabled controls use a dashed border, so the state is visible before hovering.
       </p>
 
       <div className={s.sub}>SearchBar</div>
       <p className={s.note}>
-        A filter field: it narrows a list someone else is already rendering. It owns no list of its
-        own and picks nothing, so it has no listbox and no active option. A field that owns its own
-        list is an Autocomplete, below.
+        A filter field: it narrows a list that something else renders. It holds no list and selects
+        nothing, so it has no listbox and no active option. For a field with a list of its own, use
+        Autocomplete, below.
       </p>
       <SearchBar
         value=""
@@ -155,11 +155,10 @@ export function Section04Forms() {
 
       <div className={s.sub}>Autocomplete</div>
       <p className={s.note}>
-        For &ldquo;pick an existing one or name a new one&rdquo;. The suggestions narrow as you
-        type, and anything you type is a valid value, which is what separates it from Select, which
-        accepts only what it lists. Screen readers call it a combobox. Use <code>emptyMessage</code>{' '}
-        to say what happens to a value that matches nothing, since an empty list otherwise reads as
-        a rejection.
+        For &ldquo;pick an existing one or name a new one&rdquo;. Any typed value is valid, which is
+        what separates it from Select, which accepts only what it lists. Screen readers call it a
+        combobox. Use <code>emptyMessage</code> to say what happens to a value that matches nothing,
+        since an empty list otherwise reads as a rejection.
       </p>
       <div style={{ maxWidth: 320 }}>
         <Field.Root>
@@ -223,8 +222,8 @@ export function Section04Forms() {
 
       <div className={s.sub}>Composed form</div>
       <p className={s.note}>
-        All controls together inside a Frame. Separator divides groups. Field wraps inputs that need
-        labels.
+        Frame provides the surface, Field the labels, and Separator the group breaks. The controls
+        need no further wrapping.
       </p>
       <Frame padding={8}>
         <div className="h2" style={{ marginBottom: 'var(--s-7)' }}>

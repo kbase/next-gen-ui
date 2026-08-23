@@ -135,8 +135,8 @@ export function Section12Navigation() {
             {treeSelected || 'none'}
           </div>
           <div className="note" style={{ marginTop: 'var(--s-6)' }}>
-            Arrow keys navigate. Right expands, Left collapses. Left-border indent follows KBase
-            nesting norm.
+            Arrow keys navigate. Right expands, Left collapses. Each level is indented with a left
+            border.
           </div>
         </div>
       </div>
@@ -184,7 +184,7 @@ function handleFilter(query: string) {
       />
 
       <div className={s.sub} style={{ marginTop: 'var(--s-9)' }}>
-        Stepper, Horizontal
+        Stepper, horizontal
       </div>
       <Stepper.Root
         steps={[
@@ -198,7 +198,7 @@ function handleFilter(query: string) {
       />
 
       <div className={s.sub} style={{ marginTop: 'var(--s-9)' }}>
-        Stepper, Vertical
+        Stepper, vertical
       </div>
       <Stepper.Root
         steps={[

@@ -23,8 +23,8 @@ export function Section09Layout() {
       <div className={s.sNum}>09</div>
       <div className={s.sTitle}>Structure</div>
       <p className={s.sDesc}>
-        The pieces that frame content: the surface itself, collapsible sections, control strips,
-        user identity, and navigation context.
+        The pieces that frame content: the surface itself, collapsible sections, toolbars, user
+        identity, and navigation context.
       </p>
 
       <div className={s.sub}>Frame</div>
@@ -50,13 +50,13 @@ export function Section09Layout() {
       </div>
       <CodeBlock language="tsx" code={`<Frame accent="primary" padding={7}>…</Frame>`} />
       <p className={s.note}>
-        <code>accent</code> colours the frame's own border, for grouping or categorising. The whole
-        outline reads as one object; a stripe down one edge reads as a marker stuck onto it, which
-        is a different claim. It may carry meaning; it may not carry it <em>alone</em> &mdash; the
-        card must say the same thing in its content, because a reader who does not see the hue sees
-        an ordinary border. That is also why it is a prop on Frame rather than a component of its
-        own: it is decoration that reinforces, not the thing doing the work. For state rather than
-        category, reach for a status Chip in section 06.
+        <code>accent</code> colors the frame's own border, for grouping or categorizing. It colors
+        all four sides rather than a stripe down one edge, so the accent reads as part of the frame
+        instead of a marker attached to it. It may carry meaning; it may not carry it <em>alone</em>{' '}
+        &mdash; the card must say the same thing in its content, because a reader who does not see
+        the hue sees an ordinary border. That is also why it is a prop on Frame rather than a
+        component of its own: it reinforces, it does not do the work. For state rather than
+        category, use a status Chip; see section 06.
       </p>
 
       <div className={s.sub}>Accordion</div>
@@ -105,8 +105,9 @@ export function Section09Layout() {
 
       <div className={s.sub}>Collapsible</div>
       <p className={s.note}>
-        A section whose trigger is a control, not a title. Styled text, in the flow of the copy it
-        expands, no heading. Use Accordion when the trigger titles the section.
+        A section whose trigger is a control, not a title. The trigger is styled text in the flow of
+        the copy it expands, and is not a heading. Use Accordion when the trigger titles the
+        section.
       </p>
       <Frame paddingY={7} paddingX={8}>
         <Collapsible.Root open={showMethod} onOpenChange={setShowMethod}>
@@ -211,8 +212,8 @@ export function Section09Layout() {
       <div className={s.sub}>Shape: circle vs square</div>
       <p className={s.note}>
         Default <code>circle</code> is for people. Use <code>shape="square"</code> for non-person
-        identity: tenants, tools, threads, services. Shape signals "this is not a human"; color
-        stays available as the differentiator.
+        identity: tenants, tools, threads, services. Shape separates person from non-person, which
+        leaves color free to separate one from another.
       </p>
       <div className={s.row} style={{ alignItems: 'center' }}>
         <Avatar shape="square" size={24} initials="KB" color="primary" />
@@ -228,8 +229,7 @@ export function Section09Layout() {
       <p className={s.note}>
         <code>solid</code> (default) is saturated background + white text + sans, for people and
         identity. <code>tint</code> is washed background + tint-contrast text + mono, for data-type
-        abbreviations. TypeBadge is the canonical preset; reach for it before building a new tint
-        Avatar.
+        abbreviations. TypeBadge is the preset for that; use it rather than building a tint Avatar.
       </p>
       <div className={s.row} style={{ alignItems: 'center' }}>
         <Avatar variant="solid" size={32} initials="JD" color="primary" />

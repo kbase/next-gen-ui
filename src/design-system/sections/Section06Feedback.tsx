@@ -51,15 +51,14 @@ export function Section06Feedback({ cvd }: Section06FeedbackProps) {
 
       <div className={s.sub}>Status</div>
       <p className={s.note}>
-        A state is a shape first and a colour second. Green and red are the pair a colour-blind
-        reader loses first, so a bare coloured dot says nothing to them &mdash; the icon carries the
-        meaning and the colour reinforces it. Switch the filter at the top of this page to
-        deuteranopia: the states below still read.
+        The icon carries the state and the color reinforces it. Green and red are the pair a
+        color-blind reader loses first, so a colored dot on its own tells them nothing. Switch the
+        filter at the top of this page to deuteranopia: the states below still read.
       </p>
       <p className={s.note}>
         There is no status component and no list of states, because states belong to whatever is
         being reported on &mdash; a job, a connection, a validation. A status is a <code>Chip</code>
-        : boxed where it is a badge, <code>bare</code> where it sits inline. Keep the states in one
+        : boxed where it is a badge, <code>bare</code> where it is inline. Keep the states in one
         map in your app, so a new one cannot arrive without an icon &mdash; and so the whole set is
         in one place to check that no two share a shape.
       </p>
@@ -86,8 +85,8 @@ const { icon, label, color } = STATUS[state];
       />
       <p className={s.note}>
         Where a row is too tight for the word, add <code>iconOnly</code> &mdash; the name stays. For
-        a running spinner reach for <code>Loader</code> below; it is the only one in the system.
-        Chip's own props are documented in section 07.
+        a running spinner use <code>Loader</code> below; it is the only one in the system. Chip's
+        own props are documented in section 07.
       </p>
 
       <div className={s.sub}>Alert</div>
@@ -185,8 +184,7 @@ const { icon, label, color } = STATUS[state];
 
       <div className={s.sub}>Skeleton</div>
       <p className={s.note}>
-        Three variants: text (default), circular (avatars), rectangular (blocks). Animates shimmer
-        automatically.
+        Three variants: text (default), circular for avatars, rectangular for blocks.
       </p>
       <Frame>
         <div
@@ -215,8 +213,9 @@ const { icon, label, color } = STATUS[state];
       <div className={s.sub}>Loader</div>
       <p className={s.note}>
         The KBase logo, animated. The circles composite where they overlap, so the blend follows the
-        theme. Pin it with <code>blend</code> on a surface that does not — a brand fill, an image.
-        Inline at size 14, standalone at 36+.
+        theme background. On a surface that is not the theme background &mdash; a brand fill, an
+        image &mdash; set <code>blend</code> explicitly. Inline at size 14, standalone at 36 and
+        above.
       </p>
       <div className={s.row}>
         <div className={s.cell} style={{ width: 80, height: 80 }}>

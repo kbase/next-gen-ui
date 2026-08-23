@@ -7,15 +7,13 @@ export function Section03Typography() {
       <div className={s.sNum}>03</div>
       <div className={s.sTitle}>Typography</div>
       <p className={s.sDesc}>
-        Oxygen for reading, Fira Code for data. Mono is data's voice: workspace refs, object IDs,
-        file sizes, code snippets.
+        Oxygen for reading, Fira Code for data: workspace refs, object IDs, file sizes, and code.
       </p>
       <p className={s.note}>
-        Real names (Jane Doe) use byline. Usernames (jdoe) use mono; they're system identifiers.
+        Real names (Jane Doe) use byline. Usernames (jdoe) use mono; they are system identifiers.
         Scientific species and gene names use the <code>italic</code> class (
         <span className="italic">E. coli</span>, <span className="italic">P. trichocarpa</span>).
-        Italics are also fine for occasional emphasis, but the primary use case in KBase is
-        taxonomy.
+        Italics also work for occasional emphasis, but taxonomy is the main use in KBase.
       </p>
 
       <Frame padding={8}>
@@ -267,7 +265,7 @@ export function Section03Typography() {
           </tbody>
         </table>
       </div>
-      <p className={s.note}>Dense, not dramatic. Every size has a job.</p>
+      <p className={s.note}>Pick a role from the table rather than a size.</p>
     </div>
   );
 }

@@ -18,17 +18,17 @@ export function Section07Data() {
       <div className={s.sNum}>07</div>
       <div className={s.sTitle}>Data</div>
       <p className={s.sDesc}>
-        Every KBase type gets a two-letter abbreviation and a color. The abbreviation is the
-        identifier, color is reinforcement. Never rely on color alone.
+        Labels, counts, tables, and charts. Every KBase type has a two-letter abbreviation and a
+        color: the abbreviation is the identifier, the color is reinforcement.
       </p>
 
       <div className={s.sub}>Chip</div>
       <p className={s.note}>
-        A small coloured label. <code>color</code> is required: eight tinted families, plus{' '}
+        A small colored label. <code>color</code> is required: eight tinted families, plus{' '}
         <code>neutral</code> for the state that means <em>no information</em>, which takes no tint
-        because it is not a rung on the severity scale. An icon goes in <code>icon</code> rather
-        alongside <code>label</code>, so the chip knows which part of it is words &mdash; it sizes
-        the icon and hides it from screen readers, which <code>label</code> already covers.
+        because it is not a level of severity. Pass an icon as <code>icon</code> rather than
+        alongside <code>label</code>: the chip then sizes the icon and hides it from screen readers,
+        which <code>label</code> already covers.
       </p>
       <div className={s.row} style={{ marginBottom: 'var(--s-7)' }}>
         <Chip color="primary" label="primary" />
@@ -63,7 +63,7 @@ export function Section07Data() {
 
       <p className={s.note}>
         <code>bare</code> drops the background, border and padding, leaving the icon and text in the
-        chip's colour, for a chip inline in running text or a dense row. A chip is one line box tall
+        chip's color, for a chip inline in running text or a dense row. A chip is one line box tall
         either way, so a column that boxes some rows and not others still lines up.
       </p>
       <div className={s.row} style={{ marginBottom: 'var(--s-7)', alignItems: 'center' }}>
@@ -79,8 +79,8 @@ export function Section07Data() {
       </p>
       <p className={s.note}>
         Leave <code>label</code> off entirely for a chip that is decoration &mdash; one whose
-        meaning the row beside it already carries. It then says nothing, which is what decoration
-        should do; naming it would only make a screen reader read the same thing twice.
+        meaning the row beside it already carries. It is then announced as nothing, which is correct
+        for decoration; naming it would make a screen reader read the same thing twice.
       </p>
       <div className={s.row} style={{ marginBottom: 'var(--s-7)', alignItems: 'center' }}>
         <Chip color="red" label="Degraded" icon={Warning} iconOnly />
@@ -97,8 +97,8 @@ export function Section07Data() {
       />
 
       <p className={s.note}>
-        <code>onDismiss</code> adds an X for active filter tags. It is a real button with its own
-        name, so it sits outside the chip's.
+        <code>onDismiss</code> adds an X for active filter tags. It is a separate button with its
+        own name, outside the chip's label.
       </p>
       <div className={s.row} style={{ marginBottom: 'var(--s-7)' }}>
         <Chip color="primary" onDismiss={() => {}} label="Genome" />
@@ -130,7 +130,10 @@ export function Section07Data() {
             <Td>
               <code>Icon</code>
             </Td>
-            <Td>An icon component. Drawn before the text, sized by the chip, hidden from AT.</Td>
+            <Td>
+              An icon component. Drawn before the text, sized by the chip, hidden from screen
+              readers.
+            </Td>
           </Tr>
           <Tr>
             <Td>
@@ -148,7 +151,7 @@ export function Section07Data() {
             <Td>
               <code>boolean</code>
             </Td>
-            <Td>Drops the box, keeping the colour and the height.</Td>
+            <Td>Drops the box, keeping the color and the height.</Td>
           </Tr>
           <Tr>
             <Td>
@@ -171,8 +174,8 @@ export function Section07Data() {
         </Tbody>
       </Table>
       <p className={s.note}>
-        For status specifically &mdash; which icon, which colour, and why the system ships no list
-        of states &mdash; see section 06.
+        For status specifically &mdash; which icon, which color, and why the system ships no list of
+        states &mdash; see section 06.
       </p>
 
       <div className={s.sub}>Stat</div>
@@ -189,9 +192,8 @@ export function Section07Data() {
       </div>
       <CodeBlock language="tsx" code={`<Stat value={fmtCount(n)} label="turns" />`} />
       <p className={s.note}>
-        <code>muted</code> is for the no-data case. It lightens the weight as well as the colour, so
-        an empty stat is not mistaken for one with a small value. The same stat with and without
-        data:
+        <code>muted</code> is for the no-data case. It lightens the weight as well as the color, so
+        an empty stat is not mistaken for one with a small value.
       </p>
       <div className={s.row} style={{ marginBottom: 'var(--s-7)', alignItems: 'stretch' }}>
         <Stat value="1,284" label="queued asks" />
@@ -200,9 +202,9 @@ export function Section07Data() {
       <CodeBlock language="tsx" code={`<Stat value="—" label="queued asks" muted />`} />
 
       <p className={s.note}>
-        <code>color</code> tints the value, and is reinforcement only. A threshold may colour a
-        stat, but the number must still make sense without the colour. If the verdict itself
-        matters, put it in the label or add a status Chip beside it.
+        <code>color</code> tints the value, and is reinforcement only. A threshold may color a stat,
+        but the number must still make sense without the color. If the verdict itself matters, put
+        it in the label or add a status Chip beside it.
       </p>
       <div className={s.row} style={{ marginBottom: 'var(--s-7)', alignItems: 'stretch' }}>
         <Stat value="94%" label="claims met (48)" color="green" />
@@ -297,9 +299,9 @@ export function Section07Data() {
 
       <div className={s.sub}>Compact density</div>
       <p className={s.note}>
-        Pass <code>compact</code> for a flat-on-flat treatment with smaller type and tighter
-        padding. Use inside cards or panels where the standard table's frame would compete with the
-        surrounding container.
+        Pass <code>compact</code> for smaller type, tighter padding, and no border or radius. Use
+        inside cards or panels where the standard table's frame would repeat the surrounding
+        container's.
       </p>
       <Frame padding={0}>
         <Table compact>
@@ -444,13 +446,13 @@ export function Section07Data() {
         <code>
           {'{'}width, height{'}'}
         </code>{' '}
-        to children via render prop. Use this to size SVG/canvas responsively. Plain ReactNode
-        children also work when you don't need measured dimensions.
+        to children through a render prop. Use this to size SVG or canvas responsively. Plain
+        ReactNode children also work when you do not need measured dimensions.
       </p>
       <p className={s.note}>
         <code>loading</code> shows Skeleton + Loader. <code>error</code> + <code>onRetry</code>{' '}
-        shows an Alert following §06 error patterns. <code>aspectRatio</code> constrains
-        proportions. <code>onExport</code> adds a download button; the handler is yours.
+        shows an Alert following the section 06 error patterns. <code>aspectRatio</code> constrains
+        proportions. <code>onExport</code> adds a download button; you supply the handler.
       </p>
       <p className={s.note}>
         <code>canvasRef</code> exposes the canvas div for D3 or direct DOM work:

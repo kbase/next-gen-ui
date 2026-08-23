@@ -9,35 +9,33 @@ export function Section02Color() {
       <div className={s.sNum}>02</div>
       <div className={s.sTitle}>Color</div>
       <p className={s.sDesc}>
-        Named for what KBase users study. The warm neutral base is the signature.
+        Colors are named after what KBase users study. The neutral base is warm rather than gray.
       </p>
       <p className={s.note}>
         Primary, green, yellow, and red are the four status colors: info, success, warning, error.
-        They're chosen for best separation under deuteranopia and protanopia, but always pair with
-        icon shape too. Toggle the CVD sim in the header to see for yourself.
+        They are chosen for the widest separation under deuteranopia and protanopia. Switch the CVD
+        filter in the page header to check a screen.
       </p>
       <p className={s.note}>
-        Purple, teal, ocean, orange, grellow, and frost are auxiliary. Always pair them with a
-        label, icon, or abbreviation; they collide under color vision deficiency.
+        Purple, teal, ocean, orange, grellow, and frost are auxiliary. They collide under color
+        vision deficiency, so pair them with a label, icon, or abbreviation.
       </p>
       <p className={s.note}>
-        Do not add, remove, or modify colors without re-verifying under both deuteranopia and
-        protanopia. The specific hex values were selected to maintain separation; changing a single
-        hue can break the spread and make two colors indistinguishable.
+        Adding, removing, or changing a color means re-checking the whole palette under both
+        deuteranopia and protanopia. The hex values were picked to hold that separation, and one new
+        hue can close the gap between two others.
       </p>
       <p className={s.note}>
-        <code>c-*</code> is the fill and is the same in both themes, so it is never text. Every
-        color also has a tint system with four tokens. Use <code>bg-*</code> on the page background,{' '}
+        <code>c-*</code> is the solid fill and is the same in both themes, so it is never text.
+        Every color also has four tint tokens: <code>bg-*</code> for the page background,{' '}
         <code>bgw-*</code> inside cards (Frame), <code>bo-*</code> for borders, and{' '}
         <code>ct-*</code> for text that meets WCAG AA 4.5:1 contrast. The <code>bg-*</code> and{' '}
-        <code>bgw-*</code> variants are tuned differently; using <code>bg-*</code> inside a Frame
-        looks washed out.
+        <code>bgw-*</code> variants are tuned differently; <code>bg-*</code> inside a Frame looks
+        washed out.
       </p>
       <p className={s.note}>
-        When color conveys status, always pair it with a unique icon shape. Each status gets its own
-        (CheckCircle for success, XCircle for error, Warning for warning, Clock for queued,
-        CircleNotch for running, Prohibit for canceled, CircleDashed for unknown). Shape is the
-        discriminator, color is reinforcement.
+        When color carries status, pair it with an icon shape unique to that status. Shape is the
+        discriminator, color is reinforcement. Section 06 has the states and their icons.
       </p>
 
       <div className={s.sub}>Full palette</div>
@@ -126,8 +124,8 @@ export function Section02Color() {
       </div>
       <p className={s.note}>
         Not gray. Every neutral has a brown undertone from the logo's earth palette. The warm base
-        lets us spread the semantic colors further apart under CVD without the palette feeling
-        clinical or desaturated to people with full color vision.
+        allows wider spacing between the semantic colors under CVD without the palette reading as
+        desaturated to someone with full color vision.
       </p>
 
       <div className={s.sub}>Tints in use</div>
@@ -144,18 +142,17 @@ export function Section02Color() {
         <Chip color="orange" label="orange" />
       </div>
       <p className={s.note}>
-        Purple marks tutorials, educational content, and special features: anything outside the
-        normal workflow that teaches rather than does.
+        Purple marks tutorials, educational content, and other material outside the normal workflow.
       </p>
       <p className={s.note}>
-        Teal reads as a calm version of green. Use it for completed stepper steps, confirmed states,
-        or passive "done" indicators where green feels like a victory lap.
+        Teal is a quieter green. Use it for completed stepper steps, confirmed states, and other
+        passive "done" indicators where green would overstate the result.
       </p>
       <p className={s.note}>
         Ocean and orange appear primarily in data type badges: ocean for models and derived objects,
-        orange for reads and raw sequencing data. They tie back to the logo's three circles
-        (microbes, plants, communities). Orange has one status use as well &mdash; canceled, which
-        ended without finishing but is nobody's fault, so red would overstate it.
+        orange for reads and raw sequencing data. Both come from the logo's three circles (microbes,
+        plants, communities). Orange has one status use as well &mdash; canceled, where the run
+        stopped without finishing and red would overstate it.
       </p>
 
       <div className={s.sub}>Token reference</div>

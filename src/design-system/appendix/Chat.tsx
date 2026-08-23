@@ -39,12 +39,12 @@ export function ChatAppendix() {
       <div className={s.num}>E</div>
       <div className={s.title}>Chat pattern</div>
       <p className={s.desc}>
-        Multi-participant CRDT chat. Feed layout with colored avatars, message grouping, and
-        prompt-style input.
+        Multi-participant CRDT chat: a feed of messages with colored avatars, grouping by author,
+        and a prompt input.
       </p>
       <p className={s.note}>
-        Right border marks own messages. Consecutive same-author messages group without repeating
-        avatar. Avatar color prop distinguishes participants.
+        A right border marks your own messages. Consecutive messages from the same author group
+        without repeating the avatar. The Avatar color prop distinguishes participants.
       </p>
 
       <div style={{ marginTop: 'var(--s-7)' }}>

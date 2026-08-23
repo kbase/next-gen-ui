@@ -17,8 +17,8 @@ export function ProjectAppendix() {
         cells embed JobPanel. Code cells provide an editor slot.
       </p>
       <p className={s.note}>
-        Code editor (Monaco/CodeMirror) is app-level. The design system provides the chrome;
-        CodeBlock represents the editor slot in this pattern.
+        The editor itself is app-level, Monaco or CodeMirror. The design system provides the chrome
+        around it; CodeBlock stands in for the editor here.
       </p>
 
       <div style={{ marginTop: 'var(--s-7)' }}>

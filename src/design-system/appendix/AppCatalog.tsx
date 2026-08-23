@@ -18,11 +18,11 @@ export function AppCatalogAppendix() {
       <div className={s.num}>C</div>
       <div className={s.title}>App catalog pattern</div>
       <p className={s.desc}>
-        AppCard composes Frame and TypeBadge. Apps arrange cards in a searchable grid or list.
+        AppCard composes Frame and TypeBadge. Apps arrange the cards in a searchable grid or list.
       </p>
       <p className={s.note}>
-        Duplicate input/output types stack visually. Favorite star uses weight-as-state
-        (regular/fill). Entire card is clickable.
+        Duplicate input or output types stack. The favorite star uses weight as state: regular when
+        off, fill when on. The whole card is clickable.
       </p>
 
       <div

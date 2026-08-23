@@ -132,12 +132,12 @@ export function ObjectViewerAppendix() {
       <div className={s.num}>D</div>
       <div className={s.title}>Object viewer pattern</div>
       <p className={s.desc}>
-        Not a component. It's a composition recipe: apps arrange TypeBadge, Avatar, Breadcrumbs,
-        Tabs, and Table for type-aware object display.
+        Not a component. Apps compose TypeBadge, Avatar, Breadcrumbs, Tabs, and Table into a
+        type-aware object view.
       </p>
       <p className={s.note}>
-        Header: TypeBadge + name + version (mono) + owner (Avatar) + timestamp. Body: Tabs with
-        app-provided content. Metadata tab auto-generated from key-value pairs.
+        Tab content comes from the app. The Metadata tab is generated from the key-value pairs
+        passed in.
       </p>
 
       <div style={{ marginTop: 'var(--s-7)' }}>

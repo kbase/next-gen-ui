@@ -54,7 +54,7 @@ export function Section00InContext() {
     <div className={s.section}>
       <div className={s.sNum}>00</div>
       <div className={s.sTitle}>In context</div>
-      <p className={s.sDesc}>How it actually feels.</p>
+      <p className={s.sDesc}>A screen built from the components documented below.</p>
 
       <Frame padding={0} className={css.app}>
         <div className={css.sidebar}>

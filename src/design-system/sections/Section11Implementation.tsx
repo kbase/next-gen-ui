@@ -194,8 +194,33 @@ export const KBChip = styled(Box, {
           <h4>
             Invocation of <code>run_megahit</code>
           </h4>
-          <pre>
-            <code className="language-python">{`au.run_megahit({\n    "read_library_ref": "45221/2/1",\n    "min_contig_len": 500,\n})`}</code>
+          <pre className="language-python">
+            <code className="language-python">
+              <span className="token comment"># staged from the workspace</span>
+              {'\n'}
+              <span className="token keyword">def</span>{' '}
+              <span className="token function">assemble</span>
+              <span className="token punctuation">(</span>ref
+              <span className="token punctuation">)</span>
+              <span className="token punctuation">:</span>
+              {'\n    '}
+              <span className="token keyword">return</span> au
+              <span className="token punctuation">.</span>
+              <span className="token function">run_megahit</span>
+              <span className="token punctuation">(</span>
+              <span className="token punctuation">{'{'}</span>
+              {'\n        '}
+              <span className="token string">"read_library_ref"</span>
+              <span className="token punctuation">:</span> ref
+              <span className="token punctuation">,</span>
+              {'\n        '}
+              <span className="token string">"min_contig_len"</span>
+              <span className="token punctuation">:</span> <span className="token number">500</span>
+              <span className="token punctuation">,</span>
+              {'\n    '}
+              <span className="token punctuation">{'}'}</span>
+              <span className="token punctuation">)</span>
+            </code>
           </pre>
 
           <p>A fence with no language keeps the same chrome:</p>

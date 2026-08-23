@@ -145,6 +145,9 @@
   line-height: inherit;
 }
 
+/* Matching CodeBlock, so a fence in an answer and one in the app agree.
+   prism.css styles `pre[class*='language-']` at the same specificity, and is
+   imported first, so these win the tie. */
 .prose pre {
   font-family: var(--f-mono);
   font-size: var(--fs-4);
@@ -154,7 +157,20 @@
   border-radius: var(--r-lg);
   padding: var(--s-5) var(--s-6);
   overflow-x: auto;
-  color: var(--c-ink);
+  color: var(--c-ink3);
+}
+
+/* A tokenizer puts the language class on the code, where prism sets its own
+   size and leading. Two classes and a child here outrank that, so a highlighted
+   fence and a plain one are the same size. The .token spans inside carry the
+   colours and are left alone. */
+.prose pre > code {
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
 }
 
 /* A block the app replaced with something of its own — a diagram, a chart, an

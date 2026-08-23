@@ -42,11 +42,6 @@
   padding: 0;
   border: none;
   background: transparent;
-
-  /* iOS Safari zooms the page when a field under 16px takes focus. */
-  @media (pointer: coarse) {
-    font-size: var(--fs-7);
-  }
 }
 
 /* Textarea's :focus and :disabled rules tie with the doubled class, so they
@@ -62,12 +57,6 @@
   padding: var(--s-2);
   aspect-ratio: 1;
   justify-content: center;
-
-  /* On touch this is the only way to submit. */
-  @media (pointer: coarse) {
-    min-width: 44px;
-    min-height: 44px;
-  }
 }
 
 .hint {

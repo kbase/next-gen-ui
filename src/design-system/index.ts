@@ -35,6 +35,7 @@ export { Input } from './components/Input';
 export type { InputProps } from './components/Input';
 export { Textarea } from './components/Textarea';
 export type { TextareaProps, SubmitOn } from './components/Textarea';
+export { useSubmitMode, useHardwareKeyboard } from './util/useSubmitMode';
 export { PromptInput } from './components/PromptInput';
 export type { PromptInputProps } from './components/PromptInput';
 export { Checkbox } from './components/Checkbox';

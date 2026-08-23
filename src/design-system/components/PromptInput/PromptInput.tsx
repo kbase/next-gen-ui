@@ -4,8 +4,8 @@ import * as Field from '../Field';
 import { Frame } from '../Frame';
 import { Button } from '../Button';
 import { Alert } from '../Alert';
-import { Textarea, useSubmitMode, type SubmitOn } from '../Textarea';
-import { useMediaQuery } from '../../util/useMediaQuery';
+import { Textarea } from '../Textarea';
+import { useSubmitMode, useHardwareKeyboard, type SubmitOn } from '../../util/useSubmitMode';
 import styles from './PromptInput.module.scss';
 import { cx } from '../../util/cx';
 
@@ -67,11 +67,10 @@ export function PromptInput({
 }: PromptInputProps) {
   const empty = !value.trim();
   const mode = useSubmitMode(submitOn);
-  // Without a fine pointer neither modifier exists, so the gesture the other
-  // two lines describe is unreachable and only the button is left.
-  const finePointer = useMediaQuery('(any-pointer: fine)');
-  const defaultHint = !finePointer
-    ? 'Enter for a new line'
+  // No hint without a hardware keyboard: there is no keystroke to describe,
+  // and the button is the only way to submit.
+  const defaultHint = !useHardwareKeyboard()
+    ? null
     : mode === 'enter'
       ? 'Enter to send · Shift+Enter for a new line'
       : 'Ctrl/⌘+Enter to send · Enter for a new line';

@@ -1,2 +1,2 @@
-export { Textarea, useSubmitMode } from './Textarea';
+export { Textarea } from './Textarea';
 export type { TextareaProps, SubmitOn } from './Textarea';

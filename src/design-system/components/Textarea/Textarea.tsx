@@ -2,24 +2,9 @@ import { useCallback, useLayoutEffect, useRef } from 'react';
 import { Input as BaseInput } from '@base-ui/react/input';
 import styles from './Textarea.module.scss';
 import { cx } from '../../util/cx';
-import { useMediaQuery } from '../../util/useMediaQuery';
+import { useSubmitMode, type SubmitOn } from '../../util/useSubmitMode';
 
-/** Which keystroke fires `onSubmit`. */
-export type SubmitOn = 'enter' | 'modifier';
-
-/**
- * `submitOn`, reduced to what the device can actually reach. A soft keyboard
- * has no Shift+Enter and no Ctrl+Enter — shift there is a mode toggle for the
- * next character, not a held modifier — so Enter has to be the newline and the
- * surrounding button the only way to submit.
- */
-export function useSubmitMode(submitOn: SubmitOn = 'enter'): SubmitOn {
-  // A fine pointer detects a mouse or trackpad, the closest available signal
-  // for a hardware keyboard. Where there is none the button is the only way to
-  // submit; that is the safer error, since the other direction sends an
-  // unfinished message.
-  return useMediaQuery('(any-pointer: fine)') ? submitOn : 'modifier';
-}
+export type { SubmitOn };
 
 /* CSS sizes the field where the property is supported; measure() is the
    fallback. Read once — support does not change within a document. */

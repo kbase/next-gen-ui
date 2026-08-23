@@ -13,16 +13,18 @@
   border-radius: 0;
   background: none;
 
+  /* One step down the type scale and the spacing scale from the standard
+     table, rather than the same values restated. */
   .table {
-    font-size: var(--fs-4);
-  }
-  .th {
-    padding: var(--s-2) var(--s-3);
     font-size: var(--fs-3);
   }
+  .th {
+    padding: var(--s-1) var(--s-3);
+    font-size: var(--fs-2);
+  }
   .td {
-    padding: var(--s-2) var(--s-3);
-    font-size: var(--fs-4);
+    padding: var(--s-1) var(--s-3);
+    font-size: var(--fs-3);
   }
 }
 

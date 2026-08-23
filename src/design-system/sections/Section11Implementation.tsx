@@ -150,8 +150,8 @@ export const KBChip = styled(Box, {
         <code>.md</code>, a description field. Put <code>prose</code> on the wrapper. Every role
         matches a utility in section 03 &mdash; the root is <code>.body</code>, headings are{' '}
         <code>.h1</code>&ndash;<code>.h4</code>, links are <code>.link</code>, inline code is{' '}
-        <code>.mono</code> &mdash; so rendered and hand-written markup agree. Everything Markdown
-        can produce is below.
+        <code>.mono</code> &mdash; so rendered and hand-written markup agree. Every element
+        CommonMark and GFM emit is below.
       </p>
       <Frame>
         <div className="prose">
@@ -159,7 +159,11 @@ export const KBChip = styled(Box, {
           <p>
             N50 rose from 18 kb to <strong>42 kb</strong> after trimming, though <em>coverage</em>{' '}
             fell in two <a href="#prose">repeat regions</a>. Both were flagged by{' '}
-            <code>checkm2 --lowmem</code> and neither is resolved.
+            <code>checkm2 --lowmem</code>
+            <sup>
+              <a href="#fn-1">1</a>
+            </sup>{' '}
+            and neither is resolved. Press <kbd>R</kbd> to re-run.
           </p>
 
           <h2>Method</h2>
@@ -181,15 +185,25 @@ export const KBChip = styled(Box, {
           <h3>Caveats</h3>
           <blockquote>
             <p>Runs before 2026-03 used SPAdes and are not comparable.</p>
+            <blockquote>
+              <p>A nested quote keeps a rule at each level.</p>
+            </blockquote>
             <p>Re-run them before quoting a delta.</p>
           </blockquote>
 
-          <h4>Invocation</h4>
+          <h4>
+            Invocation of <code>run_megahit</code>
+          </h4>
           <pre>
             <code className="language-python">{`au.run_megahit({\n    "read_library_ref": "45221/2/1",\n    "min_contig_len": 500,\n})`}</code>
           </pre>
 
-          <p>A block the app replaced keeps none of that chrome:</p>
+          <p>A fence with no language keeps the same chrome:</p>
+          <pre>
+            <code>{`contigs.fasta  48.2 Mb\nbins/          14 files`}</code>
+          </pre>
+
+          <p>A block the app replaced keeps none of it:</p>
           <pre>
             <div className={s.note} style={{ margin: 0 }}>
               [ a diagram the app rendered in place of the fence ]
@@ -197,45 +211,95 @@ export const KBChip = styled(Box, {
           </pre>
 
           <h4>Read counts</h4>
+          <p>Markdown carries a column&rsquo;s alignment, so the numbers stay on their decimals.</p>
           <table>
             <thead>
               <tr>
                 <th>Stage</th>
-                <th>Reads</th>
-                <th>Pass %</th>
+                <th align="center">Run</th>
+                <th align="right">Reads</th>
+                <th align="right">Pass %</th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td>Raw</td>
-                <td>2,412,004</td>
-                <td>n/a</td>
+                <td align="center">A</td>
+                <td align="right">2,412,004</td>
+                <td align="right">n/a</td>
               </tr>
               <tr>
                 <td>Trimmed</td>
-                <td>2,109,551</td>
-                <td>87.5</td>
+                <td align="center">A</td>
+                <td align="right">2,109,551</td>
+                <td align="right">87.5</td>
               </tr>
               <tr>
                 <td>Aligned</td>
-                <td>1,904,332</td>
-                <td>90.4</td>
+                <td align="center">B</td>
+                <td align="right">1,904,332</td>
+                <td align="right">90.4</td>
               </tr>
             </tbody>
           </table>
 
+          <h5>Outstanding</h5>
+          <ul>
+            <li>
+              <input type="checkbox" checked readOnly /> Re-run the 2026-02 libraries
+            </li>
+            <li>
+              <input type="checkbox" readOnly /> Resolve the two repeat regions
+            </li>
+          </ul>
+
+          <h6>Superseded</h6>
+          <p>
+            <del>Bin with MaxBin2</del> &mdash; replaced by MetaBAT2 in 2026-01.
+            <br />A hard break sits above this line.
+          </p>
+
+          <dl>
+            <dt>N50</dt>
+            <dd>Length at which half the assembly sits in contigs of that size or longer.</dd>
+            <dt>Completeness</dt>
+            <dd>
+              Fraction of expected single-copy markers found, as reported by <code>checkm2</code>.
+            </dd>
+          </dl>
+
+          <details>
+            <summary>Full parameter set</summary>
+            <p>
+              Everything not shown above stayed at its default. Coverage was computed with{' '}
+              <code>samtools depth</code> at CO<sub>2</sub>-corrected depth.
+            </p>
+          </details>
+
           <hr />
-          <p>Figures use the same measure as the text, and scale down rather than overflow it.</p>
+
+          <p>A figure takes the measure of the text and scales down rather than overflowing it.</p>
           <img
             src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='90'%3E%3Crect width='420' height='90' fill='%23d9d4c8'/%3E%3Ctext x='210' y='52' font-family='monospace' font-size='13' text-anchor='middle' fill='%235c554a'%3Ecoverage histogram%3C/text%3E%3C/svg%3E"
             alt="Placeholder coverage histogram"
           />
+
+          <section className="footnotes">
+            <ol>
+              <li id="fn-1">
+                <p>
+                  Run with <code>--lowmem</code> because the node had 64 GB.{' '}
+                  <a href="#prose">&#8617;</a>
+                </p>
+              </li>
+            </ol>
+          </section>
         </div>
       </Frame>
       <CodeBlock language="tsx" code={`<div className="prose">{renderMarkdown(text)}</div>`} />
       <p className={s.note}>
-        Highlighting is the app's, not the system's: colouring a fence means running a tokenizer
-        over it. The theme above ships the colours for the spans a tokenizer produces, and{' '}
+        Highlighting is the app&rsquo;s, not the system&rsquo;s: colouring a fence means running a
+        tokenizer over it. The theme above ships the colours for the spans a tokenizer produces, and{' '}
         <code>.prose</code> leaves those spans alone. A <code>pre</code> whose child is not a{' '}
         <code>code</code> element is treated as a block the app substituted &mdash; a diagram, a
         chart &mdash; and keeps no chrome of its own.

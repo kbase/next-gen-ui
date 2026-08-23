@@ -18,12 +18,15 @@
   max-width: 68ch;
 }
 
-/* Prose sits inside containers that supply their own padding, so the first
-   and last blocks must not add to it. */
-.prose > :first-child {
+/* Prose sits inside containers that supply their own padding, so the first and
+   last blocks must not add to it. The same holds for a block nested inside a
+   quote, a list item or a cell, whose own edges are the boundary. */
+.prose > :first-child,
+.prose :is(blockquote, li, details, td, th) > :first-child {
   margin-top: 0;
 }
-.prose > :last-child {
+.prose > :last-child,
+.prose :is(blockquote, li, details, td, th) > :last-child {
   margin-bottom: 0;
 }
 
@@ -127,9 +130,12 @@
 /* `:not(pre) >` keeps this off code inside a fenced block, and at (0,1,2)
    it outranks prism's `code[class*='language-']`, which react-markdown puts
    the language class on. */
-.prose :not(pre) > code {
+.prose :not(pre) > code,
+.prose kbd {
   font-family: var(--f-mono);
-  font-size: var(--fs-4);
+  /* Relative, so code inside a heading scales with it rather than shrinking to
+     body size. */
+  font-size: 0.9em;
   background: var(--c-raised);
   border: 1px solid var(--c-border);
   border-radius: var(--r-sm);
@@ -188,6 +194,18 @@
   text-align: start;
 }
 
+/* Markdown carries a column's alignment as an attribute, which any author rule
+   outranks, so it has to be restated. */
+.prose th[align='center'],
+.prose td[align='center'] {
+  text-align: center;
+}
+.prose th[align='right'],
+.prose td[align='right'] {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
 .prose th {
   color: var(--c-ink);
   font-weight: 600;
@@ -209,4 +227,75 @@
   border: none;
   border-top: 1px solid var(--c-border);
   margin-block: var(--s-9);
+}
+
+/* A task list carries its state in a checkbox, so the marker would be a second
+   bullet saying nothing. */
+.prose li:has(> input[type='checkbox']) {
+  list-style: none;
+  margin-inline-start: calc(var(--s-8) * -1);
+  padding-inline-start: var(--s-8);
+}
+
+.prose li > input[type='checkbox'] {
+  margin-inline-end: var(--s-3);
+  accent-color: var(--c-primary);
+}
+
+/* Struck-through text is superseded, not emphasised. */
+.prose del {
+  color: var(--c-ink4);
+}
+
+.prose kbd {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border2);
+  border-bottom-width: 2px;
+  border-radius: var(--r-sm);
+  padding: 0.1em 0.4em;
+}
+
+/* Raw HTML, but common in answers and in served .md. */
+.prose details {
+  margin-block: var(--s-7);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  padding: var(--s-4) var(--s-6);
+}
+
+.prose summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--c-ink);
+}
+
+.prose details[open] > summary {
+  margin-bottom: var(--s-4);
+}
+
+/* Zero line-height keeps a raised or lowered mark from spacing out the line it
+   sits in. Footnote references are the common case. */
+.prose sub,
+.prose sup {
+  font-size: 0.75em;
+  line-height: 0;
+}
+
+/* The footnote list is an aside to the text, not a continuation of it. */
+.prose .footnotes {
+  margin-top: var(--s-9);
+  padding-top: var(--s-6);
+  border-top: 1px solid var(--c-border);
+  font-size: var(--fs-4);
+  color: var(--c-ink3);
+}
+
+.prose dt {
+  font-weight: 600;
+  color: var(--c-ink);
+  margin-top: var(--s-5);
+}
+
+.prose dd {
+  margin-inline-start: var(--s-8);
 }

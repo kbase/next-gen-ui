@@ -371,9 +371,7 @@ function PortalCard({ portal }: { portal: Portal }) {
 
           <div className="portal-card__facets">
             {portal.facets.map((facet) => (
-              <Chip key={facet.label} color={facet.color} onWhite>
-                {facet.label}
-              </Chip>
+              <Chip key={facet.label} color={facet.color} onWhite label={facet.label} />
             ))}
           </div>
 

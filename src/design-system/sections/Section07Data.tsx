@@ -301,7 +301,7 @@ export function Section07Data() {
         padding. Use inside cards or panels where the standard table's frame would compete with the
         surrounding container.
       </p>
-      <Frame paddingY={2} paddingX={3}>
+      <Frame padding={0}>
         <Table compact>
           <Thead>
             <Tr>

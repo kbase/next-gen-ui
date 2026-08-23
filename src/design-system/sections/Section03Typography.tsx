@@ -1,5 +1,6 @@
 import s from './showcase.module.scss';
 import { Frame } from '../components/Frame';
+import { CodeBlock } from '../components/CodeBlock';
 
 export function Section03Typography() {
   return (
@@ -268,6 +269,69 @@ export function Section03Typography() {
         </table>
       </div>
       <p className={s.note}>Dense, not dramatic. Every size has a job.</p>
+
+      <div className={s.sub}>Prose</div>
+      <p className={s.note}>
+        A class, not a component, for markup the app did not write: a rendered answer, a served{' '}
+        <code>.md</code>, a description field. Put <code>prose</code> on the wrapper. Every role
+        matches a utility above &mdash; the root is <code>.body</code>, the headings are{' '}
+        <code>.h1</code>&ndash;<code>.h4</code>, links are <code>.link</code>, inline code is{' '}
+        <code>.mono</code> &mdash; so rendered and hand-written markup agree.
+      </p>
+      <Frame>
+        <div className="prose">
+          <h2>Assembly quality</h2>
+          <p>
+            N50 rose from 18 kb to <strong>42 kb</strong> after trimming. The remaining gaps sit in
+            two <a href="#prose">repeat regions</a>, both flagged by <code>checkm2</code>.
+          </p>
+          <h3>Method</h3>
+          <ul>
+            <li>Trim with fastp, default thresholds</li>
+            <li>
+              Assemble with MEGAHIT
+              <ul>
+                <li>Extended k-mer list</li>
+                <li>Minimum contig length 500</li>
+              </ul>
+            </li>
+          </ul>
+          <blockquote>
+            <p>Runs before 2026-03 used SPAdes and are not comparable.</p>
+          </blockquote>
+          <pre>
+            <code>{`au.run_megahit({\n  "read_library_ref": "45221/2/1",\n  "min_contig_len": 500\n})`}</code>
+          </pre>
+          <table>
+            <thead>
+              <tr>
+                <th>Stage</th>
+                <th>Reads</th>
+                <th>Pass %</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Raw</td>
+                <td>2.4M</td>
+                <td>n/a</td>
+              </tr>
+              <tr>
+                <td>Trimmed</td>
+                <td>2.1M</td>
+                <td>87.5</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </Frame>
+      <CodeBlock language="tsx" code={`<div className="prose">{renderMarkdown(text)}</div>`} />
+      <p className={s.note}>
+        Syntax highlighting is the app's, not the system's: colouring a fenced block means running a
+        tokenizer over it. <code>prism.css</code> ships the colours for the spans a tokenizer
+        produces. A <code>pre</code> whose child is not a <code>code</code> element is treated as a
+        block the app replaced &mdash; a diagram or a chart &mdash; and keeps none of this chrome.
+      </p>
     </div>
   );
 }

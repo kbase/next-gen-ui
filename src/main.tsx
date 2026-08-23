@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import './design-system/fonts.css';
 import './design-system/tokens.css';
 import './design-system/prism.css';
+import './design-system/prose.css';
 import './design-system/utilities.css';
 import './design-system/global.css';
 

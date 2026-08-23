@@ -1,3 +1,8 @@
+.app {
+  display: flex;
+  min-height: 440px;
+}
+
 .sidebar {
   width: 44px;
   border-right: 1px solid var(--c-border);
@@ -10,32 +15,54 @@
   background: var(--c-bg);
 }
 
+.mark {
+  margin-bottom: var(--s-4);
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.spacer {
+  flex: 1;
+}
+
 .mockHeader {
-  padding: var(--s-3) var(--s-7);
+  /* Matches Row's inline padding, so the header and the list share a gutter. */
+  padding: var(--s-3) var(--s-4);
   display: flex;
   align-items: center;
   gap: var(--s-3);
   border-bottom: 1px solid var(--c-border);
 }
 
-.mockRow {
-  padding: var(--s-4) var(--s-7);
+.search {
+  width: 180px;
+  flex-shrink: 0;
+}
+
+.tabBar {
+  padding: 0 var(--s-4);
+  display: flex;
   border-bottom: 1px solid var(--c-border);
-  cursor: pointer;
-
-  &:hover {
-    background: var(--c-raised);
-  }
 }
 
-.mockRowTitle {
-  font-size: var(--fs-6);
-  font-weight: 600;
-  color: var(--c-ink);
+.list {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--c-surface);
 }
 
-.mockRowMeta {
-  font-size: var(--fs-4);
-  color: var(--c-ink4);
-  margin-top: var(--s-1);
+/* The status chip sits after the name on the same baseline. */
+.rowTitle {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-3);
+}
+
+.ws {
+  font-family: var(--f-mono);
 }

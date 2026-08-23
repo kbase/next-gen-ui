@@ -36,14 +36,15 @@ describe('portal gallery', () => {
     expect(cardTitles()).toHaveLength(7);
   });
 
-  // An undeployed portal has nothing to open, so it must not be a link.
-  it('does not link a portal that is not deployed yet', async () => {
+  // A portal without a screenshot differs only in the screenshot: it still
+  // links out like every other card.
+  it('links a portal that has no screenshot yet', async () => {
     mountGallery();
     await screen.findByRole('heading', { level: 1, name: /portal gallery/i });
 
-    expect(cardLinks()).toHaveLength(5);
-    expect(screen.queryByRole('link', { name: /Open the Phagecast portal/ })).toBeNull();
-    expect(screen.getAllByText(/not yet deployed/i)).toHaveLength(2);
+    expect(cardLinks()).toHaveLength(7);
+    expect(screen.getByRole('link', { name: /Open the Phagecast portal/ })).toBeVisible();
+    expect(screen.getAllByText('No screenshot yet')).toHaveLength(2);
   });
 
   // Sources come from each app's registry; an app without one shows nothing
@@ -55,6 +56,7 @@ describe('portal gallery', () => {
 
     const disclosures = screen.getAllByText(/^Data sources/);
     expect(disclosures).toHaveLength(6);
+    expect(cardTitles()).toHaveLength(7);
 
     await user.click(disclosures[0]);
     expect(screen.getByText('GTDB')).toBeVisible();

@@ -1,6 +1,6 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
-import { Chip, Frame, SearchBar, Select } from '@kbase/design-system';
+import { Chip, EmptyState, Frame, SearchBar, Select } from '@kbase/design-system';
 import type { ChipColor } from '@kbase/design-system';
 import { ArrowUpRight } from '@phosphor-icons/react';
 
@@ -43,7 +43,7 @@ interface Portal {
   updated: string;
   /** Not rendered: the portal discloses its own caveats. */
   status?: string;
-  /** Cleared for release but not yet serving at PORTAL_BASE. */
+  /** No screenshot in public/portal-thumbs yet. */
   undeployed?: true;
 }
 
@@ -518,18 +518,33 @@ function Gallery() {
 }
 
 function PortalCard({ portal }: { portal: Portal }) {
-  // Nothing to open and nothing to screenshot until it is serving, so the
-  // card is not a link and the thumbnail is replaced by its own state.
-  const Shell = portal.undeployed ? UndeployedShell : DeployedLink;
   return (
     <Frame padding={0} className="portal-card">
-      <Shell portal={portal}>
+      {/* The link wraps only what should be clickable: a disclosure inside an
+          anchor would be an interactive element nested in another. */}
+      <a
+        className="portal-card__link"
+        href={`${PORTAL_BASE}${portal.slug}/`}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`Open the ${portal.title} portal (opens in a new tab)`}
+      >
+        {portal.undeployed ? (
+          <EmptyState title="No screenshot yet" className="portal-card__shot--empty" />
+        ) : (
+          <img
+            className="portal-card__shot"
+            src={`/portal-thumbs/${portal.slug}.webp`}
+            alt={`Screenshot of the ${portal.title} portal`}
+            width={640}
+            height={400}
+            loading="lazy"
+          />
+        )}
         <div className="portal-card__body">
           <div className="portal-card__title-row">
             <h3 className="h3">{portal.title}</h3>
-            {!portal.undeployed && (
-              <ArrowUpRight size={14} className="portal-card__go" aria-hidden="true" />
-            )}
+            <ArrowUpRight size={14} className="portal-card__go" aria-hidden="true" />
           </div>
 
           <p className="portal-card__blurb">{portal.blurb}</p>
@@ -542,7 +557,7 @@ function PortalCard({ portal }: { portal: Portal }) {
 
           <p className="portal-card__topics">{portal.topics.join(' · ')}</p>
         </div>
-      </Shell>
+      </a>
 
       {portal.sources.length > 0 && (
         <details className="portal-card__sources">
@@ -554,7 +569,6 @@ function PortalCard({ portal }: { portal: Portal }) {
               <li key={source}>{source}</li>
             ))}
           </ul>
-          <p className="portal-card__cite">Cite the provider, not just the portal.</p>
         </details>
       )}
 
@@ -564,42 +578,6 @@ function PortalCard({ portal }: { portal: Portal }) {
         <span>Updated {formatUpdated(portal.updated)}</span>
       </div>
     </Frame>
-  );
-}
-
-function DeployedLink({ portal, children }: { portal: Portal; children: ReactNode }) {
-  return (
-    <a
-      className="portal-card__link"
-      href={`${PORTAL_BASE}${portal.slug}/`}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label={`Open the ${portal.title} portal (opens in a new tab)`}
-    >
-      <img
-        className="portal-card__shot"
-        src={`/portal-thumbs/${portal.slug}.webp`}
-        alt={`Screenshot of the ${portal.title} portal`}
-        width={640}
-        height={400}
-        loading="lazy"
-      />
-      {children}
-    </a>
-  );
-}
-
-function UndeployedShell({ portal, children }: { portal: Portal; children: ReactNode }) {
-  return (
-    <div className="portal-card__link portal-card__link--undeployed">
-      <div className="portal-card__shot portal-card__shot--empty">
-        <span>Not yet deployed</span>
-        <span className="portal-card__empty-note">
-          Cleared for release; {portal.version} is tagged
-        </span>
-      </div>
-      {children}
-    </div>
   );
 }
 

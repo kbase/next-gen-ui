@@ -445,24 +445,9 @@ body,
   cursor: default;
 }
 
-/* Compound selector: the base .portal-card__shot rule is defined later and
-   would otherwise win on source order. */
-.portal-card__shot.portal-card__shot--empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--s-3);
-  background: var(--c-raised);
-  border-bottom: 1px dashed var(--c-border2);
-  color: var(--c-ink4);
-  font-weight: 600;
+.portal-card__shot--empty {
   aspect-ratio: 8 / 5;
-}
-
-.portal-card__empty-note {
-  font-size: var(--fs-2);
-  font-weight: 400;
+  border-bottom: 1px solid var(--c-border);
 }
 
 .portal-card__sources {
@@ -503,12 +488,6 @@ body,
 
 .portal-card__sources li:last-child::after {
   content: '';
-}
-
-.portal-card__cite {
-  padding: 0 var(--s-7) var(--s-6);
-  color: var(--c-ink4);
-  font-size: var(--fs-1);
 }
 
 .portal-card:focus-visible {

@@ -116,6 +116,13 @@ export function PromptInput({
           ))}
       </Frame>
 
+      {/* A control that changes its accessible name is not announced for it,
+          even while focused, so send becoming stop would pass unremarked. Kept
+          out of the button, whose own name has to stay the action. */}
+      <span role="status" className={styles.srOnly}>
+        {busy && !action ? 'Running. Send is now stop.' : ''}
+      </span>
+
       {hintText && <Field.Description className={styles.hint}>{hintText}</Field.Description>}
       {error && <Alert color="red">{error}</Alert>}
     </Field.Root>

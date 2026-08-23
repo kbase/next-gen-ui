@@ -113,6 +113,18 @@ describe('PromptInput', () => {
     );
   });
 
+  it('announces the swap to stop, and only while it is ours to announce', () => {
+    const { rerender } = render(<Harness onStop={vi.fn()} />);
+    const status = screen.getByRole('status');
+    expect(status).toBeEmptyDOMElement();
+
+    rerender(<Harness busy onStop={vi.fn()} />);
+    expect(status).toHaveTextContent('Running. Send is now stop.');
+
+    rerender(<Harness busy action={<button type="button">resume</button>} />);
+    expect(status).toBeEmptyDOMElement();
+  });
+
   it('accepts the next message while busy', async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();

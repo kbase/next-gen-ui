@@ -454,6 +454,8 @@ body,
 
 .portal-card__sources {
   border-top: 1px solid var(--c-border);
+  /* Horizontal only: Accordion supplies its own vertical padding. */
+  padding: 0 var(--s-7);
   font-size: var(--fs-2);
 }
 

@@ -64,13 +64,14 @@ interface Portal {
 //   topics      free text. Not filterable, deliberately.
 //   version     what the DEPLOYED portal prints in its own header at
 //               PORTAL_BASE + slug. Several repos are tagged ahead of what
-//               is live, and this page must say what a visitor gets. For an
-//               undeployed portal, use the newest tag.
+//               is live, and this page must say what a visitor gets. If it
+//               is not serving yet, use the newest tag.
 //   updated     the commit date of that version's tag:
 //                 gh api repos/kbaseincubator/<repo>/tags
 //                 gh api repos/kbaseincubator/<repo>/commits/<sha>
-//   undeployed  set while the slug 404s at PORTAL_BASE. Drops the link and
-//               replaces the thumbnail with an empty state.
+//   undeployed  set when there is no public/portal-thumbs/<slug>.webp yet.
+//               The ONLY thing it changes is the thumbnail, which becomes an
+//               EmptyState. The card still links out, exactly like any other.
 //
 // SOURCES
 //

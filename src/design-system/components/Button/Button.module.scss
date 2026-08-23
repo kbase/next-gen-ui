@@ -28,12 +28,21 @@
     box-shadow: 0 0 0 3px var(--c-focus);
   }
 
-  &[data-disabled] {
+  /* Two attributes, because there are two kinds of unavailable. `disabled`
+     takes the control out of the tab order, which is right for a permanently
+     dead button and wrong for one whose state the reader is expected to clear
+     — a send button over an empty field. Those set `aria-disabled` and no-op
+     the click. Both have to look the same, or what is announced and what is
+     drawn disagree. */
+  &:is([data-disabled], [aria-disabled='true']) {
     color: var(--c-ink5);
     background: var(--c-raised);
     border-color: var(--c-border);
     cursor: not-allowed;
     box-shadow: none;
+    /* An `aria-disabled` button still takes :active, so the press animation
+       has to be turned off here rather than left to the UA. */
+    transform: none;
   }
 
   svg {
@@ -46,7 +55,7 @@
   background: var(--c-primary);
   color: white;
 
-  &:hover:not([data-disabled]) {
+  &:hover:not([data-disabled], [aria-disabled='true']) {
     background: var(--c-primary-dim);
   }
 }
@@ -55,7 +64,7 @@
   background: var(--c-teal-btn);
   color: white;
 
-  &:hover:not([data-disabled]) {
+  &:hover:not([data-disabled], [aria-disabled='true']) {
     background: var(--c-teal-dim);
   }
 }
@@ -64,7 +73,7 @@
   background: var(--c-purple-btn);
   color: white;
 
-  &:hover:not([data-disabled]) {
+  &:hover:not([data-disabled], [aria-disabled='true']) {
     background: var(--c-purple-dim);
   }
 }
@@ -74,7 +83,7 @@
   color: var(--c-ink2);
   border-color: var(--c-border2);
 
-  &:hover:not([data-disabled]) {
+  &:hover:not([data-disabled], [aria-disabled='true']) {
     background: var(--c-raised);
   }
 }
@@ -83,7 +92,7 @@
   background: transparent;
   color: var(--c-ink3);
 
-  &:hover:not([data-disabled]) {
+  &:hover:not([data-disabled], [aria-disabled='true']) {
     background: var(--c-border);
   }
 }
@@ -93,7 +102,7 @@
   color: var(--ct-red);
   border-color: var(--bo-red);
 
-  &:hover:not([data-disabled]) {
+  &:hover:not([data-disabled], [aria-disabled='true']) {
     background: var(--bg-red);
   }
 }
@@ -117,7 +126,7 @@
 
   /* Thickens rather than recolours, matching the .link utility in
      utilities.css. A shape change reads for everyone; a hue change does not. */
-  &:hover:not([data-disabled]) {
+  &:hover:not([data-disabled], [aria-disabled='true']) {
     text-decoration-thickness: 2px;
   }
 
@@ -126,10 +135,10 @@
     transform: none;
   }
 
-  /* Restates the disabled colour, which .btn[data-disabled] sets at the same
+  /* Restates the disabled colour, which the base rule sets at the same
      specificity and loses to source order. The underline stays: it is the only
      thing marking this as a link, and disabling is not a reason to drop it. */
-  &[data-disabled] {
+  &:is([data-disabled], [aria-disabled='true']) {
     color: var(--c-ink5);
     background: none;
     border-color: transparent;

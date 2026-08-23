@@ -69,7 +69,7 @@ export function PromptInput({
     <Field.Root className={cx(styles.root, className)}>
       <Field.Label className={cx(!labelVisible && styles.srOnly)}>{label}</Field.Label>
 
-      <Frame paddingY={5} paddingX={6} className={cx(styles.surface, flush && styles.flush)}>
+      <Frame paddingY={2} paddingX={4} className={cx(styles.surface, flush && styles.flush)}>
         <Textarea
           rows={1}
           autoGrow

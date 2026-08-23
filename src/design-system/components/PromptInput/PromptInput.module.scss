@@ -39,7 +39,6 @@
   --textarea-pad-y: 0px;
   --textarea-border: 0px;
 
-  font-size: var(--fs-6);
   padding: 0;
   border: none;
   background: transparent;
@@ -63,8 +62,6 @@
   padding: var(--s-2);
   aspect-ratio: 1;
   justify-content: center;
-  min-width: 32px;
-  min-height: 32px;
 
   /* On touch this is the only way to submit. */
   @media (pointer: coarse) {
@@ -80,7 +77,7 @@
 
 /* The root has no padding of its own, so the hint takes the surface's. */
 .flush + .hint {
-  padding: 0 var(--s-6) var(--s-5);
+  padding: 0 var(--s-4) var(--s-3);
 }
 
 /* Read by screen readers, not displayed. Also in Chip and CopyButton; the

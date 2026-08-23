@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import styles from './NotificationFeed.module.scss';
+import { Button } from '../Button';
 import { cx } from '../../util/cx';
 import { Frame } from '../Frame';
 import { Row } from '../Row';
@@ -61,9 +62,9 @@ export function NotificationFeed({
       <div className={styles.header}>
         <span className={styles.headerTitle}>Notifications</span>
         {onClearAll && notifications.length > 0 && (
-          <button type="button" className={styles.clearBtn} onClick={onClearAll}>
+          <Button variant="link" size="sm" onClick={onClearAll}>
             Clear all
-          </button>
+          </Button>
         )}
       </div>
 

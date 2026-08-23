@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Collapsible } from '@base-ui/react/collapsible';
 import { CaretDown, CheckCircle, Info, Warning, XCircle } from '@phosphor-icons/react';
+import { Button } from '../Button';
 import styles from './Alert.module.scss';
 import { cx } from '../../util/cx';
 
@@ -47,7 +48,10 @@ export function Alert({ color, icon, children, trace, actions, role, className }
             <div className={styles.actions}>
               {actions}
               {trace && (
-                <Collapsible.Trigger className={styles.disclose}>
+                <Collapsible.Trigger
+                  render={<Button variant="link" size="sm" />}
+                  className={styles.disclose}
+                >
                   Details
                   <CaretDown size={12} weight="bold" className={styles.chevron} />
                 </Collapsible.Trigger>

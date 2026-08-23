@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { Icon } from '@phosphor-icons/react';
 import styles from './JobPanel.module.scss';
+import { Button } from '../Button';
 import { cx } from '../../util/cx';
 import { Frame } from '../Frame';
 import { Chip } from '../Chip';
@@ -134,19 +135,19 @@ export function JobPanel({
         </span>
         <div className={cx(styles.actions, failed && styles.errorActions)}>
           {cellId && onViewCell && (
-            <button type="button" className={styles.actionBtn} onClick={onViewCell}>
+            <Button variant="link" size="sm" onClick={onViewCell}>
               <ArrowSquareOut size={11} /> View cell
-            </button>
+            </Button>
           )}
           {active && onCancel && (
-            <button type="button" className={styles.actionBtn} onClick={onCancel}>
+            <Button variant="link" size="sm" onClick={onCancel}>
               <X size={11} /> Cancel
-            </button>
+            </Button>
           )}
           {failed && onRetry && (
-            <button type="button" className={styles.actionBtn} onClick={onRetry}>
+            <Button variant="link" size="sm" onClick={onRetry}>
               <ArrowCounterClockwise size={11} /> Retry
-            </button>
+            </Button>
           )}
         </div>
       </div>

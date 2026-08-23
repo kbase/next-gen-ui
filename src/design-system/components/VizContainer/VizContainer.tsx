@@ -4,6 +4,7 @@ import { cx } from '../../util/cx';
 import { Frame } from '../Frame';
 import { Loader } from '../Loader';
 import { Alert } from '../Alert';
+import { Button } from '../Button';
 import { Skeleton } from '../Skeleton';
 import { XCircle, ArrowCounterClockwise, DownloadSimple } from '@phosphor-icons/react';
 
@@ -124,9 +125,9 @@ export function VizContainer({
               icon={<XCircle size={14} weight="bold" />}
               actions={
                 onRetry ? (
-                  <button type="button" onClick={onRetry}>
+                  <Button variant="link" size="sm" onClick={onRetry}>
                     <ArrowCounterClockwise size={12} /> Retry
-                  </button>
+                  </Button>
                 ) : undefined
               }
             >

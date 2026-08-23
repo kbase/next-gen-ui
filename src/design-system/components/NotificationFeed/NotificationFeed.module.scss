@@ -18,25 +18,6 @@
   color: var(--c-ink);
 }
 
-.clearBtn {
-  all: unset;
-  font-family: var(--f-sans);
-  font-size: var(--fs-4);
-  font-weight: 600;
-  color: var(--c-ink4);
-  cursor: pointer;
-
-  &:hover {
-    color: var(--c-ink);
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--c-focus);
-    border-radius: var(--r-sm);
-  }
-}
-
 .groupLabel {
   font-family: var(--f-mono);
   font-size: var(--fs-3);

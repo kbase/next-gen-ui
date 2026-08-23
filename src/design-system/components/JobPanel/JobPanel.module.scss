@@ -123,40 +123,10 @@
   gap: var(--s-6);
 }
 
-.actionBtn {
-  all: unset;
-  font-family: var(--f-sans);
-  font-size: var(--fs-4);
-  font-weight: 600;
-  color: var(--c-ink3);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-2);
-
-  svg {
-    display: block;
-    flex-shrink: 0;
-  }
-  &:hover {
-    color: var(--c-ink);
-  }
-
-  .errorActions & {
-    color: var(--ct-red);
-    text-decoration: underline;
-    text-underline-offset: 2px;
-
-    &:hover {
-      text-decoration-thickness: 2px;
-    }
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--c-focus);
-    border-radius: var(--r-sm);
-  }
+/* Two classes so this outranks Button's own `.btn.link`. Only the colour is
+   set; the treatment is the component's. */
+.actions.errorActions button {
+  color: var(--ct-red);
 }
 
 /* Ink rather than link colour, and no underline. */

@@ -111,9 +111,9 @@ const { icon, label, color } = STATUS[state];
           trace={`subprocess.CalledProcessError: exit status 137`}
           actions={
             <>
-              <button onClick={() => {}}>
+              <Button variant="link" size="sm" onClick={() => {}}>
                 <ArrowCounterClockwise size={12} /> Retry
-              </button>
+              </Button>
             </>
           }
         >
@@ -124,7 +124,9 @@ const { icon, label, color } = STATUS[state];
         language="tsx"
         code={`<Alert color="red" icon={<XCircle size={16} weight="bold" />}
   trace={stackTrace}
-  actions={<><button onClick={retry}><ArrowCounterClockwise size={12} /> Retry</button></>}
+  actions={<Button variant="link" size="sm" onClick={retry}>
+    <ArrowCounterClockwise size={12} /> Retry
+  </Button>}
 >
   <strong>Failed.</strong> Assembly exceeded memory limit.
 </Alert>`}

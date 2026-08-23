@@ -164,10 +164,10 @@ export function Section05Actions() {
       />
       <p className={s.note}>
         The icon is <code>aria-hidden</code>, so the result is also announced in a polite live
-        region. A failed copy shows <code>XCircle</code> and says so, rather than showing nothing.{' '}
-        <code>label</code> is required, because a button is operable and always needs a name;{' '}
-        <code>iconOnly</code> hides the words and keeps it. Takes Button's <code>variant</code>,{' '}
-        <code>size</code>, and its other props.
+        region. A failed copy shows <code>XCircle</code> and says so: silence is indistinguishable
+        from a dead button. <code>label</code> is required, because a button is operable and always
+        needs a name; <code>iconOnly</code> hides the words and keeps it. Takes Button's{' '}
+        <code>variant</code>, <code>size</code>, and its other props.
       </p>
 
       <div className={s.sub}>Segmented control</div>

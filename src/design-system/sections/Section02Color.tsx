@@ -9,7 +9,7 @@ export function Section02Color() {
       <div className={s.sNum}>02</div>
       <div className={s.sTitle}>Color</div>
       <p className={s.sDesc}>
-        Colors are named after what KBase users study. The neutral base is warm rather than gray.
+        Colors are named after what KBase users study. The warm neutral base is the signature.
       </p>
       <p className={s.note}>
         Primary, green, yellow, and red are the four status colors: info, success, warning, error.
@@ -142,7 +142,8 @@ export function Section02Color() {
         <Chip color="orange" label="orange" />
       </div>
       <p className={s.note}>
-        Purple marks tutorials, educational content, and other material outside the normal workflow.
+        Purple marks tutorials, educational content, and other material outside the normal workflow
+        &mdash; anything that teaches rather than does.
       </p>
       <p className={s.note}>
         Teal is a quieter green. Use it for completed stepper steps, confirmed states, and other
@@ -152,7 +153,7 @@ export function Section02Color() {
         Ocean and orange appear primarily in data type badges: ocean for models and derived objects,
         orange for reads and raw sequencing data. Both come from the logo's three circles (microbes,
         plants, communities). Orange has one status use as well &mdash; canceled, where the run
-        stopped without finishing and red would overstate it.
+        stopped without finishing through nobody's fault, so red would overstate it.
       </p>
 
       <div className={s.sub}>Token reference</div>

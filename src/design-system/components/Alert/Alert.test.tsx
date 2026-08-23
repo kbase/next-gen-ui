@@ -5,7 +5,7 @@ import styles from './Alert.module.scss';
 const glyph = (container: HTMLElement) => container.querySelector(`.${styles.icon} svg`);
 
 describe('Alert', () => {
-  it('carries a shape for its colour, so severity is not colour alone', () => {
+  it('carries a shape for its color, so severity is not color alone', () => {
     for (const color of ['green', 'primary', 'yellow', 'red'] as const) {
       const { container, unmount } = render(<Alert color={color}>Message</Alert>);
       expect(glyph(container)).toBeInTheDocument();

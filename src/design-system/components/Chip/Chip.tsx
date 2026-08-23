@@ -24,7 +24,7 @@ export interface ChipProps {
   iconOnly?: boolean;
   /** Use on-white tint when inside a white card/frame. No effect on `neutral`, which has no tint. */
   onWhite?: boolean;
-  /** Drops the box, leaving icon and text in the chip's colour. */
+  /** Drops the box, leaving icon and text in the chip's color. */
   bare?: boolean;
   /** When provided, renders an X dismiss button. */
   onDismiss?: () => void;

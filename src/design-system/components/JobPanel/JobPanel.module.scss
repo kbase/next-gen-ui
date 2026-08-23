@@ -123,13 +123,13 @@
   gap: var(--s-6);
 }
 
-/* Two classes so this outranks Button's own `.btn.link`. Only the colour is
+/* Two classes so this outranks Button's own `.btn.link`. Only the color is
    set; the treatment is the component's. */
 .actions.errorActions button {
   color: var(--ct-red);
 }
 
-/* Ink rather than link colour, and no underline. */
+/* Ink rather than link color, and no underline. */
 .logTrigger {
   width: 100%;
   display: flex;

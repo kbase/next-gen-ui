@@ -7,7 +7,8 @@ export function Section03Typography() {
       <div className={s.sNum}>03</div>
       <div className={s.sTitle}>Typography</div>
       <p className={s.sDesc}>
-        Oxygen for reading, Fira Code for data: workspace refs, object IDs, file sizes, and code.
+        Oxygen for reading, Fira Code for data. Mono is data's voice: workspace refs, object IDs,
+        file sizes, and code.
       </p>
       <p className={s.note}>
         Real names (Jane Doe) use byline. Usernames (jdoe) use mono; they are system identifiers.
@@ -265,7 +266,7 @@ export function Section03Typography() {
           </tbody>
         </table>
       </div>
-      <p className={s.note}>Pick a role from the table rather than a size.</p>
+      <p className={s.note}>Every size has a job &mdash; pick a role from the table, not a size.</p>
     </div>
   );
 }

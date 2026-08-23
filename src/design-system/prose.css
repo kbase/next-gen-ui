@@ -163,7 +163,7 @@
 /* A tokenizer puts the language class on the code, where prism sets its own
    size and leading. Two classes and a child here outrank that, so a highlighted
    fence and a plain one are the same size. The .token spans inside carry the
-   colours and are left alone. */
+   colors and are left alone. */
 .prose pre > code {
   font-size: inherit;
   line-height: inherit;

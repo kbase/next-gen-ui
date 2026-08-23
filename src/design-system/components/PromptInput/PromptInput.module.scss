@@ -30,7 +30,7 @@
 
   &:has(textarea:focus) {
     /* The inset ring marks focus. The top border is the seam against whatever
-       sits above, not this field's own edge, so it holds its colour. */
+       sits above, not this field's own edge, so it holds its color. */
     border-color: var(--c-border);
     box-shadow: inset 0 0 0 2px var(--c-focus);
   }

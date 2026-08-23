@@ -9,7 +9,8 @@ export function Section01Tokens() {
       <div className={s.sTitle}>Spacing & Layout</div>
       <p className={s.sDesc}>
         4px grid for spacing, concentric radii for nesting. Both are CSS custom properties in{' '}
-        <code>tokens.css</code>.
+        <code>tokens.css</code>; no raw pixel values, because that is how 13px and 7px end up in
+        your components.
       </p>
 
       <div className={s.sub}>Spacing</div>
@@ -123,7 +124,8 @@ export function Section01Tokens() {
       </p>
 
       <p className={s.note}>
-        Color palette, ink hierarchy, tint tokens, and CVD rules in section 02.
+        Color palette, ink hierarchy, tint tokens, and CVD rules in section 02. Typography scale,
+        CSS classes, and naming conventions in section 03.
       </p>
     </div>
   );

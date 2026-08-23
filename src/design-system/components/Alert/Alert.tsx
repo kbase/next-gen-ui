@@ -7,7 +7,7 @@ import { cx } from '../../util/cx';
 
 export type AlertColor = 'green' | 'primary' | 'yellow' | 'red';
 
-/* Severity is never colour alone, so each colour carries a shape by default.
+/* Severity is never color alone, so each color carries a shape by default.
    Pass `icon` for one that says more about the particular alert. */
 const DEFAULT_ICON: Record<AlertColor, ReactNode> = {
   green: <CheckCircle size={16} weight="bold" />,
@@ -18,8 +18,8 @@ const DEFAULT_ICON: Record<AlertColor, ReactNode> = {
 
 export interface AlertProps {
   color: AlertColor;
-  /** Defaults to the colour's own shape. Pass `null` only if a sibling element
-   * already states the severity in something other than colour. */
+  /** Defaults to the color's own shape. Pass `null` only if a sibling element
+   * already states the severity in something other than color. */
   icon?: ReactNode;
   children: ReactNode;
   /** Collapsible detail (stack trace, long message) */

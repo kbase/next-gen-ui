@@ -51,9 +51,10 @@ export function Section06Feedback({ cvd }: Section06FeedbackProps) {
 
       <div className={s.sub}>Status</div>
       <p className={s.note}>
-        The icon carries the state and the color reinforces it. Green and red are the pair a
-        color-blind reader loses first, so a colored dot on its own tells them nothing. Switch the
-        filter at the top of this page to deuteranopia: the states below still read.
+        A state is a shape first and a color second. Green and red are the pair a color-blind reader
+        loses first, so a colored dot on its own tells them nothing: the icon carries the meaning
+        and the color reinforces it. Switch the filter at the top of this page to deuteranopia: the
+        states below still read.
       </p>
       <p className={s.note}>
         There is no status component and no list of states, because states belong to whatever is
@@ -184,7 +185,8 @@ const { icon, label, color } = STATUS[state];
 
       <div className={s.sub}>Skeleton</div>
       <p className={s.note}>
-        Three variants: text (default), circular for avatars, rectangular for blocks.
+        Three variants: text (default), circular for avatars, rectangular for blocks. The shimmer
+        animates on its own.
       </p>
       <Frame>
         <div

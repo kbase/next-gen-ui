@@ -157,7 +157,7 @@ const SECTIONS: { id: string; n: string; label: string }[] = [
   { id: 'sec-08', n: '08', label: 'Overlays' },
   { id: 'sec-09', n: '09', label: 'Structure' },
   { id: 'sec-10', n: '10', label: 'Icons' },
-  { id: 'sec-11', n: '11', label: 'Code theme' },
+  { id: 'sec-11', n: '11', label: 'Code and prose' },
   { id: 'sec-12', n: '12', label: 'Navigation' },
 ];
 
@@ -352,12 +352,12 @@ export function Showcase() {
         <hr className={s.divider} />
         <div className={s.vibesGrid}>
           {[
-            ['Warm, not gray', 'Every neutral has a brown undertone.'],
-            ['Color + shape + label', 'Never color alone. Checked under CVD.'],
-            ['Mono for data', 'Refs, sizes, IDs, code.'],
-            ['Dense, not dramatic', '22px headings. 15px body.'],
+            ['Warm, not gray', 'Brown undertones. The cream ground is the brand.'],
+            ['Color + shape + label', 'Never color alone. CVD-safe by design.'],
+            ["Mono is data's voice", 'Refs, sizes, IDs, code. It earns its place.'],
+            ['Dense, not dramatic', '22px headings. 15px body. Science app.'],
             ['Glow, not outline', 'Focus is a soft primary glow.'],
-            ['Prompt input', 'A Frame around a text area, for search and AI.'],
+            ['Prompt-native', 'A first-class composer for search and AI.'],
           ].map(([title, desc]) => (
             <div key={title}>
               <div className="h4" style={{ marginBottom: 'var(--s-1)' }}>

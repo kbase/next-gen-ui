@@ -217,7 +217,7 @@ export function Section04Forms() {
 
 /* submitOn="modifier" makes Enter a newline and Ctrl/⌘+Enter the send,
    for long-form prose. A soft keyboard has neither modifier, so it
-   gets that behaviour in both modes and the button is the only send. */`}
+   gets that behavior in both modes and the button is the only send. */`}
       />
 
       <div className={s.sub}>Composed form</div>

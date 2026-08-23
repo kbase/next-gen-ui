@@ -113,8 +113,8 @@
   background: none;
   border-color: transparent;
   color: var(--ct-primary);
-  /* Underlined at rest rather than on hover: a link marked only by its colour
-     is invisible to a reader who does not see the colour. */
+  /* Underlined at rest rather than on hover: a link marked only by its color
+     is invisible to a reader who does not see the color. */
   text-decoration: underline;
   text-underline-offset: 2px;
   /* The one variant that overrides the size box: it sits beside text rather
@@ -124,7 +124,7 @@
   border-width: 0;
   letter-spacing: inherit;
 
-  /* Thickens rather than recolours, matching the .link utility in
+  /* Thickens rather than recolors, matching the .link utility in
      utilities.css. A shape change reads for everyone; a hue change does not. */
   &:hover:not([data-disabled], [aria-disabled='true']) {
     text-decoration-thickness: 2px;
@@ -135,7 +135,7 @@
     transform: none;
   }
 
-  /* Restates the disabled colour, which the base rule sets at the same
+  /* Restates the disabled color, which the base rule sets at the same
      specificity and loses to source order. The underline stays: it is the only
      thing marking this as a link, and disabling is not a reason to drop it. */
   &:is([data-disabled], [aria-disabled='true']) {

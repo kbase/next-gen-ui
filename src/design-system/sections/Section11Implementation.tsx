@@ -6,10 +6,11 @@ export function Section11Implementation() {
   return (
     <div className={s.section}>
       <div className={s.sNum}>11</div>
-      <div className={s.sTitle}>Code theme</div>
+      <div className={s.sTitle}>Code and prose</div>
       <p className={s.sDesc}>
-        A Prism syntax-highlighting theme built from the design tokens, so code samples use the same
-        palette as the surface around them.
+        The two places the system styles output rather than components: a Prism theme for
+        highlighted code, and <code>.prose</code> for rendered Markdown. Both are built from the
+        design tokens, so they sit in the same palette as the surface around them.
       </p>
 
       <div className={s.sub}>Python (KBase SDK pattern)</div>
@@ -323,8 +324,8 @@ export const KBChip = styled(Box, {
       </Frame>
       <CodeBlock language="tsx" code={`<div className="prose">{renderMarkdown(text)}</div>`} />
       <p className={s.note}>
-        Highlighting is the app&rsquo;s, not the system&rsquo;s: colouring a fence means running a
-        tokenizer over it. The theme above ships the colours for the spans a tokenizer produces, and{' '}
+        Highlighting is the app&rsquo;s, not the system&rsquo;s: coloring a fence means running a
+        tokenizer over it. The theme above ships the colors for the spans a tokenizer produces, and{' '}
         <code>.prose</code> leaves those spans alone. A <code>pre</code> whose child is not a{' '}
         <code>code</code> element is treated as a block the app substituted &mdash; a diagram, a
         chart &mdash; and keeps no chrome of its own.

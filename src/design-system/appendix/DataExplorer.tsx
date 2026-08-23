@@ -238,8 +238,9 @@ export function DataExplorerAppendix() {
         and filtered views.
       </p>
       <p className={s.note}>
-        On narrow screens the facet panel stacks above the table. Accordion groups collapse by
-        default. Dismissable chips summarize the active filters inline.
+        On narrow screens the facet panel stacks above the table. Accordion groups start open, so
+        the available facets are visible without a click. Dismissable chips summarize the active
+        filters inline.
       </p>
 
       <div className={s.layout}>

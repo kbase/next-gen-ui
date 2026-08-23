@@ -454,44 +454,25 @@ body,
 
 .portal-card__sources {
   border-top: 1px solid var(--c-border);
-  padding: var(--s-5) var(--s-7) var(--s-6);
   font-size: var(--fs-2);
 }
 
-.portal-card__sources-label {
-  color: var(--c-ink3);
-  font-weight: 600;
-}
-
+/* Inline rather than flex items: the names wrap like words, so a separator
+   can never be pushed to the start of a line on its own. */
 .portal-card__sources ul {
   list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--s-2) var(--s-4);
-  margin-top: var(--s-3);
+  margin: 0;
+  padding: 0;
   color: var(--c-ink3);
+  line-height: 1.8;
+}
+
+.portal-card__sources li {
+  display: inline;
 }
 
 .portal-card__sources li::after {
-  content: ' ·';
-  color: var(--c-ink5);
-}
-
-.portal-card__sources li:last-child::after {
-  content: '';
-}
-
-.portal-card__sources ul {
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--s-2) var(--s-4);
-  padding: 0 var(--s-7) var(--s-4);
-  color: var(--c-ink3);
-}
-
-.portal-card__sources li::after {
-  content: ' ·';
+  content: ' · ';
   color: var(--c-ink5);
 }
 

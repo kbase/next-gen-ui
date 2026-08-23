@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
-import { Chip, Collapsible, EmptyState, Frame, SearchBar, Select } from '@kbase/design-system';
+import { Accordion, Chip, EmptyState, Frame, SearchBar, Select } from '@kbase/design-system';
 import type { ChipColor } from '@kbase/design-system';
 import { ArrowUpRight } from '@phosphor-icons/react';
 
@@ -278,7 +278,8 @@ const PORTALS: readonly Portal[] = [
       'Phage and host genomics over the Phage Foundry tenant — browse genomes and phage–host interactions, with on-demand receptor and host-range prediction.',
     facets: [FACETS.genomes, FACETS.proteins],
     topics: ['Phage', 'Host range', 'Receptors'],
-    sources: [],
+    // No sources registry yet; these are from the README and docs/STORAGE.md.
+    sources: ['Phage Foundry (DOE BER)', 'GenomeDepot'],
     version: 'v0.45.5',
     updated: '2026-08-23',
     undeployed: true,
@@ -518,38 +519,19 @@ function Gallery() {
   );
 }
 
-/** Providers shown before the trigger; the rest are behind it. */
-const SOURCE_PREVIEW = 4;
-
 function PortalSources({ sources }: { sources: string[] }) {
-  const [open, setOpen] = useState(false);
-  const rest = sources.slice(SOURCE_PREVIEW);
-
+  // `summary` is the component's slot for a count, and stays on the trigger
+  // in both states.
   return (
-    <Collapsible.Root open={open} onOpenChange={setOpen} className="portal-card__sources">
-      <p className="portal-card__sources-label">Data sources</p>
-      <ul>
-        {sources.slice(0, SOURCE_PREVIEW).map((source) => (
-          <li key={source}>{source}</li>
-        ))}
-      </ul>
-      {rest.length > 0 && (
-        <>
-          {/* Panel immediately after the trigger, so a screen reader reaches
-              the revealed names by moving forward. */}
-          <Collapsible.Trigger>
-            {open ? 'Show fewer' : `Show ${rest.length} more`}
-          </Collapsible.Trigger>
-          <Collapsible.Panel>
-            <ul>
-              {rest.map((source) => (
-                <li key={source}>{source}</li>
-              ))}
-            </ul>
-          </Collapsible.Panel>
-        </>
-      )}
-    </Collapsible.Root>
+    <Accordion.Root className="portal-card__sources">
+      <Accordion.Item value="sources" title="Data sources" summary={sources.length}>
+        <ul>
+          {sources.map((source) => (
+            <li key={source}>{source}</li>
+          ))}
+        </ul>
+      </Accordion.Item>
+    </Accordion.Root>
   );
 }
 

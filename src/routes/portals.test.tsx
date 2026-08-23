@@ -25,8 +25,9 @@ function cardLinks() {
   return screen.queryAllByRole('link', { name: /^Open the .* portal/ });
 }
 
+// Scoped to the card head: Accordion renders its trigger as a heading too.
 function cardTitles() {
-  return screen.queryAllByRole('heading', { level: 3 }).map((h) => h.textContent);
+  return [...document.querySelectorAll('.portal-card__title-row h3')].map((h) => h.textContent);
 }
 
 describe('portal gallery', () => {
@@ -49,19 +50,21 @@ describe('portal gallery', () => {
 
   // Sources come from each app's registry; an app without one shows nothing
   // rather than a guess. Visible on load, not behind a click.
-  it('previews a few sources and reveals the rest', async () => {
+  it("lists a portal's sources behind a counted header", async () => {
     const user = userEvent.setup();
     mountGallery();
     await screen.findByRole('heading', { level: 1, name: /portal gallery/i });
 
-    // The first few providers are on the card; the rest are behind the
-    // trigger. GTDB is genKnown's first, GOLD its last.
-    expect(screen.getByText('GTDB')).toBeVisible();
-    expect(screen.queryByText('GOLD')).toBeNull();
+    // Closed by default; the header carries the count.
+    expect(screen.queryByText('GTDB')).toBeNull();
     expect(cardTitles()).toHaveLength(7);
 
-    await user.click(screen.getByRole('button', { name: /show 10 more/i }));
-    expect(screen.getByText('GOLD')).toBeVisible();
+    const triggers = screen.getAllByRole('button', { name: /data sources/i });
+    expect(triggers).toHaveLength(7);
+    expect(triggers[0]).toHaveAccessibleDescription('14');
+
+    await user.click(triggers[0]);
+    expect(screen.getByText('GTDB')).toBeVisible();
   });
 
   // Every filter is a facet and every facet is a filter; the specific

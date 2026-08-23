@@ -38,8 +38,8 @@ interface Portal {
   topics: string[];
   credit: string;
   version: string;
-  /** ISO 8601. Absent when the deployed version postdates any release note. */
-  updated?: string;
+  /** ISO 8601: the commit date of this version's tag. */
+  updated: string;
   /** Not rendered: the portal discloses its own caveats. */
   status?: string;
 }
@@ -97,6 +97,7 @@ const PORTALS: readonly Portal[] = [
     topics: ['Fungi', 'CAZymes', 'Structure'],
     credit: 'JGI MycoCosm · GBIF',
     version: 'v0.6.0',
+    updated: '2026-08-21',
   },
   {
     slug: 'function-junction',
@@ -107,6 +108,7 @@ const PORTALS: readonly Portal[] = [
     topics: ['Annotation', 'Structure', 'Homologs'],
     credit: 'KBase',
     version: 'v0.2.0',
+    updated: '2026-08-21',
   },
 ];
 
@@ -232,11 +234,8 @@ function Gallery() {
     if (sort === 'name') return [...filtered].sort((a, b) => a.title.localeCompare(b.title));
     // Title tiebreak: every portal shares one release date today.
     if (sort === 'updated') {
-      // Undated portals sort last; title breaks ties, since every dated
-      // portal today shares one release date.
       return [...filtered].sort(
-        (a, b) =>
-          (b.updated ?? '').localeCompare(a.updated ?? '') || a.title.localeCompare(b.title),
+        (a, b) => b.updated.localeCompare(a.updated) || a.title.localeCompare(b.title),
       );
     }
     return filtered;
@@ -386,12 +385,8 @@ function PortalCard({ portal }: { portal: Portal }) {
 
         <div className="portal-card__meta">
           <span className="mono-secondary">{portal.version}</span>
-          {portal.updated && (
-            <>
-              <span aria-hidden="true">&middot;</span>
-              <span>Updated {formatUpdated(portal.updated)}</span>
-            </>
-          )}
+          <span aria-hidden="true">&middot;</span>
+          <span>Updated {formatUpdated(portal.updated)}</span>
           <span className="portal-card__open">Open portal</span>
         </div>
       </Frame>

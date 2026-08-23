@@ -27,9 +27,11 @@ export function Section04Forms() {
   const [prompt, setPrompt] = useState('');
   const [project, setProject] = useState('Soil Carbon Flux');
 
-  // The button is disabled when blank, Enter is not, so the guard lives here.
+  const [running, setRunning] = useState(false);
+
   function sendPrompt() {
-    if (prompt.trim()) setPrompt('');
+    setPrompt('');
+    setRunning(true);
   }
   return (
     <div className={s.section}>
@@ -189,7 +191,7 @@ export function Section04Forms() {
       <p className={s.note}>
         Open-ended input &mdash; AI assist, natural language, chat (see appendix E). Owns the
         border, the focus ring, the send button and the error region, so a consumer supplies text
-        and a callback. Type a few lines to see it grow.
+        and a callback. Type a few lines to see it grow; send to see the button become a stop.
       </p>
       <PromptInput
         label="Prompt"
@@ -198,6 +200,8 @@ export function Section04Forms() {
         onSubmit={sendPrompt}
         placeholder="Describe the analysis you want to run, or search for data…"
         hint="Enter to send · Shift+Enter for a new line"
+        busy={running}
+        onStop={() => setRunning(false)}
       />
       <CodeBlock
         language="tsx"
@@ -209,6 +213,8 @@ export function Section04Forms() {
   placeholder="Describe the analysis you want to run…"
   hint="Enter to send · Shift+Enter for a new line"
   error={failure}
+  busy={running}
+  onStop={interrupt}
 />
 
 /* submitOn="modifier" makes Enter a newline and Ctrl/⌘+Enter the send,

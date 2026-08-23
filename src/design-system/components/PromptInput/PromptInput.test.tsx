@@ -92,6 +92,48 @@ describe('PromptInput', () => {
     expect(onSubmit).toHaveBeenCalledExactlyOnceWith('a\nb');
   });
 
+  it('offers stop instead of send while busy', async () => {
+    const user = userEvent.setup();
+    const onStop = vi.fn();
+    const onSubmit = vi.fn();
+    render(<Harness initial="hello" busy onStop={onStop} onSubmit={onSubmit} />);
+
+    expect(screen.queryByRole('button', { name: 'Send' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Stop' }));
+
+    expect(onStop).toHaveBeenCalledOnce();
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('keeps stop live when the field is blank', () => {
+    render(<Harness busy onStop={vi.fn()} />);
+    expect(screen.getByRole('button', { name: 'Stop' })).not.toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+  });
+
+  it('accepts the next message while busy', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(<Harness busy onStop={vi.fn()} onSubmit={onSubmit} />);
+
+    await user.click(field());
+    await user.keyboard('queue this{Enter}');
+
+    expect(field()).not.toBeDisabled();
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith('queue this');
+  });
+
+  it('lets action replace the button in both states', () => {
+    const { rerender } = render(<Harness action={<button type="button">resume</button>} />);
+    expect(screen.getByRole('button', { name: 'resume' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Send' })).not.toBeInTheDocument();
+
+    rerender(<Harness busy action={<button type="button">resume</button>} />);
+    expect(screen.queryByRole('button', { name: 'Stop' })).not.toBeInTheDocument();
+  });
+
   it('makes Enter a newline with no fine pointer, whatever the mode', async () => {
     setMedia('(any-pointer: fine)', false);
     const user = userEvent.setup();

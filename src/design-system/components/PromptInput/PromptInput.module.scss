@@ -58,19 +58,15 @@
   box-shadow: none;
 }
 
-/* The class is doubled to outrank Button's size class. Equal padding with
-   aspect-ratio gives a square at any icon size. */
+/* The class is doubled to outrank Button's size class. */
 .send.send {
   padding: var(--s-2);
   aspect-ratio: 1;
   justify-content: center;
-  /* Comfortably clear of the 24px minimum in WCAG 2.5.8, and a square that
-     does not change with the icon. */
   min-width: 32px;
   min-height: 32px;
 
-  /* On touch this is the only way to submit, so it takes the platform touch
-     target rather than the 24px accessibility minimum. */
+  /* On touch this is the only way to submit. */
   @media (pointer: coarse) {
     min-width: 44px;
     min-height: 44px;
@@ -82,8 +78,7 @@
   color: var(--c-ink4);
 }
 
-/* Flush against a container edge, the root has no padding of its own, so the
-   hint takes the surface's. */
+/* The root has no padding of its own, so the hint takes the surface's. */
 .flush + .hint {
   padding: 0 var(--s-6) var(--s-5);
 }

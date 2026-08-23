@@ -199,7 +199,6 @@ export function Section04Forms() {
         onValueChange={setPrompt}
         onSubmit={sendPrompt}
         placeholder="Describe the analysis you want to run, or search for data…"
-        hint="Enter to send · Shift+Enter for a new line"
         busy={running}
         onStop={() => setRunning(false)}
       />

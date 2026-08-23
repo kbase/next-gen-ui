@@ -4,7 +4,8 @@ import * as Field from '../Field';
 import { Frame } from '../Frame';
 import { Button } from '../Button';
 import { Alert } from '../Alert';
-import { Textarea, type SubmitOn } from '../Textarea';
+import { Textarea, useSubmitMode, type SubmitOn } from '../Textarea';
+import { useMediaQuery } from '../../util/useMediaQuery';
 import styles from './PromptInput.module.scss';
 import { cx } from '../../util/cx';
 
@@ -17,8 +18,9 @@ export interface PromptInputProps {
   labelVisible?: boolean;
   placeholder?: string;
   /**
-   * A line under the field. Announced when focus arrives, so changing it while
-   * the field is focused is silent.
+   * A line under the field. Defaults to the submit gesture the device can
+   * actually reach. Pass `null` for none. Announced when focus arrives, so
+   * changing it while the field is focused is silent.
    */
   hint?: ReactNode;
   /** Announced when it appears. */
@@ -64,6 +66,16 @@ export function PromptInput({
   className,
 }: PromptInputProps) {
   const empty = !value.trim();
+  const mode = useSubmitMode(submitOn);
+  // Without a fine pointer neither modifier exists, so the gesture the other
+  // two lines describe is unreachable and only the button is left.
+  const finePointer = useMediaQuery('(any-pointer: fine)');
+  const defaultHint = !finePointer
+    ? 'Enter for a new line'
+    : mode === 'enter'
+      ? 'Enter to send · Shift+Enter for a new line'
+      : 'Ctrl/⌘+Enter to send · Enter for a new line';
+  const hintText = hint === undefined ? defaultHint : hint;
 
   return (
     <Field.Root className={cx(styles.root, className)}>
@@ -105,7 +117,7 @@ export function PromptInput({
           ))}
       </Frame>
 
-      {hint && <Field.Description className={styles.hint}>{hint}</Field.Description>}
+      {hintText && <Field.Description className={styles.hint}>{hintText}</Field.Description>}
       {error && <Alert color="red">{error}</Alert>}
     </Field.Root>
   );

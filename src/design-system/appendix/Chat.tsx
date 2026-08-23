@@ -152,7 +152,6 @@ export function ChatAppendix() {
             value={draft}
             onValueChange={setDraft}
             onSubmit={sendDraft}
-            hint="Enter to send · Shift+Enter for a new line"
           />
         </Frame>
       </div>

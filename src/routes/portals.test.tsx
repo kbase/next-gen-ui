@@ -74,7 +74,7 @@ describe('portal gallery', () => {
     expect(screen.queryByRole('radio', { name: 'CAZymes' })).toBeNull();
   });
 
-  it('filters by free-text search across blurbs and credits', async () => {
+  it('filters by free-text search across blurbs and sources', async () => {
     const user = userEvent.setup();
     mountGallery();
     await screen.findByRole('heading', { level: 1, name: /portal gallery/i });
@@ -84,8 +84,8 @@ describe('portal gallery', () => {
     expect(screen.getByRole('link', { name: /Fungal Jungle/ })).toBeVisible();
   });
 
-  // The credit line is searchable, not just subject tags and blurbs.
-  it('matches on the credit line as well as subject', async () => {
+  // The source list is searchable, not just subject tags and blurbs.
+  it('matches on a data source as well as subject', async () => {
     const user = userEvent.setup();
     mountGallery();
     await screen.findByRole('heading', { level: 1, name: /portal gallery/i });
@@ -94,7 +94,7 @@ describe('portal gallery', () => {
     expect(cardLinks()).toHaveLength(2);
   });
 
-  // Clearing has to drop the filter too, or "see all 5" is a false promise.
+  // Clearing has to drop the filter too, or "see all N" is a false promise.
   it('reports when nothing matches, and clears both search and filter', async () => {
     const user = userEvent.setup();
     mountGallery();

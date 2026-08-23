@@ -441,10 +441,6 @@ body,
   flex: 1;
 }
 
-.portal-card__link--undeployed {
-  cursor: default;
-}
-
 .portal-card__shot--empty {
   aspect-ratio: 8 / 5;
   border-bottom: 1px solid var(--c-border);
@@ -555,18 +551,6 @@ body,
   flex-wrap: wrap;
   gap: var(--s-3);
   margin-top: var(--s-6);
-}
-
-/* Plain text, not a chip: these are not filterable. */
-.portal-card__topics {
-  margin-top: var(--s-5);
-  color: var(--c-ink4);
-  font-size: var(--fs-2);
-}
-.portal-card__credit {
-  margin-top: var(--s-4);
-  color: var(--c-ink3);
-  font-size: var(--fs-1);
 }
 
 .portal-card__open {

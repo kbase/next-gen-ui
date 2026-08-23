@@ -446,26 +446,39 @@ body,
   border-bottom: 1px solid var(--c-border);
 }
 
-.portal-card__sources {
-  border-top: 1px solid var(--c-border);
+.portal-card__topics {
+  margin-top: var(--s-5);
+  color: var(--c-ink4);
   font-size: var(--fs-2);
 }
 
-.portal-card__sources > summary {
-  cursor: pointer;
-  padding: var(--s-5) var(--s-7);
+.portal-card__sources {
+  border-top: 1px solid var(--c-border);
+  padding: var(--s-5) var(--s-7) var(--s-6);
+  font-size: var(--fs-2);
+}
+
+.portal-card__sources-label {
   color: var(--c-ink3);
   font-weight: 600;
 }
 
-.portal-card__sources > summary:focus-visible {
-  outline: 2px solid var(--c-focus);
-  outline-offset: -2px;
+.portal-card__sources ul {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2) var(--s-4);
+  margin-top: var(--s-3);
+  color: var(--c-ink3);
 }
 
-.portal-card__count {
-  color: var(--c-ink4);
-  font-weight: 400;
+.portal-card__sources li::after {
+  content: ' ·';
+  color: var(--c-ink5);
+}
+
+.portal-card__sources li:last-child::after {
+  content: '';
 }
 
 .portal-card__sources ul {

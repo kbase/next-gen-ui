@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
-import { Chip, EmptyState, Frame, SearchBar, Select } from '@kbase/design-system';
+import { Chip, Collapsible, EmptyState, Frame, SearchBar, Select } from '@kbase/design-system';
 import type { ChipColor } from '@kbase/design-system';
 import { ArrowUpRight } from '@phosphor-icons/react';
 
@@ -518,6 +518,41 @@ function Gallery() {
   );
 }
 
+/** Providers shown before the trigger; the rest are behind it. */
+const SOURCE_PREVIEW = 4;
+
+function PortalSources({ sources }: { sources: string[] }) {
+  const [open, setOpen] = useState(false);
+  const rest = sources.slice(SOURCE_PREVIEW);
+
+  return (
+    <Collapsible.Root open={open} onOpenChange={setOpen} className="portal-card__sources">
+      <p className="portal-card__sources-label">Data sources</p>
+      <ul>
+        {sources.slice(0, SOURCE_PREVIEW).map((source) => (
+          <li key={source}>{source}</li>
+        ))}
+      </ul>
+      {rest.length > 0 && (
+        <>
+          {/* Panel immediately after the trigger, so a screen reader reaches
+              the revealed names by moving forward. */}
+          <Collapsible.Trigger>
+            {open ? 'Show fewer' : `Show ${rest.length} more`}
+          </Collapsible.Trigger>
+          <Collapsible.Panel>
+            <ul>
+              {rest.map((source) => (
+                <li key={source}>{source}</li>
+              ))}
+            </ul>
+          </Collapsible.Panel>
+        </>
+      )}
+    </Collapsible.Root>
+  );
+}
+
 function PortalCard({ portal }: { portal: Portal }) {
   return (
     <Frame padding={0} className="portal-card">
@@ -560,18 +595,7 @@ function PortalCard({ portal }: { portal: Portal }) {
         </div>
       </a>
 
-      {portal.sources.length > 0 && (
-        <details className="portal-card__sources">
-          <summary>
-            Data sources <span className="portal-card__count">{portal.sources.length}</span>
-          </summary>
-          <ul>
-            {portal.sources.map((source) => (
-              <li key={source}>{source}</li>
-            ))}
-          </ul>
-        </details>
-      )}
+      {portal.sources.length > 0 && <PortalSources sources={portal.sources} />}
 
       <div className="portal-card__meta">
         <span className="mono-secondary">{portal.version}</span>

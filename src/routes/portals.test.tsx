@@ -48,18 +48,20 @@ describe('portal gallery', () => {
   });
 
   // Sources come from each app's registry; an app without one shows nothing
-  // rather than a guess.
-  it('shows a source list only where the app publishes one', async () => {
+  // rather than a guess. Visible on load, not behind a click.
+  it('previews a few sources and reveals the rest', async () => {
     const user = userEvent.setup();
     mountGallery();
     await screen.findByRole('heading', { level: 1, name: /portal gallery/i });
 
-    const disclosures = screen.getAllByText(/^Data sources/);
-    expect(disclosures).toHaveLength(6);
+    // The first few providers are on the card; the rest are behind the
+    // trigger. GTDB is genKnown's first, GOLD its last.
+    expect(screen.getByText('GTDB')).toBeVisible();
+    expect(screen.queryByText('GOLD')).toBeNull();
     expect(cardTitles()).toHaveLength(7);
 
-    await user.click(disclosures[0]);
-    expect(screen.getByText('GTDB')).toBeVisible();
+    await user.click(screen.getByRole('button', { name: /show 10 more/i }));
+    expect(screen.getByText('GOLD')).toBeVisible();
   });
 
   // Every filter is a facet and every facet is a filter; the specific

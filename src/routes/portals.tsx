@@ -29,7 +29,7 @@ const FACETS = {
 } as const satisfies Record<string, PortalFacet>;
 
 interface Portal {
-  /** Also the thumbnail filename: `public/portal-thumbs/<slug>.svg`. */
+  /** Also the thumbnail filename: `public/portal-thumbs/<slug>.webp`. */
   slug: string;
   title: string;
   blurb: string;
@@ -38,8 +38,8 @@ interface Portal {
   topics: string[];
   credit: string;
   version: string;
-  /** ISO 8601. */
-  updated: string;
+  /** ISO 8601. Absent when the deployed version postdates any release note. */
+  updated?: string;
   /** Not rendered: the portal discloses its own caveats. */
   status?: string;
 }
@@ -48,8 +48,11 @@ interface Portal {
 // so an uncleared entry is readable whether or not it is rendered.
 // Order is the `default` sort.
 // Titles, blurbs and versions come from KIND*AI (`plugins/*.json`,
-// `RELEASES.md` v2026.08.11). `credit` does NOT -- it is a placeholder,
-// unverified, and needs real values before this is shown outside a demo.
+// `RELEASES.md` v2026.08.11), except where the deployed portal reports a
+// newer version than any release note records -- those come from the
+// running app, which leaves them with no sourceable `updated` date.
+// `credit` is a placeholder: unverified, and needs real values before this
+// is shown outside a demo.
 const PORTALS: readonly Portal[] = [
   {
     slug: 'genknown',
@@ -93,8 +96,7 @@ const PORTALS: readonly Portal[] = [
     facets: [FACETS.genomes, FACETS.ecology, FACETS.proteins],
     topics: ['Fungi', 'CAZymes', 'Structure'],
     credit: 'JGI MycoCosm · GBIF',
-    version: 'v0.5.1',
-    updated: '2026-08-11',
+    version: 'v0.6.0',
   },
   {
     slug: 'function-junction',
@@ -104,8 +106,7 @@ const PORTALS: readonly Portal[] = [
     facets: [FACETS.proteins],
     topics: ['Annotation', 'Structure', 'Homologs'],
     credit: 'KBase',
-    version: 'v0.1.1',
-    updated: '2026-08-11',
+    version: 'v0.2.0',
   },
 ];
 
@@ -231,8 +232,11 @@ function Gallery() {
     if (sort === 'name') return [...filtered].sort((a, b) => a.title.localeCompare(b.title));
     // Title tiebreak: every portal shares one release date today.
     if (sort === 'updated') {
+      // Undated portals sort last; title breaks ties, since every dated
+      // portal today shares one release date.
       return [...filtered].sort(
-        (a, b) => b.updated.localeCompare(a.updated) || a.title.localeCompare(b.title),
+        (a, b) =>
+          (b.updated ?? '').localeCompare(a.updated ?? '') || a.title.localeCompare(b.title),
       );
     }
     return filtered;
@@ -354,7 +358,7 @@ function PortalCard({ portal }: { portal: Portal }) {
       <Frame padding={0} className="portal-card__frame">
         <img
           className="portal-card__shot"
-          src={`/portal-thumbs/${portal.slug}.svg`}
+          src={`/portal-thumbs/${portal.slug}.webp`}
           alt={`Screenshot of the ${portal.title} portal`}
           width={640}
           height={400}
@@ -382,8 +386,12 @@ function PortalCard({ portal }: { portal: Portal }) {
 
         <div className="portal-card__meta">
           <span className="mono-secondary">{portal.version}</span>
-          <span aria-hidden="true">&middot;</span>
-          <span>Updated {formatUpdated(portal.updated)}</span>
+          {portal.updated && (
+            <>
+              <span aria-hidden="true">&middot;</span>
+              <span>Updated {formatUpdated(portal.updated)}</span>
+            </>
+          )}
           <span className="portal-card__open">Open portal</span>
         </div>
       </Frame>

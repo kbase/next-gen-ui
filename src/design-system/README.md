@@ -34,7 +34,7 @@ import '@kbase/design-system/fonts.css';
 component styles in correct order. `fonts.css` is separate — see
 [Fonts](#fonts). Granular entries are available for opt-in:
 `components.css`, `global.css`,
-`fonts.css`, `prism.css`, `utilities.css`, `tokens.css`. See
+`fonts.css`, `prism.css`, `prose.css`, `utilities.css`, `tokens.css`. See
 [Layering](#layering).
 
 ---
@@ -116,6 +116,7 @@ src/design-system/
   components/<Name>/        Component.tsx, Component.module.scss, index.ts
   fonts.css                 Optional @font-face loading. Not in style.css.
   prism.css                 Syntax theme for CodeBlock.
+  prose.css                 .prose: the elements a Markdown renderer emits.
   utilities.css             Type utility classes: .h1, .body, .link, …
   tokens.css                The custom properties.
   global.css                Element resets and globals.
@@ -158,6 +159,7 @@ Output: `dist-design-system/`.
 | `global.css`                 | Element resets, mirrored from `src/design-system/global.css`.                |
 | `tokens.css`                 | The custom properties.                                                       |
 | `prism.css`, `utilities.css` | Syntax theme and type utilities.                                             |
+| `prose.css`                  | `.prose`, for rendered Markdown.                                             |
 | `fonts.css`                  | Optional `@font-face` loading. Not part of `style.css`.                      |
 | `types/`                     | `.d.ts` declarations emitted by `tsc`.                                       |
 | `package.json`               | Generated. Version from `DS_VERSION` env or root `package.json` as fallback. |
@@ -215,9 +217,10 @@ or replaced.
 
 1. `tokens.css`: design tokens (`--c-*`, `--s-*`, `--r-*`, …)
 2. `prism.css`: Prism syntax theme
-3. `utilities.css`: `.h1` / `.h2` / `.body` / `.caption` / `.note`
-4. `global.css`: element resets and globals
-5. `components.css`: bundled component styles
+3. `prose.css`: `.prose`, for rendered Markdown
+4. `utilities.css`: `.h1` / `.h2` / `.body` / `.caption` / `.note`
+5. `global.css`: element resets and globals
+6. `components.css`: bundled component styles
 
 ## Fonts
 

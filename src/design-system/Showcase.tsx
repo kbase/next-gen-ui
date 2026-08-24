@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import s from './Showcase.module.scss';
+// Showcase-only. Demonstrates a brand override; ships with nothing.
+import './example-brand.css';
 import { Sun, Moon, Desktop } from '@phosphor-icons/react';
 import { useTheme } from './theme/useTheme';
 import type { ThemeChoice } from './theme/useTheme';
@@ -37,6 +39,15 @@ const CVD_FILTERS: Record<CvdMode, string> = {
   deutan: 'url(#deutan)',
   protan: 'url(#protan)',
 };
+// A portal sets this once in its own HTML and never changes it. The
+// showcase toggles it so both palettes can be seen side by side in time.
+const BRAND_ATTR = 'data-brand';
+function applyBrand(on: boolean) {
+  const root = document.documentElement;
+  if (on) root.setAttribute(BRAND_ATTR, 'example');
+  else root.removeAttribute(BRAND_ATTR);
+}
+
 function applyCvdFilter(mode: CvdMode) {
   const el = document.getElementById(CVD_ID);
   if (!el) return;
@@ -219,6 +230,7 @@ function ThemeToggle() {
 
 export function Showcase() {
   const [cvd, setCvd] = useState<CvdMode>('off');
+  const [brand, setBrand] = useState(false);
   const toasts = useToastManager();
 
   return (
@@ -255,6 +267,17 @@ export function Showcase() {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-4)' }}>
               <ThemeToggle />
+              <button
+                className={s.brandToggle}
+                aria-pressed={brand}
+                onClick={() => {
+                  setBrand(!brand);
+                  applyBrand(!brand);
+                }}
+                title="Swap the base colors for a fictional partner's. Everything else derives."
+              >
+                {brand ? 'KBase palette' : 'example brand'}
+              </button>
               <button
                 className={s.cvdToggle}
                 onClick={() => {

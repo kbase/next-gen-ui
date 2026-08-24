@@ -1,6 +1,18 @@
 /* ================================================================
    KBASE DESIGN TOKENS
    Everything visual is defined here. Nothing else uses a raw color.
+
+   Two layers. The bases below carry literal color and are the whole
+   override surface: set them and every other color in this file follows.
+   Everything after them is derived with oklch(from ...), which reads a
+   base's hue and chroma and substitutes its own lightness, so a derived
+   color tracks whatever the base becomes. Lightness is what carries
+   contrast, which is why the derivations pin it and inherit the rest.
+
+   Chroma is scaled rather than fixed -- calc(c * k) -- so a base with no
+   chroma yields a ramp with no chroma. A grey --c-neutral gives grey
+   neutrals; the warm cream below is the KBase palette, not a constraint.
+
    Tints: brand hue at a family-fixed lightness and chroma. Yellow hand-tuned.
    Theming: no data-theme on <html> follows the OS; light or dark forces one.
    ================================================================ */
@@ -9,23 +21,53 @@
   --f-sans: 'Oxygen', system-ui, sans-serif;
   --f-mono: 'Fira Code', 'SF Mono', ui-monospace, monospace;
 
-  /* base (warm neutrals) */
-  --c-bg: light-dark(#f5f2ee, #17140f);
-  --c-raised: light-dark(#fafaf8, #262219);
-  --c-surface: light-dark(#ffffff, #1e1b16);
-  --c-border: light-dark(rgba(62, 56, 50, 0.09), rgba(240, 238, 234, 0.11));
-  --c-border2: light-dark(rgba(62, 56, 50, 0.16), rgba(240, 238, 234, 0.2));
-  --c-ink: light-dark(#1a1714, #f5f3ef); /* APCA Lc 97 on --c-bg */
-  --c-ink2: light-dark(#3e3832, #e9e6e1);
-  --c-ink3: light-dark(#6a6158, #d0cbc5);
+  /* BASE: the ground. Its hue and chroma set the temperature of every
+     surface and every weight of ink. KBase's is a warm brown-grey. */
+  --c-neutral: #6a6158;
+
+  /* Ground and ink, as lightness steps on --c-neutral. The steps are fixed
+     because they are what the contrast figures below are measured against. */
+  --c-bg: light-dark(
+    oklch(from var(--c-neutral) 0.9624 calc(c * 0.343) h),
+    oklch(from var(--c-neutral) 0.193 calc(c * 0.597) h)
+  );
+  --c-raised: light-dark(
+    oklch(from var(--c-neutral) 0.9845 calc(c * 0.145) h),
+    oklch(from var(--c-neutral) 0.2534 calc(c * 0.949) h)
+  );
+  /* Light surface is white: chroma 0 discards the base's, by design. A brand
+     wanting a tinted card sets --c-surface directly. */
+  --c-surface: light-dark(
+    oklch(from var(--c-neutral) 1 0 h),
+    oklch(from var(--c-neutral) 0.2237 calc(c * 0.578) h)
+  );
+  --c-ink: light-dark(
+    oklch(from var(--c-neutral) 0.207 calc(c * 0.415) h),
+    oklch(from var(--c-neutral) 0.9646 calc(c * 0.316) h)
+  ); /* APCA Lc 97 on --c-bg */
+  --c-ink2: light-dark(
+    oklch(from var(--c-neutral) 0.3449 calc(c * 0.731) h),
+    oklch(from var(--c-neutral) 0.9259 calc(c * 0.411) h)
+  );
+  --c-ink3: light-dark(
+    oklch(from var(--c-neutral) 0.4983 c h),
+    oklch(from var(--c-neutral) 0.8444 calc(c * 0.549) h)
+  );
   --c-ink4: light-dark(
-    #776d64,
-    #c7c2ba
+    oklch(from var(--c-neutral) 0.5412 c h),
+    oklch(from var(--c-neutral) 0.8158 calc(c * 0.684) h)
   ); /* APCA Lc 67; worst ground is --c-bg in light, --c-raised in dark */
-  --c-ink5: light-dark(#9d9389, #9f9992); /* decorative only */
-  /* Warm-neutral mid-scale, used in showcase swatches; not for ink. */
-  --c-warm-200: #ded5cb;
-  --c-warm-300: #c4b9ad;
+  --c-ink5: light-dark(
+    oklch(from var(--c-neutral) 0.669 c h),
+    oklch(from var(--c-neutral) 0.686 calc(c * 0.68) h)
+  ); /* decorative only */
+  /* Borders are ink at low alpha, so they pick up the ground's temperature
+     and stay correct over any surface. */
+  --c-border: light-dark(rgb(from var(--c-ink2) r g b / 0.09), rgb(from var(--c-ink) r g b / 0.11));
+  --c-border2: light-dark(rgb(from var(--c-ink2) r g b / 0.16), rgb(from var(--c-ink) r g b / 0.2));
+  /* Neutral mid-scale, used in showcase swatches; not for ink. */
+  --c-neutral-200: oklch(from var(--c-neutral) 0.8774 calc(c * 0.928) h);
+  --c-neutral-300: oklch(from var(--c-neutral) 0.7915 calc(c * 1.149) h);
 
   /* semantic colors. 4 colors, distinguishable under deuteranopia + protanopia. */
   --c-primary: #007dc3; /* freshwater blue, official brand guide */
@@ -41,15 +83,38 @@
   --c-grellow: #c1cd23;
   --c-frost: #c7dbee;
 
-  /* text on tint (WCAG AA 4.5:1 on cream, APCA Lc 62) */
-  --ct-primary: light-dark(#006eac, oklch(from var(--c-primary) 0.8 0.105 h));
-  --ct-green: light-dark(#3c6e08, oklch(from var(--c-green) 0.78 0.13 h));
-  --ct-yellow: light-dark(#8c5200, oklch(from var(--c-yellow) 0.87 0.16 h));
-  --ct-red: light-dark(#ce1d27, oklch(from var(--c-red) 0.88 0.09 h));
-  --ct-purple: light-dark(#66489d, oklch(from var(--c-purple) 0.8 0.105 h));
-  --ct-teal: light-dark(#00776b, oklch(from var(--c-teal) 0.8 0.105 h));
-  --ct-ocean: light-dark(#03757c, oklch(from var(--c-ocean) 0.8 0.105 h));
-  --ct-orange: light-dark(#af4b00, oklch(from var(--c-orange) 0.8 0.105 h));
+  /* text on tint (WCAG AA 4.5:1 on --c-bg, APCA Lc 62)
+     Yellow and orange rotate toward brown: at this lightness their own hues
+     read as mud, and the rotation is what buys the contrast. */
+  --ct-primary: light-dark(
+    oklch(from var(--c-primary) 0.5186 calc(c * 0.909) h),
+    oklch(from var(--c-primary) 0.8 0.105 h)
+  );
+  --ct-green: light-dark(
+    oklch(from var(--c-green) 0.484 calc(c * 0.925) h),
+    oklch(from var(--c-green) 0.78 0.13 h)
+  );
+  --ct-yellow: light-dark(
+    oklch(from var(--c-yellow) 0.4949 calc(c * 0.619) calc(h - 28.2)),
+    oklch(from var(--c-yellow) 0.87 0.16 h)
+  );
+  --ct-red: light-dark(oklch(from var(--c-red) 0.5464 c h), oklch(from var(--c-red) 0.88 0.09 h));
+  --ct-purple: light-dark(
+    oklch(from var(--c-purple) 0.4758 c h),
+    oklch(from var(--c-purple) 0.8 0.105 h)
+  );
+  --ct-teal: light-dark(
+    oklch(from var(--c-teal) 0.511 calc(c * 0.848) h),
+    oklch(from var(--c-teal) 0.8 0.105 h)
+  );
+  --ct-ocean: light-dark(
+    oklch(from var(--c-ocean) 0.5123 c h),
+    oklch(from var(--c-ocean) 0.8 0.105 h)
+  );
+  --ct-orange: light-dark(
+    oklch(from var(--c-orange) 0.5352 calc(c * 0.884) calc(h - 12.6)),
+    oklch(from var(--c-orange) 0.8 0.105 h)
+  );
 
   /* internal: L and C per tint family. Yellow is hand-tuned. */
   --tl-bg: 0.935;
@@ -189,12 +254,22 @@
     oklch(from var(--c-orange) var(--tl-bgw-dark) var(--tc-bgw-dark) h)
   ); /* #f4e7dd · aux */
 
-  /* interactive */
-  --c-primary-dim: light-dark(#005889, oklch(from var(--c-primary) 0.68 c h));
-  --c-teal-btn: #008578;
-  --c-teal-dim: light-dark(#007368, oklch(from var(--c-teal-btn) 0.68 c h));
-  --c-purple-btn: #66489d; /* same as base; purple is already button-weight */
-  --c-purple-dim: light-dark(#49297c, oklch(from var(--c-purple-btn) 0.7 c h));
+  /* interactive. The -btn values are the base at button weight: teal's own
+     tone is too light to carry white text, purple's already is. */
+  --c-primary-dim: light-dark(
+    oklch(from var(--c-primary) 0.4423 calc(c * 0.76) h),
+    oklch(from var(--c-primary) 0.68 c h)
+  );
+  --c-teal-btn: oklch(from var(--c-teal) 0.5537 calc(c * 0.918) h);
+  --c-teal-dim: light-dark(
+    oklch(from var(--c-teal-btn) 0.4989 calc(c * 0.899) h),
+    oklch(from var(--c-teal-btn) 0.68 c h)
+  );
+  --c-purple-btn: oklch(from var(--c-purple) 0.4758 c h);
+  --c-purple-dim: light-dark(
+    oklch(from var(--c-purple-btn) 0.3693 c h),
+    oklch(from var(--c-purple-btn) 0.7 c h)
+  );
   --c-focus: light-dark(
     rgb(from var(--c-primary) r g b / 0.08),
     rgb(from var(--c-primary) r g b / 0.32)

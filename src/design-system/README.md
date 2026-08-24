@@ -108,6 +108,45 @@ from cannot go inside it. Those sit in `:root` as pairs — `--tl-bg` and
 
 ---
 
+## Branding
+
+Every color in the system derives from twelve bases. Set them and the rest
+follows, in both light and dark:
+
+| Base                                                                            | Governs                                                      |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `--c-neutral`                                                                   | ground and ink: `--c-bg`, `--c-surface`, `--c-ink*`, borders |
+| `--c-primary`, `--c-green`, `--c-yellow`, `--c-red`                             | the semantic four, and their tints and text                  |
+| `--c-purple`, `--c-teal`, `--c-ocean`, `--c-orange`, `--c-grellow`, `--c-frost` | auxiliary colors                                             |
+| `--c-shadow`                                                                    | elevation and scrims                                         |
+
+A brand override is a stylesheet setting those, loaded after `tokens.css`:
+
+```css
+:root {
+  --c-neutral: #6b7080;
+  --c-primary: #5b4bd6;
+  /* … */
+}
+```
+
+`example-brand.css` in this directory is a working one. It is not exported and
+not packaged — the design system supports branded themes rather than carrying
+anyone's brand. The showcase toggles it on to demonstrate the mechanism.
+
+Derived tokens read a base's hue and chroma and pin their own lightness, since
+lightness is what carries contrast. Two consequences worth knowing:
+
+- **Chroma scales, so it is not imposed.** A `--c-neutral` with no chroma
+  yields a grey ramp; KBase's warm cream is a palette choice, not a constraint.
+- **Contrast survives a hue change but not a lightness one.** Overriding a base
+  keeps the measured figures — `--c-ink4` holds WCAG 4.5:1 on `--c-bg` for any
+  hue. Overriding a _derived_ token directly bypasses that, and nothing checks
+  it for you.
+
+Individual derived tokens remain overridable for the cases the derivation does
+not suit, such as a tinted `--c-surface` where the default resolves to white.
+
 ## Layout
 
 ```

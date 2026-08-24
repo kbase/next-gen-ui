@@ -1,0 +1,37 @@
+/* ================================================================
+   EXAMPLE BRAND — a fictional partner, for the showcase only.
+
+   Not exported from index.ts and not copied by the package build, so
+   nothing here ships. The design system supports branded themes; it
+   does not carry anyone's brand.
+
+   This is the whole of a brand override. A portal writes a file like
+   this one against :root and imports it after tokens.css. Every other
+   color in the system derives from these, in both light and dark.
+
+   Cool slate against KBase's warm cream, indigo against its blue —
+   chosen to be obviously not KBase when the showcase toggles it.
+   ================================================================ */
+:root[data-brand='example'] {
+  /* Ground temperature. Every surface and every weight of ink is a
+     lightness step on this, so a cool grey here cools the whole page. */
+  --c-neutral: #6b7080;
+
+  /* Semantic. Distinguishable under deuteranopia and protanopia —
+     use the showcase's CVD toggle to check a real brand's four. */
+  --c-primary: #5b4bd6;
+  --c-green: #2f8f5b;
+  --c-yellow: #f2b705;
+  --c-red: #d93b3b;
+
+  /* Auxiliary. Always paired with text, an icon, or an abbreviation. */
+  --c-purple: #9d4bc7;
+  --c-teal: #0f9b9b;
+  --c-ocean: #6cc6e0;
+  --c-orange: #ef7d3a;
+  --c-grellow: #a8c93a;
+  --c-frost: #cdd7ee;
+
+  /* Shadows are not ink: they stay dark when the theme inverts. */
+  --c-shadow: light-dark(#12141b, #000000);
+}

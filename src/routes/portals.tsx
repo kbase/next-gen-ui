@@ -1,6 +1,14 @@
 import { useMemo, useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
-import { Accordion, Chip, EmptyState, Frame, SearchBar, Select } from '@kbase/design-system';
+import {
+  Accordion,
+  ButtonLink,
+  Chip,
+  EmptyState,
+  Frame,
+  SearchBar,
+  Select,
+} from '@kbase/design-system';
 import type { ChipColor } from '@kbase/design-system';
 import { ArrowUpRight } from '@phosphor-icons/react';
 
@@ -13,7 +21,7 @@ export const Route = createFileRoute('/portals')({
 // may live under that prefix (hence public/portal-thumbs/).
 const PORTAL_BASE = 'https://gen2.kbase.us/portals/';
 
-const CONTACT_URL = 'https://www.kbase.us/support/';
+const CONTACT_EMAIL = 'engage@kbase.us';
 
 interface PortalFacet {
   label: string;
@@ -380,16 +388,29 @@ function Hero() {
   );
 }
 
-function BetaNotice() {
+function PartnerNotice() {
   return (
-    <p className="portals__beta">
-      <span className="portals__beta-tag">Beta</span> This gallery is a soft launch. If you have
-      questions or concerns about anything here,{' '}
-      <a className="link" href={CONTACT_URL} target="_blank" rel="noopener noreferrer">
-        contact us
-      </a>
-      .
-    </p>
+    <Frame paddingY={8} paddingX={8} className="portals__partner">
+      <div>
+        <p className="portals__partner-title">
+          <Chip color="yellow" onWhite label="Beta" /> Early adoption partner program
+        </p>
+        <p className="portals__partner-body">
+          DOE-associated labs and facilities can make their data and tools available and shareable
+          in KBase 2.0. Partners receive access to our programmatic and AI systems, and support in
+          prototyping their own branded portal.
+        </p>
+      </div>
+      {/* The address is the label: a mailto hands the reader off to another
+          application, so showing it lets them copy it into whatever they
+          actually use rather than trusting a registered handler. */}
+      <ButtonLink
+        href={`mailto:${CONTACT_EMAIL}`}
+        aria-label={`Email ${CONTACT_EMAIL} about the early adoption partner program`}
+      >
+        {CONTACT_EMAIL}
+      </ButtonLink>
+    </Frame>
   );
 }
 
@@ -421,7 +442,7 @@ function Gallery() {
         Published portals
       </h2>
 
-      <BetaNotice />
+      <PartnerNotice />
 
       <div className="portals__controls">
         <SearchBar

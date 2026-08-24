@@ -311,10 +311,28 @@ body,
 
 /* --- gallery --- */
 
-.portals__beta {
-  color: var(--c-ink4);
-  font-size: var(--fs-2);
-  max-width: 78ch;
+.portals__partner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--s-6) var(--s-9);
+}
+
+.portals__partner-title {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  font-size: var(--fs-6);
+  font-weight: 700;
+  color: var(--c-ink);
+}
+
+.portals__partner-body {
+  margin-top: var(--s-4);
+  max-width: 64ch;
+  color: var(--c-ink3);
+  font-size: var(--fs-3);
 }
 
 .portals__beta-tag {

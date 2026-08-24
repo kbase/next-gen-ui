@@ -121,21 +121,4 @@ describe('portal gallery', () => {
     await user.click(screen.getByRole('radio', { name: 'Genomes' }));
     expect(cardTitles()).toHaveLength(5);
   });
-
-  it('has no call-to-action buttons', async () => {
-    mountGallery();
-    await screen.findByRole('heading', { level: 1, name: /portal gallery/i });
-
-    expect(screen.queryByRole('button', { name: /develop a portal/i })).toBeNull();
-    expect(screen.queryByRole('button', { name: /publish your portal/i })).toBeNull();
-    expect(screen.queryByText(/your portal here/i)).toBeNull();
-  });
-
-  it('says it is a soft launch and offers a contact', async () => {
-    mountGallery();
-    await screen.findByRole('heading', { level: 1, name: /portal gallery/i });
-
-    expect(screen.getByText(/soft launch/i)).toBeVisible();
-    expect(screen.getByRole('link', { name: /contact us/i })).toBeVisible();
-  });
 });

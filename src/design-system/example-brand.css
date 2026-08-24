@@ -9,29 +9,35 @@
    this one against :root and imports it after tokens.css. Every other
    color in the system derives from these, in both light and dark.
 
-   Cool slate against KBase's warm cream, indigo against its blue —
-   chosen to be obviously not KBase when the showcase toggles it.
+   Violet on lavender against KBase's blue on cream: a different ground
+   temperature and a primary 51 degrees away, so the showcase's toggle
+   changes something you cannot miss.
+
+   The four semantic colors were checked, not guessed. Their worst-case
+   separation under deuteranopia and protanopia is 0.171 in OKLab,
+   against 0.158 for the KBase palette -- a brand may move these, but it
+   inherits the obligation to keep them apart. The showcase's CVD toggle
+   is how you look.
    ================================================================ */
 :root[data-brand='example'] {
   /* Ground temperature. Every surface and every weight of ink is a
-     lightness step on this, so a cool grey here cools the whole page. */
-  --c-neutral: #6b7080;
+     lightness step on this, so the violet cast reaches the whole page. */
+  --c-neutral: #60607c;
 
-  /* Semantic. Distinguishable under deuteranopia and protanopia —
-     use the showcase's CVD toggle to check a real brand's four. */
-  --c-primary: #5b4bd6;
-  --c-green: #2f8f5b;
-  --c-yellow: #f2b705;
-  --c-red: #d93b3b;
+  /* Semantic: info, success, warning, error. */
+  --c-primary: #5d01b9;
+  --c-green: #4c9a2a;
+  --c-yellow: #fcc900;
+  --c-red: #d92b2b;
 
   /* Auxiliary. Always paired with text, an icon, or an abbreviation. */
-  --c-purple: #9d4bc7;
-  --c-teal: #0f9b9b;
-  --c-ocean: #6cc6e0;
-  --c-orange: #ef7d3a;
-  --c-grellow: #a8c93a;
-  --c-frost: #cdd7ee;
+  --c-purple: #ca358b;
+  --c-teal: #0f8f86;
+  --c-ocean: #4fc3d9;
+  --c-orange: #ef7d22;
+  --c-grellow: #b5c92e;
+  --c-frost: #d3d4e9;
 
   /* Shadows are not ink: they stay dark when the theme inverts. */
-  --c-shadow: light-dark(#12141b, #000000);
+  --c-shadow: light-dark(#171720, #000000);
 }

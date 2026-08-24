@@ -130,6 +130,8 @@
   min-width: 0;
 }
 
+/* The radio itself is invisible; the label is the pill. Not display:none,
+   which would take it out of the tab order and off the a11y tree. */
 .filter input {
   position: absolute;
   width: 1px;
@@ -143,6 +145,7 @@
   outline-offset: 2px;
 }
 
+/* --filter-* are set inline per facet; "All portals" has none. */
 .filter {
   cursor: pointer;
   display: inline-block;
@@ -245,6 +248,8 @@
   line-height: 1.8;
 }
 
+/* Inline rather than flex items: the names wrap like words, so a separator
+   can never be pushed to the start of a line on its own. */
 .sources li {
   display: inline;
 }
@@ -367,4 +372,16 @@
   color: var(--c-ink2);
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .main,
+  .topbarInner {
+    padding-left: var(--s-7);
+    padding-right: var(--s-7);
+  }
+
+  .hero {
+    padding-top: var(--s-10);
+  }
 }

@@ -227,36 +227,3 @@ body,
   max-width: 60ch;
   line-height: 1.6;
 }
-
-/* ---------------------------------------------------------------
-   Published portals -- the unauthenticated landing page (/portals).
-   Public routes render through AuthLayout with no app chrome, so this
-   page owns its own topbar, width, and footer.
-   --------------------------------------------------------------- */
-
-/* --- hero --- */
-
-/* --- gallery --- */
-
-/* The radio itself is invisible; the label is the pill. Not display:none,
-   which would take it out of the tab order and off the a11y tree. */
-/* --filter-* are set inline per facet; "All portals" has none. */
-/* Inline rather than flex items: the names wrap like words, so a separator
-   can never be pushed to the start of a line on its own. */
-/* --- footer --- */
-
-@media (max-width: 640px) {
-  .portals__main {
-    padding-left: var(--s-7);
-    padding-right: var(--s-7);
-  }
-
-  .portals__topbar-inner {
-    padding-left: var(--s-7);
-    padding-right: var(--s-7);
-  }
-
-  .portals__hero {
-    padding-top: var(--s-10);
-  }
-}

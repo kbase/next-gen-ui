@@ -92,6 +92,7 @@ src/
     index.tsx              `/`        KBase 2.0 home page.
     account.tsx            `/account` Identity + sessions.
     portals.tsx            `/portals` Public. Published-portals gallery.
+    portals.module.css     Styles for the above, scoped to that route.
     design-system.tsx      `/design-system` Hidden. Design-system showcase.
     login/
       index.tsx            `/login`           Public. ORCID button + dev token paste.
@@ -285,8 +286,8 @@ The auth subsystem's high-leverage coverage is summarised in
   importing only from layers below. New backends (workspace,
   narrative, …) get their own sibling directory with the same
   shape.
-- **App-specific styles in `styles.css`**, route-specific in
-  inline styles, design-system tokens for everything else.
+- **Route styles in a sibling `*.module.css`**, app-shell styling
+  in `styles.css`, design-system tokens for everything else.
 
 ---
 

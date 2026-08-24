@@ -98,13 +98,6 @@
   font-size: var(--fs-3);
 }
 
-.betaTag {
-  font-weight: 700;
-  color: var(--c-ink3);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
 .controls {
   display: flex;
   align-items: center;

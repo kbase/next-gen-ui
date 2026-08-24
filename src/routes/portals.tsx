@@ -12,6 +12,8 @@ import {
 import type { ChipColor } from '@kbase/design-system';
 import { ArrowUpRight } from '@phosphor-icons/react';
 
+import styles from './portals.module.css';
+
 export const Route = createFileRoute('/portals')({
   component: PortalsPage,
   staticData: { title: 'Portal gallery' },
@@ -49,8 +51,6 @@ interface Portal {
   version: string;
   /** ISO 8601: the commit date of this version's tag. */
   updated: string;
-  /** Not rendered: the portal discloses its own caveats. */
-  status?: string;
   /** No screenshot in public/portal-thumbs yet. */
   undeployed?: true;
 }
@@ -141,7 +141,6 @@ const PORTALS: readonly Portal[] = [
     ],
     version: 'v0.1.2',
     updated: '2026-08-11',
-    status: 'Tester preview',
   },
   {
     slug: 'diaspora',
@@ -336,10 +335,10 @@ function haystack(portal: Portal): string {
 
 function PortalsPage() {
   return (
-    <div className="portals">
+    <div className={styles.page}>
       <TopBar />
 
-      <main className="portals__main">
+      <main className={styles.main}>
         <Hero />
         <Gallery />
       </main>
@@ -351,9 +350,9 @@ function PortalsPage() {
 
 function TopBar() {
   return (
-    <header className="portals__topbar">
-      <div className="portals__topbar-inner">
-        <span className="portals__brand">
+    <header className={styles.topbar}>
+      <div className={styles.topbarInner}>
+        <span className={styles.brand}>
           {/* Two files: the wordmark is near-black, the marks beside it are
               brand colours, so no single file or filter serves both themes. */}
           <img
@@ -379,9 +378,9 @@ function TopBar() {
 
 function Hero() {
   return (
-    <section className="portals__hero">
-      <h1 className="portals__headline">KBase 2.0 Portal Gallery</h1>
-      <p className="portals__lead">
+    <section className={styles.hero}>
+      <h1 className={styles.headline}>KBase 2.0 Portal Gallery</h1>
+      <p className={styles.lead}>
         Discover modern scientific portals built on the KBase ecosystem.
       </p>
     </section>
@@ -390,12 +389,12 @@ function Hero() {
 
 function PartnerNotice() {
   return (
-    <Frame paddingY={8} paddingX={8} className="portals__partner">
+    <Frame paddingY={8} paddingX={8} className={styles.partner}>
       <div>
-        <p className="portals__partner-title">
+        <p className={styles.partnerTitle}>
           <Chip color="yellow" onWhite label="Beta" /> Early adoption partner program
         </p>
-        <p className="portals__partner-body">
+        <p className={styles.partnerBody}>
           DOE-associated labs and facilities can make their data and tools available and shareable
           in KBase 2.0. Partners receive access to our programmatic and AI systems, and support in
           prototyping their own branded portal.
@@ -437,34 +436,30 @@ function Gallery() {
   }, [query, category, sort]);
 
   return (
-    <section className="portals__gallery" aria-labelledby="gallery-heading">
-      <h2 id="gallery-heading" className="sr-only">
+    <section aria-labelledby="gallery-heading">
+      <h2 id="gallery-heading" className={styles.srOnly}>
         Published portals
       </h2>
 
       <PartnerNotice />
 
-      <div className="portals__controls">
+      <div className={styles.controls}>
         <SearchBar
           value={query}
           onValueChange={setQuery}
           placeholder="Search portals by name or keyword..."
-          className="portals__search"
+          className={styles.search}
           aria-label="Search portals"
         />
 
         {/* Native radios, hidden behind their labels: arrow-key navigation
             and group semantics come from the browser. */}
-        <fieldset className="portals__filters">
-          <legend className="sr-only">Filter portals</legend>
+        <fieldset className={styles.filters}>
+          <legend className={styles.srOnly}>Filter portals</legend>
           {FILTERS.map((option) => (
             <label
               key={option.value}
-              className={
-                option.value === category
-                  ? 'portals__filter portals__filter--active'
-                  : 'portals__filter'
-              }
+              className={`${styles.filter} ${option.value === category ? styles.filterActive : ''}`}
               // The Chip tokens for this colour, so pill and chip match.
               style={
                 option.color
@@ -488,7 +483,7 @@ function Gallery() {
           ))}
         </fieldset>
 
-        <div className="portals__sort">
+        <div className={styles.sort}>
           {/* Without `items` the closed trigger shows the raw value. */}
           <Select.Root
             items={SORTS}
@@ -508,14 +503,14 @@ function Gallery() {
         </div>
       </div>
 
-      <p className="portals__count" role="status">
+      <p className={styles.count} role="status">
         {visible.length === PORTALS.length
           ? `${PORTALS.length} portals`
           : `${visible.length} of ${PORTALS.length} portals`}
       </p>
 
       {visible.length === 0 ? (
-        <p className="portals__empty">
+        <p className={styles.empty}>
           No portals match.{' '}
           <button
             onClick={() => {
@@ -528,7 +523,7 @@ function Gallery() {
           to see all {PORTALS.length}.
         </p>
       ) : (
-        <ul className="portals__grid">
+        <ul className={styles.grid}>
           {visible.map((portal) => (
             <li key={portal.slug}>
               <PortalCard portal={portal} />
@@ -544,7 +539,7 @@ function PortalSources({ sources }: { sources: string[] }) {
   // `summary` is the component's slot for a count, and stays on the trigger
   // in both states.
   return (
-    <Accordion.Root className="portal-card__sources">
+    <Accordion.Root className={styles.sources}>
       <Accordion.Item value="sources" title="Data sources" summary={sources.length}>
         <ul>
           {sources.map((source) => (
@@ -558,21 +553,21 @@ function PortalSources({ sources }: { sources: string[] }) {
 
 function PortalCard({ portal }: { portal: Portal }) {
   return (
-    <Frame padding={0} className="portal-card">
+    <Frame padding={0} className={styles.card}>
       {/* The link wraps only what should be clickable: a disclosure inside an
           anchor would be an interactive element nested in another. */}
       <a
-        className="portal-card__link"
+        className={styles.cardLink}
         href={`${PORTAL_BASE}${portal.slug}/`}
         target="_blank"
         rel="noopener noreferrer"
         aria-label={`Open the ${portal.title} portal (opens in a new tab)`}
       >
         {portal.undeployed ? (
-          <EmptyState title="No screenshot yet" className="portal-card__shot--empty" />
+          <EmptyState title="No screenshot yet" className={styles.shotEmpty} />
         ) : (
           <img
-            className="portal-card__shot"
+            className={styles.shot}
             src={`/portal-thumbs/${portal.slug}.webp`}
             alt={`Screenshot of the ${portal.title} portal`}
             width={640}
@@ -580,27 +575,27 @@ function PortalCard({ portal }: { portal: Portal }) {
             loading="lazy"
           />
         )}
-        <div className="portal-card__body">
-          <div className="portal-card__title-row">
+        <div className={styles.cardBody}>
+          <div className={styles.titleRow}>
             <h3 className="h3">{portal.title}</h3>
-            <ArrowUpRight size={14} className="portal-card__go" aria-hidden="true" />
+            <ArrowUpRight size={14} className={styles.go} aria-hidden="true" />
           </div>
 
-          <p className="portal-card__blurb">{portal.blurb}</p>
+          <p className={styles.blurb}>{portal.blurb}</p>
 
-          <div className="portal-card__facets">
+          <div className={styles.facets}>
             {portal.facets.map((facet) => (
               <Chip key={facet.label} color={facet.color} onWhite label={facet.label} />
             ))}
           </div>
 
-          <p className="portal-card__topics">{portal.topics.join(' · ')}</p>
+          <p className={styles.topics}>{portal.topics.join(' · ')}</p>
         </div>
       </a>
 
       {portal.sources.length > 0 && <PortalSources sources={portal.sources} />}
 
-      <div className="portal-card__meta">
+      <div className={styles.meta}>
         <span className="mono-secondary">{portal.version}</span>
         <span aria-hidden="true">&middot;</span>
         <span>Updated {formatUpdated(portal.updated)}</span>
@@ -611,11 +606,11 @@ function PortalCard({ portal }: { portal: Portal }) {
 
 function SiteFooter() {
   return (
-    <footer className="portals__footer">
+    <footer className={styles.footer}>
       <span className="note">
         KBase &middot; a DOE Biological and Environmental Research data platform
       </span>
-      <nav className="portals__footer-links">
+      <nav className={styles.footerLinks}>
         <a href="https://www.kbase.us/" target="_blank" rel="noopener noreferrer">
           About KBase
         </a>

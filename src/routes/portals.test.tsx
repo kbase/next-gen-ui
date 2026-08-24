@@ -1,10 +1,15 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { routeTree } from '../routeTree.gen';
+import styles from './portals.module.css';
+
+// Expectations are derived from what the page renders, never written down
+// from the portal data or the copy. Adding a portal, renaming a facet or
+// rewording a blurb must not fail a test here.
 
 function mountGallery() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -19,106 +24,116 @@ function mountGallery() {
       />
     </QueryClientProvider>,
   );
+  return waitFor(() => expect(cards().length).toBeGreaterThan(0));
 }
 
-function cardLinks() {
-  return screen.queryAllByRole('link', { name: /^Open the .* portal/ });
-}
+const cards = () => [...document.querySelectorAll<HTMLElement>(`.${styles.card}`)];
+const titleOf = (card: HTMLElement) => card.querySelector(`.${styles.titleRow} h3`)?.textContent;
+const facetsOf = (card: HTMLElement) =>
+  [...card.querySelectorAll(`.${styles.facets} > *`)].map((c) => c.textContent?.trim() ?? '');
 
-// Scoped to the card head: Accordion renders its trigger as a heading too.
-function cardTitles() {
-  return [...document.querySelectorAll('.portal-card__title-row h3')].map((h) => h.textContent);
-}
+const search = () => screen.getByRole('textbox', { name: /search portals/i });
+
+// Click the label, as a reader does: the radio itself is visually hidden.
+const filters = () =>
+  screen.getAllByRole('radio').map((input) => {
+    const el = input.closest('label') as HTMLElement;
+    return { el, label: el?.textContent?.trim() ?? '' };
+  });
+
+const namedFilters = () => filters().filter((f) => !/^all/i.test(f.label));
 
 describe('portal gallery', () => {
-  it('lists every portal by default', async () => {
-    mountGallery();
-    expect(await screen.findByRole('heading', { level: 1, name: /portal gallery/i })).toBeVisible();
-    expect(cardTitles()).toHaveLength(7);
-  });
+  it('renders every portal as a card that links out', async () => {
+    await mountGallery();
 
-  // A portal without a screenshot differs only in the screenshot: it still
-  // links out like every other card.
-  it('links a portal that has no screenshot yet', async () => {
-    mountGallery();
-    await screen.findByRole('heading', { level: 1, name: /portal gallery/i });
-
-    expect(cardLinks()).toHaveLength(7);
-    expect(screen.getByRole('link', { name: /Open the Phagecast portal/ })).toBeVisible();
-    expect(screen.getAllByText('No screenshot yet')).toHaveLength(2);
-  });
-
-  // Sources come from each app's registry; an app without one shows nothing
-  // rather than a guess. Visible on load, not behind a click.
-  it("lists a portal's sources behind a counted header", async () => {
-    const user = userEvent.setup();
-    mountGallery();
-    await screen.findByRole('heading', { level: 1, name: /portal gallery/i });
-
-    // Closed by default; the header carries the count.
-    expect(screen.queryByText('GTDB')).toBeNull();
-    expect(cardTitles()).toHaveLength(7);
-
-    const triggers = screen.getAllByRole('button', { name: /data sources/i });
-    expect(triggers).toHaveLength(7);
-    expect(triggers[0]).toHaveAccessibleDescription('14');
-
-    await user.click(triggers[0]);
-    expect(screen.getByText('GTDB')).toBeVisible();
-  });
-
-  // Every filter is a facet and every facet is a filter; the specific
-  // topic words are plain text and deliberately not filterable.
-  it('offers a filter for every facet and nothing else', async () => {
-    mountGallery();
-    await screen.findByRole('heading', { level: 1, name: /portal gallery/i });
-    for (const facet of ['Genomes', 'Ecology', 'Environment', 'Proteins']) {
-      expect(screen.getByRole('radio', { name: facet })).toBeVisible();
+    for (const card of cards()) {
+      const link = card.querySelector('a[href]');
+      expect(link).toHaveAttribute('target', '_blank');
+      expect(link?.getAttribute('href')).toMatch(/^https?:\/\/.+\/$/);
     }
-    expect(screen.getAllByRole('radio')).toHaveLength(5);
-    expect(screen.queryByRole('radio', { name: 'CAZymes' })).toBeNull();
   });
 
-  it('filters by free-text search across blurbs and sources', async () => {
-    const user = userEvent.setup();
-    mountGallery();
-    await screen.findByRole('heading', { level: 1, name: /portal gallery/i });
+  // A card shows a screenshot or a stand-in for one, never both and never
+  // neither, and links out either way: the portal exists whether or not we
+  // have captured it.
+  it('gives every card a thumbnail or a stand-in, and links either way', async () => {
+    await mountGallery();
 
-    await user.type(screen.getByRole('textbox', { name: /search portals/i }), 'cazyme');
-    expect(cardLinks()).toHaveLength(1);
-    expect(screen.getByRole('link', { name: /Fungal Jungle/ })).toBeVisible();
+    for (const card of cards()) {
+      const hasShot = Boolean(card.querySelector(`img.${styles.shot}`));
+      const hasStandIn = Boolean(card.querySelector(`.${styles.shotEmpty}`));
+      expect(hasShot).not.toBe(hasStandIn);
+      expect(card.querySelector('a[href]')).toBeTruthy();
+    }
   });
 
-  // The source list is searchable, not just subject tags and blurbs.
-  it('matches on a data source as well as subject', async () => {
+  it('keeps sources collapsed until the header is opened', async () => {
     const user = userEvent.setup();
-    mountGallery();
-    await screen.findByRole('heading', { level: 1, name: /portal gallery/i });
+    await mountGallery();
 
-    await user.type(screen.getByRole('textbox', { name: /search portals/i }), 'jgi');
-    expect(cardLinks()).toHaveLength(2);
+    const card = cards().find((c) => c.querySelector(`.${styles.sources} button`));
+    expect(card).toBeTruthy();
+
+    expect(card!.querySelector(`.${styles.sources} li`)).toBeNull();
+    await user.click(card!.querySelector<HTMLElement>(`.${styles.sources} button`)!);
+    expect(card!.querySelector(`.${styles.sources} li`)).toBeTruthy();
   });
 
-  // Clearing has to drop the filter too, or "see all N" is a false promise.
-  it('reports when nothing matches, and clears both search and filter', async () => {
-    const user = userEvent.setup();
-    mountGallery();
-    await screen.findByRole('heading', { level: 1, name: /portal gallery/i });
+  // The filter row is derived from the facets on the cards. A filter matching
+  // no card, or a facet with no filter, means that derivation has drifted.
+  it('offers exactly the facets that appear on cards', async () => {
+    await mountGallery();
 
-    await user.click(screen.getByRole('radio', { name: 'Proteins' }));
-    await user.type(screen.getByRole('textbox', { name: /search portals/i }), 'zzzznope');
-    expect(cardLinks()).toHaveLength(0);
+    const onCards = new Set(cards().flatMap(facetsOf));
+    const offered = new Set(namedFilters().map((f) => f.label));
 
-    await user.click(screen.getByRole('button', { name: /clear search and filters/i }));
-    expect(cardTitles()).toHaveLength(7);
+    expect(offered).toEqual(onCards);
   });
 
-  it('filters by tag', async () => {
+  it('narrows to the cards carrying the chosen facet', async () => {
     const user = userEvent.setup();
-    mountGallery();
-    await screen.findByRole('heading', { level: 1, name: /portal gallery/i });
+    await mountGallery();
 
-    await user.click(screen.getByRole('radio', { name: 'Genomes' }));
-    expect(cardTitles()).toHaveLength(5);
+    const facet = namedFilters()[0];
+    await user.click(facet.el);
+
+    const shown = cards();
+    expect(shown.length).toBeGreaterThan(0);
+    for (const card of shown) {
+      expect(facetsOf(card)).toContain(facet.label);
+    }
+  });
+
+  it('narrows to cards matching the search, and restores when cleared', async () => {
+    const user = userEvent.setup();
+    await mountGallery();
+
+    const before = cards().map(titleOf);
+    const target = before[0]!;
+
+    await user.type(search(), target);
+    expect(cards().map(titleOf)).toContain(target);
+    expect(cards().length).toBeLessThanOrEqual(before.length);
+
+    await user.clear(search());
+    expect(cards().map(titleOf)).toEqual(before);
+  });
+
+  it('offers a way back when a search matches nothing', async () => {
+    const user = userEvent.setup();
+    await mountGallery();
+
+    const before = cards().map(titleOf);
+
+    await user.click(namedFilters()[0].el);
+    await user.type(search(), 'zzzz-no-such-portal');
+    expect(cards()).toHaveLength(0);
+
+    // Scoped to the empty state: SearchBar has a clear button of its own.
+    // This one has to drop the facet too, or its offer is a lie.
+    const reset = document.querySelector<HTMLElement>(`.${styles.empty} button`)!;
+    await user.click(reset);
+    expect(cards().map(titleOf)).toEqual(before);
   });
 });

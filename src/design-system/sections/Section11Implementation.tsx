@@ -134,7 +134,7 @@ export const KBChip = styled(Box, {
   alignItems: 'center',
   gap: 3,
   fontSize: 'var(--fs-3)',
-  fontWeight: 600,
+  fontWeight: 'var(--fw-bold)',
   padding: '1px 6px',
   borderRadius: t.r.sm,
   background: \`var(--bg-\${color})\`,

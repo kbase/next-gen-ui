@@ -22,6 +22,14 @@
   --f-sans: 'Oxygen', system-ui, sans-serif;
   --f-mono: 'Fira Code', 'SF Mono', ui-monospace, monospace;
 
+  /* Two, because fonts.css serves two faces. Stylesheets used to write 400,
+     500, 600 and 700, but CSS resolves a request to the nearest face
+     available, so 500 rendered as regular and 600 as bold. A third token for
+     a medium the system cannot draw would be a name for nothing. Serve a
+     family with real intermediate weights and add one then. */
+  --fw-normal: 400;
+  --fw-bold: 700;
+
   /* BASE: the ground. Its hue and chroma set the temperature of every surface
      and every weight of ink. KBase's is a warm brown-grey. */
   --c-neutral: #6a6158;

@@ -255,7 +255,7 @@ export function Section07Data() {
         </Thead>
         <Tbody>
           <Tr>
-            <Td style={{ fontWeight: 600 }}>Escherichia coli K-12 MG1655</Td>
+            <Td style={{ fontWeight: 'var(--fw-bold)' }}>Escherichia coli K-12 MG1655</Td>
             <Td>
               <Chip color="red" onWhite label="Gn" />
             </Td>
@@ -267,7 +267,7 @@ export function Section07Data() {
             </Td>
           </Tr>
           <Tr>
-            <Td style={{ fontWeight: 600 }}>Soil sample contigs v2</Td>
+            <Td style={{ fontWeight: 'var(--fw-bold)' }}>Soil sample contigs v2</Td>
             <Td>
               <Chip color="primary" onWhite label="As" />
             </Td>

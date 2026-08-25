@@ -14,7 +14,7 @@
 
 .headerTitle {
   font-size: var(--fs-6);
-  font-weight: 600;
+  font-weight: var(--fw-bold);
   color: var(--c-ink);
 }
 
@@ -45,7 +45,7 @@
   all: unset;
   font-family: var(--f-sans);
   font-size: var(--fs-4);
-  font-weight: 600;
+  font-weight: var(--fw-bold);
   color: var(--ct-primary);
   cursor: pointer;
   display: block;

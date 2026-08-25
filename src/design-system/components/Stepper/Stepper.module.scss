@@ -76,7 +76,7 @@
   align-items: center;
   justify-content: center;
   font-size: var(--fs-3);
-  font-weight: 600;
+  font-weight: var(--fw-bold);
   flex-shrink: 0;
   border: 1.5px solid var(--c-border);
   color: var(--c-ink5);
@@ -100,7 +100,7 @@
 
 .label {
   font-size: var(--fs-5);
-  font-weight: 600;
+  font-weight: var(--fw-bold);
   color: var(--c-ink2);
   display: block;
 }

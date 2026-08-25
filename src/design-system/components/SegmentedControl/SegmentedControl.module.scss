@@ -21,7 +21,7 @@
   background: var(--c-surface);
   font-family: var(--f-sans);
   font-size: var(--fs-4);
-  font-weight: 600;
+  font-weight: var(--fw-bold);
 
   &:hover {
     color: var(--c-ink2);

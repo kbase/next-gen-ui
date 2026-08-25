@@ -20,7 +20,7 @@
   &[data-active] {
     color: var(--ct-primary);
     border-bottom-color: var(--c-primary);
-    font-weight: 600;
+    font-weight: var(--fw-bold);
   }
 
   &:hover:not([data-selected]):not([data-active]) {

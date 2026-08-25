@@ -17,7 +17,7 @@
 
 .title {
   font-size: var(--fs-6);
-  font-weight: 600;
+  font-weight: var(--fw-bold);
   color: var(--c-ink);
   white-space: nowrap;
   overflow: hidden;
@@ -76,7 +76,7 @@
 }
 .st_running {
   color: var(--ct-primary);
-  font-weight: 600;
+  font-weight: var(--fw-bold);
 }
 .st_complete {
   color: var(--c-ink3);

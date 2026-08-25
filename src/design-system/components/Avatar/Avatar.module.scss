@@ -52,7 +52,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   font-size: var(--fs-4);
   /* Tie the line box to the glyph and trim font ascender/descender
      padding so cap-only initials sit on the geometric center, not

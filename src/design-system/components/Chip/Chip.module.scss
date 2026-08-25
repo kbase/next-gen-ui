@@ -4,7 +4,7 @@
   justify-content: center;
   gap: var(--s-1);
   font-size: var(--fs-2);
-  font-weight: 600;
+  font-weight: var(--fw-bold);
   padding: 1px var(--s-3);
   /* One line box plus padding and border: keeps icon-only chips the same
      height as chips with words. */

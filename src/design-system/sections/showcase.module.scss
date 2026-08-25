@@ -15,7 +15,7 @@
 
 .sTitle {
   font-size: var(--fs-9);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   color: var(--c-ink);
   margin-bottom: var(--s-1);
 }
@@ -31,7 +31,7 @@
 
 .sub {
   font-size: var(--fs-4);
-  font-weight: 600;
+  font-weight: var(--fw-bold);
   color: var(--c-ink3);
   letter-spacing: 0.06em;
   text-transform: uppercase;

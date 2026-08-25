@@ -22,7 +22,7 @@
   background: none;
   font-family: var(--f-sans);
   font-size: var(--fs-5);
-  font-weight: 600;
+  font-weight: var(--fw-bold);
   color: var(--c-ink);
   cursor: pointer;
   text-align: left;
@@ -49,7 +49,7 @@
 .summary {
   margin-left: auto;
   font-size: var(--fs-4);
-  font-weight: 400;
+  font-weight: var(--fw-normal);
   color: var(--c-ink4);
 }
 

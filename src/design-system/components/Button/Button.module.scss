@@ -1,6 +1,6 @@
 .btn {
   font-family: var(--f-sans);
-  font-weight: 600;
+  font-weight: var(--fw-bold);
   /* ButtonLink renders an anchor, which the UA underlines. */
   text-decoration: none;
   /* Transparent border on the base so primary/teal/purple/ghost sit

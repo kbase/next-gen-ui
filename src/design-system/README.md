@@ -170,6 +170,7 @@ that uses them, with no stylesheet holding a hardcoded value:
 | Corner rounding | `--r-sm`, `--r-button`, `--r-md`, `--r-lg` | box corners                                                                                                                                       |
 |                 | `--r-full`                                 | **leave alone.** Radio and the Switch track use it to stay circular, and a square radio reads as a checkbox. Shape is carrying meaning, not style |
 | Type scale      | `--fs-1`–`--fs-11`, `--fs-hero`            | sequential, smallest to largest                                                                                                                   |
+| Weight          | `--fw-normal`, `--fw-bold`                 | two, because `fonts.css` serves two faces                                                                                                         |
 | Density         | `--s-1`–`--s-12`                           | the whole spacing scale                                                                                                                           |
 | Motion          | `--t-fast`, `--t-base`, `--t-slow`         |                                                                                                                                                   |
 
@@ -177,8 +178,11 @@ that uses them, with no stylesheet holding a hardcoded value:
 They carry no identity, and changing them only breaks the layering of modals
 and toasts.
 
-There is no weight token: font weights are written into component stylesheets,
-so a face that wants 500 where the system asks for 600 cannot say so.
+`fonts.css` serves 400 and 700, so there are two weight tokens and no more.
+Stylesheets used to write 400, 500, 600 and 700, but CSS resolves a request to
+the nearest face available: 500 drew as regular and 600 as bold. A brand
+serving a family with real intermediate weights adds the faces to its own
+stylesheet and a token to match.
 
 `example-brand.css` sets the typeface and the box radii as well as its colors.
 

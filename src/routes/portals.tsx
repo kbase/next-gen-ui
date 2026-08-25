@@ -139,8 +139,8 @@ const PORTALS: readonly Portal[] = [
       'NMDC',
       'GOLD',
     ],
-    version: 'v0.1.2',
-    updated: '2026-08-11',
+    version: 'v0.1.3',
+    updated: '2026-08-21',
   },
   {
     slug: 'diaspora',
@@ -276,7 +276,6 @@ const PORTALS: readonly Portal[] = [
     ],
     version: 'v0.4.0',
     updated: '2026-08-21',
-    undeployed: true,
   },
   {
     slug: 'phagecast',
@@ -287,9 +286,8 @@ const PORTALS: readonly Portal[] = [
     topics: ['Phage', 'Host range', 'Receptors'],
     // No sources registry yet; these are from the README and docs/STORAGE.md.
     sources: ['Phage Foundry (DOE BER)', 'GenomeDepot'],
-    version: 'v0.45.5',
+    version: 'v0.45.7',
     updated: '2026-08-23',
-    undeployed: true,
   },
 ];
 

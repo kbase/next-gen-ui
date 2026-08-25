@@ -89,7 +89,8 @@ src/
     __root.tsx             Root route. Auth gate (beforeLoad), error +
                            pending boundaries, layout split between
                            AppLayout (sidebar+header) and AuthLayout (no chrome).
-    index.tsx              `/`        KBase 2.0 home page.
+    index.tsx              `/`        KBase 2.0 home page. Signed-out visitors
+                                      are sent to `/portals` instead of `/login`.
     account.tsx            `/account` Identity + sessions.
     portals.tsx            `/portals` Public. Published-portals gallery.
     portals.module.css     Styles for the above, scoped to that route.

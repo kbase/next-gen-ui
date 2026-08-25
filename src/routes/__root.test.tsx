@@ -33,11 +33,12 @@ function mountAt(path: string) {
 }
 
 describe('root gate', () => {
-  it('redirects unauthenticated visitors from / to /login', async () => {
+  it('redirects unauthenticated visitors from / to /portals', async () => {
     const { router } = mountAt('/');
-    await waitFor(() => {
-      expect(router.state.location.pathname).toBe('/login');
-    });
+    expect(
+      await screen.findByRole('heading', { level: 1, name: /portal gallery/i }),
+    ).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe('/portals');
   });
 
   it('redirects unauthenticated visitors from /account to /login', async () => {

@@ -54,6 +54,10 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     if (isPublic(location.pathname)) return;
     const me = await context.queryClient.ensureQueryData(authMeOptions());
     if (!me) {
+      // The site root is the public front door: an anonymous visitor gets
+      // the gallery, not a login form. Every other gated route still asks
+      // for a sign-in and returns the visitor to it afterwards.
+      if (location.pathname === '/') throw redirect({ to: '/portals' });
       throw redirect({
         to: '/login',
         search: { redirect: safeRedirect(location.href) },

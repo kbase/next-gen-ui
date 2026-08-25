@@ -1,0 +1,31 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs>=0.4.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "kbase-design-system"
+description = "KBase design system stylesheets, for consumers without a bundler"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+dynamic = ["version"]
+
+[project.urls]
+Source = "https://github.com/kbase/next-gen-ui"
+
+[tool.hatch.version]
+source = "vcs"
+# --match: the showcase app's own vX.Y.Z tags are in this repo, and the nearest wins without it.
+raw-options = { root = "../..", tag_regex = '^ds-v(?P<version>\d+\.\d+\.\d+)$', git_describe_command = [
+  "git", "describe", "--dirty", "--tags", "--long", "--match", "ds-v*",
+] }
+
+[tool.hatch.build.targets.wheel]
+bypass-selection = true      # no package to detect; the payload is force-included
+
+[tool.hatch.build.targets.wheel.force-include]
+"tokens.css" = "kbase_design_system/tokens.css"
+"prose.css" = "kbase_design_system/prose.css"
+"utilities.css" = "kbase_design_system/utilities.css"
+"prism.css" = "kbase_design_system/prism.css"
+"global.css" = "kbase_design_system/global.css"

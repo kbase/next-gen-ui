@@ -24,6 +24,28 @@ build time and recorded in the published `package.json`.
 `@phosphor-icons/react` is a hard peer dependency: every icon-using
 component imports from it.
 
+### Without a bundler
+
+The stylesheets are also a pip package, for consumers that cannot run one — a
+generator that inlines CSS into self-contained HTML, or a Python UI framework
+handed a string. Install by pinned tag:
+
+```toml
+"kbase-design-system @ git+https://github.com/kbase/next-gen-ui.git@ds-v0.6.0#subdirectory=src/design-system"
+```
+
+```python
+from importlib.resources import files
+css = (files("kbase_design_system") / "tokens.css").read_text()
+```
+
+It carries `tokens.css`, `prose.css`, `utilities.css`, `prism.css` and
+`global.css` and nothing else: no Python code, no accessor helpers, no framework
+glue. `components.css` and `style.css` are build outputs and stay npm-only.
+`fonts.css` is excluded — see [Fonts](#fonts) for why it needs a bundler, and
+what a consumer without one has to do instead. Its version comes from the same
+`ds-vX.Y.Z` tag that publishes the npm package, so neither needs a bump.
+
 ## Use
 
 ```tsx

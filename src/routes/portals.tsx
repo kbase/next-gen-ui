@@ -163,8 +163,8 @@ const PORTALS: readonly Portal[] = [
       'Microbe Atlas',
       'KBase KE-pangenome',
     ],
-    version: 'v0.1.4',
-    updated: '2026-08-11',
+    version: 'v0.2.0',
+    updated: '2026-08-21',
   },
   {
     slug: 'plant-terra',
@@ -189,8 +189,8 @@ const PORTALS: readonly Portal[] = [
       'SSURGO',
       'GBIF',
     ],
-    version: 'v0.1.3',
-    updated: '2026-08-11',
+    version: 'v0.2.2',
+    updated: '2026-08-25',
   },
   {
     slug: 'fungal-jungle',

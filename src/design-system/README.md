@@ -17,10 +17,12 @@ npm install @kbase/design-system
 PAT scope: `read:packages`.
 
 Peer dependencies: `react`, `react-dom`, `@base-ui/react`,
-`@phosphor-icons/react`, `prismjs`. Required versions are recorded in
-the published `package.json` and tracked from the host repo's
-dependency versions at build time. `@phosphor-icons/react` is a hard
-peer dependency: every icon-using component imports from it.
+`@phosphor-icons/react`, `prismjs`. React 18 and React 19 are both
+supported. The other three are required at the versions this repo
+builds and tests against, taken from its own dependency versions at
+build time and recorded in the published `package.json`.
+`@phosphor-icons/react` is a hard peer dependency: every icon-using
+component imports from it.
 
 ## Use
 

@@ -104,9 +104,11 @@ const pkg = {
     '@fontsource/oxygen': rootPkg.dependencies['@fontsource/oxygen'],
     '@fontsource/fira-code': rootPkg.dependencies['@fontsource/fira-code'],
   },
+  // React is declared, not interpolated: this repo's pin is the showcase app's,
+  // not the library's supported range.
   peerDependencies: {
-    react: rootPkg.dependencies.react,
-    'react-dom': rootPkg.dependencies['react-dom'],
+    react: '^18 || ^19',
+    'react-dom': '^18 || ^19',
     '@base-ui/react': rootPkg.dependencies['@base-ui/react'],
     '@phosphor-icons/react': rootPkg.dependencies['@phosphor-icons/react'],
     prismjs: rootPkg.dependencies.prismjs,

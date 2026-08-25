@@ -1,4 +1,11 @@
-import { type ReactNode, type CSSProperties, type Ref, useCallback, useState } from 'react';
+import {
+  type ReactNode,
+  type CSSProperties,
+  type Ref,
+  useCallback,
+  useEffect,
+  useState,
+} from 'react';
 import styles from './VizContainer.module.scss';
 import { cx } from '../../util/cx';
 import { Frame } from '../Frame';
@@ -54,10 +61,11 @@ export function VizContainer({
 }: VizContainerProps) {
   const [dims, setDims] = useState<VizDimensions>({ width: 0, height: 0 });
 
-  // React 19 callback ref: observe resize on mount, return the
-  // disconnect cleanup. Wrapped in useCallback so identity is stable
-  // across re-renders; otherwise React tears down + reattaches the
-  // ResizeObserver on every parent render.
+  // State, not a ref, so the observer can live in an effect: React 18 discards
+  // a callback ref's returned cleanup.
+  const [canvasEl, setCanvasEl] = useState<HTMLDivElement | null>(null);
+
+  // Stable identity, or React detaches and reattaches on every parent render.
   const canvasCallbackRef = useCallback(
     (el: HTMLDivElement | null) => {
       if (typeof externalRef === 'function') {
@@ -66,21 +74,24 @@ export function VizContainer({
         // eslint-disable-next-line react-hooks/immutability
         (externalRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
       }
-
-      if (!el) return undefined;
-      const update = debounce((entries: ResizeObserverEntry[]) => {
-        const entry = entries[0];
-        if (entry) {
-          const { width, height } = entry.contentRect;
-          setDims({ width: Math.floor(width), height: Math.floor(height) });
-        }
-      }, 50);
-      const observer = new ResizeObserver(update);
-      observer.observe(el);
-      return () => observer.disconnect();
+      setCanvasEl(el);
     },
     [externalRef],
   );
+
+  useEffect(() => {
+    if (!canvasEl) return undefined;
+    const update = debounce((entries: ResizeObserverEntry[]) => {
+      const entry = entries[0];
+      if (entry) {
+        const { width, height } = entry.contentRect;
+        setDims({ width: Math.floor(width), height: Math.floor(height) });
+      }
+    }, 50);
+    const observer = new ResizeObserver(update);
+    observer.observe(canvasEl);
+    return () => observer.disconnect();
+  }, [canvasEl]);
 
   const ready = !loading && !error;
 

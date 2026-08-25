@@ -100,9 +100,8 @@ interface Portal {
 //      SHIPPED are live.
 //   4. The "data sources" disclosure the running portal renders.
 //
-// Credit only what the live app actually draws on. Plant Terra's doc lists
-// JGI Phytozome (embargoed, no redistribution) and TAIR (paywalled); an
-// embargoed source is not a credit. Leave `sources` empty rather than guess.
+// Credit only what the live app actually draws on. Leave `sources` empty
+// rather than guess.
 //
 // THUMBNAILS
 //
@@ -175,6 +174,7 @@ const PORTALS: readonly Portal[] = [
     facets: [FACETS.genomes, FACETS.environment],
     topics: ['Plants', 'Metabolism', 'G×E'],
     sources: [
+      'JGI Phytozome',
       'Ensembl Plants',
       'UniProt',
       'InterPro',

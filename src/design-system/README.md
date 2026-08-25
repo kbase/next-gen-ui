@@ -108,6 +108,80 @@ from cannot go inside it. Those sit in `:root` as pairs — `--tl-bg` and
 
 ---
 
+## Branding
+
+A brand may set **any** color token. There are 67 of them and every one is a
+custom property, so a brand stylesheet loaded after `tokens.css` replaces
+whatever it names:
+
+| Group          | Tokens                                                                                                                         |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Ground and ink | `--c-neutral`, `--c-bg`, `--c-raised`, `--c-surface`, `--c-border`, `--c-border2`, `--c-ink`–`--c-ink5`, `--c-neutral-200/300` |
+| Semantic       | `--c-primary`, `--c-green`, `--c-yellow`, `--c-red`                                                                            |
+| Auxiliary      | `--c-purple`, `--c-teal`, `--c-ocean`, `--c-orange`, `--c-grellow`, `--c-frost`                                                |
+| Text on tint   | `--ct-primary` … `--ct-orange`                                                                                                 |
+| Tints          | `--bg-*`, `--bo-*`, `--bgw-*` (8 families each)                                                                                |
+| Interactive    | `--c-primary-dim`, `--c-teal-btn`, `--c-teal-dim`, `--c-purple-btn`, `--c-purple-dim`, `--c-focus`                             |
+| Elevation      | `--c-shadow`, `--c-scrim`, `--e-1`–`--e-4`                                                                                     |
+
+Twelve of those carry literal color and the other 55 derive from them, so a
+partner who hands over twelve colors re-skins the whole system:
+
+```css
+:root {
+  --c-neutral: #6b7080; /* ground temperature */
+  --c-primary: #5d01b9;
+  --c-green: #4c9a2a;
+  /* … the four semantic, six auxiliary, and --c-shadow */
+}
+```
+
+**That is a default, not a ceiling.** Derived tokens are ordinary custom
+properties: name one and the derivation gives way. `example-brand.css` in this
+directory does exactly that — its page is a tinted mid-light rather than an
+off-white, which no hue change can produce, so it sets the ground, ink ramp,
+tints and text-on-tint outright. It is not exported and not packaged; the
+design system supports branded themes rather than carrying anyone's brand.
+
+### What the derivation gives you
+
+Derived tokens read a base's hue and chroma and pin their own lightness, so a
+hue change keeps the contrast the default palette was built with. Chroma is
+scaled rather than fixed, so a base with no chroma yields a ramp with no chroma
+— the warm cream is KBase's palette, not something the system imposes.
+
+Set a derived token directly and you own the result. Two things worth knowing
+if you move the ground:
+
+- The lightness steps for tints are `--tl-bg`, `--tl-bo` and `--tl-bgw`. They
+  are measured from an off-white page; on a darker one, tints land lighter than
+  the page and read as highlights. `example-brand.css` resets them.
+- A saturated page has less contrast headroom than an off-white one, so very
+  dark text tops out lower. Keep body text comfortably legible and it is fine.
+
+### Beyond color
+
+Color is not the whole of an identity. These are honored by every component
+that uses them, with no stylesheet holding a hardcoded value:
+
+| Lever           | Tokens                                     | Notes                                                                                                                                             |
+| --------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Typeface        | `--f-sans`, `--f-mono`                     | the design system serves only its own two faces; a brand pointing these elsewhere serves that font itself                                         |
+| Corner rounding | `--r-sm`, `--r-button`, `--r-md`, `--r-lg` | box corners                                                                                                                                       |
+|                 | `--r-full`                                 | **leave alone.** Radio and the Switch track use it to stay circular, and a square radio reads as a checkbox. Shape is carrying meaning, not style |
+| Type scale      | `--fs-1`–`--fs-11`, `--fs-hero`            | sequential, smallest to largest                                                                                                                   |
+| Density         | `--s-1`–`--s-12`                           | the whole spacing scale                                                                                                                           |
+| Motion          | `--t-fast`, `--t-base`, `--t-slow`         |                                                                                                                                                   |
+
+`--z-raised`, `--z-scrim`, `--z-modal` and `--z-toast` are not brand levers.
+They carry no identity, and changing them only breaks the layering of modals
+and toasts.
+
+There is no weight token: font weights are written into component stylesheets,
+so a face that wants 500 where the system asks for 600 cannot say so.
+
+`example-brand.css` sets the typeface and the box radii as well as its colors.
+
 ## Layout
 
 ```

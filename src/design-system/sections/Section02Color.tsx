@@ -115,11 +115,11 @@ export function Section02Color() {
         <div style={{ background: 'var(--c-bg)', color: 'var(--c-ink3)' }}>bg</div>
         <div style={{ background: 'var(--c-raised)', color: 'var(--c-ink3)' }}>raised</div>
         <div style={{ background: 'var(--c-surface)', color: 'var(--c-ink4)' }}>surface</div>
-        <div style={{ background: 'var(--c-warm-200)', color: 'var(--c-ink2)' }}>200</div>
-        <div style={{ background: 'var(--c-warm-300)', color: 'var(--c-ink)' }}>300</div>
+        <div style={{ background: 'var(--c-neutral-200)', color: 'var(--c-ink2)' }}>200</div>
+        <div style={{ background: 'var(--c-neutral-300)', color: 'var(--c-ink)' }}>300</div>
         <div style={{ background: 'var(--c-ink5)', color: 'var(--c-ink)' }}>400</div>
         <div style={{ background: 'var(--c-ink3)', color: 'white' }}>500</div>
-        <div style={{ background: 'var(--c-ink2)', color: 'var(--c-warm-300)' }}>700</div>
+        <div style={{ background: 'var(--c-ink2)', color: 'var(--c-neutral-300)' }}>700</div>
         <div style={{ background: 'var(--c-ink)', color: 'var(--c-ink5)' }}>ink</div>
       </div>
       <p className={s.note}>

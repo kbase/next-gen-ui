@@ -289,6 +289,19 @@ const PORTALS: readonly Portal[] = [
     version: 'v0.45.7',
     updated: '2026-08-23',
   },
+  {
+    slug: 'ideas-portal',
+    title: 'IDEAS Portal',
+    blurb:
+      'Open data releases from the IDEAS enzyme-design program — each published dataset as browsable tables mirroring the paper’s supplementary sheets, per-table CSV downloads, and a verifiable manifest over a typed relational schema.',
+    facets: [FACETS.proteins],
+    topics: ['Enzymes', 'Biomanufacturing', 'Data releases'],
+    // `ideas-portal sources --json`: the released dataset plus three enrichment providers.
+    sources: ['IDEAS program (Argonne)', 'PubChem', 'UniProt', 'RCSB PDB'],
+    version: 'v0.1.4',
+    updated: '2026-08-25',
+    undeployed: true,
+  },
 ];
 
 const ALL = 'all';

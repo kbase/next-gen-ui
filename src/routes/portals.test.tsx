@@ -28,7 +28,9 @@ function mountGallery() {
 }
 
 const cards = () => [...document.querySelectorAll<HTMLElement>(`.${styles.card}`)];
-const titleOf = (card: HTMLElement) => card.querySelector(`.${styles.titleRow} h3`)?.textContent;
+const titleOf = (card: HTMLElement) => card.querySelector(`.${styles.titleRow} h4`)?.textContent;
+const sections = () => [...document.querySelectorAll<HTMLElement>(`.${styles.section}`)];
+const headingOf = (section: HTMLElement) => section.querySelector('h3')?.textContent;
 const facetsOf = (card: HTMLElement) =>
   [...card.querySelectorAll(`.${styles.facets} > *`)].map((c) => c.textContent?.trim() ?? '');
 
@@ -61,6 +63,49 @@ describe('portal gallery', () => {
 
     for (const card of cards()) {
       expect(card.querySelector(`img.${styles.shot}`)).toBeTruthy();
+    }
+  });
+
+  it('groups every card under a headed, described section', async () => {
+    await mountGallery();
+
+    const grouped = sections().flatMap((s) => [
+      ...s.querySelectorAll<HTMLElement>(`.${styles.card}`),
+    ]);
+    expect(grouped).toEqual(cards());
+    for (const section of sections()) {
+      expect(headingOf(section)).toBeTruthy();
+      expect(section.querySelector('h3 svg')).toHaveAttribute('aria-hidden', 'true');
+      expect(section.querySelector(`.${styles.sectionDescription}`)?.textContent).toBeTruthy();
+      expect(section).toHaveAttribute('aria-labelledby', section.querySelector('h3')?.id);
+    }
+  });
+
+  // A section is a partition, not a filter: a facet cuts across sections,
+  // and a section it leaves empty is not shown.
+  it('drops a section that a facet filter empties', async () => {
+    const user = userEvent.setup();
+    await mountGallery();
+
+    const emptied = namedFilters().flatMap((facet) =>
+      sections()
+        .filter(
+          (s) =>
+            ![...s.querySelectorAll<HTMLElement>(`.${styles.card}`)].some((c) =>
+              facetsOf(c).includes(facet.label),
+            ),
+        )
+        .map((s) => ({ facet, heading: headingOf(s) })),
+    )[0];
+    expect(emptied).toBeTruthy();
+
+    await user.click(emptied!.facet.el);
+
+    const shown = sections();
+    expect(shown.length).toBeGreaterThan(0);
+    expect(shown.map(headingOf)).not.toContain(emptied!.heading);
+    for (const section of shown) {
+      expect(section.querySelectorAll(`.${styles.card}`).length).toBeGreaterThan(0);
     }
   });
 
@@ -114,6 +159,38 @@ describe('portal gallery', () => {
 
     await user.clear(search());
     expect(cards().map(titleOf)).toEqual(before);
+  });
+
+  // A query retrieves; the result list is flat, and each card says which
+  // section it came from. A facet pill browses, and keeps the sections.
+  it("flattens the gallery for a query, naming each card's section", async () => {
+    const user = userEvent.setup();
+    await mountGallery();
+
+    const headings = sections().map(headingOf);
+    const sectionOfTitle = new Map(
+      sections().flatMap((s) =>
+        [...s.querySelectorAll<HTMLElement>(`.${styles.card}`)].map((c) => [
+          titleOf(c),
+          headingOf(s),
+        ]),
+      ),
+    );
+
+    await user.type(search(), cards()[0]!.querySelector(`.${styles.titleRow} h4`)!.textContent!);
+    expect(sections()).toHaveLength(0);
+    expect(cards().length).toBeGreaterThan(0);
+    for (const card of cards()) {
+      expect(card.querySelector(`.${styles.sectionLabel}`)?.textContent).toBe(
+        sectionOfTitle.get(titleOf(card)),
+      );
+    }
+
+    await user.clear(search());
+    await user.click(namedFilters()[0].el);
+    expect(sections().length).toBeGreaterThan(0);
+    expect(headings).toEqual(expect.arrayContaining(sections().map(headingOf)));
+    expect(document.querySelector(`.${styles.sectionLabel}`)).toBeNull();
   });
 
   it('offers a way back when a search matches nothing', async () => {

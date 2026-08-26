@@ -164,10 +164,6 @@
   box-shadow: inset 0 0 0 1px var(--filter-bo, var(--c-primary));
 }
 
-.sort {
-  margin-left: auto;
-}
-
 .count {
   margin-top: var(--s-7);
   color: var(--c-ink3);
@@ -189,12 +185,49 @@
   text-decoration: underline;
 }
 
+/* Heading and description beside the cards, not above them: a full-width
+   heading between two grids reads as a band across the page, and a section
+   holding one card would show that card beside two empty slots. */
+.section {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: var(--s-9);
+  margin-top: var(--s-8);
+}
+
+.section + .section {
+  padding-top: var(--s-8);
+  border-top: 1px solid var(--c-border);
+}
+
+.sectionHeading {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+/* Colour is set inline per section, from the same tokens as the filter pills. */
+.sectionHeading svg {
+  flex-shrink: 0;
+}
+
+.sectionDescription {
+  margin-top: var(--s-4);
+  color: var(--c-ink3);
+  font-size: var(--fs-4);
+  line-height: 1.6;
+}
+
 .grid {
   list-style: none;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
   gap: var(--s-8);
-  margin-top: var(--s-7);
+}
+
+/* A search result list, outside any .section. */
+.results {
+  margin-top: var(--s-8);
 }
 
 .card {
@@ -275,6 +308,15 @@
 .cardBody {
   flex: 1;
   padding: var(--s-7);
+}
+
+.sectionLabel {
+  margin-bottom: var(--s-3);
+  color: var(--c-ink4);
+  font-size: var(--fs-2);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 .titleRow {
@@ -360,6 +402,14 @@
   color: var(--c-ink2);
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+/* Below this the label column plus two cards no longer fit. */
+@media (max-width: 960px) {
+  .section {
+    grid-template-columns: 1fr;
+    gap: var(--s-6);
+  }
 }
 
 @media (max-width: 640px) {

@@ -392,7 +392,8 @@ const DECLARED: readonly Portal[] = [
     updated: '2026-08-24',
   },
   {
-    slug: 'ideas-portal',
+    // Repo and CLI are `ideas-portal`; the deployed path is /portals/ideas/.
+    slug: 'ideas',
     title: 'IDEAS Portal',
     blurb:
       'Open data releases from the IDEAS enzyme-design program — each published dataset as browsable tables mirroring the paper’s supplementary sheets, per-table CSV downloads, and a verifiable manifest over a typed relational schema.',
@@ -401,9 +402,10 @@ const DECLARED: readonly Portal[] = [
     topics: ['Enzymes', 'Biomanufacturing', 'Data releases'],
     // `ideas-portal sources --json`: the released dataset plus three enrichment providers.
     sources: ['IDEAS program (Argonne)', 'PubChem', 'UniProt', 'RCSB PDB'],
+    // The deployed portal prints no app version (the "v1" it shows is the
+    // dataset's), so this is the newest tag.
     version: 'v0.1.4',
     updated: '2026-08-25',
-    undeployed: true,
   },
 ];
 

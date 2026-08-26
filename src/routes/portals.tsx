@@ -286,8 +286,8 @@ const PORTALS: readonly Portal[] = [
     topics: ['Phage', 'Host range', 'Receptors'],
     // No sources registry yet; these are from the README and docs/STORAGE.md.
     sources: ['Phage Foundry (DOE BER)', 'GenomeDepot'],
-    version: 'v0.45.7',
-    updated: '2026-08-23',
+    version: 'v0.46.0',
+    updated: '2026-08-24',
   },
   {
     slug: 'ideas-portal',

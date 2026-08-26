@@ -41,6 +41,19 @@
   svg {
     display: block;
   }
+
+  /* Disabled options are dimmed rather than hidden, so the number of options does not change
+     when a credential is added. Base UI renders each radio as a span, so `:disabled` does not
+     match it; use [data-disabled]. */
+  &[data-disabled] {
+    cursor: default;
+    opacity: 0.45;
+
+    &:hover {
+      color: var(--c-ink4);
+      background: var(--c-surface);
+    }
+  }
 }
 
 .btn[data-checked] {

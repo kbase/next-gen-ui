@@ -324,10 +324,23 @@
   --t-base: 0.15s; /* control state: border, focus ring, switch */
   --t-slow: 0.3s; /* a value animating to a new one */
 
-  /* stacking */
+  /* Stacking order.
+
+     --z-scrim and --z-modal are a pair: a dialog's backdrop and the dialog itself. Do not add
+     anything between them.
+
+     --z-anchored is higher than --z-modal because anchored overlays are often opened from
+     inside a dialog, for example a select in a form or a tooltip on a field. A lower value
+     would hide them behind the dialog. While a dialog is open the rest of the page is inert,
+     so an anchored overlay outside the dialog cannot be opened over the backdrop.
+
+     Apply --z-anchored to the positioner, not the popup. Base UI positions the popup with a
+     transform, which makes the positioner a stacking context, so a z-index on the popup has
+     no effect outside it. */
   --z-raised: 1;
   --z-scrim: 100;
   --z-modal: 101;
+  --z-anchored: 150; /* popover, tooltip, menu, select, autocomplete */
   --z-toast: 200;
 
   /* spacing */

@@ -18,7 +18,7 @@ export interface PopupProps extends Omit<BasePopover.Popup.Props, 'className'> {
 export function Popup({ className, ...props }: PopupProps) {
   return (
     <BasePopover.Portal>
-      <BasePopover.Positioner>
+      <BasePopover.Positioner className={styles.positioner}>
         <BasePopover.Popup className={cx(styles.popup, className)} {...props} />
       </BasePopover.Positioner>
     </BasePopover.Portal>

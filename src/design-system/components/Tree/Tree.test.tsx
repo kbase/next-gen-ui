@@ -90,3 +90,23 @@ describe('Tree', () => {
     expect(onExpandedChange).toHaveBeenCalledWith([]);
   });
 });
+
+describe('the content slot', () => {
+  it('renders content in place of the label and still uses the label as the accessible name', () => {
+    render(
+      <Tree
+        aria-label="Artifacts"
+        items={[
+          {
+            id: 'fig',
+            label: 'host-range.png',
+            content: <img src="/thumb.png" alt="" />,
+          },
+        ]}
+      />,
+    );
+    const row = screen.getByRole('treeitem', { name: 'host-range.png' });
+    expect(row).toBeInTheDocument();
+    expect(row.querySelector('img')).toBeInTheDocument();
+  });
+});

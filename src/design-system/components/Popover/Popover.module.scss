@@ -1,3 +1,8 @@
+/* Set the z-index here, not on .popup. See --z-anchored in tokens.css. */
+.positioner {
+  z-index: var(--z-anchored);
+}
+
 .popup {
   background: var(--c-surface);
   border: 1px solid var(--c-border);

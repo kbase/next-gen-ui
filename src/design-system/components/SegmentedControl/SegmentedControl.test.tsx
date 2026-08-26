@@ -59,3 +59,26 @@ describe('SegmentedControl', () => {
     expect(screen.getByRole('radio', { name: 'Grid' })).toBeInTheDocument();
   });
 });
+
+describe('option description and disabled state', () => {
+  it('shows the description on hover and disables the option', () => {
+    render(
+      <SegmentedControl
+        aria-label="Model route"
+        value="direct"
+        onChange={() => {}}
+        options={[
+          { value: 'direct', label: 'Direct', description: 'Your own API key.' },
+          { value: 'gateway', label: 'Gateway', description: 'No credential yet.', disabled: true },
+        ]}
+      />,
+    );
+    expect(screen.getByRole('radio', { name: 'Direct' })).toHaveAttribute(
+      'title',
+      'Your own API key.',
+    );
+    // Base UI renders the radio as a span, so it sets aria-disabled rather than the native
+    // attribute. The dimming in the stylesheet uses [data-disabled] for the same reason.
+    expect(screen.getByRole('radio', { name: 'Gateway' })).toHaveAttribute('aria-disabled', 'true');
+  });
+});

@@ -9,6 +9,9 @@ export interface SegmentOption {
   label: string;
   /** Shown instead of the label; the label then names the segment for screen readers. */
   icon?: ReactNode;
+  /** A longer explanation of the option, shown as a tooltip on hover. */
+  description?: string;
+  disabled?: boolean;
 }
 
 export interface SegmentedControlProps {
@@ -44,6 +47,8 @@ export function SegmentedControl({
           key={opt.value}
           value={opt.value}
           className={styles.btn}
+          disabled={opt.disabled}
+          title={opt.description}
           aria-label={opt.icon ? opt.label : undefined}
         >
           {opt.icon ?? opt.label}

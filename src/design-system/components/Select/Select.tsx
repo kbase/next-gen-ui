@@ -32,7 +32,7 @@ export function Popup(props: Omit<BaseSelect.Popup.Props, 'className'> & { class
   const { className, ...rest } = props;
   return (
     <BaseSelect.Portal>
-      <BaseSelect.Positioner>
+      <BaseSelect.Positioner className={styles.positioner}>
         <BaseSelect.Popup className={cx(styles.popup, className)} {...rest} />
       </BaseSelect.Positioner>
     </BaseSelect.Portal>

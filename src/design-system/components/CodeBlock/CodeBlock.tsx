@@ -1,10 +1,12 @@
 import { useMemo, Fragment, type ReactNode } from 'react';
 import Prism from 'prismjs';
 import type { Token } from 'prismjs';
-import 'prismjs/components/prism-python';
-import 'prismjs/components/prism-typescript';
-import 'prismjs/components/prism-jsx';
-import 'prismjs/components/prism-tsx';
+// Keep the .js extension. Bundlers resolve these paths without it, but Node's ESM resolver
+// does not, which breaks importing this package under vitest or during server-side rendering.
+import 'prismjs/components/prism-python.js';
+import 'prismjs/components/prism-typescript.js';
+import 'prismjs/components/prism-jsx.js';
+import 'prismjs/components/prism-tsx.js';
 import { CaretDown } from '@phosphor-icons/react';
 import * as Collapsible from '../Collapsible';
 import { cx } from '../../util/cx';

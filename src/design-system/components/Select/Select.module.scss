@@ -1,3 +1,8 @@
+/* Set the z-index here, not on .popup. See --z-anchored in tokens.css. */
+.positioner {
+  z-index: var(--z-anchored);
+}
+
 .trigger {
   font-family: var(--f-sans);
   font-size: var(--fs-4);

@@ -175,7 +175,10 @@ export function Section05Actions() {
         One choice from a short, always-visible set &mdash; a view, a time range. It is a radio
         group: one tab stop, and the arrow keys move between segments. An icon-only segment takes
         its accessible name from <code>label</code>, and the group itself needs an{' '}
-        <code>aria-label</code> unless a visible label points at it.
+        <code>aria-label</code> unless a visible label points at it. Use <code>description</code> to
+        explain an option the label has no room for; it is shown on hover. Use <code>disabled</code>{' '}
+        for an option that is not currently available, such as a route with no API key configured. A
+        disabled option is dimmed rather than removed, so the list does not change length.
       </p>
       <div className={s.row}>
         <SegmentedControl
@@ -198,6 +201,20 @@ export function Section05Actions() {
             { value: 'month', label: 'Month' },
           ]}
         />
+        <SegmentedControl
+          aria-label="Model route"
+          value="direct"
+          onChange={() => {}}
+          options={[
+            { value: 'direct', label: 'Direct', description: 'Your own API key, billed to you.' },
+            {
+              value: 'gateway',
+              label: 'Gateway',
+              description: 'No credential configured for the gateway yet.',
+              disabled: true,
+            },
+          ]}
+        />
       </div>
       <CodeBlock
         language="tsx"
@@ -208,6 +225,16 @@ export function Section05Actions() {
   options={[
     { value: 'table', icon: <TableIcon size={14} />, label: 'Table' },
     { value: 'grid', icon: <SquaresFour size={14} />, label: 'Grid' },
+  ]}
+/>
+
+<SegmentedControl
+  aria-label="Model route"
+  value={route}
+  onChange={setRoute}
+  options={[
+    { value: 'direct', label: 'Direct', description: 'Your own API key, billed to you.' },
+    { value: 'gateway', label: 'Gateway', description: 'No credential configured yet.', disabled: true },
   ]}
 />`}
       />

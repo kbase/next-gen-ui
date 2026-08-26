@@ -14,6 +14,11 @@ import { cx } from '../../util/cx';
 export interface TreeNode {
   id: string;
   label: string;
+  /**
+   * Rendered in place of `label` when a row needs more than text, such as a thumbnail or a
+   * size next to a download link. `label` is still used for filtering and as the accessible name.
+   */
+  content?: ReactNode;
   icon?: ReactNode;
   /** Right-aligned suffix (size, count, status). Always visible. */
   suffix?: ReactNode;
@@ -198,6 +203,8 @@ function Item({ node, depth, selected, expanded, onSelect, onToggle, onContextMe
       role="treeitem"
       aria-expanded={hasChildren ? isExpanded : undefined}
       aria-selected={isSelected}
+      // Only needed when `content` replaces the label; otherwise the label is the row's text.
+      aria-label={node.content ? node.label : undefined}
     >
       <div
         className={cx(styles.item, isSelected && styles.selected)}
@@ -218,7 +225,7 @@ function Item({ node, depth, selected, expanded, onSelect, onToggle, onContextMe
           {hasChildren && <CaretRight size={10} weight="bold" />}
         </span>
         <span className={styles.icon}>{node.icon || (!hasChildren && <File size={13} />)}</span>
-        <span className={styles.label}>{node.label}</span>
+        <span className={styles.label}>{node.content ?? node.label}</span>
         {node.suffix && <span className={styles.suffix}>{node.suffix}</span>}
         {node.actions && <span className={styles.actions}>{node.actions}</span>}
       </div>

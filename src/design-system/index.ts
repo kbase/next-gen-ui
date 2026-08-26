@@ -84,6 +84,7 @@ export * as AlertDialog from './components/AlertDialog';
 export * as Tooltip from './components/Tooltip';
 export * as Popover from './components/Popover';
 export * as Menu from './components/Menu';
+export * as Toast from './components/Toast';
 export { useToastManager } from './components/Toast';
 
 // Domain

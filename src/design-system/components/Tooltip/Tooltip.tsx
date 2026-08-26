@@ -31,7 +31,12 @@ export interface PopupProps extends Omit<BaseTooltip.Popup.Props, 'className'> {
 export function Popup({ className, side, align, sideOffset, ...props }: PopupProps) {
   return (
     <BaseTooltip.Portal>
-      <BaseTooltip.Positioner side={side} align={align} sideOffset={sideOffset}>
+      <BaseTooltip.Positioner
+        className={styles.positioner}
+        side={side}
+        align={align}
+        sideOffset={sideOffset}
+      >
         <BaseTooltip.Popup className={cx(styles.popup, className)} {...props} />
       </BaseTooltip.Positioner>
     </BaseTooltip.Portal>

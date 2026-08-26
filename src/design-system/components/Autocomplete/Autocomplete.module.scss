@@ -5,6 +5,8 @@
 .positioner {
   /* Base UI sets this from the input's measured width. */
   width: var(--anchor-width);
+  /* Set the z-index here, not on .popup. See --z-anchored in tokens.css. */
+  z-index: var(--z-anchored);
 }
 
 .popup {

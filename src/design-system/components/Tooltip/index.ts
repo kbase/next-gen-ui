@@ -1,1 +1,1 @@
-export { Root, Trigger, Popup } from './Tooltip';
+export { Provider, Root, Trigger, Popup } from './Tooltip';

@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import * as Toast from '@kbase/design-system/components/Toast';
+import { Toast } from '@kbase/design-system';
 
 import { Showcase } from '@kbase/design-system/Showcase';
 

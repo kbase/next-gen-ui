@@ -31,10 +31,7 @@ const FACETS = {
   proteins: { label: 'Proteins', color: 'purple' },
 } as const satisfies Record<string, PortalFacet>;
 
-type SectionKey = 'kbase' | 'project' | 'data';
-
 interface Section {
-  key: SectionKey;
   heading: string;
   /** From the design-system icon glossary, so its meaning is taken, not chosen here. */
   icon: Icon;
@@ -44,35 +41,34 @@ interface Section {
   description: string;
 }
 
-// Rendered in this order. A section is a partition, not a filter: the facet
+// Rendered in key order. A section is a partition, not a filter: the facet
 // pills cut across all three, and a section with nothing left in it is not
 // shown. A pill is browsing; a query is retrieving, and retrieval gets a
 // flat list with each card naming its section, since grouping a result
-// list only buries the best match under the section order.
-const SECTIONS: readonly Section[] = [
-  {
-    key: 'kbase',
+// list only buries the best match under section order.
+const SECTIONS = {
+  kbase: {
     heading: 'KBase Knowledge Portals',
     icon: Brain, // Knowledge, memory
     color: 'primary',
     description:
       'General-purpose portals from KBase, built for researchers on any project to pursue their own questions.',
   },
-  {
-    key: 'project',
+  project: {
     heading: 'Project Knowledge Portals',
     icon: Database, // Database, warehouse: the tenant the portal sits over
     color: 'orange',
     description: 'Portals from a research project, grounded in its data, with purpose-built tools.',
   },
-  {
-    key: 'data',
+  data: {
     heading: 'Project Data Resources',
     icon: Files, // Data, file set
     color: 'teal',
     description: 'Data from a research project, released for use in your own work.',
   },
-];
+} as const satisfies Record<string, Section>;
+
+type SectionKey = keyof typeof SECTIONS;
 
 interface Portal {
   /** Also the thumbnail filename: `public/portal-thumbs/<slug>.webp`. */
@@ -98,8 +94,10 @@ interface Portal {
 // Every field below is copied from somewhere authoritative. None of it is
 // written from memory, and none of it is inferred. Where each comes from:
 //
-//   slug        the app's id -- its repo name under kbaseincubator, its key
-//               in the KIND*AI manifest, and its thumbnail filename.
+//   slug        the path segment under PORTAL_BASE, and the thumbnail
+//               filename. Usually also the repo name under kbaseincubator
+//               and the key in the KIND*AI manifest; the deployed path wins
+//               when they differ (IDEAS: repo ideas-portal, path ideas).
 //   title       manifest `title`, in the KIND*AI repo at plugins/<slug>.json.
 //   blurb       manifest `description`, condensed. RELEASES.md often carries
 //               detail worth folding in.
@@ -358,27 +356,6 @@ const DECLARED: readonly Portal[] = [
     undeployed: true,
   },
   {
-    slug: 'pwdna',
-    title: 'PW-DNA Portal',
-    blurb:
-      'NETL’s Produced Water DNA Database — 5,438 samples from oil and gas basins, cross-filtered by map, chemistry, sample metadata, datatype, taxonomy, community ordination, and projected function.',
-    section: 'project',
-    facets: [FACETS.environment, FACETS.ecology],
-    topics: ['Produced water', 'Amplicons', 'Geochemistry'],
-    // docs/DATA.md: the netl.pw_dna tenant, plus the trait tables projected
-    // onto its amplicon samples via NCBI taxids.
-    sources: [
-      'PW-DNA — Produced Water DNA Database (NETL / USGS)',
-      'NCBI Taxonomy',
-      'Unified microbial trait tables (metaTraits · FAPROTAX · BactoTraits · IJSEM)',
-    ],
-    // The repo has no tags; this is the README's status badge, and `updated`
-    // is the last commit on the default branch.
-    version: 'v0.1',
-    updated: '2026-08-12',
-    undeployed: true,
-  },
-  {
     slug: 'phagecast',
     title: 'Phagecast',
     blurb:
@@ -605,24 +582,27 @@ function Gallery() {
           to see all {PORTALS.length}.
         </p>
       ) : q !== '' ? (
-        <ul className={`${styles.grid} ${styles.results}`}>
-          {visible.map((portal) => (
-            <li key={portal.slug}>
-              <PortalCard
-                portal={portal}
-                sectionLabel={SECTIONS.find((s) => s.key === portal.section)?.heading}
-              />
-            </li>
-          ))}
-        </ul>
+        <>
+          <h3 id="results-heading" className={styles.srOnly}>
+            Search results
+          </h3>
+          <ul className={`${styles.grid} ${styles.results}`} aria-labelledby="results-heading">
+            {visible.map((portal) => (
+              <li key={portal.slug}>
+                <PortalCard portal={portal} sectionLabel={SECTIONS[portal.section].heading} />
+              </li>
+            ))}
+          </ul>
+        </>
       ) : (
-        SECTIONS.map((section) => {
-          const members = visible.filter((p) => p.section === section.key);
+        (Object.keys(SECTIONS) as SectionKey[]).map((key) => {
+          const section = SECTIONS[key];
+          const members = visible.filter((p) => p.section === key);
           if (members.length === 0) return null;
-          const headingId = `section-${section.key}`;
+          const headingId = `section-${key}`;
           return (
-            <section key={section.key} className={styles.section} aria-labelledby={headingId}>
-              <div className={styles.sectionHead}>
+            <section key={key} className={styles.section} aria-labelledby={headingId}>
+              <div>
                 <h3 id={headingId} className={`h3 ${styles.sectionHeading}`}>
                   <section.icon
                     size={18}
@@ -705,7 +685,7 @@ function PortalCard({ portal, sectionLabel }: { portal: Portal; sectionLabel?: s
         href={`${PORTAL_BASE}${portal.slug}/`}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label={`Open the ${portal.title} portal (opens in a new tab)`}
+        aria-label={`Open the ${portal.title} portal${sectionLabel ? ` in ${sectionLabel}` : ''} (opens in a new tab)`}
       >
         {body}
       </a>

@@ -215,11 +215,6 @@
   flex: 1;
 }
 
-.shotEmpty {
-  aspect-ratio: 8 / 5;
-  border-bottom: 1px solid var(--c-border);
-}
-
 .topics {
   margin-top: var(--s-5);
   color: var(--c-ink4);

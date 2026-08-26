@@ -1,14 +1,6 @@
 import { useMemo, useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
-import {
-  Accordion,
-  ButtonLink,
-  Chip,
-  EmptyState,
-  Frame,
-  SearchBar,
-  Select,
-} from '@kbase/design-system';
+import { Accordion, ButtonLink, Chip, Frame, SearchBar, Select } from '@kbase/design-system';
 import type { ChipColor } from '@kbase/design-system';
 import { ArrowUpRight } from '@phosphor-icons/react';
 
@@ -51,7 +43,7 @@ interface Portal {
   version: string;
   /** ISO 8601: the commit date of this version's tag. */
   updated: string;
-  /** No screenshot in public/portal-thumbs yet. */
+  /** Not rendered: no public/portal-thumbs/<slug>.webp yet. */
   undeployed?: true;
 }
 
@@ -78,8 +70,9 @@ interface Portal {
 //                 gh api repos/kbaseincubator/<repo>/tags
 //                 gh api repos/kbaseincubator/<repo>/commits/<sha>
 //   undeployed  set when there is no public/portal-thumbs/<slug>.webp yet.
-//               The ONLY thing it changes is the thumbnail, which becomes an
-//               EmptyState. The card still links out, exactly like any other.
+//               The entry is kept out of PORTALS entirely, so the card, the
+//               count and the filter row do not see it. Deploy, capture the
+//               thumbnail, delete the flag.
 //
 // SOURCES
 //
@@ -114,7 +107,7 @@ interface Portal {
 // so an uncleared entry is readable whether or not it is rendered. Array
 // order is the `default` sort.
 // ══════════════════════════════════════════════════════════════════════════
-const PORTALS: readonly Portal[] = [
+const DECLARED: readonly Portal[] = [
   {
     slug: 'genknown',
     title: 'genKnown',
@@ -303,6 +296,8 @@ const PORTALS: readonly Portal[] = [
     undeployed: true,
   },
 ];
+
+const PORTALS = DECLARED.filter((p) => !p.undeployed);
 
 const ALL = 'all';
 
@@ -574,18 +569,14 @@ function PortalCard({ portal }: { portal: Portal }) {
         rel="noopener noreferrer"
         aria-label={`Open the ${portal.title} portal (opens in a new tab)`}
       >
-        {portal.undeployed ? (
-          <EmptyState title="No screenshot yet" className={styles.shotEmpty} />
-        ) : (
-          <img
-            className={styles.shot}
-            src={`/portal-thumbs/${portal.slug}.webp`}
-            alt={`Screenshot of the ${portal.title} portal`}
-            width={640}
-            height={400}
-            loading="lazy"
-          />
-        )}
+        <img
+          className={styles.shot}
+          src={`/portal-thumbs/${portal.slug}.webp`}
+          alt={`Screenshot of the ${portal.title} portal`}
+          width={640}
+          height={400}
+          loading="lazy"
+        />
         <div className={styles.cardBody}>
           <div className={styles.titleRow}>
             <h3 className="h3">{portal.title}</h3>

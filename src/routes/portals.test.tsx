@@ -54,17 +54,13 @@ describe('portal gallery', () => {
     }
   });
 
-  // A card shows a screenshot or a stand-in for one, never both and never
-  // neither, and links out either way: the portal exists whether or not we
-  // have captured it.
-  it('gives every card a thumbnail or a stand-in, and links either way', async () => {
+  // A portal without a captured thumbnail is not rendered at all, so every
+  // card that is rendered has one.
+  it('gives every card a thumbnail', async () => {
     await mountGallery();
 
     for (const card of cards()) {
-      const hasShot = Boolean(card.querySelector(`img.${styles.shot}`));
-      const hasStandIn = Boolean(card.querySelector(`.${styles.shotEmpty}`));
-      expect(hasShot).not.toBe(hasStandIn);
-      expect(card.querySelector('a[href]')).toBeTruthy();
+      expect(card.querySelector(`img.${styles.shot}`)).toBeTruthy();
     }
   });
 

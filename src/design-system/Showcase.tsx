@@ -336,6 +336,7 @@ export function Showcase() {
                 title: 'Assembly complete',
                 description: '12,847 contigs assembled. N50: 8,241 bp.',
                 timeout: 5000,
+                actionProps: { children: 'View report', onClick: () => {} },
               })
             }
           />

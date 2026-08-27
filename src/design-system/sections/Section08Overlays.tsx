@@ -139,7 +139,7 @@ export function Section08Overlays({ onShowToast }: Section08OverlaysProps) {
       <div className={s.sub}>Toast</div>
       <p className={s.note}>
         Transient feedback. Triggered via <code>useToastManager</code>; auto-dismisses after
-        timeout.
+        timeout. <code>actionProps</code> adds one control, and renders nothing when absent.
       </p>
       <Button variant="outline" onClick={onShowToast}>
         <CheckCircle size={14} /> Show toast
@@ -152,6 +152,7 @@ toasts.add({
   title: 'Assembly complete',
   description: '12,847 contigs assembled.',
   timeout: 5000,
+  actionProps: { children: 'View report', onClick: open },
 });`}
       />
 

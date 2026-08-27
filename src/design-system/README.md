@@ -237,6 +237,35 @@ new component:
 3. Optional: add to the showcase tour at `/design-system`.
 4. New external dependency? See [Externals](#externals).
 
+### Composing a trigger
+
+Base UI parts reach the element `render` returns through a ref, so anything
+here with a `render =` default must be a `forwardRef`. React 18 cannot pass a
+ref to a plain function component; React 19 can, which hides the mistake. The
+suite runs on both.
+
+```tsx
+<Tooltip.Trigger render={<Toolbar.Button aria-label="Refresh" />} />
+```
+
+### Toast actions
+
+`useToastManager().add()` takes `actionProps`: one control, rendered inside
+the message. Nothing renders when it is absent.
+
+```tsx
+toasts.add({
+  title: 'Assembly complete',
+  actionProps: { children: 'View report', onClick: open },
+});
+```
+
+### Code languages
+
+`CodeBlock` bundles python, typescript, jsx and tsx, and accepts any other
+grammar the host has registered on Prism, which is a peer dependency. An
+unregistered language renders unhighlighted.
+
 ---
 
 ## In-repo usage

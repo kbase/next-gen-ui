@@ -11,6 +11,7 @@ import { Frame } from '../components/Frame';
 import * as Accordion from '../components/Accordion';
 import * as Collapsible from '../components/Collapsible';
 import * as Toolbar from '../components/Toolbar';
+import * as Tooltip from '../components/Tooltip';
 import { Avatar } from '../components/Avatar';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { CodeBlock } from '../components/CodeBlock';
@@ -159,12 +160,28 @@ export function Section09Layout() {
           </Toolbar.Group>
           <Toolbar.Separator />
           <Toolbar.Group>
-            <Toolbar.Button aria-label="Refresh">
-              <ArrowClockwise size={14} />
-            </Toolbar.Button>
-            <Toolbar.Button aria-label="Full screen">
-              <ArrowsOut size={14} />
-            </Toolbar.Button>
+            {/* A composed trigger: the case that breaks if a wrapper does not forward its
+                ref. */}
+            <Tooltip.Root>
+              <Tooltip.Trigger
+                render={
+                  <Toolbar.Button aria-label="Refresh">
+                    <ArrowClockwise size={14} />
+                  </Toolbar.Button>
+                }
+              />
+              <Tooltip.Popup>Refresh</Tooltip.Popup>
+            </Tooltip.Root>
+            <Tooltip.Root>
+              <Tooltip.Trigger
+                render={
+                  <Toolbar.Button aria-label="Full screen">
+                    <ArrowsOut size={14} />
+                  </Toolbar.Button>
+                }
+              />
+              <Tooltip.Popup>Full screen</Tooltip.Popup>
+            </Tooltip.Root>
           </Toolbar.Group>
         </Toolbar.Root>
       </Frame>

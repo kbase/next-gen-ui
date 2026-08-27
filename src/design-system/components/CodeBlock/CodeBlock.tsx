@@ -12,7 +12,9 @@ import * as Collapsible from '../Collapsible';
 import { cx } from '../../util/cx';
 import styles from './CodeBlock.module.scss';
 
-export type CodeBlockLanguage = 'python' | 'typescript' | 'jsx' | 'tsx';
+/** The grammars bundled here, plus any other the host has registered on Prism. `prismjs` is a
+ *  peer dependency, so there is one registry. An unregistered language renders unhighlighted. */
+export type CodeBlockLanguage = 'python' | 'typescript' | 'jsx' | 'tsx' | (string & {});
 
 export interface CodeBlockProps {
   code: string;

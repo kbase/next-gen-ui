@@ -4,22 +4,20 @@
    in front of the others. The whole figure turns.
 
    A pose is (a, theta, e): the angle along the loop, the figure's rotation,
-   and an envelope from 0 (the logo row) to 1 (the braid). Each part chains
-   two animations: an enter that ramps e with a smoothstep while a and the
-   turn run on, then the loop, delayed by exactly that long. At the junction
-   position and velocity both match; a straight line from the row to a point
-   on the braid would arrive from the wrong direction. The enter's turn runs
-   from minus half its sweep to zero, and at e < 1 each dot is offset to sit
-   in a screen-space row inside the turned frame, so the enter's first frame
-   is the logo row.
+   and an envelope from 0 (the logo row) to 1 (the braid). The enter ramps e
+   with a smoothstep while a and the turn run on, so where the loop takes
+   over position and velocity both match; a straight line from the row to a
+   point on the braid would arrive from the wrong direction. The enter's turn
+   runs from minus half its sweep to zero, and at e < 1 each dot is offset to
+   sit in a screen-space row inside the turned frame, so the enter's first
+   frame is the logo row.
 
-   The animations are always declared; `data-active` only sets their play
-   state. Idle, they are paused on that first frame, which is the logo.
-   Firefox and Safari render an element differently once it is animated, so
-   adding the animations on start would change how the translucent circles
-   overlap at that instant; paused and running render the same way. For the
-   same reason the circles composite like the favicon — opacity, no blend
-   mode — in every state.
+   Idle is that first frame, paused, rather than no animation: Firefox and
+   Safari render an element differently once it is animated, so adding the
+   animations on start would change how the translucent circles overlap at
+   that instant. A blend mode applied only while braided would switch at the
+   same instant, so the circles composite like the favicon — opacity, no
+   blend mode — in every state.
 
    Stopping is Loader.tsx's job: the pose at that instant is only known at
    runtime. It reads the parameters from the --loader-* custom properties
@@ -74,10 +72,9 @@ $dots: (1 0deg -11, 2 120deg 0, 3 240deg 11);
   @return $u * $u * $u - math.div($u * $u * $u * $u, 2);
 }
 
-// $turn null: no turn
 @mixin keyframes($suffix, $tx, $ty, $gain, $lap, $turn) {
   $sweep: 360deg * math.div($enter, $lap); // loop angle covered during the enter
-  $spin: 0deg; // turn at full rate for the enter's duration
+  $spin: 0deg; // angle the turn covers in the enter's duration at full rate
   @if $turn {
     $spin: 360deg * math.div($enter, $turn);
   }

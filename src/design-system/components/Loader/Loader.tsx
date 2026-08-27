@@ -7,19 +7,16 @@ import { cx } from '../../util/cx';
 /* The braid and its start are CSS animations (Loader.module.scss) that
    `data-active` plays and pauses, so they run without JS. Stopping needs the
    pose at that instant, so it is done here: the CSS animations' currentTime
-   gives the pose, and a one-shot Web Animation ramps the envelope back to 0
-   while a and the turn run on, then decelerate — the same cubic the enter
-   uses, except it also carries the envelope's rate across, so stopping
-   mid-enter is continuous too. The dots settle into a row in screen space
-   inside the turned frame; the frame never unwinds. That resting row and the
-   CSS animations' first frame are the same pixels, so the settle ends by
-   rewinding them to 0, paused, and the next start plays from there.
+   gives the pose, and a one-shot Web Animation settles the dots into a row
+   in screen space inside the turned frame; the frame never unwinds. That row
+   and the CSS animations' first frame are the same pixels, so the settle
+   ends by rewinding them to 0, paused, and the next start plays from there.
 
    `data-active` stays set until the settle has finished: script animations
    compose over CSS ones, so the loop underneath is inert until it is
-   rewound. Out of view the animations are paused. */
+   rewound. */
 
-/* Read from the --loader-* custom properties; ms and user units. */
+/* From the --loader-* custom properties; ms and viewBox units. */
 interface Params {
   tx: number;
   ty: number;
@@ -169,9 +166,9 @@ export function Loader({ size = 48, active = true, svgFilter, label, className }
     if (settle.current || !svg.hasAttribute('data-active')) return;
     const css = svg.getAnimations({ subtree: true }).filter((a) => 'animationName' in a);
     // The loop's time; the finished enters hold at their end.
-    const t = Math.max(0, ...css.map((a) => Number(a.currentTime ?? 0)));
+    const elapsed = Math.max(0, ...css.map((a) => Number(a.currentTime ?? 0)));
     const p = readParams(svg.parentElement ?? svg);
-    const from = cssPose(t, p);
+    const from = cssPose(elapsed, p);
     const poseAt = (t: number) => rampPose(from, 0, p.exit, p, t);
     const frames = Array.from({ length: RAMP_STEPS + 1 }, (_, j) =>
       poseAt((p.exit * j) / RAMP_STEPS),

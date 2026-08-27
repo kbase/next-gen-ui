@@ -1,35 +1,23 @@
-/* ================================================================
-   KBASE LOADER: "Braid"
+/* The mini-logo's three dots (favicon.svg), braided. Each dot traces the
+   same figure-eight a third of a lap apart — x = sin a, y = sin 2a — and
+   its size stands in for depth, so at each center crossing one dot passes
+   in front of the others. The whole figure turns.
 
-   The three dots of the mini-logo (favicon.svg), each keeping its color,
-   braided: every dot traces the same figure-eight a third of a lap apart.
-   In 3D the path is a ring seen edge-on (x = sin a, depth = cos a) with a
-   vertical bob at double rate (y = sin 2a); depth shows as size, so a dot
-   crossing the center passes visibly in front of or behind the others.
-   The whole figure turns slowly so the braid has no fixed axis.
+   Rest positions are the logo row; keyframes translate from each dot's
+   rest offset, so with animation off the loader is the static logo.
 
-   Only `transform` animates. The dots' rest positions are the logo row,
-   so the keyframes translate relative to each dot's rest offset.
-
-   Under prefers-reduced-motion the braid keeps running, smaller and
-   slower and without the turn: the guidance behind the query targets
-   large-field movement (spinning, zooming, sliding), and a loader that
-   goes still stops being a loader. global.css resets every animation
-   with !important there, so the reduced rules carry !important too and
-   outrank it on specificity.
-
-   The parameters were chosen on an interactive tuning page; travel is
-   coupled to the depth gain (travel = base × (1 + gain) / 1.15) so the
-   front dot's overlap with its neighbours is the same at any gain.
-   ================================================================ */
+   Under prefers-reduced-motion the braid runs smaller, slower, and without
+   the turn — reduced rather than removed, because a still loader does not
+   read as loading. global.css sets `animation: none !important` there;
+   these rules carry !important and win on specificity. */
 
 @use 'sass:math';
 
 $radius: 9;
 $travel-x: 12.43;
 $travel-y: 10.74;
-$depth-gain: 0.3; // near dot scales to 1.3, far dot to 0.7
-$depth-phase: 180deg; // where on the loop a dot is nearest: the second center crossing
+$depth-gain: 0.3;
+$depth-phase: 180deg; // angle along the loop at which a dot is nearest
 $lap: 4.25s;
 $turn: 14s;
 $steps: 36;
@@ -55,7 +43,6 @@ $lap-reduced: 6s;
   }
 }
 
-/* the third argument is each dot's rest x relative to the center */
 @include braid-keyframes(kb-braid-1, 0deg, -11);
 @include braid-keyframes(kb-braid-2, 120deg, 0);
 @include braid-keyframes(kb-braid-3, 240deg, 11);

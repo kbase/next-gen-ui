@@ -3,9 +3,9 @@ import styles from './Loader.module.scss';
 import { useInView } from '../../util/useInView';
 import { cx } from '../../util/cx';
 
-/* The circles blend where they overlap, which puts each on its own
-   compositing layer. Only transforms animate, so the layers are cached and
-   each frame is a recomposite; out of view even that is skipped. */
+/* Blending puts each circle on its own compositing layer; only transforms
+   animate, so frames recomposite without repainting. Out of view the
+   animation is paused. */
 
 export interface LoaderProps {
   /** Rendered width/height in px */

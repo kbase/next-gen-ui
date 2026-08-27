@@ -3,7 +3,11 @@
 ARG NODE_VERSION=22
 ARG NGINX_VERSION=1.27-alpine
 
-FROM node:${NODE_VERSION}-alpine AS deps
+# --platform=$BUILDPLATFORM: the deps and build stages run on the runner's
+# own architecture for every target. The bundle is architecture-independent,
+# and Node under QEMU has crashed mid-`npm ci` (SIGILL) and left the build
+# hanging; only the runtime stage is per-target, and it only copies files.
+FROM --platform=$BUILDPLATFORM node:${NODE_VERSION}-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm npm ci
@@ -12,7 +16,7 @@ RUN --mount=type=cache,target=/root/.npm npm ci
 # baked into the bundle, so this image is environment-agnostic and gets
 # promoted by tag rather than rebuilt per environment. See
 # docker-entrypoint.d/05-render-config.sh and src/config.ts.
-FROM node:${NODE_VERSION}-alpine AS build
+FROM --platform=$BUILDPLATFORM node:${NODE_VERSION}-alpine AS build
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .

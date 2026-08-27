@@ -9,9 +9,14 @@
    The whole figure turns slowly so the braid has no fixed axis.
 
    Only `transform` animates. The dots' rest positions are the logo row,
-   which is what shows under prefers-reduced-motion (global.css sets
-   animation: none), so the keyframes translate relative to each dot's
-   rest offset.
+   so the keyframes translate relative to each dot's rest offset.
+
+   Under prefers-reduced-motion the braid keeps running, smaller and
+   slower and without the turn: the guidance behind the query targets
+   large-field movement (spinning, zooming, sliding), and a loader that
+   goes still stops being a loader. global.css resets every animation
+   with !important there, so the reduced rules carry !important too and
+   outrank it on specificity.
 
    The parameters were chosen on an interactive tuning page; travel is
    coupled to the depth gain (travel = base × (1 + gain) / 1.15) so the
@@ -29,14 +34,20 @@ $lap: 4.25s;
 $turn: 14s;
 $steps: 36;
 
-@mixin braid-keyframes($name, $phase, $rest-x) {
+// reduced motion
+$travel-x-reduced: 7;
+$travel-y-reduced: 6;
+$depth-gain-reduced: 0.15;
+$lap-reduced: 6s;
+
+@mixin braid-keyframes($name, $phase, $rest-x, $tx: $travel-x, $ty: $travel-y, $gain: $depth-gain) {
   @keyframes #{$name} {
     @for $j from 0 through $steps {
       $t: math.div($j, $steps);
       $a: $t * 360deg + $phase;
-      $x: $travel-x * math.sin($a) - $rest-x;
-      $y: $travel-y * math.sin(2 * $a);
-      $s: 1 + $depth-gain * math.cos($a + $depth-phase);
+      $x: $tx * math.sin($a) - $rest-x;
+      $y: $ty * math.sin(2 * $a);
+      $s: 1 + $gain * math.cos($a + $depth-phase);
       #{math.percentage($t)} {
         transform: translate(#{$x}px, #{$y}px) scale($s);
       }
@@ -48,6 +59,17 @@ $steps: 36;
 @include braid-keyframes(kb-braid-1, 0deg, -11);
 @include braid-keyframes(kb-braid-2, 120deg, 0);
 @include braid-keyframes(kb-braid-3, 240deg, 11);
+
+@each $i, $phase, $rest-x in (1 0deg -11, 2 120deg 0, 3 240deg 11) {
+  @include braid-keyframes(
+    kb-braid-reduced-#{$i},
+    $phase,
+    $rest-x,
+    $travel-x-reduced,
+    $travel-y-reduced,
+    $depth-gain-reduced
+  );
+}
 
 @keyframes kb-turn {
   to {
@@ -101,4 +123,19 @@ $steps: 36;
 .loader circle:nth-child(3) {
   fill: var(--c-ocean);
   animation-name: kb-braid-3;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loader circle:nth-child(1) {
+    animation: kb-braid-reduced-1 $lap-reduced linear infinite !important;
+  }
+  .loader circle:nth-child(2) {
+    animation: kb-braid-reduced-2 $lap-reduced linear infinite !important;
+  }
+  .loader circle:nth-child(3) {
+    animation: kb-braid-reduced-3 $lap-reduced linear infinite !important;
+  }
+  .root[data-paused] .loader circle {
+    animation-play-state: paused !important;
+  }
 }

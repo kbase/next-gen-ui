@@ -1,36 +1,59 @@
 /* ================================================================
-   KBASE LOADER: "Photosynthesis"
+   KBASE LOADER: "Braid"
 
-   The KBase logo's three circles, alive.
+   The three dots of the mini-logo (favicon.svg), each keeping its color,
+   braided: every dot traces the same figure-eight a third of a lap apart.
+   In 3D the path is a ring seen edge-on (x = sin a, depth = cos a) with a
+   vertical bob at double rate (y = sin 2a); depth shows as size, so a dot
+   crossing the center passes visibly in front of or behind the others.
+   The whole figure turns slowly so the braid has no fixed axis.
 
-   Structure:
-   - 3 circles in equilateral triangle (17,28 / 24,16 / 31,28)
-   - Whole SVG rotates slowly (11s, prime)
-   - Each circle cycles fill color through 6 natural-palette
-     colors in oklab() for perceptually smooth interpolation
-   - Each circle drifts outward from center at peak (equilateral,
-     same motion rotated 120°)
-   - Phase offset: each circle is 1/3 cycle behind the previous
-   - mix-blend-mode: multiply (screen on dark) for organic overlap
+   Only `transform` animates. The dots' rest positions are the logo row,
+   which is what shows under prefers-reduced-motion (global.css sets
+   animation: none), so the keyframes translate relative to each dot's
+   rest offset.
 
-   Timing:
-   - Circle cycle: 2.4s ease-in-out
-   - SVG rotation: 11s linear (coprime with 2.4 → 132s before repeat)
-   - Phase offsets: 0s / -0.8s / -1.6s
-
-   Colors per circle (warm/cool groups alternate at each stop):
-     0%: yellow / green / ocean
-    33%: grellow / frost / yellow  (warm-bright group)
-    66%: teal / ocean / green      (cool-dark group)
-
-   oklab values:
-     yellow:  oklab(0.877 -0.010 0.179)
-     grellow: oklab(0.812 -0.071 0.160)
-     ocean:   oklab(0.791 -0.081 -0.031)
-     green:   oklab(0.616 -0.101 0.105)
-     teal:    oklab(0.605 -0.107 -0.006)
-     frost:   oklab(0.882 -0.013 -0.031)
+   The parameters were chosen on an interactive tuning page; travel is
+   coupled to the depth gain (travel = base × (1 + gain) / 1.15) so the
+   front dot's overlap with its neighbours is the same at any gain.
    ================================================================ */
+
+@use 'sass:math';
+
+$radius: 9;
+$travel-x: 12.43;
+$travel-y: 10.74;
+$depth-gain: 0.3; // near dot scales to 1.3, far dot to 0.7
+$depth-phase: 180deg; // where on the loop a dot is nearest: the second center crossing
+$lap: 4.25s;
+$turn: 14s;
+$steps: 36;
+
+@mixin braid-keyframes($name, $phase, $rest-x) {
+  @keyframes #{$name} {
+    @for $j from 0 through $steps {
+      $t: math.div($j, $steps);
+      $a: $t * 360deg + $phase;
+      $x: $travel-x * math.sin($a) - $rest-x;
+      $y: $travel-y * math.sin(2 * $a);
+      $s: 1 + $depth-gain * math.cos($a + $depth-phase);
+      #{math.percentage($t)} {
+        transform: translate(#{$x}px, #{$y}px) scale($s);
+      }
+    }
+  }
+}
+
+/* the third argument is each dot's rest x relative to the center */
+@include braid-keyframes(kb-braid-1, 0deg, -11);
+@include braid-keyframes(kb-braid-2, 120deg, 0);
+@include braid-keyframes(kb-braid-3, 240deg, 11);
+
+@keyframes kb-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 .root {
   display: inline-flex;
@@ -44,23 +67,17 @@
   animation-play-state: paused;
 }
 
-/* rotation on whole element */
 .loader {
-  animation: kb-spin 11s linear infinite;
-}
-
-@keyframes kb-spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+  animation: kb-turn $turn linear infinite;
 }
 
 /* multiply on light, screen on dark; the `blend` prop pins it inline */
 .loader circle {
   mix-blend-mode: var(--loader-blend, multiply);
+  opacity: 0.85;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: $lap linear infinite;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -73,85 +90,15 @@
   --loader-blend: screen;
 }
 
-/* static fills (visible when animation is off, e.g. reduced motion) */
 .loader circle:nth-child(1) {
-  fill: oklab(0.877 -0.01 0.179);
-  opacity: 0.7;
-} /* yellow */
-.loader circle:nth-child(2) {
-  fill: oklab(0.616 -0.101 0.105);
-  opacity: 0.7;
-} /* green */
-.loader circle:nth-child(3) {
-  fill: oklab(0.791 -0.081 -0.031);
-  opacity: 0.7;
-} /* ocean */
-
-/* per-circle animation */
-.loader circle:nth-child(1) {
-  animation: kb-c1 2.4s ease-in-out infinite 0s;
+  fill: var(--c-yellow);
+  animation-name: kb-braid-1;
 }
 .loader circle:nth-child(2) {
-  animation: kb-c2 2.4s ease-in-out infinite -0.8s;
+  fill: var(--c-grellow);
+  animation-name: kb-braid-2;
 }
 .loader circle:nth-child(3) {
-  animation: kb-c3 2.4s ease-in-out infinite -1.6s;
-}
-
-/* keyframes (equilateral drift rotated 120° per circle) */
-@keyframes kb-c1 {
-  0%,
-  100% {
-    fill: oklab(0.877 -0.01 0.179);
-    transform: translate(0, 0);
-    opacity: 0.7;
-  }
-  33% {
-    fill: oklab(0.812 -0.071 0.16);
-    transform: translate(-1.5px, 0.4px);
-    opacity: 0.8;
-  }
-  66% {
-    fill: oklab(0.605 -0.107 -0.006);
-    transform: translate(1.5px, -0.4px);
-    opacity: 0.75;
-  }
-}
-
-@keyframes kb-c2 {
-  0%,
-  100% {
-    fill: oklab(0.616 -0.101 0.105);
-    transform: translate(0, 0);
-    opacity: 0.7;
-  }
-  33% {
-    fill: oklab(0.882 -0.013 -0.031);
-    transform: translate(0.4px, -1.5px);
-    opacity: 0.8;
-  }
-  66% {
-    fill: oklab(0.791 -0.081 -0.031);
-    transform: translate(-0.4px, 1.5px);
-    opacity: 0.75;
-  }
-}
-
-@keyframes kb-c3 {
-  0%,
-  100% {
-    fill: oklab(0.791 -0.081 -0.031);
-    transform: translate(0, 0);
-    opacity: 0.7;
-  }
-  33% {
-    fill: oklab(0.877 -0.01 0.179);
-    transform: translate(1.1px, 1.1px);
-    opacity: 0.8;
-  }
-  66% {
-    fill: oklab(0.616 -0.101 0.105);
-    transform: translate(-1.1px, -1.1px);
-    opacity: 0.75;
-  }
+  fill: var(--c-ocean);
+  animation-name: kb-braid-3;
 }

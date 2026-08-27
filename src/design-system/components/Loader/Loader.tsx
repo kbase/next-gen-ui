@@ -4,9 +4,8 @@ import { useInView } from '../../util/useInView';
 import { cx } from '../../util/cx';
 
 /* The circles blend where they overlap, which puts each on its own
-   compositing layer, and they animate their fill, so the layer cannot be
-   cached. Out of view the animation is paused rather than repainting every
-   frame. */
+   compositing layer. Only transforms animate, so the layers are cached and
+   each frame is a recomposite; out of view even that is skipped. */
 
 export interface LoaderProps {
   /** Rendered width/height in px */
@@ -43,9 +42,9 @@ export function Loader({ size = 48, blend, svgFilter, label, className }: Loader
         aria-hidden="true"
         filter={svgFilter}
       >
-        <circle cx="17" cy="28" r="11" />
-        <circle cx="24" cy="16" r="11" />
-        <circle cx="31" cy="28" r="11" />
+        <circle cx="13" cy="24" r="9" />
+        <circle cx="24" cy="24" r="9" />
+        <circle cx="35" cy="24" r="9" />
       </svg>
     </span>
   );

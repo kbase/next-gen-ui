@@ -351,9 +351,9 @@ const DECLARED: readonly Portal[] = [
       'GapMind',
       'NCBI Taxonomy / Datasets',
     ],
+    // The deployed portal prints no version, so this is the newest tag.
     version: 'v0.2.2',
     updated: '2026-08-26',
-    undeployed: true,
   },
   {
     slug: 'phagecast',

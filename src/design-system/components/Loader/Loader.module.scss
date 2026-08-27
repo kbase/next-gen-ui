@@ -3,24 +3,47 @@
    its size stands in for depth, so at each center crossing one dot passes
    in front of the others. The whole figure turns.
 
-   Rest positions are the logo row; keyframes translate from each dot's
-   rest offset, so with animation off the loader is the static logo.
+   A pose is (a, theta, e): the angle along the loop, the figure's rotation,
+   and an envelope from 0 (the logo row) to 1 (the braid). Each part chains
+   two animations: an enter that ramps e with a smoothstep while a and the
+   turn run on, then the loop, delayed by exactly that long. At the junction
+   position and velocity both match; a straight line from the row to a point
+   on the braid would arrive from the wrong direction. The enter's turn runs
+   from minus half its sweep to zero, and at e < 1 each dot is offset to sit
+   in a screen-space row inside the turned frame, so the enter's first frame
+   is the logo row.
+
+   The animations are always declared; `data-active` only sets their play
+   state. Idle, they are paused on that first frame, which is the logo.
+   Firefox and Safari render an element differently once it is animated, so
+   adding the animations on start would change how the translucent circles
+   overlap at that instant; paused and running render the same way. For the
+   same reason the circles composite like the favicon — opacity, no blend
+   mode — in every state.
+
+   Stopping is Loader.tsx's job: the pose at that instant is only known at
+   runtime. It reads the parameters from the --loader-* custom properties
+   below and repeats the pose math, so a change to either must be made in
+   both.
 
    Under prefers-reduced-motion the braid runs smaller, slower, and without
    the turn — reduced rather than removed, because a still loader does not
-   read as loading. global.css sets `animation: none !important` there;
-   these rules carry !important and win on specificity. */
+   read as loading. global.css sets `animation: none !important` there, which
+   removes the turn as intended; the dot rules carry !important and win on
+   specificity. */
 
 @use 'sass:math';
 
-$radius: 9;
 $travel-x: 12.43;
 $travel-y: 10.74;
 $depth-gain: 0.3;
 $depth-phase: 180deg; // angle along the loop at which a dot is nearest
 $lap: 4.25s;
 $turn: 14s;
-$steps: 36;
+$enter: 0.8s;
+$exit: 0.8s;
+$loop-steps: 36;
+$ramp-steps: 24;
 
 // reduced motion
 $travel-x-reduced: 7;
@@ -28,35 +51,77 @@ $travel-y-reduced: 6;
 $depth-gain-reduced: 0.15;
 $lap-reduced: 6s;
 
-@mixin braid-keyframes($name, $phase, $rest-x, $tx: $travel-x, $ty: $travel-y, $gain: $depth-gain) {
-  @keyframes #{$name} {
-    @for $j from 0 through $steps {
-      $t: math.div($j, $steps);
-      $a: $t * 360deg + $phase;
-      $x: $tx * math.sin($a) - $rest-x;
-      $y: $ty * math.sin(2 * $a);
-      $s: 1 + $gain * math.cos($a + $depth-phase);
-      #{math.percentage($t)} {
-        transform: translate(#{$x}px, #{$y}px) scale($s);
+// dot index, phase along the loop, rest offset from the figure's center
+$dots: (1 0deg -11, 2 120deg 0, 3 240deg 11);
+
+@function dot-transform($a, $theta, $e, $rest, $tx, $ty, $gain) {
+  $braid-x: $tx * math.sin($a) - $rest;
+  $braid-y: $ty * math.sin(2 * $a);
+  // the dot's slot in a screen-space row, seen from a frame turned by theta
+  $row-x: $rest * math.cos($theta) - $rest;
+  $row-y: -$rest * math.sin($theta);
+  $x: $e * $braid-x + (1 - $e) * $row-x;
+  $y: $e * $braid-y + (1 - $e) * $row-y;
+  $s: 1 + $e * $gain * math.cos($a + $depth-phase);
+  @return translate(#{$x}px, #{$y}px) scale($s);
+}
+
+@function smooth($u) {
+  @return $u * $u * (3 - 2 * $u);
+}
+
+@function smooth-integral($u) {
+  @return $u * $u * $u - math.div($u * $u * $u * $u, 2);
+}
+
+// $turn null: no turn
+@mixin keyframes($suffix, $tx, $ty, $gain, $lap, $turn) {
+  $sweep: 360deg * math.div($enter, $lap); // loop angle covered during the enter
+  $spin: 0deg; // turn at full rate for the enter's duration
+  @if $turn {
+    $spin: 360deg * math.div($enter, $turn);
+  }
+  @each $i, $phase, $rest in $dots {
+    @keyframes kb-enter#{$suffix}-#{$i} {
+      @for $j from 0 through $ramp-steps {
+        $u: math.div($j, $ramp-steps);
+        $a: $phase - $sweep + $sweep * $u;
+        $theta: $spin * (smooth-integral($u) - 0.5);
+        #{math.percentage($u)} {
+          transform: dot-transform($a, $theta, smooth($u), $rest, $tx, $ty, $gain);
+        }
+      }
+    }
+    @keyframes kb-braid#{$suffix}-#{$i} {
+      @for $j from 0 through $loop-steps {
+        $t: math.div($j, $loop-steps);
+        #{math.percentage($t)} {
+          transform: dot-transform($phase + 360deg * $t, 0deg, 1, $rest, $tx, $ty, $gain);
+        }
+      }
+    }
+  }
+  @if $turn {
+    @keyframes kb-turn-enter#{$suffix} {
+      @for $j from 0 through $ramp-steps {
+        $u: math.div($j, $ramp-steps);
+        #{math.percentage($u)} {
+          transform: rotate($spin * (smooth-integral($u) - 0.5));
+        }
       }
     }
   }
 }
 
-@include braid-keyframes(kb-braid-1, 0deg, -11);
-@include braid-keyframes(kb-braid-2, 120deg, 0);
-@include braid-keyframes(kb-braid-3, 240deg, 11);
-
-@each $i, $phase, $rest-x in (1 0deg -11, 2 120deg 0, 3 240deg 11) {
-  @include braid-keyframes(
-    kb-braid-reduced-#{$i},
-    $phase,
-    $rest-x,
-    $travel-x-reduced,
-    $travel-y-reduced,
-    $depth-gain-reduced
-  );
-}
+@include keyframes('', $travel-x, $travel-y, $depth-gain, $lap, $turn);
+@include keyframes(
+  '-reduced',
+  $travel-x-reduced,
+  $travel-y-reduced,
+  $depth-gain-reduced,
+  $lap-reduced,
+  null
+);
 
 @keyframes kb-turn {
   to {
@@ -67,61 +132,78 @@ $lap-reduced: 6s;
 .root {
   display: inline-flex;
   align-items: center;
+  --loader-tx: #{$travel-x};
+  --loader-ty: #{$travel-y};
+  --loader-gain: #{$depth-gain};
+  --loader-lap: #{math.div($lap, 1ms)};
+  --loader-turn: #{math.div($turn, 1ms)};
+  --loader-enter: #{math.div($enter, 1ms)};
+  --loader-exit: #{math.div($exit, 1ms)};
 }
 
-/* Set while the loader is out of view. The animations keep their state, so
-   scrolling back to one resumes it where it left off. */
+.loader {
+  animation:
+    kb-turn-enter $enter linear forwards,
+    kb-turn $turn $enter linear infinite;
+}
+
+.loader circle {
+  opacity: 0.85;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.loader circle:nth-child(1) {
+  fill: var(--c-yellow);
+}
+.loader circle:nth-child(2) {
+  fill: var(--c-grellow);
+}
+.loader circle:nth-child(3) {
+  fill: var(--c-ocean);
+}
+
+@each $i in 1, 2, 3 {
+  .loader circle:nth-child(#{$i}) {
+    animation:
+      kb-enter-#{$i} $enter linear forwards,
+      kb-braid-#{$i} $lap $enter linear infinite;
+  }
+}
+
+/* After the animation rules and at least their specificity: the shorthands
+   above reset play-state. `data-paused` is set while the loader is out of
+   view; the animations keep their state, so scrolling back to one resumes
+   it where it left off. */
+.root .loader,
+.root .loader circle {
+  animation-play-state: paused;
+}
+.root .loader[data-active],
+.root .loader[data-active] circle {
+  animation-play-state: running;
+}
 .root[data-paused] .loader,
 .root[data-paused] .loader circle {
   animation-play-state: paused;
 }
 
-.loader {
-  animation: kb-turn $turn linear infinite;
-}
-
-/* multiply on light, screen on dark; the `blend` prop pins it inline */
-.loader circle {
-  mix-blend-mode: var(--loader-blend, multiply);
-  opacity: 0.85;
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: $lap linear infinite;
-}
-
-@media (prefers-color-scheme: dark) {
-  :global(:root:not([data-theme='light'])) .root {
-    --loader-blend: screen;
-  }
-}
-
-:global(:root[data-theme='dark']) .root {
-  --loader-blend: screen;
-}
-
-.loader circle:nth-child(1) {
-  fill: var(--c-yellow);
-  animation-name: kb-braid-1;
-}
-.loader circle:nth-child(2) {
-  fill: var(--c-grellow);
-  animation-name: kb-braid-2;
-}
-.loader circle:nth-child(3) {
-  fill: var(--c-ocean);
-  animation-name: kb-braid-3;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .loader circle:nth-child(1) {
-    animation: kb-braid-reduced-1 $lap-reduced linear infinite !important;
+  .root {
+    --loader-tx: #{$travel-x-reduced};
+    --loader-ty: #{$travel-y-reduced};
+    --loader-gain: #{$depth-gain-reduced};
+    --loader-lap: #{math.div($lap-reduced, 1ms)};
+    --loader-turn: 0;
   }
-  .loader circle:nth-child(2) {
-    animation: kb-braid-reduced-2 $lap-reduced linear infinite !important;
+  @each $i in 1, 2, 3 {
+    .loader circle:nth-child(#{$i}) {
+      animation:
+        kb-enter-reduced-#{$i} $enter linear forwards,
+        kb-braid-reduced-#{$i} $lap-reduced $enter linear infinite !important;
+    }
   }
-  .loader circle:nth-child(3) {
-    animation: kb-braid-reduced-3 $lap-reduced linear infinite !important;
-  }
+  .loader:not([data-active]) circle,
   .root[data-paused] .loader circle {
     animation-play-state: paused !important;
   }

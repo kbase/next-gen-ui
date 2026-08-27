@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import s from './showcase.module.scss';
 import { Alert } from '../components/Alert';
 import { Loader } from '../components/Loader';
@@ -40,6 +41,7 @@ interface Section06FeedbackProps {
 }
 
 export function Section06Feedback({ cvd }: Section06FeedbackProps) {
+  const [loaderActive, setLoaderActive] = useState(true);
   return (
     <div className={s.section}>
       <div className={s.sNum}>06</div>
@@ -216,9 +218,10 @@ const { icon, label, color } = STATUS[state];
       <p className={s.note}>
         The mini-logo&apos;s three dots, braided: each traces the same figure-eight a third of a lap
         apart, sized by depth. Under reduced motion it runs smaller and slower, without the turn.
-        The circles composite where they overlap, so the blend follows the theme background; on a
-        surface that is not the theme background &mdash; a brand fill, an image &mdash; set{' '}
-        <code>blend</code> explicitly. Inline at size 14, standalone at 36 and above.
+        With <code>active</code> off it is the static logo; the dots braid out of the row when it
+        turns on and settle back when it turns off, so a loader can sit in place between loads. The
+        circles composite like the favicon in every state. Inline at size 14, standalone at 36 and
+        above.
       </p>
       <div className={s.row}>
         <div className={s.cell} style={{ width: 80, height: 80 }}>
@@ -227,20 +230,27 @@ const { icon, label, color } = STATUS[state];
         <div className={`${s.cell} ${s.cellDark}`} style={{ width: 80, height: 80 }}>
           <Loader size={36} svgFilter={cvd !== 'off' ? `url(#${cvd})` : undefined} />
         </div>
-        <div className={`${s.cell} ${s.cellFixed}`} style={{ width: 80, height: 80 }}>
-          <Loader size={36} blend="screen" svgFilter={cvd !== 'off' ? `url(#${cvd})` : undefined} />
-        </div>
         <div className={s.cellInline}>
           <Loader size={14} svgFilter={cvd !== 'off' ? `url(#${cvd})` : undefined} />
           <span className={s.inlineLabel}>Loading workspace...</span>
         </div>
+        <div className={s.cell} style={{ width: 80, height: 80 }}>
+          <Loader
+            size={36}
+            active={loaderActive}
+            svgFilter={cvd !== 'off' ? `url(#${cvd})` : undefined}
+          />
+        </div>
+        <Button variant="outline" size="sm" onClick={() => setLoaderActive((a) => !a)}>
+          {loaderActive ? 'Stop' : 'Start'}
+        </Button>
       </div>
 
       <CodeBlock
         language="tsx"
-        code={`<Loader size={36} />                    // standalone, follows the theme
-<Loader size={36} blend="screen" />     // on a brand fill or an image
-<Loader size={14} />                    // inline with text`}
+        code={`<Loader size={36} />                    // standalone
+<Loader size={14} />                    // inline with text
+<Loader active={isFetching} />          // the static logo between loads`}
       />
 
       <div className={s.sub}>Empty state</div>

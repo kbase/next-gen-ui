@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { Tooltip as BaseTooltip } from '@base-ui/react/tooltip';
 import styles from './Tooltip.module.scss';
 import { Button } from '../Button';
@@ -11,12 +12,12 @@ export function Root(props: BaseTooltip.Root.Props) {
   return <BaseTooltip.Root {...props} />;
 }
 
-export function Trigger({
-  render = <Button variant="ghost" />,
-  ...props
-}: BaseTooltip.Trigger.Props) {
-  return <BaseTooltip.Trigger render={render} {...props} />;
-}
+export const Trigger = forwardRef<HTMLButtonElement, BaseTooltip.Trigger.Props>(function Trigger(
+  { render = <Button variant="ghost" />, ...props },
+  ref,
+) {
+  return <BaseTooltip.Trigger ref={ref} render={render} {...props} />;
+});
 
 export interface PopupProps extends Omit<BaseTooltip.Popup.Props, 'className'> {
   className?: string;

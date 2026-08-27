@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { Toolbar as BaseToolbar } from '@base-ui/react/toolbar';
 import styles from './Toolbar.module.scss';
 import { Button as KBaseButton } from '../Button';
@@ -34,9 +35,9 @@ export function Separator({ className, ...props }: SeparatorProps) {
   return <BaseToolbar.Separator className={cx(styles.separator, className)} {...props} />;
 }
 
-export function Button({
-  render = <KBaseButton variant="ghost" size="sm" />,
-  ...props
-}: BaseToolbar.Button.Props) {
-  return <BaseToolbar.Button render={render} {...props} />;
-}
+export const Button = forwardRef<HTMLButtonElement, BaseToolbar.Button.Props>(function Button(
+  { render = <KBaseButton variant="ghost" size="sm" />, ...props },
+  ref,
+) {
+  return <BaseToolbar.Button ref={ref} render={render} {...props} />;
+});

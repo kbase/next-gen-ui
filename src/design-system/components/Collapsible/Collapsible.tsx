@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { Collapsible as BaseCollapsible } from '@base-ui/react/collapsible';
 import styles from './Collapsible.module.scss';
 import { cx } from '../../util/cx';
@@ -15,14 +16,17 @@ export function Root({ className, ...props }: RootProps) {
   return <BaseCollapsible.Root className={className} {...props} />;
 }
 
-export function Trigger({ render, ...props }: BaseCollapsible.Trigger.Props) {
-  return (
-    <BaseCollapsible.Trigger
-      render={render ?? <button type="button" className={styles.trigger} />}
-      {...props}
-    />
-  );
-}
+export const Trigger = forwardRef<HTMLButtonElement, BaseCollapsible.Trigger.Props>(
+  function Trigger({ render, ...props }, ref) {
+    return (
+      <BaseCollapsible.Trigger
+        ref={ref}
+        render={render ?? <button type="button" className={styles.trigger} />}
+        {...props}
+      />
+    );
+  },
+);
 
 export interface PanelProps extends Omit<BaseCollapsible.Panel.Props, 'className'> {
   className?: string;

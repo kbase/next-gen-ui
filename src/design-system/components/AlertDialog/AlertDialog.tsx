@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { AlertDialog as BaseAlertDialog } from '@base-ui/react/alert-dialog';
 import styles from '../Dialog/Dialog.module.scss';
 import { Button } from '../Button';
@@ -12,9 +13,11 @@ export function Root(props: BaseAlertDialog.Root.Props) {
   return <BaseAlertDialog.Root {...props} />;
 }
 
-export function Trigger({ render = <Button />, ...props }: BaseAlertDialog.Trigger.Props) {
-  return <BaseAlertDialog.Trigger render={render} {...props} />;
-}
+export const Trigger = forwardRef<HTMLButtonElement, BaseAlertDialog.Trigger.Props>(
+  function Trigger({ render = <Button />, ...props }, ref) {
+    return <BaseAlertDialog.Trigger ref={ref} render={render} {...props} />;
+  },
+);
 
 export interface PopupProps extends Omit<BaseAlertDialog.Popup.Props, 'className'> {
   className?: string;
@@ -45,6 +48,9 @@ export function Description({ className, ...props }: DescriptionProps) {
   return <BaseAlertDialog.Description className={cx(styles.description, className)} {...props} />;
 }
 
-export function Close({ render = <Button />, ...props }: BaseAlertDialog.Close.Props) {
-  return <BaseAlertDialog.Close render={render} {...props} />;
-}
+export const Close = forwardRef<HTMLButtonElement, BaseAlertDialog.Close.Props>(function Close(
+  { render = <Button />, ...props },
+  ref,
+) {
+  return <BaseAlertDialog.Close ref={ref} render={render} {...props} />;
+});

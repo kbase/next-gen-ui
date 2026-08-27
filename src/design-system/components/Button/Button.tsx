@@ -16,7 +16,8 @@ export interface ButtonProps extends Omit<BaseButton.Props, 'className'> {
  * This must stay a forwardRef. React 18 removes `ref` from props before a function component
  * receives it. Base UI passes a ref to whatever element a compound part renders, and several
  * parts render a Button by default (search for `render =`); they need that ref to position
- * their popup. Without forwardRef those parts stop working on React 18, with no error.
+ * their popup. Without forwardRef those parts stop working on React 18: the development build
+ * warns, production is silent. The same applies to every wrapper here with a `render =` default.
  */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   { variant = 'primary', size = 'md', className, children, ...props },

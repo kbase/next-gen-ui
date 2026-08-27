@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { Popover as BasePopover } from '@base-ui/react/popover';
 import styles from './Popover.module.scss';
 import { Button } from '../Button';
@@ -7,9 +8,12 @@ export function Root(props: BasePopover.Root.Props) {
   return <BasePopover.Root {...props} />;
 }
 
-export function Trigger({ render = <Button />, ...props }: BasePopover.Trigger.Props) {
-  return <BasePopover.Trigger render={render} {...props} />;
-}
+export const Trigger = forwardRef<HTMLButtonElement, BasePopover.Trigger.Props>(function Trigger(
+  { render = <Button />, ...props },
+  ref,
+) {
+  return <BasePopover.Trigger ref={ref} render={render} {...props} />;
+});
 
 export interface PopupProps extends Omit<BasePopover.Popup.Props, 'className'> {
   className?: string;
@@ -33,6 +37,9 @@ export function Description(props: BasePopover.Description.Props) {
   return <BasePopover.Description className={styles.description} {...props} />;
 }
 
-export function Close({ render = <Button />, ...props }: BasePopover.Close.Props) {
-  return <BasePopover.Close render={render} {...props} />;
-}
+export const Close = forwardRef<HTMLButtonElement, BasePopover.Close.Props>(function Close(
+  { render = <Button />, ...props },
+  ref,
+) {
+  return <BasePopover.Close ref={ref} render={render} {...props} />;
+});

@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { Menu as BaseMenu } from '@base-ui/react/menu';
 import styles from './Menu.module.scss';
 import { Button } from '../Button';
@@ -7,9 +8,12 @@ export function Root(props: BaseMenu.Root.Props) {
   return <BaseMenu.Root {...props} />;
 }
 
-export function Trigger({ render = <Button />, ...props }: BaseMenu.Trigger.Props) {
-  return <BaseMenu.Trigger render={render} {...props} />;
-}
+export const Trigger = forwardRef<HTMLButtonElement, BaseMenu.Trigger.Props>(function Trigger(
+  { render = <Button />, ...props },
+  ref,
+) {
+  return <BaseMenu.Trigger ref={ref} render={render} {...props} />;
+});
 
 export interface PopupProps extends Omit<BaseMenu.Popup.Props, 'className'> {
   className?: string;

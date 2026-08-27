@@ -42,3 +42,28 @@ jobs:
 
       - name: Test
         run: npm test
+
+  # The published package supports react ^18 || ^19. On 18 a plain function component cannot
+  # receive a ref, so a wrapper that is not a forwardRef loses the one Base UI threads through
+  # `render` and a composed trigger never opens; on 19 that is invisible. Only the library makes
+  # the promise, so only its tests run here.
+  design-system-react18:
+    name: Design system on React 18
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      # --no-save keeps the lockfile on the version the app builds against.
+      - name: Downgrade React
+        run: npm install --no-save react@18.3.1 react-dom@18.3.1
+
+      - name: Test
+        run: npx vitest run src/design-system

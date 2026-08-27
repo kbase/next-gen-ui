@@ -38,6 +38,23 @@
   line-height: 1.5;
 }
 
+/* A link's appearance, not a button's: a filled control competes with the message. */
+.action {
+  margin-top: var(--s-3);
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: var(--fs-5);
+  font-weight: var(--fw-bold);
+  color: var(--ct-primary);
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
 .close {
   border: none;
   background: none;

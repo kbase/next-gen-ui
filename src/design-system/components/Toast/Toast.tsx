@@ -16,9 +16,13 @@ function ToastItem({ toast }: { toast: BaseToast.Root.Props['toast'] }) {
             {toast.description}
           </BaseToast.Description>
         )}
+        {/* Renders nothing when the toast has no action. */}
+        <BaseToast.Action className={styles.action} />
       </BaseToast.Content>
-      <BaseToast.Close className={styles.close}>
-        <X size={12} />
+      {/* Base UI keeps this aria-hidden until the viewport is expanded or it takes focus, since
+          the live region already announces the toast. The label is for when it does. */}
+      <BaseToast.Close className={styles.close} aria-label="Close">
+        <X size={12} aria-hidden />
       </BaseToast.Close>
     </BaseToast.Root>
   );

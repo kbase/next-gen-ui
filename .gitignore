@@ -2,6 +2,7 @@ node_modules
 dist
 __pycache__
 dist-design-system
+dist-python
 build
 coverage
 .tanstack

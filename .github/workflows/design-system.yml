@@ -42,6 +42,68 @@ jobs:
           path: dist-design-system/*.tgz
           if-no-files-found: error
 
+  # The same design system as a pip package. A hatchling hook compiles
+  # components/*/<Name>.module.scss into the wheel with the Dart Sass pip can install; this checks
+  # that it still can, that the two compilers still agree, and that only CSS came out.
+  python-wheel:
+    name: Python wheel
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0      # hatch-vcs reads the ds-v* tags for the version
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - run: pip install build dart-sass
+
+      - name: Build the wheel
+        working-directory: src/design-system
+        run: python -m build --wheel --outdir dist-python .
+
+      # The one check that catches an upstream .module.scss using a Sass feature newer than the
+      # 1.51.0 pip ships -- which otherwise surfaces as a portal that looks subtly wrong.
+      - name: The two compilers agree
+        working-directory: src/design-system
+        run: python python/check_compiler_parity.py --sass ../../node_modules/.bin/sass
+
+      # force-include ignores exclude, so a directory added to it drags every file under it into
+      # the wheel. This is what says so.
+      - name: Only CSS and the Solara adapter shipped
+        working-directory: src/design-system
+        run: |
+          python - <<'EOF'
+          import glob, zipfile
+          names = zipfile.ZipFile(glob.glob("dist-python/*.whl")[0]).namelist()
+          payload = [n for n in names if not n.startswith("kbase_design_system-")]
+          leaked = [n for n in payload if n.rsplit(".", 1)[-1] not in ("css", "py")]
+          assert not leaked, f"non-payload files in the wheel: {leaked}"
+          for want in ("kbase_design_system/components.css",
+                       "kbase_design_system/chrome.css",
+                       "kbase_design_system/tokens.css",
+                       "kbase_design_system/solara/vuetify.css",
+                       "kbase_design_system/solara/icons.py"):
+              assert want in payload, f"missing from the wheel: {want}"
+          print(f"{len(payload)} files:", *sorted(payload), sep="\n  ")
+          EOF
+
+      - name: Upload wheel artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: design-system-wheel
+          path: src/design-system/dist-python/*.whl
+          if-no-files-found: error
+
   publish:
     name: Publish to GHCR npm
     runs-on: ubuntu-latest

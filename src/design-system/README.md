@@ -48,32 +48,31 @@ It carries seven stylesheets and a Solara adapter:
 | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `tokens.css` `prose.css` `utilities.css` `prism.css` `global.css` | the same files the npm package ships                                                                                                                                                               |
 | `components.css`                                                  | every component in `components/`, compiled from its `.module.scss` during the wheel build, with stable class names — see [Class names for CSS-only consumers](#class-names-for-css-only-consumers) |
-| `chrome.css`                                                      | page furniture the showcase draws as layout rather than as components                                                                                                                              |
-| `solara/`                                                         | `vuetify.css`, plus `icons.py` and `resolve_tokens.py` — Vuetify is what Solara paints with, and its theme has to be set from Python                                                               |
+| `chrome.css`                                                      | the app bar, masthead, mark, tinted ground and scrim, which the showcase builds as layout rather than as components                                                                                |
+| `solara/`                                                         | `vuetify.css`, `icons.py` and `resolve_tokens.py`. Solara renders its widgets with Vuetify, whose theme is set from Python                                                                         |
 
 `style.css` is a bundler output and stays npm-only. `fonts.css` is excluded —
 see [Fonts](#fonts) for why it needs a bundler, and what a consumer without one
 has to do instead. Its version comes from the same `ds-vX.Y.Z` tag that
 publishes the npm package, so neither needs a bump.
 
-Building the wheel compiles Sass, so `dart-sass` is pulled into the build
+Building the wheel compiles Sass, so `dart-sass` is installed into the build
 environment. It is not a runtime dependency.
 
 ## Class names for CSS-only consumers
 
-React consumers never say a component's class name — the bundler rewrites it.
-A consumer holding only `components.css` writes it by hand, so the names in
-that file are derived by one rule and are stable:
+A React consumer never writes a component's class name; the bundler rewrites
+it to a content hash. A consumer holding only `components.css` writes it by
+hand, so the names in that file follow one rule and do not change:
 
 ```
 root, or a local named after its component  ->  kb-<component>
 every other local                           ->  kb-<component>--<local>
 ```
 
-So Frame's root is `kb-frame`, and Button's root local — which is `btn` — is
-`kb-button--btn`. Component state is an attribute, not a class: `[data-active]`,
-`[data-checked]`, `[data-selected]`. These names are unrelated to the hashed
-ones in the npm build.
+Frame's root is `kb-frame`. Button's root local is `btn`, so it is
+`kb-button--btn`. State is an attribute rather than a class: `[data-active]`,
+`[data-checked]`, `[data-selected]`.
 
 ## Use
 

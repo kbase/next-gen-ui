@@ -37,3 +37,7 @@ bypass-selection = true      # no package to detect; the payload is force-includ
 "prism.css" = "kbase_design_system/prism.css"
 "global.css" = "kbase_design_system/global.css"
 "python/chrome.css" = "kbase_design_system/chrome.css"
+# The Solara adapter: a stylesheet plus two modules, importable as
+# kbase_design_system.solara.* -- a namespace package, since bypass-selection means the
+# wheel has no __init__.py anywhere.
+"python/solara" = "kbase_design_system/solara"

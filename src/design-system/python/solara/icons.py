@@ -19,8 +19,9 @@ from __future__ import annotations
 
 import re
 
-# The box for an icon that labels something. Overridden where the design system gives a size:
-# a chip's glyph is 9px, a button's 14.
+# The box for an icon that labels something, and the default for glyph(). A component that draws
+# its own icon states its own size -- Chip's is a multiple of its text, the rest are fixed at 10 to
+# 14 -- so this reaches only markup a portal builds by hand.
 SIZE = 16
 
 # The font selects a glyph with two classes: the weight, then the name.
@@ -97,10 +98,13 @@ def kbase_mark(size: int = 20, animate: bool = False, active: bool = True, label
     components.css animates them. Mark and loader are one graphic in this design system: Loader's
     rest positions are the logo row.
 
-    `active` decides whether the braid runs, and only applies with `animate`. Off, the dots hold the
-    logo row -- components.css pauses them without data-active -- so one graphic serves a masthead
-    that sometimes reports work, and nothing is swapped when the work starts. Turning it back off in
-    the browser wants loader.js: dropping the attribute alone snaps the dots home from mid-braid.
+    `active` sets data-active, and applies only with `animate`. Without it the dots hold the logo
+    row, because components.css pauses the braid on any .kb-loader--loader that does not carry the
+    attribute. The two states are therefore one graphic in two conditions rather than two graphics,
+    and a consumer switching between them replaces no markup.
+
+    Clearing the attribute in a live document is loader.js's job. Removed on its own it pauses the
+    braid at the pose it had reached, and the dots jump to the row.
 
     Circles are filled from --c-yellow, --c-grellow and --c-ocean rather than the hex in
     favicon.svg, so the mark follows the theme, and any palette a portal sets through data-brand.
@@ -109,8 +113,9 @@ def kbase_mark(size: int = 20, animate: bool = False, active: bool = True, label
     than it is tall and the animated one is square. Circles carry the 0.85 opacity Loader sets, so
     the two composite the way the favicon does.
 
-    `label` makes the mark an announced region, and is what loader.js restores when the braid starts
-    again. Leave it empty beside the word "KBase", which a screen reader already reaches.
+    `label` makes the mark an announced region while it is active, and is the text loader.js
+    restores when the braid starts. Leave it empty beside the word "KBase", which a screen reader
+    already reaches.
     """
     # 0 0 48 48 when it moves, because the keyframes translate the dots past the edges of the
     # 34x28 box the design system draws the static mark on.
@@ -120,14 +125,13 @@ def kbase_mark(size: int = 20, animate: bool = False, active: bool = True, label
     circles = "".join(
         f"<circle cx='{cx}' cy='{cy}' r='{r}' fill='var(--c-{hue})' opacity='0.85'/>"
         for (cx, cy, r), hue in zip(dots, ("yellow", "grellow", "ocean")))
-    # Announced only while it is running; the label is kept in data-label so loader.js can put it
-    # back. A resting mark is the logo, and has nothing to announce.
+    # A resting mark is the logo and announces nothing, so the label is carried in data-label,
+    # where loader.js reads it when it sets data-active.
     role = f" role='status' aria-label='{label}'" if label and (active or not animate) else ""
     keep = f" data-label='{label}'" if label and animate else ""
-    # components.css puts the braid on .kb-loader--loader and holds it at animation-play-state:
-    # paused until the same element carries [data-active]. Loader.tsx sets both on the <svg> and
-    # .kb-loader on the <span> around it, which is also where the --loader-* custom properties
-    # the keyframes read are declared.
+    # Two elements, two classes, as Loader.tsx places them: the keyframes are keyed on
+    # .kb-loader--loader at the <svg>, and the --loader-* custom properties they read are declared
+    # on .kb-loader at the <span>.
     span_cls = "kb-mark kb-loader" if animate else "kb-mark"
     svg_cls = (" class='kb-loader--loader'" + (" data-active" if active else "")) if animate else ""
     return (f"<span class='{span_cls}'{role}{keep}>"
@@ -139,25 +143,22 @@ def loader(size: int = 32, active: bool = True, label: str = "Loading") -> str:
     """The mark, braiding while `active`. For work of unknown duration; work of known duration is a
     Progress bar, and this design system has no indeterminate bar.
 
-    A page that turns `active` off after it was on needs loader_script() on it, or the dots jump
-    home rather than settling."""
+    A document that clears `active` on a mark already braiding needs loader_script(); see
+    kbase_mark for what happens without it."""
     return kbase_mark(size, animate=True, active=active, label=label)
 
 
 def loader_script() -> str:
-    """loader.js: the half of Loader that cannot be CSS.
+    """loader.js: Loader's exit, which no stylesheet can express.
 
-    Put it in a <script> once per page. Mark a loader by putting `data-loading` on it or on any
-    ancestor, and set that to "false" when the work is done; the script drives the braid underneath,
-    starting it from the logo row and, on the way off, reading the pose the animations are actually
-    at and settling the dots back into the row from there.
+    Belongs in one <script> per document. It drives data-active from `data-loading` on a loader or
+    any ancestor: presence hands the loader over, the value is the state, and "false" runs the exit
+    -- the pose the animations hold at that instant, ramped back to the logo row. A loader with no
+    `data-loading` above it is left as rendered.
 
-    The attribute's presence is what hands a loader to the script and its value is the state. One
-    with no `data-loading` above it is left as rendered, so a page can still hold a loader that runs
-    for as long as it is on screen.
-
-    Read by traversing from the parent package, which has an __init__.py; this one is a namespace
-    subpackage, and files() on a namespace package raises on the 3.9 floor this package declares."""
+    The file is read by traversing from the parent package, which has an __init__.py. This one is a
+    namespace subpackage, and files() raises on a namespace package at the 3.9 floor declared
+    here."""
     from importlib.resources import files
     return (files("kbase_design_system") / "solara" / "loader.js").read_text()
 

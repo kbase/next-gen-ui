@@ -1,23 +1,22 @@
-/* Loader's stop, for a page that has no React.
+/* Loader's exit, for a consumer with no React.
 
-   Starting the braid is CSS: setting data-active on .kb-loader--loader plays
-   the enter, which ramps an envelope from the logo row into the braid.
-   Stopping needs the pose at that instant, which only exists at runtime, so
-   Loader.module.scss leaves it to the component. This is that half of
-   Loader.tsx, with the same pose math, reading the same --loader-* custom
-   properties. A change to either has to be made in all three.
+   The braid starts in CSS: data-active on .kb-loader--loader plays the enter,
+   which ramps an envelope from the logo row out into the braid. The exit needs
+   the pose the animations hold at the instant it is asked for, which is known
+   only at runtime, so Loader.module.scss declares the exit's duration and no
+   keyframes for it. Loader.tsx builds the exit from that duration and the
+   --loader-* custom properties; this file builds the same one. The pose math
+   is in all three, and a change to any of them belongs in the others.
 
-   The contract: put data-loading on the loader or on any ancestor -- a form, a
-   panel, a page header -- and set it to "false" when the work is done. The
-   attribute's presence is what hands a loader to this script; its value is the
-   state. A loader with no data-loading above it is left alone, so a page can
-   still have one that simply runs while it is on screen.
+   Contract: data-loading on a loader or on any ancestor, set to "false" when
+   the work ends. Presence hands the loader to this file; the value is the
+   state. A loader with no data-loading above it is never touched.
 
-   This script drives data-active underneath, holding it set until the settle
-   has finished, because script animations compose over CSS ones and the loop
-   underneath is inert until it is rewound.
+   data-active is held until the exit finishes. The exit's frames compose over
+   the braid's, so the braid is not seen while the exit runs; it is rewound to
+   the row and paused at the end, which is where the next enter plays from.
 
-   Loading this twice is harmless; the second call replaces the first. */
+   Running this file a second time disconnects the first observer. */
 (function () {
   var TAU = 2 * Math.PI,
     DEPTH_PHASE = Math.PI,
@@ -132,7 +131,8 @@
     settling.set(svg, anims);
     anims[0].finished.then(
       function () {
-        // Pause and rewind the braid before dropping the settle, or it shows for a frame.
+        // Pause and rewind the braid before cancelling the exit. Cancelled first, the braid is
+        // still at its own pose and paints one frame of it.
         svg.removeAttribute('data-active');
         css.forEach(function (a) {
           a.currentTime = 0;
@@ -155,11 +155,10 @@
     var all = document.querySelectorAll('.kb-loader--loader');
     for (var i = 0; i < all.length; i++) {
       var svg = all[i];
-      if (settling.has(svg)) continue; // the settle calls sync() again when it lands
-      // The attribute's presence is what puts a loader under this script; its value is the state.
-      // A loader with no data-loading anywhere above it is one a page means to run for as long as
-      // it is on screen, and is left exactly as it was rendered -- reading absence as "off" would
-      // stop every always-on loader on the page the moment this script loaded.
+      if (settling.has(svg)) continue; // stop() calls sync() again when the exit lands
+      // Nothing above it carries data-loading, so the page never handed this loader over and its
+      // state is not this file's to set. A loader a page renders active and leaves active is the
+      // case this protects.
       var flag = svg.closest('[data-loading]');
       if (!flag) continue;
       var span = svg.parentElement;
@@ -177,8 +176,9 @@
     }
   }
 
-  // A page re-renders on its own schedule, so the loaders and the flag are
-  // watched for rather than waited on. One rAF-coalesced pass per burst.
+  // Loaders and flags appear and change on the host framework's render
+  // schedule, at no time this file can know. Every mutation triggers a pass,
+  // coalesced to one per frame; a pass is two selector lookups per loader.
   if (observer) observer.disconnect();
   observer = new MutationObserver(function () {
     if (queued) return;

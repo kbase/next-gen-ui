@@ -51,18 +51,19 @@ It carries seven stylesheets and a Solara adapter:
 | `chrome.css`                                                      | the app bar, masthead, mark and tinted ground, which the showcase builds as layout rather than as components; Frame's default padding, which is set in a TSX; and the scrim under a neutral name   |
 | `solara/`                                                         | `vuetify.css`, `icons.py`, `loader.js` and `resolve_tokens.py`. Solara renders its widgets with Vuetify, whose theme is set from Python                                                            |
 
-`loader.js` is the one script in the package. Starting the Loader is CSS —
-`data-active` on `.kb-loader--loader` plays the enter — but stopping it needs
-the pose the braid is at when it is asked to stop, which exists only at
-runtime; `Loader.tsx` does that in React, and this does it for a page that has
-no React. Put it on the page once with `icons.loader_script()`, put
-`data-loading` on the loader or any ancestor of it, and set that to `"false"`
-when the work is done. The attribute's presence is what hands a loader to the
-script and its value is the state, so a loader with no `data-loading` above it
-is left alone — which is how a page keeps one that simply runs while it is on
-screen. Emit the mark with `icons.loader(size, active=...)`; without the script,
-turning `active` off snaps the dots home from mid-braid instead of settling
-them.
+`loader.js` is the one script in the package. The Loader's enter is CSS —
+`data-active` on `.kb-loader--loader` plays it — but its exit needs the pose the
+animations hold at the instant it is asked for, which is known only at runtime.
+`Loader.tsx` builds that exit in React; `loader.js` builds it for a document
+with none.
+
+Include it once with `icons.loader_script()`, and put `data-loading` on a loader
+or on any ancestor, set to `"false"` when the work ends. Presence hands the
+loader to the script, the value is the state, and a loader with no
+`data-loading` above it is left as rendered — which is how a document keeps one
+that runs for as long as it is on screen. Emit the mark with
+`icons.loader(size, active=...)`; without the script, clearing `active` pauses
+the braid where it stands and the dots jump to the row.
 
 `style.css` is a bundler output and stays npm-only. `fonts.css` is excluded —
 see [Fonts](#fonts) for why it needs a bundler, and what a consumer without one

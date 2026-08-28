@@ -85,8 +85,7 @@ jobs:
           import glob, zipfile
           names = zipfile.ZipFile(glob.glob("dist-python/*.whl")[0]).namelist()
           payload = [n for n in names if not n.startswith("kbase_design_system-")]
-          # js is here for loader.js alone: Loader's stop needs the pose at the moment it is asked
-          # to stop, which no stylesheet can hold, so that half ships as a script.
+          # js, because Loader's exit cannot be a stylesheet -- solara/loader.js says why.
           leaked = [n for n in payload if n.rsplit(".", 1)[-1] not in ("css", "py", "js")]
           assert not leaked, f"non-payload files in the wheel: {leaked}"
           scripts = [n for n in payload if n.endswith(".js")]

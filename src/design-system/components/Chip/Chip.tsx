@@ -51,9 +51,9 @@ export function Chip({
         className,
       )}
     >
-      {/* Sized from the chip's own text, at the ratio a Button draws its icon at against its
-          label. Fixed at 9px it was the smallest glyph in the library and read as a speck beside
-          its own word. Bold because that text is 11px, where a regular stroke goes to nothing. */}
+      {/* em rather than px, so the glyph tracks the chip's text: 1.15 is the ratio Button holds
+          between its icon and its label. Bold because that text is 11px, where a regular stroke is
+          too fine to hold a shape. */}
       {Glyph && <Glyph size="1.15em" weight="bold" aria-hidden />}
       {/* Hidden, not removed, so the name survives iconOnly. */}
       {label && <span className={cx(iconOnly && Glyph && styles.srOnly)}>{label}</span>}

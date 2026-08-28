@@ -1,46 +1,30 @@
-"""Compile the component stylesheets into one plain CSS sheet.
+"""Compile the component stylesheets into one plain CSS file.
 
-Each component's look lives in a CSS module (`<Name>/<Name>.module.scss`) whose
-class names Vite rewrites to content-hashed locals at build time. A React
-consumer never says those names, so it does not care what they are. A consumer
-with no bundler -- a Python app, which is what this exists for -- can wear the
-same look, but only if the names are stable and the Sass is compiled. That is
-all this does.
+Each component's styles live in a CSS module (`<Name>/<Name>.module.scss`).
+Vite rewrites those class names to content-hashed locals, which suits React
+because nothing outside the module refers to them. A consumer with no bundler
+needs stable names and compiled CSS instead.
 
-hatch_build.py runs it during the wheel build, so the sheet a portal installs
-was compiled from the sources at the tag it installed, by the design system
-rather than by hand downstream.
+hatch_build.py runs this during the wheel build, so the CSS a portal installs
+is compiled from the sources at the version it installs.
 
-The compiler arrives from pip, because the consumer does: a Python app
-installing kbase-design-system has no Node, no npm and no checkout of this
-repository. See find_sass() for which package that leaves, and for why its
-being three versions behind the `sass` in package.json was measured rather than
-waved through.
-
-That the compiler is a real Dart Sass matters more than it sounds.
-`Loader.module.scss` computes its braid keyframes with `@for` and `math.div`,
-which libsass -- the engine behind every pip package named for Sass except two
--- cannot parse at all.
-
-Naming. A bundler is free to hash locals because it rewrites the JSX in the
-same pass; nothing outside the module ever says the name. Here the name IS the
-interface -- Python writes it into an element's class by hand -- so it has to
-be legible and stable:
+Naming rule:
 
     root, or a local named after its component  ->  kb-<component>
     every other local                           ->  kb-<component>--<local>
 
-One rule, applied blind. It deliberately does not try to sort locals into
-"parts" and "variants", the way hand-written BEM would: which local is the root
-element and which is a modifier is decided in the TSX, not in the stylesheet, so
-a stylesheet-only tool cannot know it and would have to guess. A wrong guess
-produces a name that lies. `kb-button--btn` is the price of not guessing.
+Applied without exception. Whether a local is the root element or a modifier is
+decided in the TSX, not the stylesheet, so the rule cannot tell them apart:
+Button's root local is `btn`, and it becomes `kb-button--btn`. The prefix
+prevents collisions between components, where 38 local names appear in more
+than one and `root` appears in 23.
 
-The prefix is not decoration. 38 local names are shared across more than one
-component (`root` in 23 of them, `green`, `red`, `primary`, `title` in 7 each),
-so an unprefixed merge would silently cross-wire components.
+The compiler comes from pip, because a Python app installing
+kbase-design-system has no Node and no checkout of this repository. libsass is
+not an option: Loader.module.scss builds its keyframes with `@for` and
+`math.div`, which libsass does not support. find_sass() covers the rest.
 
-To see what the build produces, from src/design-system:
+To see the output without building a wheel, from src/design-system:
 
     python python/gen_portal_css.py --out /tmp/components.css
 """
@@ -59,11 +43,11 @@ import tempfile
 HERE = pathlib.Path(__file__).resolve().parent   # src/design-system/python
 ROOT = HERE.parent                               # src/design-system
 
-# Rewritten into a plain selector: a bundler reads :global() as "leave this name
-# alone", and every name here is already global once the module is flattened.
+# Becomes a plain selector. :global() tells a bundler to leave a name alone, and
+# every name is already global once the modules are merged.
 GLOBAL = re.compile(r":global\(\s*(.*?)\s*\)", re.S)
-# CSS modules' cross-module inheritance. Invalid CSS, and unresolvable without a
-# bundler; it is reported rather than dropped in silence.
+# CSS modules' cross-module inheritance: not valid CSS, and not resolvable
+# without a bundler. Listed in the output header rather than dropped silently.
 COMPOSES = re.compile(r"^\s*composes:\s*(.+?)\s+from\s+(['\"])(.+?)\2\s*;\s*$", re.M)
 COMMENT = re.compile(r"/\*.*?\*/", re.S)
 KEYFRAMES = re.compile(r"@keyframes\s+([\w-]+)")
@@ -75,10 +59,9 @@ def kebab(name: str) -> str:
 
 
 def public_name(component: str, local: str, locals_: set[str]) -> str:
-    """`root` always wins the short name. A local named after its own component
-    only wins it when there is no `root` to lose to -- Badge has both `.root`
-    (the host that positions the badge) and `.badge` (the badge itself), and
-    collapsing them would put `position: absolute` on the host."""
+    """`root` takes the short name. A local named after its component takes it
+    only when there is no `root`: Badge has both `.root` (the positioning host)
+    and `.badge`, and merging them would put position:absolute on the host."""
     comp = kebab(component)
     if local == "root" or (kebab(local) == comp and "root" not in locals_):
         return f"kb-{comp}"
@@ -86,8 +69,8 @@ def public_name(component: str, local: str, locals_: set[str]) -> str:
 
 
 def _blocks(css: str):
-    """Yield each selector prelude, with comments and declaration bodies removed
-    so a word inside a comment or a url() is never mistaken for a class."""
+    """Yield each selector prelude, with comments and declaration bodies
+    removed, so a word inside a comment or a url() is not read as a class."""
     depth = 0
     buf: list[str] = []
     for ch in COMMENT.sub("", css):
@@ -112,24 +95,19 @@ def local_names(css: str) -> set[str]:
 
 
 def find_sass() -> list[str] | None:
-    """A Dart Sass to compile with, without needing Node.
+    """Locate a Dart Sass binary, without requiring Node.
 
-    The consumer of all this is a Python app pip-installing the design system, so the compiler has
-    to arrive the same way: from pip, on whatever platform the app is being installed on. Exactly
-    one package on PyPI does that -- `dart-sass`, which vendors the real Dart Sass executable for
-    seven platforms, macOS included. (`sass-embedded` carries a newer Dart Sass but publishes no
-    macOS wheel; everything else on PyPI named for Sass is libsass, which cannot parse Loader.)
+    The wheel is built wherever a portal installs it, so the compiler has to come from pip for that
+    platform. Two PyPI packages carry a real Dart Sass: `dart-sass`, which vendors the binary for
+    seven platforms including macOS, and `sass-embedded`, which has a newer Dart Sass but no macOS
+    wheel -- its py3-none-any fallback contains no binary, so a Mac installs it and fails at
+    runtime. Everything else on PyPI named for Sass is libsass.
 
-    It vendors 1.51.0 rather than the 1.99.0 the design system's package.json pins. That was
-    checked rather than assumed: compiled both ways, all 45 components come out with identical
-    selectors and declarations, differing only in where Dart Sass parks an orphan comment and
-    whether it quotes an attribute selector with ' or ". Nothing that reaches a pixel.
+    dart-sass vendors 1.51.0; package.json pins 1.99.0. The two produce the same selectors and
+    declarations for all 45 components, and check_compiler_parity.py holds them to that.
 
-    Deliberately does NOT prefer a checkout's node_modules/.bin/sass, tempting as that is. The
-    wheel is built on the installing machine, where there is no checkout; preferring one here would
-    mean a maintainer's sheet and a portal's sheet came out of different compilers, and only the
-    maintainer's was ever looked at. One compiler, chosen the same way everywhere. Pass --sass to
-    override, which is how CI compares this against the pinned npm `sass`.
+    A checkout's node_modules/.bin/sass is not used even when present, so that a maintainer and a
+    portal compile with the same program. Pass --sass to override; check_compiler_parity.py does.
     """
     try:
         import dartsass
@@ -143,7 +121,7 @@ def find_sass() -> list[str] | None:
     exe = exe.with_suffix(".bat") if system == "windows" and not exe.exists() else exe
     if not exe.exists():
         return None
-    # The wheel is built without the executable bit, so a fresh install cannot run what it ships.
+    # The wheel ships the binary without the executable bit set.
     mode = exe.stat().st_mode
     if not mode & stat.S_IXUSR:
         exe.chmod(mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
@@ -162,15 +140,12 @@ def rewrite(component: str, css: str) -> tuple[str, list[str]]:
     notes: list[str] = []
 
     for local, _q, source in COMPOSES.findall(css):
-        notes.append(
-            f"{component}.{local} composes {local} from {pathlib.Path(source).stem}"
-            " -- apply both classes in the markup"
-        )
+        notes.append(f"{component}.{local} composes .{local} from {pathlib.Path(source).stem}")
     css = COMPOSES.sub("", css)
     css = GLOBAL.sub(r"\1", css)
 
-    # Keyframe names are module-scoped too, so two components may both animate
-    # something called "pulse" and mean different things.
+    # Keyframe names are module-scoped too: two components can each define
+    # `pulse` and mean different animations.
     for frames in sorted(set(KEYFRAMES.findall(css)), key=len, reverse=True):
         if frames.startswith("kb-"):
             continue
@@ -187,7 +162,7 @@ def rewrite(component: str, css: str) -> tuple[str, list[str]]:
             )
         taken[name] = local
 
-    # Longest first: .on and .onWhite both exist, and .on must not eat .onWhite.
+    # Longest first, so replacing .on does not corrupt .onWhite.
     for local in sorted(locals_, key=len, reverse=True):
         css = re.sub(
             rf"\.{re.escape(local)}(?![\w-])",
@@ -233,23 +208,21 @@ def main(argv: list[str] | None = None) -> int:
     header = f"""/* ============================================================================
    KBase design-system components, as plain CSS.
 
-   GENERATED -- do not edit. Every rule below was compiled from
-   <Name>/<Name>.module.scss in kbase/next-gen-ui{f" ({args.version})" if args.version else ""} by the design
-   system's own Dart Sass, so this sheet and the React build agree by
-   construction rather than by anyone's care.
+   GENERATED -- do not edit. Compiled by Dart Sass from
+   <Name>/<Name>.module.scss in kbase/next-gen-ui{f" ({args.version})" if args.version else ""}, so this file
+   and the React build come from the same sources.
 
-   Class names are mechanical: a local named `root`, or named after its own
-   component, becomes `kb-<component>`; every other local becomes
+   Class names: a local named `root`, or named after its own component,
+   becomes `kb-<component>`; every other local becomes
    `kb-<component>--<local>`.
 
-   To change what a component looks like, change its .module.scss and rebuild;
-   the wheel is where this sheet is made.
+   To change a component's appearance, edit its .module.scss and rebuild.
 
    {len(modules)} components.
    ============================================================================ */
 """
     if notes:
-        header += "\n/* Cross-module composition, which plain CSS cannot express:\n"
+        header += "\n/* composes: rules, which plain CSS cannot express. Write both classes:\n"
         header += "".join(f"     {n}\n" for n in notes)
         header += " */\n"
 

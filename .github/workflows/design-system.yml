@@ -43,8 +43,8 @@ jobs:
           if-no-files-found: error
 
   # The same design system as a pip package. A hatchling hook compiles
-  # components/*/<Name>.module.scss into the wheel with the Dart Sass pip can install; this checks
-  # that it still can, that the two compilers still agree, and that only CSS came out.
+  # components/*/<Name>.module.scss into the wheel using the Dart Sass pip can install. This job
+  # builds the wheel, compares the two compilers, and checks what the wheel contains.
   python-wheel:
     name: Python wheel
     runs-on: ubuntu-latest
@@ -71,14 +71,14 @@ jobs:
         working-directory: src/design-system
         run: python -m build --wheel --outdir dist-python .
 
-      # The one check that catches an upstream .module.scss using a Sass feature newer than the
-      # 1.51.0 pip ships -- which otherwise surfaces as a portal that looks subtly wrong.
+      # Catches a .module.scss using a Sass feature newer than the 1.51.0 pip ships, which
+      # otherwise shows up as a portal that renders slightly differently from the showcase.
       - name: The two compilers agree
         working-directory: src/design-system
         run: python python/check_compiler_parity.py --sass ../../node_modules/.bin/sass
 
-      # force-include ignores exclude, so a directory added to it drags every file under it into
-      # the wheel. This is what says so.
+      # force-include ignores exclude, so a directory added to it brings every file under it into
+      # the wheel.
       - name: Only CSS and the Solara adapter shipped
         working-directory: src/design-system
         run: |

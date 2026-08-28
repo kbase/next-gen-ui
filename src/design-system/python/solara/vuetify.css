@@ -7,10 +7,9 @@
    dresses that chrome in the design system's tokens instead. It is loaded
    after tokens.css and before the app's own stylesheet.
 
-   NOTHING HERE MAY NAME A PORTAL -- not a selector, not a comment, not a
-   value. Eight KBase portals are Solara apps with the same problem and load
-   this one file out of the kbase-design-system wheel; a rule that only suits
-   one of them belongs in that portal's own sheet.
+   Do not name a portal here -- not in a selector, not in a comment, not in a
+   value. Eight of them load this one file out of the kbase-design-system
+   wheel. A rule that suits only one belongs in that portal's own stylesheet.
 
    THIS FILE IS SHAPE. COLOR COMES FROM THE THEME.
    Vuetify holds its theme in custom properties that are COMMA-SEPARATED RGB
@@ -19,9 +18,9 @@
    Nothing in CSS can decompose a color back into three comma-separated
    numbers, so those cannot be set from here. They can be set from Python:
    ipyvuetify's ThemeColors traits all sync to the front end, so an app hands
-   Vuetify the design tokens once (resolve_tokens.py, beside this file, works
-   out what those colours are) and Vuetify generates every triplet itself,
-   including the on-colors it derives by contrast.
+   Vuetify the design tokens once -- resolve_tokens.py, beside this file,
+   produces them -- and Vuetify generates every triplet itself, including the
+   on-colors it derives by contrast.
 
    That is what makes the components this file never mentions come out right:
    their internals are alpha blends against those triplets. So the rules below

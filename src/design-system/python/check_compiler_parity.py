@@ -1,24 +1,20 @@
-#!/usr/bin/env python3
-"""Do the two Sass compilers still agree?
+"""Check that the two Sass compilers produce the same CSS.
 
-The wheel is compiled by the Dart Sass that pip can install everywhere, which
-is 1.51.0 (see find_sass()). The React bundle is compiled by the `sass` in
-package.json, currently 1.99.0. Those are the same program at different ages,
-and the whole pipeline rests on them producing the same CSS -- if they ever
-diverge, a portal starts looking subtly unlike the showcase and nothing says
-so.
+The wheel is compiled by the Dart Sass pip can install everywhere, 1.51.0 (see
+find_sass()). The React bundle is compiled by the `sass` in package.json,
+currently 1.99.0. The pipeline depends on those agreeing.
 
-This compiles the components both ways and compares. It normalises three things
-that are known to differ and cannot reach a pixel:
+Three differences between them cannot affect rendering and are normalised away
+before comparing:
 
-  * where a comment lands, and comments themselves
+  * comments, and which line they land on
   * ' versus " in attribute selectors
-  * a rule with no declarations, which 1.99 emits to park an orphan comment
+  * rules with no declarations, which 1.99 emits to hold an orphan comment
 
-Anything left is a real difference, and the first one will almost certainly be
-a Sass feature added after 1.51 appearing in a .module.scss. The fix is then a
-choice -- rewrite that line, or find a newer Dart Sass that pip can install on
-macOS -- not something to paper over here.
+Anything else is a real difference, most likely a Sass feature newer than 1.51
+appearing in a .module.scss. Resolving that is a choice between rewriting the
+line and finding a newer Dart Sass that pip can install on macOS, so this
+reports the difference rather than absorbing it.
 
     python python/check_compiler_parity.py --sass node_modules/.bin/sass
 """

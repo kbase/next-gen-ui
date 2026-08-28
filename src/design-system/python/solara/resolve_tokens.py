@@ -13,8 +13,8 @@ the rest are derived from them. So a browser resolves them, once, and the answer
     python python/solara/resolve_tokens.py --node-modules <a checkout>/node_modules \\
         --brand <the portal's brand.css> --out src/<portal>/theme_colors.py
 
-The output belongs to the caller, not here: --brand is per-portal, so the resolved values are too.
-This lives beside the sheets it feeds so that it is re-run when they change.
+The output belongs to the caller: --brand is per-portal, so the resolved values are too. The
+script lives beside the stylesheets it reads, so a change to them is a prompt to re-run it.
 
 Needs Playwright (any node_modules that has it) and the kbase-design-system package installed, which
 is where tokens.css is read from -- so the resolved values always match the installed version.

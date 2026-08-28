@@ -7,12 +7,11 @@ emphasis, fill for active state -- and the components are specific about which: 
 bold at 9px, an Alert's is bold at 16.
 
 WHY A FONT AND NOT FILES. Phosphor ships as npm packages, and a Solara portal has no bundler to
-consume one. Cutting the SVGs out of @phosphor-icons/react and keeping them works -- Function
-Junction carried 104 of them for a while -- but it puts a copy of someone else's art in a KBase
-repo and needs a script, a checkout with npm install, and a version manifest to stay honest.
-@phosphor-icons/web is the same art as a webfont; vuetify.css imports one stylesheet per weight and
-this builds the two class names that select a glyph. The trade is stated where the import is: a
-deployment that cannot reach the CDN loses its icons rather than falling back to something.
+consume one. Copying the SVGs out of @phosphor-icons/react works, but it keeps someone else's art
+in a KBase repo and needs a script, a checkout with npm install, and a version manifest to stay
+current. @phosphor-icons/web is the same art as a webfont: vuetify.css imports one stylesheet per
+weight, and this builds the two class names that select a glyph. The cost is stated where the
+import is -- a deployment that cannot reach the CDN has no icons rather than a fallback.
 
 The KBase mark below is NOT Phosphor -- it is three circles from the design system's own logo, and
 it stays inline SVG so it is always there and always takes the tokens.

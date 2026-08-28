@@ -1,29 +1,27 @@
 /* ============================================================================
-   Page chrome this design system has no component for.
+   Page chrome with no component in this design system.
 
-   components.css is generated from the .module.scss sources beside it. This
-   sheet is the remainder, and it is hand-written: the tinted ground, the app
-   bar, the masthead, the mark and the scrim, which the showcase draws as
-   layout around the components rather than as components themselves; plus
-   Frame's default padding, which is a React prop default and so appears in no
-   stylesheet at all. Each entry says why it is here.
+   components.css is generated from the .module.scss sources. This file holds
+   what is left: the tinted ground, app bar, masthead, mark and scrim, which the
+   showcase builds as layout rather than as components, plus Frame's default
+   padding, which is a React prop default and appears in no stylesheet. Each
+   entry says why it is here.
 
-   Keep this sheet small. A rule that lands here is a standing claim that the
-   design system is missing something -- the right end state for most of them
-   is a component in components/ and a deletion here.
+   Every rule here means the design system lacks a component. Keep the file
+   small.
 
-   NOTHING HERE MAY NAME A PORTAL. Eight of them install this file.
+   Do not name a portal here. Eight of them load this file.
    ============================================================================ */
 
-/* ── Tint ──────────────────────────────────────────────────────────────────
-   A tinted ground (--bg-*) is darker than --c-surface, so the ink tiers that
-   clear AA on a plain surface do not all clear it here. This restates the
-   tiers one step darker for anything inside such a ground.
+/* --- Tint -----------------------------------------------------------------
+   A tinted ground (--bg-*) is darker than --c-surface, so not every ink tier
+   that clears AA on a plain surface clears it here. These set the tiers one
+   step darker inside such a ground.
 
-   Not a design-system component because in the showcase the tinted grounds are
-   Alert and Frame, which set their own ink. A portal that tints a region of
-   the page itself -- a hero, a callout band -- has no component to inherit it
-   from, and picking the ink by hand is how a portal ends up with 4.2:1 text. */
+   No component covers this: the tinted grounds in the showcase are Alert and
+   Frame, which set their own ink. A portal that tints a region itself, such as
+   a hero or a callout band, has nothing to inherit it from, and choosing the
+   ink by hand puts the contrast below AA. */
 .kb-tint {
   color: var(--c-ink2);
 }
@@ -33,19 +31,17 @@
 .kb-tint :is(.byline, .body, .section-label) {
   color: var(--c-ink2);
 }
-/* Chip is the exception: neutral has no tint of its own, so it keeps the
-   --c-surface ground it would have anywhere, and its own ink with it. */
+/* Chip is excluded: neutral has no tint of its own, so it keeps the
+   --c-surface ground and the ink that goes with it. */
 
-/* ── Frame padding ─────────────────────────────────────────────────────────
-   Frame.module.scss sets no padding. The React component applies it inline
-   from a prop whose default is 7 (`padding = 7` in Frame.tsx), so the default
-   look of a Frame is not recoverable from the stylesheet alone -- a portal
-   that only has the sheet gets an edge-to-edge card and no hint that it is
-   missing anything.
+/* --- Frame padding --------------------------------------------------------
+   Frame.module.scss sets no padding. The React component applies it inline from
+   a prop defaulting to 7 (`padding = 7` in Frame.tsx), so a consumer holding
+   only the stylesheet gets an edge-to-edge card.
 
-   These restate that default, and the `padding={0}` case. They are the one
-   place in these sheets where a value comes from a TSX rather than a SCSS,
-   which is exactly why they are here and not in the generated sheet. */
+   These restate that default and the `padding={0}` case. They are the only
+   values here taken from a TSX rather than a SCSS, which is why they are not in
+   the generated file. */
 .kb-frame {
   padding: var(--s-7);
 }
@@ -53,10 +49,10 @@
   padding: 0;
 }
 
-/* ── App bar ───────────────────────────────────────────────────────────────
+/* --- App bar --------------------------------------------------------------
    The strip across the top of a portal: the masthead, then whatever the portal
-   puts on the right. A row with a rule under it and nothing else -- the parts
-   inside it are components. */
+   puts on the right. A row with a border under it; the parts inside are
+   components. */
 .kb-appbar {
   display: flex;
   align-items: center;
@@ -65,28 +61,27 @@
   border-bottom: 1px solid var(--c-border);
 }
 
-/* ── Masthead ──────────────────────────────────────────────────────────────
+/* --- Masthead -------------------------------------------------------------
    The mark, then whatever names the page. */
 .kb-masthead {
   display: flex;
   align-items: center;
   gap: var(--s-5);
 }
-/* Each child centres on the row rather than sitting on its own text baseline.
-   Without this an inline wrapper around the mark takes its height from
-   line-height and the mark rides at the top of it, a few pixels above the
-   words beside it. */
+/* Children centre on the row rather than on their own text baseline. Without
+   this, an inline wrapper around the mark takes its height from line-height and
+   the mark sits a few pixels above the words beside it. */
 .kb-masthead > * {
   display: flex;
   align-items: center;
 }
 
-/* ── Mark ──────────────────────────────────────────────────────────────────
-   The KBase mini-logo as an inline element. The SVG itself is drawn in Python
-   (python/solara/icons.py) because its three circles are also the Loader's
-   three dots and the two must not drift apart; this only stops the surrounding
-   line box from clipping or shifting it. overflow:visible because the animated form
-   swings outside the viewBox. */
+/* --- Mark -----------------------------------------------------------------
+   The KBase mini-logo as an inline element. The SVG is drawn in
+   python/solara/icons.py, because its three circles are also the Loader's three
+   dots and the two have to stay in step. These rules only stop the surrounding
+   line box from clipping or shifting it; overflow:visible because the animated
+   form extends outside the viewBox. */
 .kb-mark {
   display: inline-flex;
   flex: 0 0 auto;
@@ -96,7 +91,7 @@
   overflow: visible;
 }
 
-/* ── Scrim ─────────────────────────────────────────────────────────────────
+/* --- Scrim ----------------------------------------------------------------
    The dimmed ground behind a Dialog. Dialog gets this from its React portal
    library, so the tokens exist (--c-scrim, --z-scrim) but no stylesheet in
    components/ draws it. */

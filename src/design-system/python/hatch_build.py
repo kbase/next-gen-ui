@@ -1,31 +1,26 @@
 """Compile the component stylesheets into the wheel.
 
-The design system's look lives in 45 CSS modules that Vite rewrites at build
-time. A React consumer gets that for free. A Python consumer -- a Solara portal
--- gets nothing, because the built stylesheet exists only in gitignored `dist/`
-and pip builds the wheel from source, so nothing runs Vite during an install.
-This hook closes that gap: it runs gen_portal_css.py at wheel-build time and
-force-includes the result as kbase_design_system/components.css.
+Component styles live in 45 CSS modules that Vite rewrites at build time. The
+built stylesheet exists only in gitignored dist/, and pip builds the wheel from
+source, so a Python consumer would otherwise get the tokens and no component
+CSS. This hook runs gen_portal_css.py during the wheel build and force-includes
+the result as kbase_design_system/components.css.
 
-Where "wheel-build time" lands depends on how the portal installs. For
+For
 
-    pip install "kbase-design-system @ git+https://…#subdirectory=src/design-system"
+    pip install "kbase-design-system @ git+https://...#subdirectory=src/design-system"
 
-pip clones at the tag and builds on the portal's machine, so this compiles
-there, against the sources it just cloned. For a wheel published from CI it ran
-once and the consumer only unpacks a file. Either way the sheet cannot drift
-from the sources it was made from.
+pip clones at the tag and builds on the installing machine, so the compile
+happens there against the sources it just cloned. For a wheel published from CI
+it happened once. Either way the CSS matches the sources it came from.
 
-The compiler is declared under this hook's own `dependencies` in pyproject.toml
-rather than in [build-system] requires, so hatchling installs it into the build
-environment and nothing else in the build has to know it exists. It is not a
-runtime dependency of the package.
+The compiler is declared under this hook's own `dependencies` in pyproject.toml,
+so hatchling installs it into the build environment. It is not a runtime
+dependency and not in [build-system] requires.
 
-The .scss sources never enter the wheel: this reads them from the source tree
-and writes only CSS. That is not merely tidy. `force-include` accepts a
-directory but ignores `exclude`, so shipping `components/` to compile later
-would drag 108 .tsx and .ts files in with it, with no pattern available to stop
-them.
+The .scss sources do not enter the wheel; the hook reads them from the source
+tree and writes only CSS. force-include accepts a directory but ignores
+`exclude`, so components/ cannot be shipped without its 108 .tsx and .ts files.
 """
 
 from __future__ import annotations
@@ -42,9 +37,8 @@ HERE = pathlib.Path(__file__).resolve().parent   # src/design-system/python
 def _generator():
     """Import gen_portal_css.py by path.
 
-    It sits beside this file, which is not on sys.path during a build, and it is
-    deliberately not a package: nothing imports it at runtime, and making one
-    would put an importable `python` on the wheel's namespace.
+    It sits beside this file, which is not on sys.path during a build. Neither
+    file is part of a package; both exist only at build time.
     """
     spec = importlib.util.spec_from_file_location("gen_portal_css", HERE / "gen_portal_css.py")
     module = importlib.util.module_from_spec(spec)
@@ -61,34 +55,31 @@ class CustomBuildHook(BuildHookInterface):
 
         gen = _generator()
 
-        # Stopping is the good outcome. A wheel that quietly ships the tokens with no component CSS
-        # installs cleanly and produces an unstyled portal, which is found in a browser rather than
-        # in a build log.
+        # A wheel carrying the tokens and no component CSS installs cleanly and shows up only as an
+        # unstyled page, so this stops instead.
         if gen.find_sass() is None:
             raise RuntimeError(
-                "no Dart Sass in the build environment, so this wheel would ship the tokens with "
-                "no component CSS at all. dart-sass is declared under "
-                "[tool.hatch.build.hooks.custom].dependencies, so a normal build has it; a build "
-                "run with --no-build-isolation has to supply it itself: "
-                "pip install 'dart-sass>=0.5.2'."
+                "no Dart Sass in the build environment, so this wheel would carry the tokens and "
+                "no component CSS. dart-sass is declared under "
+                "[tool.hatch.build.hooks.custom].dependencies, so an isolated build has it; a "
+                "build run with --no-build-isolation must supply it: pip install 'dart-sass>=0.5.2'."
             )
 
-        # Likewise a partial sheet, which looks like it worked. main() returns non-zero for a
-        # missing sources directory; a component that fails to compile, or two locals that would
-        # collide, raise out of it.
+        # Same for a partial file. main() returns non-zero for a missing sources directory; a
+        # component that fails to compile, or two locals that would collide, raise.
         out = pathlib.Path(self._workdir.name) / "components.css"
         # --components defaults to the sources beside the generator, which during a build is the
         # tree pip just cloned.
         code = gen.main(["--out", str(out), "--version", self.metadata.version])
         if code:
-            raise RuntimeError(f"gen_portal_css exited {code}; refusing to build a wheel without components.css")
+            raise RuntimeError(f"gen_portal_css exited {code}; not building a wheel without components.css")
 
         build_data["force_include"][str(out)] = "kbase_design_system/components.css"
 
     @property
     def _workdir(self):
-        # Held on the hook rather than scoped to initialize(): hatchling copies force-included
-        # files after initialize() returns, so the directory has to outlive it.
+        # hatchling copies force-included files after initialize() returns, so the temporary
+        # directory has to outlive it.
         if not hasattr(self, "_workdir_value"):
             self._workdir_value = tempfile.TemporaryDirectory(prefix="kbase-ds-css-")
         return self._workdir_value

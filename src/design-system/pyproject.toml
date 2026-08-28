@@ -22,7 +22,7 @@ raw-options = { root = "../..", tag_regex = '^ds-v(?P<version>\d+\.\d+\.\d+)$', 
 
 # Compiles components/*/<Name>.module.scss into the wheel. dart-sass is declared here rather than
 # in [build-system].requires because hatchling installs hook dependencies into the build
-# environment itself -- it is not a runtime dependency and nothing else in the build sees it.
+# environment: it is not a runtime dependency, and nothing else in the build sees it.
 [tool.hatch.build.hooks.custom]
 path = "python/hatch_build.py"
 dependencies = ["dart-sass>=0.5.2"]
@@ -37,7 +37,6 @@ bypass-selection = true      # no package to detect; the payload is force-includ
 "prism.css" = "kbase_design_system/prism.css"
 "global.css" = "kbase_design_system/global.css"
 "python/chrome.css" = "kbase_design_system/chrome.css"
-# The Solara adapter: a stylesheet plus two modules, importable as
-# kbase_design_system.solara.* -- a namespace package, since bypass-selection means the
-# wheel has no __init__.py anywhere.
+# The Solara adapter: a stylesheet and two modules, imported as kbase_design_system.solara.*.
+# A namespace package, since bypass-selection leaves no __init__.py in the wheel.
 "python/solara" = "kbase_design_system/solara"

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { CodeBlock } from '../components/CodeBlock';
-import { JobPanel } from '../components/JobPanel';
+import { JobPanel } from './JobPanel';
 import { Button } from '../components/Button';
 import { Code, Database, TextAa, Play } from '@phosphor-icons/react';
 import s from './appendix-shared.module.scss';

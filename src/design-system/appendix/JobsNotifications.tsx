@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { JobPanel } from '../components/JobPanel';
+import { JobPanel } from './JobPanel';
 import { NotificationFeed, type NotificationItem } from '../components/NotificationFeed';
 import { Table, Thead, Tbody, Tr, Th, Td } from '../components/Table';
 import s from './appendix-shared.module.scss';

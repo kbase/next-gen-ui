@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react';
 import styles from './AppCard.module.scss';
-import { cx } from '../../util/cx';
-import { Frame } from '../Frame';
-import { TypeBadge } from '../TypeBadge';
-import type { TypeBadgeColor } from '../TypeBadge';
+import { cx } from '../util/cx';
+import { Frame } from '../components/Frame';
+import { TypeBadge } from '../components/TypeBadge';
+import type { TypeBadgeColor } from '../components/TypeBadge';
 import { Star } from '@phosphor-icons/react';
 
 interface TypeDef {

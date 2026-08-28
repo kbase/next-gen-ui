@@ -1,13 +1,13 @@
 import type { ReactNode } from 'react';
 import type { Icon } from '@phosphor-icons/react';
 import styles from './JobPanel.module.scss';
-import { Button } from '../Button';
-import { cx } from '../../util/cx';
-import { Frame } from '../Frame';
-import { Chip } from '../Chip';
-import { Progress } from '../Progress';
-import { Loader } from '../Loader';
-import * as Collapsible from '../Collapsible';
+import { Button } from '../components/Button';
+import { cx } from '../util/cx';
+import { Frame } from '../components/Frame';
+import { Chip } from '../components/Chip';
+import { Progress } from '../components/Progress';
+import { Loader } from '../components/Loader';
+import * as Collapsible from '../components/Collapsible';
 import {
   ArrowCounterClockwise,
   ArrowSquareOut,
@@ -19,7 +19,7 @@ import {
   X,
   XCircle,
 } from '@phosphor-icons/react';
-import type { FrameAccent } from '../Frame';
+import type { FrameAccent } from '../components/Frame';
 
 export type JobStatus = 'queued' | 'running' | 'complete' | 'error' | 'canceled';
 

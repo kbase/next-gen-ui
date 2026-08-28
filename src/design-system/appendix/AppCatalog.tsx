@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AppCard } from '../components/AppCard';
+import { AppCard } from './AppCard';
 import s from './appendix-shared.module.scss';
 import { Dna, Flask, TreeStructure, Leaf, Bug } from '@phosphor-icons/react';
 

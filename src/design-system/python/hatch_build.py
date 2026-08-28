@@ -1,9 +1,9 @@
 """Compile the component stylesheets into the wheel.
 
-Component styles live in 45 CSS modules that Vite rewrites at build time. The
-built stylesheet exists only in gitignored dist/, and pip builds the wheel from
-source, so a Python consumer would otherwise get the tokens and no component
-CSS. This hook runs gen_portal_css.py during the wheel build and force-includes
+Component styles live in one CSS module each, which Vite rewrites at build
+time. The built stylesheet exists only in gitignored dist/, and pip builds the
+wheel from source, so a Python consumer would otherwise get the tokens and no
+component CSS. This hook runs gen_portal_css.py during the wheel build and force-includes
 the result as kbase_design_system/components.css.
 
 For
@@ -71,7 +71,7 @@ class CustomBuildHook(BuildHookInterface):
         code = gen.main(["--out", str(out), "--version", self.metadata.version])
         # A partial file is refused for the same reason. main() returns non-zero for a missing
         # sources directory; a component that fails to compile, or two locals that would collide,
-        # raise out of it instead.
+        # raise rather than returning a code.
         if code:
             raise RuntimeError(f"gen_portal_css exited {code}; not building a wheel without components.css")
 

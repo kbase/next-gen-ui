@@ -1,27 +1,26 @@
-"""Phosphor icons, from the family's webfont.
+"""Phosphor glyphs and the KBase mark, as HTML strings.
 
-The design system draws with Phosphor and sets the rule for choosing one: "One icon per meaning,
-across the system. Look a meaning up here before choosing an icon: two meanings sharing an icon
-makes the whole set unreadable." Weight carries meaning as well -- regular for chrome, bold for
-emphasis, fill for an active state -- and the components are specific about which: a Chip's glyph
-is bold at 9px, an Alert's is bold at 16.
+A glyph is an `<i>` carrying two classes, the weight and the name:
+`ph-bold ph-tree-structure`. Weight is part of the meaning -- regular for
+chrome, bold for emphasis, fill for an active state -- so it is a parameter
+rather than a constant.
 
-Phosphor ships as npm packages, and a Solara portal has no bundler to consume one. The alternative
-to a webfont is copying the SVGs out of @phosphor-icons/react, which keeps someone else's art in a
-KBase repo and needs a script, a checkout with npm install, and a version manifest to stay current.
-@phosphor-icons/web is the same art as a webfont: vuetify.css imports one stylesheet per weight,
-and this builds the two class names that select a glyph. A deployment that cannot reach the CDN has
-no icons rather than a fallback.
+The glyphs come from @phosphor-icons/web, a webfont, because Phosphor's other
+distributions are npm packages and a Solara portal has no bundler to build one.
+vuetify.css imports one stylesheet per weight from a CDN, so a deployment that
+cannot reach unpkg.com renders no icons. Vendoring the SVGs out of
+@phosphor-icons/react instead would need a checkout, a script and a version
+manifest to track the upstream release.
 
-The KBase mark below is not Phosphor. It is three circles from the design system's logo, inline SVG
-so that it is always present and always takes the tokens.
+kbase_mark() is drawn here as inline SVG, so it needs no network, and filled
+from the colour tokens, so it follows the theme.
 """
 from __future__ import annotations
 
 import re
 
-# Default box for an icon that labels something. Overridden per call site where the design system
-# is specific: a chip's icon is 9, a button's 14, a card's head larger.
+# The box for an icon that labels something. Overridden where the design system gives a size:
+# a chip's glyph is 9px, a button's 14.
 SIZE = 16
 
 # The font selects a glyph with two classes: the weight, then the name.
@@ -36,9 +35,11 @@ def _kebab(name: str) -> str:
 def glyph(name: str, size: int | str = SIZE, cls: str = "", weight: str = "regular") -> str:
     """One icon, for HTML a portal builds by hand.
 
-    `size` is a number of pixels or any CSS length. "1em" ties the glyph to the size of the text it
-    sits in, which is what a run of prose needs; the font renders at font-size, so nothing else is
-    required.
+    `size` is pixels as an int, or any CSS length as a string. The font renders at font-size, so
+    "1em" sizes the glyph from the text around it.
+
+    The inline style is what a stylesheet cannot reach: an icon font sits on the text baseline, so
+    a glyph beside a word rides high without the -0.125em shift.
     """
     px = f"{size}px" if isinstance(size, int) else size
     klass = f"{_WEIGHT.get(weight, 'ph')} ph-{_kebab(name)}" + (f" {cls}" if cls else "")
@@ -57,9 +58,10 @@ def children(name: str, label: str = "", size: int | str = 14, weight: str = "re
     return out
 
 
-# The design system's status glyphs, from Section 10's table, which also records the distinctions:
-# X closes and XCircle errors; Warning needs attention and is not a failure; Hourglass waits and
-# Clock is scheduled. A state takes its name from here, so no two states share a shape.
+# The design system's status glyphs, from Section 10's table, which draws the distinctions this
+# map preserves: X closes where XCircle errors, Warning asks for attention where XCircle reports a
+# failure, Hourglass waits where Clock shows elapsed time. Naming a state from here is what keeps
+# two states off one shape.
 STATUS = {
     "done": "Check",            # confirmed, inline done -- a finished job is CheckCircle
     "complete": "CheckCircle",  # complete, succeeded
@@ -83,26 +85,20 @@ STATUS = {
 
 
 def kbase_mark(size: int = 20, animate: bool = False, label: str = "") -> str:
-    """KBase's three circles, and with `animate`, the design system's only spinner.
+    """The KBase mark: three circles, as inline SVG.
 
-    The mark and the spinner are the same three circles. The design system draws the mark in four
-    places -- its masthead and footer, the app shell's rail, the in-context mock -- always on a
-    34x28 box in --c-yellow, --c-grellow and --c-ocean, and Section 06 of the showcase says of
-    Loader that "with `active` off it is the static logo".
+    With `animate`, the same circles at the coordinates and under the classes Loader.tsx uses, so
+    components.css animates them. Mark and loader are one graphic in this design system: Loader's
+    rest positions are the logo row.
 
-    The braid is not in this markup. components.css animates .kb-loader--loader and holds it at
-    `animation-play-state: paused` until the element also carries [data-active]; both are emitted
-    here when `animate` is set, so what this returns is the working loader rather than a still
-    logo with a spinner's label.
+    Circles are filled from --c-yellow, --c-grellow and --c-ocean rather than the hex in
+    favicon.svg, so the mark follows the theme, and any palette a portal sets through data-brand.
 
-    Colours come from the tokens rather than the hex in favicon.svg, so the mark follows the theme,
-    and a portal's own palette where one is set via data-brand.
-
-    `label` makes the mark an announced region. Leave it empty where the mark is decoration beside
-    the word "KBase", which is already there to read.
+    `label` makes the mark an announced region. Leave it empty beside the word "KBase", which a
+    screen reader already reaches.
     """
-    # 0 0 48 48 when it moves, because the braid carries the dots outside the tight box. The still
-    # mark uses the design system's 34x28, the proportions its four call sites use.
+    # 0 0 48 48 when it moves, because the keyframes translate the dots past the edges of the
+    # 34x28 box the design system draws the static mark on.
     box, dots = ((0, 0, 48, 48), ((13, 24, 9), (24, 24, 9), (35, 24, 9))) if animate else (
         (0, 0, 34, 28), ((7, 14, 8), (17, 14, 8), (27, 14, 8)))
     w = round(size * (box[2] / box[3]))
@@ -122,13 +118,14 @@ def kbase_mark(size: int = 20, animate: bool = False, label: str = "") -> str:
 
 
 def loader(size: int = 32, label: str = "Loading") -> str:
-    """The mark, braiding. For an unknown duration; a known one is a Progress bar, and the design
-    system has no indeterminate bar."""
+    """The mark, animated. For work of unknown duration; work of known duration is a Progress bar,
+    and this design system has no indeterminate bar."""
     return kbase_mark(size, animate=True, label=label)
 
 
-# The style an icon and its label sit in. Baseline alignment is wrong when the glyph is nearly as
-# tall as the text, so the pair is centred on a flex line.
+# The style an icon and its label sit in. A glyph is nearly as tall as the text beside it, so the
+# pair is centred on a flex line rather than aligned on the baseline. The third rule repeats the
+# gap for a Vuetify button, which lays its own content out.
 CSS = """
 .kb-icon-label { display:inline-flex; align-items:center; gap:var(--s-2); }
 .kb-icon-label > span { display:inline-flex; }

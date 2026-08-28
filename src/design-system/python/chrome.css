@@ -1,14 +1,20 @@
 /* ============================================================================
-   Page chrome with no component in this design system.
+   Rules a portal needs that components.css does not carry.
 
-   components.css is generated from the .module.scss sources. This file holds
-   what is left: the tinted ground, app bar, masthead, mark and scrim, which the
-   showcase builds as layout rather than as components, plus Frame's default
-   padding, which is a React prop default and appears in no stylesheet. Each
-   entry says why it is here.
+   components.css is generated from the .module.scss sources, so it holds what
+   the components style and nothing more. A rule lands here for one of three
+   reasons, and each entry says which:
 
-   Every rule here means the design system lacks a component. Keep the file
-   small.
+     the showcase builds the thing as layout rather than as a component --
+     the app bar, masthead, mark and tinted ground;
+
+     the value is set in a TSX rather than a SCSS -- Frame's padding;
+
+     a component does style it, but under a name tied to that component --
+     the scrim, which Dialog ships as .kb-dialog--backdrop.
+
+   Keep the file small. Each entry of the first kind is a component this design
+   system does not have.
 
    Do not name a portal here. Eight of them load this file.
    ============================================================================ */

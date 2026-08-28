@@ -40,8 +40,8 @@ EMPTY_RULE = re.compile(r"^[^{}]*\{\s*\}\s*$", re.M)
 
 
 def normalise(css: str) -> list[str]:
-    """Remove the three differences listed above: comments, then the rules left empty behind them,
-    then quote style and the line a declaration happens to sit on."""
+    """Remove the three differences listed above: comments and quote style, then the rules the
+    comments left empty, then the line a declaration happens to sit on."""
     css = COMMENT.sub("", css).replace('"', "'")
     css = EMPTY_RULE.sub("", css)
     return [" ".join(line.split()) for line in css.splitlines() if line.strip()]

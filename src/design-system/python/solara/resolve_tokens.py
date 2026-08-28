@@ -6,15 +6,14 @@ Vuetify holds its theme as comma-separated RGB triplets, consumed as
 alpha-modulated rules inside unstyled components resolve against.
 
 That needs concrete colours, and most tokens are not concrete: they are `oklch(from ...)` inside
-`light-dark()`, computed by the browser against whichever scheme is in use. Around ten are literal
-and the rest derive from them, so a browser resolves them once and the result is written to a
-module:
+`light-dark()`, computed by the browser against whichever scheme is in use. The literal ones are a
+minority and everything else derives from them, so a browser resolves the set once and the result
+is written to a module:
 
     python python/solara/resolve_tokens.py --node-modules <a checkout>/node_modules \\
         --brand <the portal's brand.css> --out src/<portal>/theme_colors.py
 
-The output belongs to the caller, because --brand is per-portal and so are the resolved values. The
-script lives beside the stylesheets it reads, so a change to them is a prompt to re-run it.
+The output belongs to the caller, because --brand is per-portal and so are the resolved values.
 
 Requires Playwright (any node_modules that has it) and the kbase-design-system package, which is
 where tokens.css is read from, so the resolved values match the installed version.

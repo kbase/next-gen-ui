@@ -52,8 +52,8 @@ COMPOSES = re.compile(r"^\s*composes:\s*(.+?)\s+from\s+(['\"])(.+?)\2\s*;\s*$", 
 COMMENT = re.compile(r"/\*.*?\*/", re.S)
 KEYFRAMES = re.compile(r"@keyframes\s+([\w-]+)")
 # Dart Sass emits `@charset "UTF-8";` whenever a module's output holds a non-ASCII byte, which
-# here is a section mark or an em dash in a comment. It is only valid as the first thing in a
-# file, so it cannot survive concatenation into one sheet.
+# here is an em dash in a comment. It is only valid as the first thing in a file, so it cannot
+# survive concatenation into one sheet.
 CHARSET = re.compile(r"^@charset[^;]*;\s*", re.M)
 
 
@@ -93,6 +93,7 @@ def _blocks(css: str):
 def local_names(css: str) -> set[str]:
     names: set[str] = set()
     for sel in _blocks(css):
+        # An at-rule prelude declares no class, and a media query can carry a dot in a value.
         if sel.strip().startswith("@"):
             continue
         names.update(re.findall(r"\.([A-Za-z_][\w-]*)", sel))
@@ -109,7 +110,7 @@ def find_sass() -> list[str] | None:
     runtime. Everything else on PyPI named for Sass is libsass.
 
     dart-sass vendors 1.51.0; package.json pins 1.99.0. The two produce the same selectors and
-    declarations for all 45 components, and check_compiler_parity.py holds them to that.
+    declarations for every component, and check_compiler_parity.py holds them to that.
 
     A checkout's node_modules/.bin/sass is not used even when present, so that a maintainer and a
     portal compile with the same program. Pass --sass to override; check_compiler_parity.py does.

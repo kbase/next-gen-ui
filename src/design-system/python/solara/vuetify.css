@@ -3,8 +3,8 @@
 
    Solara renders its widgets with Vuetify, which ships Material Design's
    palette: the default primary is #6200ee, so an unstyled button is Material
-   purple unless something says otherwise. This file dresses those widgets in
-   the design tokens. Load it after tokens.css and before the portal's own
+   purple unless something says otherwise. This file applies the design tokens
+   to those widgets. Load it after tokens.css and before the portal's own
    stylesheet.
 
    Do not name a portal here -- not in a selector, not in a comment, not in a
@@ -20,11 +20,11 @@
    beside this file produces the values. Vuetify then generates every triplet
    itself, including the on-colours it derives by contrast.
 
-   Components this file never mentions come out right because their internals
-   are alpha blends against those triplets. What is left, and what follows, is
-   what a theme cannot express: type, casing, radius, density, which surfaces
-   float, and the places where the design system states a state differently
-   from Material.
+   Components this file never mentions take the tokens anyway, because their
+   internals are alpha blends against those triplets. What is left, and what
+   follows, is what a theme cannot express: type, casing, radius, density,
+   which surfaces float, and the places where the design system states a state
+   differently from Material.
 
    FONTS
    --f-sans is Oxygen and --f-mono is Fira Code. The pip package ships neither:
@@ -39,7 +39,7 @@
    reach fonts.googleapis.com falls back to system-ui.
    ============================================================================ */
 @import url('https://fonts.googleapis.com/css2?family=Oxygen:wght@400;700&family=Fira+Code:wght@400;500&display=swap');
-/* The icon family, the same way. The design system draws with Phosphor, which ships as npm
+/* The icon family, the same way. The design system uses Phosphor, which ships as npm
    packages a Python app cannot build; @phosphor-icons/web is the same art as a webfont, one
    stylesheet per weight. Three weights, because weight carries meaning: regular for chrome, bold
    for emphasis, fill for an active state.

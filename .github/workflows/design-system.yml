@@ -42,9 +42,8 @@ jobs:
           path: dist-design-system/*.tgz
           if-no-files-found: error
 
-  # The same design system as a pip package. A hatchling hook compiles
-  # components/*/<Name>.module.scss into the wheel using the Dart Sass pip can install. This job
-  # builds the wheel, compares the two compilers, and checks what the wheel contains.
+  # The design system as a pip package: a hatchling hook compiles
+  # components/*/<Name>.module.scss into the wheel with the Dart Sass pip can install.
   python-wheel:
     name: Python wheel
     runs-on: ubuntu-latest
@@ -121,8 +120,14 @@ jobs:
           print(f"{chunks} components, {len(stray) == 0 and 'all classes prefixed'}")
           EOF
 
-      # A syntax error in the adapter would otherwise ship.
-      - name: The adapter imports from the built wheel
+      # On the floor the package declares, because files() behaves differently below 3.10 and
+      # that is what the wheel's __init__.py is for. A syntax error in the adapter would ship
+      # without this too.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: The adapter imports from the built wheel, on the oldest supported Python
         working-directory: src/design-system
         run: |
           python -m venv /tmp/probe

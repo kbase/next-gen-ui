@@ -26,9 +26,9 @@ component imports from it.
 
 ### Without a bundler
 
-The stylesheets are also a pip package, for consumers that cannot run one — a
-generator that inlines CSS into self-contained HTML, or a Python UI framework
-handed a string. Install by pinned tag:
+There is also a pip package, for consumers that cannot run one — a generator
+that inlines CSS into self-contained HTML, or a Python UI framework handed a
+string. Install by pinned tag:
 
 ```toml
 "kbase-design-system @ git+https://github.com/kbase/next-gen-ui.git@ds-v0.5.0#subdirectory=src/design-system"

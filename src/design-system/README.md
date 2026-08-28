@@ -49,7 +49,16 @@ It carries seven stylesheets and a Solara adapter:
 | `tokens.css` `prose.css` `utilities.css` `prism.css` `global.css` | the same files the npm package ships                                                                                                                                                               |
 | `components.css`                                                  | every component in `components/`, compiled from its `.module.scss` during the wheel build, with stable class names — see [Class names for CSS-only consumers](#class-names-for-css-only-consumers) |
 | `chrome.css`                                                      | the app bar, masthead, mark and tinted ground, which the showcase builds as layout rather than as components; Frame's default padding, which is set in a TSX; and the scrim under a neutral name   |
-| `solara/`                                                         | `vuetify.css`, `icons.py` and `resolve_tokens.py`. Solara renders its widgets with Vuetify, whose theme is set from Python                                                                         |
+| `solara/`                                                         | `vuetify.css`, `icons.py`, `loader.js` and `resolve_tokens.py`. Solara renders its widgets with Vuetify, whose theme is set from Python                                                            |
+
+`loader.js` is the one script in the package. Starting the Loader is CSS —
+`data-active` on `.kb-loader--loader` plays the enter — but stopping it needs
+the pose the braid is at when it is asked to stop, which exists only at
+runtime; `Loader.tsx` does that in React, and this does it for a page that has
+no React. Put it on the page once with `icons.loader_script()`, mark a loader
+running by setting `data-loading` on it or on any ancestor, and emit the mark
+with `icons.loader(size, active=...)`. Without the script, turning `active` off
+snaps the dots home from mid-braid instead of settling them.
 
 `style.css` is a bundler output and stays npm-only. `fonts.css` is excluded —
 see [Fonts](#fonts) for why it needs a bundler, and what a consumer without one

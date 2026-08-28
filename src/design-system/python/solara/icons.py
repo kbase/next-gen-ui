@@ -90,12 +90,17 @@ STATUS = {
 }
 
 
-def kbase_mark(size: int = 20, animate: bool = False, label: str = "") -> str:
+def kbase_mark(size: int = 20, animate: bool = False, active: bool = True, label: str = "") -> str:
     """The KBase mark: three circles, as inline SVG.
 
     With `animate`, the same circles at the coordinates and under the classes Loader.tsx uses, so
     components.css animates them. Mark and loader are one graphic in this design system: Loader's
     rest positions are the logo row.
+
+    `active` decides whether the braid runs, and only applies with `animate`. Off, the dots hold the
+    logo row -- components.css pauses them without data-active -- so one graphic serves a masthead
+    that sometimes reports work, and nothing is swapped when the work starts. Turning it back off in
+    the browser wants loader.js: dropping the attribute alone snaps the dots home from mid-braid.
 
     Circles are filled from --c-yellow, --c-grellow and --c-ocean rather than the hex in
     favicon.svg, so the mark follows the theme, and any palette a portal sets through data-brand.
@@ -104,8 +109,8 @@ def kbase_mark(size: int = 20, animate: bool = False, label: str = "") -> str:
     than it is tall and the animated one is square. Circles carry the 0.85 opacity Loader sets, so
     the two composite the way the favicon does.
 
-    `label` makes the mark an announced region. Leave it empty beside the word "KBase", which a
-    screen reader already reaches.
+    `label` makes the mark an announced region, and is what loader.js restores when the braid starts
+    again. Leave it empty beside the word "KBase", which a screen reader already reaches.
     """
     # 0 0 48 48 when it moves, because the keyframes translate the dots past the edges of the
     # 34x28 box the design system draws the static mark on.
@@ -115,22 +120,41 @@ def kbase_mark(size: int = 20, animate: bool = False, label: str = "") -> str:
     circles = "".join(
         f"<circle cx='{cx}' cy='{cy}' r='{r}' fill='var(--c-{hue})' opacity='0.85'/>"
         for (cx, cy, r), hue in zip(dots, ("yellow", "grellow", "ocean")))
-    role = f" role='status' aria-label='{label}'" if label else ""
+    # Announced only while it is running; the label is kept in data-label so loader.js can put it
+    # back. A resting mark is the logo, and has nothing to announce.
+    role = f" role='status' aria-label='{label}'" if label and (active or not animate) else ""
+    keep = f" data-label='{label}'" if label and animate else ""
     # components.css puts the braid on .kb-loader--loader and holds it at animation-play-state:
     # paused until the same element carries [data-active]. Loader.tsx sets both on the <svg> and
     # .kb-loader on the <span> around it, which is also where the --loader-* custom properties
     # the keyframes read are declared.
     span_cls = "kb-mark kb-loader" if animate else "kb-mark"
-    svg_cls = " class='kb-loader--loader' data-active" if animate else ""
-    return (f"<span class='{span_cls}'{role}>"
+    svg_cls = (" class='kb-loader--loader'" + (" data-active" if active else "")) if animate else ""
+    return (f"<span class='{span_cls}'{role}{keep}>"
             f"<svg{svg_cls} viewBox='{box[0]} {box[1]} {box[2]} {box[3]}' "
             f"width='{w}' height='{size}' aria-hidden='true'>{circles}</svg></span>")
 
 
-def loader(size: int = 32, label: str = "Loading") -> str:
-    """The mark, animated. For work of unknown duration; work of known duration is a Progress bar,
-    and this design system has no indeterminate bar."""
-    return kbase_mark(size, animate=True, label=label)
+def loader(size: int = 32, active: bool = True, label: str = "Loading") -> str:
+    """The mark, braiding while `active`. For work of unknown duration; work of known duration is a
+    Progress bar, and this design system has no indeterminate bar.
+
+    A page that turns `active` off after it was on needs loader_script() on it, or the dots jump
+    home rather than settling."""
+    return kbase_mark(size, animate=True, active=active, label=label)
+
+
+def loader_script() -> str:
+    """loader.js: the half of Loader that cannot be CSS.
+
+    Put it in a <script> once per page. It watches for `data-loading` on a loader or any ancestor of
+    one and drives the braid underneath -- starting it from the logo row, and on the way off reading
+    the pose the animations are actually at and settling the dots back into the row from there.
+
+    Read by traversing from the parent package, which has an __init__.py; this one is a namespace
+    subpackage, and files() on a namespace package raises on the 3.9 floor this package declares."""
+    from importlib.resources import files
+    return (files("kbase_design_system") / "solara" / "loader.js").read_text()
 
 
 # The style an icon and its label sit in. A glyph is nearly as tall as the text beside it, so the

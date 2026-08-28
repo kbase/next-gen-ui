@@ -247,6 +247,16 @@
   border-radius: inherit;
   box-shadow: none;
 }
+
+/* Breadcrumbs states its own spacing on the separator, and a step is an <a> or
+   a <span> unless its target is a callback, in which case a framework that
+   only renders buttons makes it a Button. Vuetify's 16px of side padding then
+   lands on that one step, so the gaps around a clickable crumb come out wider
+   than the rest of the trail. The other components in the list above set their
+   own padding and keep it. */
+.v-btn.kb-breadcrumbs--link {
+  padding: 0;
+}
 .v-btn:is(
     .kb-tabs--tab,
     .kb-segmented-control--btn,

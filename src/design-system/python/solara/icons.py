@@ -48,7 +48,12 @@ def glyph(name: str, size: int | str = SIZE, cls: str = "", weight: str = "regul
 
 
 def children(name: str, label: str = "", size: int | str = 14, weight: str = "regular") -> list:
-    """An icon, and optionally a label beside it, as children for a Solara component."""
+    """An icon, and optionally a label beside it, as children for a Solara component.
+
+    solara is imported here rather than at module scope, so the rest of the module works without
+    it: kbase-design-system does not depend on Solara, and glyph() and kbase_mark() return strings
+    any consumer can use. The packaging check imports this module into a bare venv.
+    """
     import solara
 
     out = [solara.HTML(tag="span", unsafe_innerHTML=glyph(name, size, weight=weight),
@@ -60,8 +65,9 @@ def children(name: str, label: str = "", size: int | str = 14, weight: str = "re
 
 # The design system's status glyphs, from Section 10's table, which draws the distinctions this
 # map preserves: X closes where XCircle errors, Warning asks for attention where XCircle reports a
-# failure, Hourglass waits where Clock shows elapsed time. Naming a state from here is what keeps
-# two states off one shape.
+# failure, Hourglass waits where Clock shows elapsed time. Two states share Circle and are told
+# apart by weight, which is why the weight is noted against them; every other state has a shape to
+# itself, and naming a state from here is what keeps that true.
 STATUS = {
     "done": "Check",            # confirmed, inline done -- a finished job is CheckCircle
     "complete": "CheckCircle",  # complete, succeeded
@@ -93,6 +99,10 @@ def kbase_mark(size: int = 20, animate: bool = False, label: str = "") -> str:
 
     Circles are filled from --c-yellow, --c-grellow and --c-ocean rather than the hex in
     favicon.svg, so the mark follows the theme, and any palette a portal sets through data-brand.
+
+    `size` is the height. Width follows the aspect ratio of the box, so the static mark is wider
+    than it is tall and the animated one is square. Circles carry the 0.85 opacity Loader sets, so
+    the two composite the way the favicon does.
 
     `label` makes the mark an announced region. Leave it empty beside the word "KBase", which a
     screen reader already reaches.

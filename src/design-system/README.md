@@ -31,7 +31,7 @@ that inlines CSS into self-contained HTML, or a Python UI framework handed a
 string. Install by pinned tag:
 
 ```toml
-"kbase-design-system @ git+https://github.com/kbase/next-gen-ui.git@ds-v0.5.0#subdirectory=src/design-system"
+"kbase-design-system @ git+https://github.com/kbase/next-gen-ui.git@ds-vX.Y.Z#subdirectory=src/design-system"
 ```
 
 Pin a released `ds-v` tag; [Releases](https://github.com/kbase/next-gen-ui/releases)
@@ -48,13 +48,13 @@ It carries seven stylesheets and a Solara adapter:
 | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `tokens.css` `prose.css` `utilities.css` `prism.css` `global.css` | the same files the npm package ships                                                                                                                                                               |
 | `components.css`                                                  | every component in `components/`, compiled from its `.module.scss` during the wheel build, with stable class names — see [Class names for CSS-only consumers](#class-names-for-css-only-consumers) |
-| `chrome.css`                                                      | the app bar, masthead, mark, tinted ground and scrim, which the showcase builds as layout rather than as components                                                                                |
+| `chrome.css`                                                      | the app bar, masthead, mark and tinted ground, which the showcase builds as layout rather than as components; Frame's default padding, which is set in a TSX; and the scrim under a neutral name   |
 | `solara/`                                                         | `vuetify.css`, `icons.py` and `resolve_tokens.py`. Solara renders its widgets with Vuetify, whose theme is set from Python                                                                         |
 
 `style.css` is a bundler output and stays npm-only. `fonts.css` is excluded —
 see [Fonts](#fonts) for why it needs a bundler, and what a consumer without one
-has to do instead. Its version comes from the same `ds-vX.Y.Z` tag that
-publishes the npm package, so neither needs a bump.
+has to do instead. The wheel takes its version from the same `ds-vX.Y.Z` tag
+that publishes the npm package, so neither needs a bump.
 
 Building the wheel compiles Sass, so `dart-sass` is installed into the build
 environment. It is not a runtime dependency.

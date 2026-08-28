@@ -416,8 +416,8 @@
 
 /* --- Cards and lists ------------------------------------------------------
    v-card is not a v-sheet in Vuetify 3, so it is named separately. Its ink is
-   on-surface at 87% alpha, a fade of pure black rather than a colour, where
-   the token is the right ink for this ground already.
+   on-surface at 87% alpha, a fade of pure black rather than a colour, so the
+   token is named instead.
 
    A card is the design system's Frame: --c-surface, a 1px --c-border hairline,
    --r-lg, and no shadow at any variant. Hover changes the ground to
@@ -474,7 +474,7 @@
 /* --- Tabs -----------------------------------------------------------------
    A tab is a v-btn, so the button rules above already apply; casing and
    tracking are restated because .v-tab sets its own. The rest is the selected
-   colour, the indicator under it, and the rule the strip sits on. */
+   colour, the indicator under it, and the border under the strip. */
 .v-tab {
   text-transform: none;
   letter-spacing: 0.01em;
@@ -616,9 +616,9 @@
 }
 
 /* --- Tables ---------------------------------------------------------------
-   Vuetify rules every row with on-surface at 12% alpha. --c-border is ink at
-   low alpha already, so it takes the ground's temperature rather than greying
-   it. */
+   Vuetify draws every row divider with on-surface at 12% alpha. --c-border is
+   ink at low alpha already, so it takes the ground's temperature rather than
+   greying it. */
 .v-table {
   background: var(--c-surface);
   color: var(--c-ink);

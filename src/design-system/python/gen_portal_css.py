@@ -43,8 +43,10 @@ import tempfile
 HERE = pathlib.Path(__file__).resolve().parent   # src/design-system/python
 ROOT = HERE.parent                               # src/design-system
 
-# `:global(X)` becomes a plain `X`. The wrapper tells a bundler to leave a name
-# alone, and every name is already global once the modules are merged.
+# `:global(X)` becomes a plain `X`, since every name is global once the modules
+# are merged. Unwrapping happens before local_names(), so a class written inside
+# :global() would then be collected and prefixed like any other, losing the
+# reference the wrapper protects. Every use today is an element selector.
 GLOBAL = re.compile(r":global\(\s*(.*?)\s*\)", re.S)
 # CSS modules' cross-module inheritance: not valid CSS, and not resolvable
 # without a bundler. Listed in the output header rather than dropped silently.
@@ -229,7 +231,8 @@ def main(argv: list[str] | None = None) -> int:
 
    To change a component's appearance, edit its .module.scss and rebuild.
 
-   {len(modules)} components.
+   {len(modules)} component stylesheets. A component with no styles of its own
+   does not appear here.
    ============================================================================ */
 """
     if notes:

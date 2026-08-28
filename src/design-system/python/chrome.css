@@ -21,7 +21,7 @@
    No component covers this: the tinted grounds in the showcase are Alert and
    Frame, which set their own ink. A portal that tints a region itself, such as
    a hero or a callout band, has nothing to inherit it from, and choosing the
-   ink by hand puts the contrast below AA. */
+   ink by hand is how the contrast ends up below AA. */
 .kb-tint {
   color: var(--c-ink2);
 }

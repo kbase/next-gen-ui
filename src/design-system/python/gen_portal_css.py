@@ -43,8 +43,8 @@ import tempfile
 HERE = pathlib.Path(__file__).resolve().parent   # src/design-system/python
 ROOT = HERE.parent                               # src/design-system
 
-# Becomes a plain selector. :global() tells a bundler to leave a name alone, and
-# every name is already global once the modules are merged.
+# `:global(X)` becomes a plain `X`. The wrapper tells a bundler to leave a name
+# alone, and every name is already global once the modules are merged.
 GLOBAL = re.compile(r":global\(\s*(.*?)\s*\)", re.S)
 # CSS modules' cross-module inheritance: not valid CSS, and not resolvable
 # without a bundler. Listed in the output header rather than dropped silently.
@@ -136,7 +136,8 @@ def compile_module(scss: pathlib.Path, out_dir: pathlib.Path, sass_cmd: list[str
 
 
 def rewrite(component: str, css: str) -> tuple[str, list[str]]:
-    """Return the sheet with public class and keyframe names, plus any notes."""
+    """Return one component's CSS under the public names, and notes for anything
+    plain CSS cannot express."""
     notes: list[str] = []
 
     for local, _q, source in COMPOSES.findall(css):
@@ -178,7 +179,7 @@ def main(argv: list[str] | None = None) -> int:
                     help="the directory of <Name>/<Name>.module.scss sources")
     ap.add_argument("--out", type=pathlib.Path, required=True, help="where to write the sheet")
     ap.add_argument("--sass", help="path to a Dart Sass executable; found automatically by default")
-    ap.add_argument("--version", default="", help="design system tag, recorded in the header")
+    ap.add_argument("--version", default="", help="version to record in the generated header")
     args = ap.parse_args(argv)
 
     modules = sorted(

@@ -65,12 +65,13 @@ class CustomBuildHook(BuildHookInterface):
                 "build run with --no-build-isolation must supply it: pip install 'dart-sass>=0.5.2'."
             )
 
-        # Same for a partial file. main() returns non-zero for a missing sources directory; a
-        # component that fails to compile, or two locals that would collide, raise.
         out = pathlib.Path(self._workdir.name) / "components.css"
         # --components defaults to the sources beside the generator, which during a build is the
         # tree pip just cloned.
         code = gen.main(["--out", str(out), "--version", self.metadata.version])
+        # A partial file is refused for the same reason. main() returns non-zero for a missing
+        # sources directory; a component that fails to compile, or two locals that would collide,
+        # raise out of it instead.
         if code:
             raise RuntimeError(f"gen_portal_css exited {code}; not building a wheel without components.css")
 

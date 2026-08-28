@@ -30,14 +30,18 @@ import tempfile
 
 HERE = pathlib.Path(__file__).resolve().parent
 
+# The generator sits beside this file, which is not on sys.path when the script is run by path.
 sys.path.insert(0, str(HERE))
 import gen_portal_css  # noqa: E402
 
 COMMENT = re.compile(r"/\*.*?\*/", re.S)
+# `\s` spans newlines, so this matches a rule left empty across two lines once its comment is gone.
 EMPTY_RULE = re.compile(r"^[^{}]*\{\s*\}\s*$", re.M)
 
 
 def normalise(css: str) -> list[str]:
+    """Remove the three differences listed above: comments, then the rules left empty behind them,
+    then quote style and the line a declaration happens to sit on."""
     css = COMMENT.sub("", css).replace('"', "'")
     css = EMPTY_RULE.sub("", css)
     return [" ".join(line.split()) for line in css.splitlines() if line.strip()]

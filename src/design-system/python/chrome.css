@@ -92,9 +92,12 @@
 }
 
 /* --- Scrim ----------------------------------------------------------------
-   The dimmed ground behind a Dialog. Dialog gets this from its React portal
-   library, so the tokens exist (--c-scrim, --z-scrim) but no stylesheet in
-   components/ draws it. */
+   The dimmed ground behind a Dialog. Dialog draws the same four declarations
+   in its own stylesheet, so components.css already ships them as
+   .kb-dialog--backdrop; this is the same ground under a name that does not
+   claim to belong to Dialog, which a portal needs for a drawer or a custom
+   overlay. vuetify.css also targets .v-btn.kb-scrim, because a framework that
+   only renders buttons builds its dismissable overlay out of one. */
 .kb-scrim {
   position: fixed;
   inset: 0;

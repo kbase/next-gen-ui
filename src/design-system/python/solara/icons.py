@@ -87,9 +87,13 @@ def kbase_mark(size: int = 20, animate: bool = False, label: str = "") -> str:
 
     The mark and the spinner are the same three circles. The design system draws the mark in four
     places -- its masthead and footer, the app shell's rail, the in-context mock -- always on a
-    34x28 box in --c-yellow, --c-grellow and --c-ocean, and Loader.module.scss states that its rest
-    positions are that row: "with animation off the loader is the static logo". This emits static
-    SVG either way; the braid is the .kb-loader animation in components.css.
+    34x28 box in --c-yellow, --c-grellow and --c-ocean, and Section 06 of the showcase says of
+    Loader that "with `active` off it is the static logo".
+
+    The braid is not in this markup. components.css animates .kb-loader--loader and holds it at
+    `animation-play-state: paused` until the element also carries [data-active]; both are emitted
+    here when `animate` is set, so what this returns is the working loader rather than a still
+    logo with a spinner's label.
 
     Colours come from the tokens rather than the hex in favicon.svg, so the mark follows the theme,
     and a portal's own palette where one is set via data-brand.
@@ -106,9 +110,15 @@ def kbase_mark(size: int = 20, animate: bool = False, label: str = "") -> str:
         f"<circle cx='{cx}' cy='{cy}' r='{r}' fill='var(--c-{hue})' opacity='0.85'/>"
         for (cx, cy, r), hue in zip(dots, ("yellow", "grellow", "ocean")))
     role = f" role='status' aria-label='{label}'" if label else ""
-    return (f"<span class='kb-mark{' kb-loader' if animate else ''}'{role}>"
-            f"<svg viewBox='{box[0]} {box[1]} {box[2]} {box[3]}' width='{w}' height='{size}' "
-            f"aria-hidden='true'>{circles}</svg></span>")
+    # components.css puts the braid on .kb-loader--loader and holds it at animation-play-state:
+    # paused until the same element carries [data-active]. Loader.tsx sets both on the <svg> and
+    # .kb-loader on the <span> around it, which is also where the --loader-* custom properties
+    # the keyframes read are declared.
+    span_cls = "kb-mark kb-loader" if animate else "kb-mark"
+    svg_cls = " class='kb-loader--loader' data-active" if animate else ""
+    return (f"<span class='{span_cls}'{role}>"
+            f"<svg{svg_cls} viewBox='{box[0]} {box[1]} {box[2]} {box[3]}' "
+            f"width='{w}' height='{size}' aria-hidden='true'>{circles}</svg></span>")
 
 
 def loader(size: int = 32, label: str = "Loading") -> str:

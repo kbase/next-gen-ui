@@ -16,8 +16,8 @@ Naming rule:
 Applied without exception. Whether a local is the root element or a modifier is
 decided in the TSX, not the stylesheet, so the rule cannot tell them apart:
 Button's root local is `btn`, and it becomes `kb-button--btn`. The prefix
-prevents collisions between components, where 38 local names appear in more
-than one and `root` appears in 23.
+prevents collisions between components, where 35 local names appear in more
+than one and `root` appears in 21.
 
 The compiler comes from pip, because a Python app installing
 kbase-design-system has no Node and no checkout of this repository. libsass is
@@ -51,6 +51,10 @@ GLOBAL = re.compile(r":global\(\s*(.*?)\s*\)", re.S)
 COMPOSES = re.compile(r"^\s*composes:\s*(.+?)\s+from\s+(['\"])(.+?)\2\s*;\s*$", re.M)
 COMMENT = re.compile(r"/\*.*?\*/", re.S)
 KEYFRAMES = re.compile(r"@keyframes\s+([\w-]+)")
+# Dart Sass emits `@charset "UTF-8";` whenever a module's output holds a non-ASCII byte, which
+# here is a section mark or an em dash in a comment. It is only valid as the first thing in a
+# file, so it cannot survive concatenation into one sheet.
+CHARSET = re.compile(r"^@charset[^;]*;\s*", re.M)
 
 
 def kebab(name: str) -> str:
@@ -70,18 +74,19 @@ def public_name(component: str, local: str, locals_: set[str]) -> str:
 
 def _blocks(css: str):
     """Yield each selector prelude, with comments and declaration bodies
-    removed, so a word inside a comment or a url() is not read as a class."""
-    depth = 0
+    removed, so a word inside a comment or a url() is not read as a class.
+
+    Every depth, not just the top: a class used only inside `@media` or
+    `@supports` is still a class, and one missed here ships without its prefix.
+    A `;` clears the buffer because a statement at-rule ends in one, and would
+    otherwise run into the selector after it."""
     buf: list[str] = []
     for ch in COMMENT.sub("", css):
-        if ch == "{":
-            if depth == 0:
+        if ch in "{};":
+            if ch == "{":
                 yield "".join(buf)
-                buf = []
-            depth += 1
-        elif ch == "}":
-            depth = max(0, depth - 1)
-        elif depth == 0:
+            buf = []
+        else:
             buf.append(ch)
 
 
@@ -130,9 +135,13 @@ def find_sass() -> list[str] | None:
 
 def compile_module(scss: pathlib.Path, out_dir: pathlib.Path, sass_cmd: list[str]) -> str:
     dest = out_dir / f"{scss.parent.name}.css"
-    subprocess.run([*sass_cmd, "--style=expanded", "--no-source-map", str(scss), str(dest)],
-                   check=True, capture_output=True, text=True)
-    return dest.read_text()
+    done = subprocess.run([*sass_cmd, "--style=expanded", "--no-source-map", str(scss), str(dest)],
+                          capture_output=True, text=True)
+    if done.returncode:
+        # CalledProcessError reports the exit status and not the captured stderr, which is where
+        # Sass names the file and line.
+        raise SystemExit(f"{scss}: sass exited {done.returncode}\n{done.stderr.strip()}")
+    return CHARSET.sub("", dest.read_text())
 
 
 def rewrite(component: str, css: str) -> tuple[str, list[str]]:

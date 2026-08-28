@@ -20,7 +20,7 @@ dependency and not in [build-system] requires.
 
 The .scss sources do not enter the wheel; the hook reads them from the source
 tree and writes only CSS. force-include accepts a directory but ignores
-`exclude`, so components/ cannot be shipped without its 108 .tsx and .ts files.
+`exclude`, so components/ cannot be shipped without its 106 .tsx and .ts files.
 """
 
 from __future__ import annotations

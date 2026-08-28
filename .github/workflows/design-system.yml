@@ -97,6 +97,43 @@ jobs:
           print(f"{len(payload)} files:", *sorted(payload), sep="\n  ")
           EOF
 
+      # Nothing else looks at what the generator produced. An unprefixed class ships into eight
+      # portals and collides with whatever they already call `.root`; a missing chunk is a
+      # component that silently lost its styling.
+      - name: components.css is what the naming rule says it is
+        working-directory: src/design-system
+        run: |
+          python - <<'EOF'
+          import glob, re, zipfile, pathlib
+          css = zipfile.ZipFile(glob.glob("dist-python/*.whl")[0]).read(
+              "kbase_design_system/components.css").decode()
+          body = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+          stray = sorted({c for c in re.findall(r"\.([A-Za-z_][\w-]*)", body)
+                          if not c.startswith("kb-")})
+          assert not stray, f"classes without the kb- prefix: {stray}"
+          # @charset is only valid as the first bytes of a file, and Dart Sass emits one per module
+          # that holds a non-ASCII byte.
+          assert "@charset" not in css, "@charset survived into the concatenated sheet"
+          chunks = css.count("/* --- ")
+          modules = len([p for p in pathlib.Path("components").glob("*/*.module.scss")
+                         if p.name == f"{p.parent.name}.module.scss"])
+          assert chunks == modules, f"{chunks} chunks for {modules} stylesheets"
+          print(f"{chunks} components, {len(stray) == 0 and 'all classes prefixed'}")
+          EOF
+
+      # A syntax error in the adapter would otherwise ship.
+      - name: The adapter imports from the built wheel
+        working-directory: src/design-system
+        run: |
+          python -m venv /tmp/probe
+          /tmp/probe/bin/pip install -q dist-python/*.whl
+          /tmp/probe/bin/python -c "
+          from importlib.resources import files
+          from kbase_design_system.solara import icons
+          assert (files('kbase_design_system') / 'components.css').read_text()
+          assert 'kb-loader--loader' in icons.loader(32)
+          print('adapter ok')"
+
       - name: Upload wheel artifact
         uses: actions/upload-artifact@v4
         with:

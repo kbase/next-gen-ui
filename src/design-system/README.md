@@ -55,10 +55,14 @@ It carries seven stylesheets and a Solara adapter:
 `data-active` on `.kb-loader--loader` plays the enter — but stopping it needs
 the pose the braid is at when it is asked to stop, which exists only at
 runtime; `Loader.tsx` does that in React, and this does it for a page that has
-no React. Put it on the page once with `icons.loader_script()`, mark a loader
-running by setting `data-loading` on it or on any ancestor, and emit the mark
-with `icons.loader(size, active=...)`. Without the script, turning `active` off
-snaps the dots home from mid-braid instead of settling them.
+no React. Put it on the page once with `icons.loader_script()`, put
+`data-loading` on the loader or any ancestor of it, and set that to `"false"`
+when the work is done. The attribute's presence is what hands a loader to the
+script and its value is the state, so a loader with no `data-loading` above it
+is left alone — which is how a page keeps one that simply runs while it is on
+screen. Emit the mark with `icons.loader(size, active=...)`; without the script,
+turning `active` off snaps the dots home from mid-braid instead of settling
+them.
 
 `style.css` is a bundler output and stays npm-only. `fonts.css` is excluded —
 see [Fonts](#fonts) for why it needs a bundler, and what a consumer without one

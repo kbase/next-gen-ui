@@ -147,9 +147,14 @@ def loader(size: int = 32, active: bool = True, label: str = "Loading") -> str:
 def loader_script() -> str:
     """loader.js: the half of Loader that cannot be CSS.
 
-    Put it in a <script> once per page. It watches for `data-loading` on a loader or any ancestor of
-    one and drives the braid underneath -- starting it from the logo row, and on the way off reading
-    the pose the animations are actually at and settling the dots back into the row from there.
+    Put it in a <script> once per page. Mark a loader by putting `data-loading` on it or on any
+    ancestor, and set that to "false" when the work is done; the script drives the braid underneath,
+    starting it from the logo row and, on the way off, reading the pose the animations are actually
+    at and settling the dots back into the row from there.
+
+    The attribute's presence is what hands a loader to the script and its value is the state. One
+    with no `data-loading` above it is left as rendered, so a page can still hold a loader that runs
+    for as long as it is on screen.
 
     Read by traversing from the parent package, which has an __init__.py; this one is a namespace
     subpackage, and files() on a namespace package raises on the 3.9 floor this package declares."""

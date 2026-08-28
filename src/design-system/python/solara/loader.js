@@ -7,11 +7,15 @@
    Loader.tsx, with the same pose math, reading the same --loader-* custom
    properties. A change to either has to be made in all three.
 
-   The contract: mark the loader running by putting data-loading on it or on
-   any ancestor -- a form, a panel, a page header. This script drives
-   data-active underneath, holding it set until the settle has finished,
-   because script animations compose over CSS ones and the loop underneath is
-   inert until it is rewound.
+   The contract: put data-loading on the loader or on any ancestor -- a form, a
+   panel, a page header -- and set it to "false" when the work is done. The
+   attribute's presence is what hands a loader to this script; its value is the
+   state. A loader with no data-loading above it is left alone, so a page can
+   still have one that simply runs while it is on screen.
+
+   This script drives data-active underneath, holding it set until the settle
+   has finished, because script animations compose over CSS ones and the loop
+   underneath is inert until it is rewound.
 
    Loading this twice is harmless; the second call replaces the first. */
 (function () {
@@ -145,13 +149,21 @@
     );
   }
 
+  var OFF = { false: 1, 0: 1, off: 1, no: 1 };
+
   function sync() {
     var all = document.querySelectorAll('.kb-loader--loader');
     for (var i = 0; i < all.length; i++) {
       var svg = all[i];
       if (settling.has(svg)) continue; // the settle calls sync() again when it lands
+      // The attribute's presence is what puts a loader under this script; its value is the state.
+      // A loader with no data-loading anywhere above it is one a page means to run for as long as
+      // it is on screen, and is left exactly as it was rendered -- reading absence as "off" would
+      // stop every always-on loader on the page the moment this script loaded.
+      var flag = svg.closest('[data-loading]');
+      if (!flag) continue;
       var span = svg.parentElement;
-      var want = !!svg.closest('[data-loading]');
+      var want = !OFF[flag.getAttribute('data-loading').trim().toLowerCase()];
       if (want && !svg.hasAttribute('data-active')) {
         svg.setAttribute('data-active', '');
         if (span && span.dataset.label) {

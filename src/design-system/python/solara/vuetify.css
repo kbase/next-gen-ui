@@ -250,19 +250,39 @@
 
    Named rather than applied to every .v-btn: a plain button in a portal is
    still a Vuetify button and should keep Vuetify's sizing. */
-.v-btn:is(.kb-tabs--tab, .kb-segmented-control--btn, .kb-button--btn, .kb-row, .kb-breadcrumbs--link) {
+.v-btn:is(
+  .kb-tabs--tab,
+  .kb-segmented-control--btn,
+  .kb-button--btn,
+  .kb-row,
+  .kb-breadcrumbs--link
+) {
   min-width: 0;
   height: auto;
   min-height: 0;
   border-radius: inherit;
   box-shadow: none;
 }
-.v-btn:is(.kb-tabs--tab, .kb-segmented-control--btn, .kb-button--btn, .kb-row, .kb-breadcrumbs--link) .v-btn__content {
+.v-btn:is(
+    .kb-tabs--tab,
+    .kb-segmented-control--btn,
+    .kb-button--btn,
+    .kb-row,
+    .kb-breadcrumbs--link
+  )
+  .v-btn__content {
   white-space: normal;
 }
 /* The ripple and the state overlay are Material's feedback, not the system's;
    the component states them itself with a background and a border colour. */
-.v-btn:is(.kb-tabs--tab, .kb-segmented-control--btn, .kb-button--btn, .kb-row, .kb-breadcrumbs--link) :is(.v-btn__overlay, .v-ripple__container) {
+.v-btn:is(
+    .kb-tabs--tab,
+    .kb-segmented-control--btn,
+    .kb-button--btn,
+    .kb-row,
+    .kb-breadcrumbs--link
+  )
+  :is(.v-btn__overlay, .v-ripple__container) {
   display: none;
 }
 

@@ -51,7 +51,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0      # hatch-vcs reads the ds-v* tags for the version
+          fetch-depth: 0 # hatch-vcs reads the ds-v* tags for the version
 
       - name: Setup Node
         uses: actions/setup-node@v4

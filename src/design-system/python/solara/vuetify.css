@@ -470,9 +470,6 @@
   color: var(--c-ink4);
   opacity: 1;
 }
-.v-list-item--active {
-  color: var(--ct-primary);
-}
 
 /* --- Tabs -----------------------------------------------------------------
    A tab is a v-btn, so the button rules above already apply; casing and
@@ -764,12 +761,18 @@
 }
 
 /* --- Focus ----------------------------------------------------------------
-   Keyboard focus stays visible on both grounds. .v-btn:focus-visible is also
-   set in the Buttons section, where it draws a --c-focus ring and clears the
-   outline; a button ends up with both that ring and the outline below. */
-.v-btn:focus-visible,
-.v-field--focused,
+   The design system draws focus as a 3px --c-focus ring with the outline
+   suppressed; 19 of its components do it, and Button and Input are the models.
+   .v-btn takes it in the Buttons section, beside the rest of the button rules.
+
+   A field keys off Vuetify's --focused class rather than :focus-visible,
+   because Input shows focus on click as well as from the keyboard. The primary
+   border it also takes is in the Text fields section, which is the other half
+   of what Input does. */
+.v-field--focused {
+  box-shadow: 0 0 0 3px var(--c-focus);
+}
 .v-chip:focus-visible {
-  outline: 2px solid var(--c-primary);
-  outline-offset: 2px;
+  outline: none;
+  box-shadow: 0 0 0 3px var(--c-focus);
 }

@@ -149,7 +149,8 @@ def loader(size: int = 32, active: bool = True, label: str = "Loading") -> str:
 
 
 def loader_script() -> str:
-    """loader.js: Loader's exit, which no stylesheet can express.
+    """loader.js: Loader's exit, which no stylesheet can express, assembled during the wheel build
+    from the pose math Loader.tsx imports and a driver that reads the DOM.
 
     Belongs in one <script> per document. It drives data-active from `data-loading` on a loader or
     any ancestor: presence hands the loader over, the value is the state, and "false" runs the exit

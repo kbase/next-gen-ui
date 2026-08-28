@@ -51,11 +51,14 @@ It carries seven stylesheets and a Solara adapter:
 | `chrome.css`                                                      | the app bar, masthead, mark and tinted ground, which the showcase builds as layout rather than as components; Frame's default padding, which is set in a TSX; and the scrim under a neutral name   |
 | `solara/`                                                         | `vuetify.css`, `icons.py`, `loader.js` and `resolve_tokens.py`. Solara renders its widgets with Vuetify, whose theme is set from Python                                                            |
 
-`loader.js` is the one script in the package. The Loader's enter is CSS —
-`data-active` on `.kb-loader--loader` plays it — but its exit needs the pose the
-animations hold at the instant it is asked for, which is known only at runtime.
-`Loader.tsx` builds that exit in React; `loader.js` builds it for a document
-with none.
+`loader.js` is the one script in the package, and like `components.css` it is
+assembled during the wheel build rather than committed. The Loader's enter is
+CSS — `data-active` on `.kb-loader--loader` plays it — but its exit needs the
+pose the animations hold at the instant it is asked for, which is known only at
+runtime. `Loader.tsx` builds that exit in React; `loader.js` builds it for a
+document with none, and both take the math from
+`components/Loader/pose.js`, which `python/gen_loader_js.py` joins to
+`python/loader_driver.js` for the wheel.
 
 Include it once with `icons.loader_script()`, and put `data-loading` on a loader
 or on any ancestor, set to `"false"` when the work ends. Presence hands the

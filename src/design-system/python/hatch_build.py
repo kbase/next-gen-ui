@@ -34,13 +34,13 @@ from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 HERE = pathlib.Path(__file__).resolve().parent   # src/design-system/python
 
 
-def _generator():
-    """Import gen_portal_css.py by path.
+def _load(name):
+    """Import a generator beside this file by path.
 
-    It sits beside this file, which is not on sys.path during a build. Neither
-    file is part of a package; both exist only at build time.
+    They sit beside this file, which is not on sys.path during a build. None of
+    them is part of a package; all exist only at build time.
     """
-    spec = importlib.util.spec_from_file_location("gen_portal_css", HERE / "gen_portal_css.py")
+    spec = importlib.util.spec_from_file_location(name, HERE / f"{name}.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -53,7 +53,7 @@ class CustomBuildHook(BuildHookInterface):
         if self.target_name != "wheel":
             return
 
-        gen = _generator()
+        gen = _load("gen_portal_css")
 
         # A wheel carrying the tokens and no component CSS installs cleanly and shows up only as an
         # unstyled page, so this stops instead.
@@ -76,6 +76,13 @@ class CustomBuildHook(BuildHookInterface):
             raise RuntimeError(f"gen_portal_css exited {code}; not building a wheel without components.css")
 
         build_data["force_include"][str(out)] = "kbase_design_system/components.css"
+
+        # Loader's exit, joined from the math Loader.tsx imports and the driver beside this file.
+        # Assembled here rather than committed, for the reason components.css is: a generated file
+        # in the tree is one more thing that can be stale.
+        script = pathlib.Path(self._workdir.name) / "loader.js"
+        _load("gen_loader_js").main(["--out", str(script)])
+        build_data["force_include"][str(script)] = "kbase_design_system/solara/loader.js"
 
     @property
     def _workdir(self):

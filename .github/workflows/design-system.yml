@@ -125,34 +125,19 @@ jobs:
           print(f"{chunks} components, {len(stray) == 0 and 'all classes prefixed'}")
           EOF
 
-      # tokens.css states the palette as oklch() derivations, which gen_theme.py evaluates in
+      # tokens.css states the palette as oklch() derivations, which solara/theme.py evaluates in
       # Python. The reference is what a browser resolved the same expressions to, captured once, so
       # this fails if the arithmetic and CSS Color 4 ever part company. It caught a chained
       # derivation being quantised to eight bits per hop.
       - name: The resolved palette is what a browser computes
         working-directory: src/design-system
         run: |
-          python - <<'EOF'
-          import glob, json, importlib.util, sys, tempfile, zipfile, pathlib
-          whl = zipfile.ZipFile(glob.glob("dist-python/*.whl")[0])
-          with tempfile.TemporaryDirectory() as td:
-              for name in ("solara/oklch.py", "solara/_theme_tokens.py", "solara/theme.py",
-                           "solara/__init__.py"):
-                  try:
-                      data = whl.read(f"kbase_design_system/{name}")
-                  except KeyError:
-                      if name.endswith("__init__.py"):
-                          data = b""
-                      else:
-                          raise
-                  p = pathlib.Path(td) / "kbase_design_system" / name
-                  p.parent.mkdir(parents=True, exist_ok=True)
-                  p.write_bytes(data)
-              (pathlib.Path(td) / "kbase_design_system" / "__init__.py").write_bytes(
-                  whl.read("kbase_design_system/__init__.py"))
-              sys.path.insert(0, td)
-              from kbase_design_system.solara import theme
-              got = theme.vuetify("#66489d")
+          python -m venv /tmp/palette
+          /tmp/palette/bin/pip install -q dist-python/*.whl
+          /tmp/palette/bin/python - <<'EOF'
+          import json, pathlib
+          from kbase_design_system.solara import theme
+          got = theme.vuetify("#66489d")
           want = json.loads(pathlib.Path("python/vuetify_theme_reference.json").read_text())
           bad = [(s, t, got[s][t], v) for s, traits in want.items()
                  for t, v in traits.items() if got[s][t] != v]

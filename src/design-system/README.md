@@ -75,10 +75,9 @@ thirteen traits ipyvuetify syncs, per scheme, given the portal's own
 `--c-primary`.
 
 Most of `tokens.css` is `oklch(from var(--c-base) L C H)` — arithmetic with one
-answer, which `oklch.py` computes. Ten of the thirteen derive from
-`--c-neutral` or a literal hue and are resolved during the wheel build; two are
-the brand colour itself and one is a single derivation from it. No browser is
-involved, and nothing is committed. `python/vuetify_theme_reference.json` holds
+answer, which `oklch.py` computes. `theme.py` reads the stylesheet the wheel
+already carries and resolves it on the first call, so there is no browser, no
+build step and nothing generated. `python/vuetify_theme_reference.json` holds
 what a browser resolved the same expressions to, and CI fails if the arithmetic
 and CSS Color 4 ever part company.
 

@@ -84,6 +84,12 @@ class CustomBuildHook(BuildHookInterface):
         _load("gen_loader_js").main(["--out", str(script)])
         build_data["force_include"][str(script)] = "kbase_design_system/solara/loader.js"
 
+        # The palette as numbers, for Vuetify's theme. Resolved from tokens.css here so a consumer
+        # needs no browser to read a colour the stylesheet states as an oklch derivation.
+        palette = pathlib.Path(self._workdir.name) / "_theme_tokens.py"
+        _load("gen_theme").main(["--out", str(palette)])
+        build_data["force_include"][str(palette)] = "kbase_design_system/solara/_theme_tokens.py"
+
     @property
     def _workdir(self):
         # hatchling copies force-included files after initialize() returns, so the temporary

@@ -35,7 +35,9 @@ string. Install by pinned tag:
 ```
 
 Pin a released `ds-v` tag; [Releases](https://github.com/kbase/next-gen-ui/releases)
-lists them.
+lists them. The repository is public and pip clones it directly, so this route
+needs no credentials — the `read:packages` token above belongs to the npm
+registry.
 
 ```python
 from importlib.resources import files
@@ -223,6 +225,13 @@ off-white, which no hue change can produce, so it sets the ground, ink ramp,
 tints and text-on-tint outright. It is not exported and not packaged; the
 design system supports branded themes rather than carrying anyone's brand.
 
+A brand block scoped to an attribute rather than a bare `:root` lets several
+ship alongside each other with one value choosing between them.
+`example-brand.css` opens `:root[data-brand='example']`, so the page wears
+KBase's palette while the attribute is absent and the example brand while it
+reads `example`. An app stamps the attribute once in its own HTML; the showcase
+toggles it, which is how both palettes appear against the same components.
+
 ### What the derivation gives you
 
 Derived tokens read a base's hue and chroma and pin their own lightness, so a
@@ -398,9 +407,11 @@ The artifact's version label falls back to root `package.json`.
 
 ## Layering
 
-The combined `style.css` concatenates the layers in this order. Use
-the granular entries instead if a specific layer needs to be skipped
-or replaced.
+This is the npm package. The combined `style.css` concatenates the layers in
+this order; use the granular entries instead if a specific layer needs to be
+skipped or replaced. The wheel carries a different set — see
+[Without a bundler](#without-a-bundler) for what it holds, and the
+`solara/MIGRATING.md` it ships for the order a Solara portal loads them in.
 
 1. `tokens.css`: design tokens (`--c-*`, `--s-*`, `--r-*`, …)
 2. `prism.css`: Prism syntax theme

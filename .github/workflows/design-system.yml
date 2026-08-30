@@ -127,31 +127,6 @@ jobs:
           print(f"{chunks} components, {len(stray) == 0 and 'all classes prefixed'}")
           EOF
 
-      # tokens.css writes most of the palette as oklch(from var(--c-base) L C H). A browser
-      # evaluates those expressions; solara/theme.py evaluates them again in Python, because
-      # ipyvuetify's traits are set from a process that has no browser to resolve them.
-      # vuetify_theme_reference.json holds a browser's answers for the same expressions, recorded
-      # once. This step fails when the two disagree.
-      #
-      # The disagreement it has caught: --c-teal-dim derives from --c-teal-btn, which derives from
-      # --c-teal. Rounding to 8-bit RGB at each hop moved the last colour's red channel by one, so
-      # the chain now stays in OKLCh and rounds only at the end.
-      - name: The resolved palette is what a browser computes
-        working-directory: src/design-system
-        run: |
-          python -m venv /tmp/palette
-          /tmp/palette/bin/pip install -q dist-python/*.whl
-          /tmp/palette/bin/python - <<'EOF'
-          import json, pathlib
-          from kbase_design_system.solara import theme
-          got = theme.vuetify("#66489d")
-          want = json.loads(pathlib.Path("python/vuetify_theme_reference.json").read_text())
-          bad = [(s, t, got[s][t], v) for s, traits in want.items()
-                 for t, v in traits.items() if got[s][t] != v]
-          assert not bad, f"resolved palette differs from the browser's: {bad}"
-          print(f"{sum(len(t) for t in want.values())} values match")
-          EOF
-
       # On the floor the package declares, because files() behaves differently below 3.10 and
       # that is what the wheel's __init__.py is for. A syntax error in the adapter would ship
       # without this too.

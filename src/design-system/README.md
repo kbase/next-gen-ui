@@ -77,9 +77,7 @@ thirteen traits ipyvuetify syncs, per scheme, given the portal's own
 Most of `tokens.css` is `oklch(from var(--c-base) L C H)` — arithmetic with one
 answer, which `oklch.py` computes. `theme.py` reads the stylesheet the wheel
 already carries and resolves it on the first call, so there is no browser, no
-build step and nothing generated. `python/vuetify_theme_reference.json` holds
-what a browser resolved the same expressions to, and CI fails if the arithmetic
-and CSS Color 4 ever part company.
+build step and nothing generated.
 
 `style.css` is a bundler output and stays npm-only. `fonts.css` is excluded —
 see [Fonts](#fonts) for why it needs a bundler, and what a consumer without one

@@ -15,8 +15,7 @@ this palette rather than Material's.
 
 tokens.css states the palette as `oklch(from var(--c-base) L C H)`, which is arithmetic with one
 answer (see oklch.py), so this reads the stylesheet the wheel already carries and computes. Nothing
-is generated and no browser is involved. python/vuetify_theme_reference.json holds what a browser
-resolved the same expressions to, and CI fails on a difference.
+is generated and no browser is involved.
 
 The brand is passed in rather than read from a stylesheet: a portal states it in its own brand.css,
 and this has no way to know which file that is.

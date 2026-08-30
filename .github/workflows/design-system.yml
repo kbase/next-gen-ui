@@ -127,10 +127,15 @@ jobs:
           print(f"{chunks} components, {len(stray) == 0 and 'all classes prefixed'}")
           EOF
 
-      # tokens.css states the palette as oklch() derivations, which solara/theme.py evaluates in
-      # Python. The reference is what a browser resolved the same expressions to, captured once, so
-      # this fails if the arithmetic and CSS Color 4 ever part company. It caught a chained
-      # derivation being quantised to eight bits per hop.
+      # tokens.css writes most of the palette as oklch(from var(--c-base) L C H). A browser
+      # evaluates those expressions; solara/theme.py evaluates them again in Python, because
+      # ipyvuetify's traits are set from a process that has no browser to resolve them.
+      # vuetify_theme_reference.json holds a browser's answers for the same expressions, recorded
+      # once. This step fails when the two disagree.
+      #
+      # The disagreement it has caught: --c-teal-dim derives from --c-teal-btn, which derives from
+      # --c-teal. Rounding to 8-bit RGB at each hop moved the last colour's red channel by one, so
+      # the chain now stays in OKLCh and rounds only at the end.
       - name: The resolved palette is what a browser computes
         working-directory: src/design-system
         run: |

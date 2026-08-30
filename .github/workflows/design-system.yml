@@ -85,10 +85,9 @@ jobs:
           import glob, zipfile
           names = zipfile.ZipFile(glob.glob("dist-python/*.whl")[0]).namelist()
           shipped = [n for n in names if not n.startswith("kbase_design_system-")]
-          # The extensions an installing portal has a use for. js, because Loader's exit cannot be
-          # a stylesheet -- gen_loader_js.py says why; the assembler's own ES module inputs must
-          # not reach the wheel, which the next assertion holds to. md, for MIGRATING.md beside
-          # the adapter it documents.
+          # The extensions a portal has a use for. js is the Loader's exit, which cannot be a
+          # stylesheet -- gen_loader_js.py says why; the ES modules it is assembled from must stay
+          # out, which the next assertion holds to. md is the migration guide.
           stray = [n for n in shipped if n.rsplit(".", 1)[-1] not in ("css", "py", "js", "md")]
           assert not stray, f"force-include swept these into the installed package: {stray}"
           scripts = [n for n in shipped if n.endswith(".js")]
@@ -127,10 +126,9 @@ jobs:
           print(f"{chunks} components, {len(stray) == 0 and 'all classes prefixed'}")
           EOF
 
-      # The wheel is force-included files with no package directory behind them, so nothing here
-      # has imported it until now: this installs it and reads a stylesheet back out through
-      # importlib.resources, on the floor the package declares. A syntax error in the adapter
-      # would ship without it too.
+      # Nothing above imports the wheel: it is force-included files with no package directory
+      # behind them. This installs it and reads a stylesheet back out through importlib.resources,
+      # on the floor the package declares.
       - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
@@ -144,8 +142,7 @@ jobs:
           from importlib.resources import files
           from kbase_design_system.solara import icons, theme
           assert (files('kbase_design_system') / 'components.css').read_text()
-          # The adapter is a namespace subpackage of a namespace package, and nothing carries an
-          # __init__.py, so this is the traversal that would break if either stopped resolving.
+          # Neither this package nor its solara subpackage carries an __init__.py.
           assert (files('kbase_design_system.solara') / 'vuetify.css').read_text()
           assert 'kb-loader--loader' in icons.loader(32)
           assert theme.vuetify()['light']['primary'] == '#007dc3'

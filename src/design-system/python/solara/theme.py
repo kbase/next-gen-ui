@@ -62,10 +62,9 @@ _OKLCH = re.compile(
 def _custom_properties(css: str) -> dict[str, str]:
     """Every custom property a stylesheet sets on the root element, keyed without its `--`.
 
-    Rules are read in source order and a later declaration wins, which is the cascade's answer for
-    two rules of equal specificity. Only rules whose selector names `:root` are read: a skin may
-    scope itself `:root[data-skin='x']` so several can ship in one file for a browser to choose
-    between, and the values are the same either way once one of them is the file being loaded.
+    A later declaration wins, as it does between two rules of equal specificity. Only rules whose
+    selector names `:root` are read, and the attribute in `:root[data-skin='x']` is not matched:
+    a file holding two skins would collapse them into each other.
     """
     out: dict[str, str] = {}
     for rule in tinycss2.parse_stylesheet(css, skip_comments=True, skip_whitespace=True):

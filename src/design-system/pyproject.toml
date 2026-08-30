@@ -9,10 +9,9 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 dynamic = ["version"]
-# solara/theme.py reads custom properties out of tokens.css and a portal's skin stylesheet. CSS has
-# a grammar; tinycss2 is 28kB of pure Python that knows it, where a regex cannot see which rule a
-# declaration sits in and would read one out of a comment. 1.4 is where parse_blocks_contents
-# arrived.
+# solara/theme.py reads custom properties out of tokens.css and a portal's skin stylesheet, and
+# needs the rule each one sits in: a skin may scope itself to an attribute. parse_blocks_contents
+# is the 1.4 API.
 dependencies = ["tinycss2>=1.4"]
 
 [project.urls]

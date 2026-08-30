@@ -9,6 +9,11 @@ readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
 dynamic = ["version"]
+# solara/theme.py reads custom properties out of tokens.css and a portal's brand stylesheet. CSS has
+# a grammar; tinycss2 is 28kB of pure Python that knows it, where a regex cannot see which rule a
+# declaration sits in and would read one out of a comment. 1.4 is where parse_blocks_contents
+# arrived; 1.5 raised its own floor to 3.10, so a 3.9 install resolves to 1.4 and still has it.
+dependencies = ["tinycss2>=1.4"]
 
 [project.urls]
 Source = "https://github.com/kbase/next-gen-ui"

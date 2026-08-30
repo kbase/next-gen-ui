@@ -1,4 +1,4 @@
-"""Vuetify's theme, resolved from tokens.css.
+"""Vuetify's theme, resolved from tokens.css and a brand.
 
 Solara renders its widgets with Vuetify, which holds its theme as comma-separated RGB triplets and
 consumes them as `rgba(var(--v-theme-surface), <alpha>)`. CSS cannot decompose a colour into three
@@ -8,17 +8,19 @@ contrast. That is what makes the alpha blends inside components no stylesheet me
 this palette rather than Material's.
 
     from kbase_design_system.solara import theme
-    for scheme, colours in theme.vuetify("#66489d").items():
+    for scheme, colours in theme.vuetify(brand_css).items():
         target = getattr(solara.lab.theme.themes, scheme)
         for trait, value in colours.items():
             setattr(target, trait, value)
 
-tokens.css states the palette as `oklch(from var(--c-base) L C H)`, which is arithmetic with one
-answer (see oklch.py), so this reads the stylesheet the wheel already carries and computes. Nothing
-is generated and no browser is involved.
+`brand_css` is a portal's brand stylesheet, the same string it loads into the page. Its declarations
+land on top of tokens.css exactly as the cascade would place them, so a brand that moves the ground,
+the ink ramp or a semantic colour moves the widgets with it. Called with nothing, the palette is the
+package's own.
 
-The brand is passed in rather than read from a stylesheet: a portal states it in its own brand.css,
-and this has no way to know which file that is.
+tokens.css states most of the palette as `oklch(from var(--c-base) L C H)`, which is arithmetic with
+one answer (see oklch.py), so this reads the stylesheets and computes. Nothing is generated and no
+browser is involved.
 """
 
 from __future__ import annotations
@@ -26,6 +28,8 @@ from __future__ import annotations
 import functools
 import re
 from importlib.resources import files
+
+import tinycss2
 
 from . import oklch
 
@@ -48,20 +52,37 @@ VUETIFY = {
     "warning": "c-orange",
 }
 
-_DECL = re.compile(r"--([a-z0-9-]+)\s*:\s*([^;]+);", re.S)
 _LIGHT_DARK = re.compile(r"light-dark\(\s*(.+?)\s*,\s*(.+?)\s*\)", re.S)
 # A channel is `calc(...)`, which carries spaces, or one bare token.
 _CHANNEL = r"(?:calc\([^)]*\)|[^\s)]+)"
 _OKLCH = re.compile(
-    rf"oklch\(\s*from\s+var\(--([a-z0-9-]+)\)\s+({_CHANNEL})\s+({_CHANNEL})\s+h\s*\)", re.S)
+    rf"oklch\(\s*from\s+var\(\s*--([a-z0-9-]+)\s*\)\s+({_CHANNEL})\s+({_CHANNEL})\s+h\s*\)", re.S)
+
+
+def _custom_properties(css: str) -> dict[str, str]:
+    """Every custom property a stylesheet sets on the root element, keyed without its `--`.
+
+    Rules are read in source order and a later declaration wins, which is the cascade's answer for
+    two rules of equal specificity. Only rules whose selector names `:root` are read: a brand may
+    scope itself `:root[data-brand='x']` so several can ship in one file for a browser to choose
+    between, and the values are the same either way once one of them is the file being loaded.
+    """
+    out: dict[str, str] = {}
+    for rule in tinycss2.parse_stylesheet(css, skip_comments=True, skip_whitespace=True):
+        if rule.type != "qualified-rule" or ":root" not in tinycss2.serialize(rule.prelude):
+            continue
+        for decl in tinycss2.parse_blocks_contents(
+                rule.content, skip_comments=True, skip_whitespace=True):
+            if decl.type == "declaration" and decl.name.startswith("--"):
+                out[decl.name[2:]] = tinycss2.serialize(decl.value).strip()
+    return out
 
 
 @functools.lru_cache(maxsize=1)
-def _declarations() -> dict[str, str]:
-    """Every custom property in tokens.css, as written. A later declaration wins, as in the
-    cascade. Read once: the file ships in the wheel and does not change under a running process."""
-    css = (files("kbase_design_system") / "tokens.css").read_text()
-    return {name: " ".join(value.split()) for name, value in _DECL.findall(css)}
+def _packaged() -> dict[str, str]:
+    """tokens.css as it ships. Read once: the file is in the wheel and does not change under a
+    running process."""
+    return _custom_properties((files("kbase_design_system") / "tokens.css").read_text())
 
 
 def _channel(spec: str, chroma: float) -> float:
@@ -74,21 +95,19 @@ def _channel(spec: str, chroma: float) -> float:
     try:
         return float(spec)
     except ValueError:
-        raise ValueError(f"tokens.css: unsupported oklch channel {spec!r}")
+        raise ValueError(f"unsupported oklch channel {spec!r}")
 
 
-def _oklch_of(name: str, scheme: str, brand: str) -> tuple[float, float, float]:
+def _oklch_of(name: str, scheme: str, tokens: dict[str, str]) -> tuple[float, float, float]:
     """One token, in one scheme, as (L, C, H).
 
     A derivation can name a token that is itself derived -- --c-teal-dim reads --c-teal-btn, which
     reads --c-teal -- so the chain stays in OKLCh and quantises once, at the end. Rounding to eight
     bits per hop moves the last colours in a chain by a unit.
     """
-    if name == "c-primary":
-        return oklch.to_oklch(brand)
-    value = _declarations().get(name)
+    value = tokens.get(name)
     if value is None:
-        raise ValueError(f"tokens.css declares no --{name}")
+        raise ValueError(f"no --{name} in the tokens or the brand")
     branch = _LIGHT_DARK.fullmatch(value)
     if branch:
         value = branch.group(1 if scheme == "light" else 2)
@@ -96,17 +115,23 @@ def _oklch_of(name: str, scheme: str, brand: str) -> tuple[float, float, float]:
         return oklch.to_oklch(value)
     m = _OKLCH.fullmatch(value)
     if not m:
-        raise ValueError(f"tokens.css: unsupported value for --{name}: {value!r}")
+        raise ValueError(f"unsupported value for --{name}: {value!r}")
     base, lightness, chroma = m.groups()
-    _, base_c, base_h = _oklch_of(base, scheme, brand)
+    _, base_c, base_h = _oklch_of(base, scheme, tokens)
     return _channel(lightness, base_c), _channel(chroma, base_c), base_h
 
 
-def vuetify(brand: str) -> dict[str, dict[str, str]]:
-    """The thirteen traits ipyvuetify syncs, keyed by scheme, for a portal whose --c-primary is
-    `brand`. `brand` is a hex colour; every primary-family token derives from it."""
+def vuetify(brand_css: str = "") -> dict[str, dict[str, str]]:
+    """The thirteen traits ipyvuetify syncs, keyed by scheme.
+
+    `brand_css` is a brand stylesheet's text, whose declarations override the packaged tokens. Omit
+    it for the design system's own palette.
+    """
+    tokens = dict(_packaged())
+    if brand_css:
+        tokens.update(_custom_properties(brand_css))
     return {
-        scheme: {trait: oklch.to_hex(*_oklch_of(token, scheme, brand))
+        scheme: {trait: oklch.to_hex(*_oklch_of(token, scheme, tokens))
                  for trait, token in VUETIFY.items()}
         for scheme in ("light", "dark")
     }

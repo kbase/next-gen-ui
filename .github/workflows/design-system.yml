@@ -85,9 +85,8 @@ jobs:
           import glob, zipfile
           names = zipfile.ZipFile(glob.glob("dist-python/*.whl")[0]).namelist()
           shipped = [n for n in names if not n.startswith("kbase_design_system-")]
-          # The extensions a portal has a use for. js is the Loader's exit, which cannot be a
-          # stylesheet -- gen_loader_js.py says why; the ES modules it is assembled from must stay
-          # out, which the next assertion holds to. md is the migration guide.
+          # js is the Loader's exit, which gen_loader_js.py says cannot be a stylesheet. md is the
+          # migration guide.
           stray = [n for n in shipped if n.rsplit(".", 1)[-1] not in ("css", "py", "js", "md")]
           assert not stray, f"force-include swept these into the installed package: {stray}"
           scripts = [n for n in shipped if n.endswith(".js")]
@@ -126,9 +125,8 @@ jobs:
           print(f"{chunks} components, {len(stray) == 0 and 'all classes prefixed'}")
           EOF
 
-      # Nothing above imports the wheel: it is force-included files with no package directory
-      # behind them. This installs it and reads a stylesheet back out through importlib.resources,
-      # on the floor the package declares.
+      # The payload is force-included files with no package directory behind them, so nothing
+      # above imports it.
       - uses: actions/setup-python@v5
         with:
           python-version: '3.10'

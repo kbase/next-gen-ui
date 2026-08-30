@@ -9,9 +9,8 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 dynamic = ["version"]
-# solara/theme.py reads custom properties out of tokens.css and a portal's skin stylesheet, and
-# needs the rule each one sits in: a skin may scope itself to an attribute. parse_blocks_contents
-# is the 1.4 API.
+# solara/theme.py parses tokens.css and a portal's skin for custom properties.
+# parse_blocks_contents is 1.4.
 dependencies = ["tinycss2>=1.4"]
 
 [project.urls]
@@ -41,7 +40,6 @@ bypass-selection = true      # no package to detect; the payload is force-includ
 "prism.css" = "kbase_design_system/prism.css"
 "global.css" = "kbase_design_system/global.css"
 "python/chrome.css" = "kbase_design_system/chrome.css"
-# The Solara adapter: a stylesheet and two modules, imported as kbase_design_system.solara.*.
-# Both it and its parent are namespace packages: on the 3.10 floor, importlib.resources.files()
-# traverses one without an __init__.py.
+# The Solara adapter, imported as kbase_design_system.solara.*. Neither it nor its parent carries
+# an __init__.py; files() traverses a namespace package on the 3.10 floor.
 "python/solara" = "kbase_design_system/solara"

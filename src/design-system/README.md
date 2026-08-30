@@ -255,7 +255,7 @@ that uses them, with no stylesheet holding a hardcoded value:
 
 | Lever           | Tokens                                     | Notes                                                                                                                                             |
 | --------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Typeface        | `--f-sans`, `--f-mono`                     | the design system serves only its own two faces; a skin pointing these elsewhere serves that font itself                                         |
+| Typeface        | `--f-sans`, `--f-mono`                     | the design system serves only its own two faces; a skin pointing these elsewhere serves that font itself                                          |
 | Corner rounding | `--r-sm`, `--r-button`, `--r-md`, `--r-lg` | box corners                                                                                                                                       |
 |                 | `--r-full`                                 | **leave alone.** Radio and the Switch track use it to stay circular, and a square radio reads as a checkbox. Shape is carrying meaning, not style |
 | Type scale      | `--fs-1`–`--fs-11`, `--fs-hero`            | sequential, smallest to largest                                                                                                                   |

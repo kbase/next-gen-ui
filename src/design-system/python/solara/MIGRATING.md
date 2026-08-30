@@ -75,14 +75,16 @@ for sheet in design_system_sheets():   # one string per sheet
 solara.Style(OWN_CSS)
 ```
 
-### The brand
+### The skin
 
-`tokens.css:82` declares `--c-primary` outside any `light-dark()`, and `tokens.css:98` derives
-`--ct-primary` from it once per scheme. One hue produces both schemes, so a portal states one hex, in
-a `brand.css`, and every primary-family token follows.
+A skin is a stylesheet of token overrides, loaded after the packaged sheets, carrying whatever brand
+the portal wears. `tokens.css:82` declares `--c-primary` outside any `light-dark()` and
+`tokens.css:98` derives `--ct-primary` from it once per scheme, so one hue stated in a skin produces
+both schemes and every primary-family token follows. Any of the other 66 colour tokens can be set
+the same way; the design system's README lists them.
 
-Hex, `rgb()` and `rgba()` values elsewhere in the portal's stylesheet hold colours that no brand
-change reaches. genKnown has 27, one of them a teal behind the accent border of its card.
+Hex, `rgb()` and `rgba()` values elsewhere in the portal's stylesheet hold colours no skin reaches.
+genKnown has 27, one of them a teal behind the accent border of its card.
 
 ### Vuetify's palette
 
@@ -93,16 +95,20 @@ on-colours it picks by contrast. Left unset, the widgets blend against Material'
 
 ```python
 from kbase_design_system.solara import theme
-for scheme, colours in theme.vuetify(BRAND).items():
+for scheme, colours in theme.vuetify(SKIN_CSS).items():
     target = getattr(solara.lab.theme.themes, scheme)
     for trait, value in colours.items():
         setattr(target, trait, value)
 ```
 
-`theme.vuetify()` evaluates the `oklch(from …)` expressions in `tokens.css` as arithmetic and returns
-thirteen traits per scheme. `BRAND` reads out of `brand.css`. A hex restated in Python holds
-`primary`, `info` and `primary_darken_1` at the old colour after the stylesheet changes, so the
-design-system chrome moves and the Vuetify widgets do not.
+`SKIN_CSS` is the same string the portal loads into the page. `theme.vuetify()` lays its
+declarations over the packaged tokens as the cascade would, evaluates the `oklch(from …)`
+expressions as arithmetic, and returns thirteen traits per scheme. Called with nothing it gives the
+design system's own palette.
+
+Passing a colour instead of the stylesheet leaves ten of the thirteen on the packaged palette, since
+a skin that moves the ground, the ink ramp or a semantic colour moves tokens no single hue carries —
+the sheets follow the skin and the widgets do not.
 
 ---
 

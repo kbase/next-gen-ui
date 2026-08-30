@@ -127,12 +127,13 @@ jobs:
           print(f"{chunks} components, {len(stray) == 0 and 'all classes prefixed'}")
           EOF
 
-      # On the floor the package declares, because files() behaves differently below 3.10 and
-      # that is what the wheel's __init__.py is for. A syntax error in the adapter would ship
-      # without this too.
+      # The wheel is force-included files with no package directory behind them, so nothing here
+      # has imported it until now: this installs it and reads a stylesheet back out through
+      # importlib.resources, on the floor the package declares. A syntax error in the adapter
+      # would ship without it too.
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.10'
 
       - name: The adapter imports from the built wheel, on the oldest supported Python
         working-directory: src/design-system
@@ -141,9 +142,13 @@ jobs:
           /tmp/probe/bin/pip install -q dist-python/*.whl
           /tmp/probe/bin/python -c "
           from importlib.resources import files
-          from kbase_design_system.solara import icons
+          from kbase_design_system.solara import icons, theme
           assert (files('kbase_design_system') / 'components.css').read_text()
+          # The adapter is a namespace subpackage of a namespace package, and nothing carries an
+          # __init__.py, so this is the traversal that would break if either stopped resolving.
+          assert (files('kbase_design_system.solara') / 'vuetify.css').read_text()
           assert 'kb-loader--loader' in icons.loader(32)
+          assert theme.vuetify()['light']['primary'] == '#007dc3'
           print('adapter ok')"
 
       - name: Upload wheel artifact

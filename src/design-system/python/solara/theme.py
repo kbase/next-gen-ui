@@ -1,4 +1,4 @@
-"""Vuetify's theme, resolved from tokens.css and a brand.
+"""Vuetify's theme, resolved from tokens.css and a skin.
 
 Solara renders its widgets with Vuetify, which holds its theme as comma-separated RGB triplets and
 consumes them as `rgba(var(--v-theme-surface), <alpha>)`. CSS cannot decompose a colour into three
@@ -8,15 +8,15 @@ contrast. That is what makes the alpha blends inside components no stylesheet me
 this palette rather than Material's.
 
     from kbase_design_system.solara import theme
-    for scheme, colours in theme.vuetify(brand_css).items():
+    for scheme, colours in theme.vuetify(skin_css).items():
         target = getattr(solara.lab.theme.themes, scheme)
         for trait, value in colours.items():
             setattr(target, trait, value)
 
-`brand_css` is a portal's brand stylesheet, the same string it loads into the page. Its declarations
-land on top of tokens.css exactly as the cascade would place them, so a brand that moves the ground,
-the ink ramp or a semantic colour moves the widgets with it. Called with nothing, the palette is the
-package's own.
+`skin_css` is a portal's skin -- a stylesheet of token overrides carrying whatever brand it
+expresses, the same string it loads into the page. Its declarations land on top of tokens.css
+exactly as the cascade would place them, so a skin that moves the ground, the ink ramp or a semantic
+colour moves the widgets with it. Called with nothing, the palette is the package's own.
 
 tokens.css states most of the palette as `oklch(from var(--c-base) L C H)`, which is arithmetic with
 one answer (see oklch.py), so this reads the stylesheets and computes. Nothing is generated and no
@@ -63,8 +63,8 @@ def _custom_properties(css: str) -> dict[str, str]:
     """Every custom property a stylesheet sets on the root element, keyed without its `--`.
 
     Rules are read in source order and a later declaration wins, which is the cascade's answer for
-    two rules of equal specificity. Only rules whose selector names `:root` are read: a brand may
-    scope itself `:root[data-brand='x']` so several can ship in one file for a browser to choose
+    two rules of equal specificity. Only rules whose selector names `:root` are read: a skin may
+    scope itself `:root[data-skin='x']` so several can ship in one file for a browser to choose
     between, and the values are the same either way once one of them is the file being loaded.
     """
     out: dict[str, str] = {}
@@ -107,7 +107,7 @@ def _oklch_of(name: str, scheme: str, tokens: dict[str, str]) -> tuple[float, fl
     """
     value = tokens.get(name)
     if value is None:
-        raise ValueError(f"no --{name} in the tokens or the brand")
+        raise ValueError(f"no --{name} in the tokens or the skin")
     branch = _LIGHT_DARK.fullmatch(value)
     if branch:
         value = branch.group(1 if scheme == "light" else 2)
@@ -121,15 +121,15 @@ def _oklch_of(name: str, scheme: str, tokens: dict[str, str]) -> tuple[float, fl
     return _channel(lightness, base_c), _channel(chroma, base_c), base_h
 
 
-def vuetify(brand_css: str = "") -> dict[str, dict[str, str]]:
+def vuetify(skin_css: str = "") -> dict[str, dict[str, str]]:
     """The thirteen traits ipyvuetify syncs, keyed by scheme.
 
-    `brand_css` is a brand stylesheet's text, whose declarations override the packaged tokens. Omit
+    `skin_css` is a skin stylesheet's text, whose declarations override the packaged tokens. Omit
     it for the design system's own palette.
     """
     tokens = dict(_packaged())
-    if brand_css:
-        tokens.update(_custom_properties(brand_css))
+    if skin_css:
+        tokens.update(_custom_properties(skin_css))
     return {
         scheme: {trait: oklch.to_hex(*_oklch_of(token, scheme, tokens))
                  for trait, token in VUETIFY.items()}

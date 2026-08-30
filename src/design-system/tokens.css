@@ -2,10 +2,11 @@
    KBASE DESIGN TOKENS
    Everything visual is defined here. Nothing else uses a raw color.
 
-   Every token below can be set by a brand. Twelve carry literal color and the
-   rest derive from them with oklch(from ...), which reads a base's hue and
-   chroma and substitutes its own lightness -- so handing over twelve colors
-   re-skins the system. That is a default, not a limit: a brand needing a
+   Every token below can be set by a skin -- a stylesheet of overrides loaded
+   after this one, carrying whatever brand it expresses. Twelve carry literal
+   color and the rest derive from them with oklch(from ...), which reads a
+   base's hue and chroma and substitutes its own lightness, so twelve colors
+   re-skin the system. That is a default, not a limit: a skin needing a
    different ground lightness, tint weight or text colour sets those tokens
    outright and the derivation gives way. See example-brand.css.
 
@@ -14,7 +15,7 @@
    ramp with no chroma: the warm cream below is KBase's palette, not a
    constraint the system imposes.
 
-   Tints: brand hue at a family-fixed lightness and chroma. Yellow hand-tuned.
+   Tints: skin hue at a family-fixed lightness and chroma. Yellow hand-tuned.
    Theming: no data-theme on <html> follows the OS; light or dark forces one.
    ================================================================ */
 :root {
@@ -36,7 +37,7 @@
 
   /* Ground and ink, as lightness steps on --c-neutral. The steps are fixed
      because they are what the contrast figures here are measured against. A
-     brand wanting a different ground lightness sets these outright. */
+     skin wanting a different ground lightness sets these outright. */
   --c-bg: light-dark(
     oklch(from var(--c-neutral) 0.9624 calc(c * 0.343) h),
     oklch(from var(--c-neutral) 0.193 calc(c * 0.597) h)

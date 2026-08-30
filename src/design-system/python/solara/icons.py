@@ -107,7 +107,7 @@ def kbase_mark(size: int = 20, animate: bool = False, active: bool = True, label
     braid at the pose it had reached, and the dots jump to the row.
 
     Circles are filled from --c-yellow, --c-grellow and --c-ocean rather than the hex in
-    favicon.svg, so the mark follows the theme, and any palette a portal sets through data-brand.
+    favicon.svg, so the mark follows the theme, and any palette a portal sets through data-skin.
 
     `size` is the height. Width follows the aspect ratio of the box, so the static mark is wider
     than it is tall and the animated one is square. Circles carry the 0.85 opacity Loader sets, so

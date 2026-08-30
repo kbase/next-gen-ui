@@ -6,13 +6,13 @@ build-backend = "hatchling.build"
 name = "kbase-design-system"
 description = "KBase design system stylesheets, for consumers without a bundler"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = { text = "MIT" }
 dynamic = ["version"]
-# solara/theme.py reads custom properties out of tokens.css and a portal's brand stylesheet. CSS has
+# solara/theme.py reads custom properties out of tokens.css and a portal's skin stylesheet. CSS has
 # a grammar; tinycss2 is 28kB of pure Python that knows it, where a regex cannot see which rule a
 # declaration sits in and would read one out of a comment. 1.4 is where parse_blocks_contents
-# arrived; 1.5 raised its own floor to 3.10, so a 3.9 install resolves to 1.4 and still has it.
+# arrived.
 dependencies = ["tinycss2>=1.4"]
 
 [project.urls]
@@ -41,11 +41,8 @@ bypass-selection = true      # no package to detect; the payload is force-includ
 "utilities.css" = "kbase_design_system/utilities.css"
 "prism.css" = "kbase_design_system/prism.css"
 "global.css" = "kbase_design_system/global.css"
-# Makes the wheel a regular package rather than a namespace one, so importlib.resources
-# .files() works on the 3.9 floor this package declares.
-"python/__init__.py" = "kbase_design_system/__init__.py"
 "python/chrome.css" = "kbase_design_system/chrome.css"
 # The Solara adapter: a stylesheet and two modules, imported as kbase_design_system.solara.*.
-# It stays a namespace subpackage -- importing works without an __init__.py, and vuetify.css is
-# read by traversing from the parent, which has one.
+# Both it and its parent are namespace packages: on the 3.10 floor, importlib.resources.files()
+# traverses one without an __init__.py.
 "python/solara" = "kbase_design_system/solara"

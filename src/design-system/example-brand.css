@@ -1,20 +1,20 @@
 /* ================================================================
-   EXAMPLE BRAND — a fictional partner, for the showcase only.
+   EXAMPLE SKIN — a fictional partner's brand, for the showcase only.
 
    Not exported from index.ts and not in the cssAssets list in
    scripts/build-design-system.mjs, so nothing here reaches the package.
-   The design system supports branded themes; it carries nobody's brand.
+   The design system supports skins; it carries nobody's brand.
 
    Mint page, rose accents, against KBase's cream and azure.
 
-   Most of a brand is the twelve bases at the bottom — set those and
+   Most of a skin is the twelve bases at the bottom — set those and
    tokens.css derives the tints, the text-on-tint and the interactive
    states from them. The ground is the exception: its lightness steps
    are fixed in tokens.css, so a page that is a colour rather than an
    off-white has to be stated outright. That is the point of the file —
    any token can be replaced this way, derivation is only the default.
    ================================================================ */
-:root[data-brand='example'] {
+:root[data-skin='example'] {
   /* The ground, stated outright: no hue given to --c-neutral would
      produce a page this saturated, because the lightness is pinned. */
   --c-bg: light-dark(#b9e2cf, #06231a);
@@ -42,8 +42,8 @@
      every component that sets a font. This brand runs the monospaced face
      throughout: it is the one already bundled, so the example demonstrates
      the lever without raising the question of shipping a partner's licensed
-     font, which the design system does not do. A real brand points these at
-     a face it serves itself. */
+     font, which the design system does not do. A real skin points these at
+     a face its brand serves itself. */
   --f-sans: var(--f-mono);
 
   /* Corner rounding. Box corners go square, which with the monospaced face
@@ -51,7 +51,7 @@
 
      --r-full is deliberately left alone. It is not a style value: Radio and
      the Switch track use it to stay circular, and a square radio reads as a
-     checkbox. Shape is carrying meaning there, so a brand should not flatten
+     checkbox. Shape is carrying meaning there, so a skin should not flatten
      it along with the rest. */
   --r-sm: 0;
   --r-button: 0;

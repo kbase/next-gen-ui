@@ -41,11 +41,11 @@ const CVD_FILTERS: Record<CvdMode, string> = {
 };
 // A portal stamps this once in its own HTML and never changes it. The
 // showcase toggles it so both palettes can be seen in one sitting.
-const BRAND_ATTR = 'data-brand';
-function applyBrand(on: boolean) {
+const SKIN_ATTR = 'data-skin';
+function applySkin(on: boolean) {
   const root = document.documentElement;
-  if (on) root.setAttribute(BRAND_ATTR, 'example');
-  else root.removeAttribute(BRAND_ATTR);
+  if (on) root.setAttribute(SKIN_ATTR, 'example');
+  else root.removeAttribute(SKIN_ATTR);
 }
 
 function applyCvdFilter(mode: CvdMode) {
@@ -230,7 +230,7 @@ function ThemeToggle() {
 
 export function Showcase() {
   const [cvd, setCvd] = useState<CvdMode>('off');
-  const [brand, setBrand] = useState(false);
+  const [skin, setSkin] = useState(false);
   const toasts = useToastManager();
 
   return (
@@ -269,14 +269,14 @@ export function Showcase() {
               <ThemeToggle />
               <button
                 className={s.brandToggle}
-                aria-pressed={brand}
+                aria-pressed={skin}
                 onClick={() => {
-                  setBrand(!brand);
-                  applyBrand(!brand);
+                  setSkin(!skin);
+                  applySkin(!skin);
                 }}
                 title="Swap in a fictional partner's colors. Every token it sets is one tokens.css would otherwise derive."
               >
-                {brand ? 'KBase palette' : 'example brand'}
+                {skin ? 'KBase palette' : 'example brand'}
               </button>
               <button
                 className={s.cvdToggle}

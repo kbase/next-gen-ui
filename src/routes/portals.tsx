@@ -369,6 +369,36 @@ const DECLARED: readonly Portal[] = [
     updated: '2026-08-24',
   },
   {
+    slug: 'asma',
+    title: 'PROTECT ASMA',
+    blurb:
+      'The PROTECT airway-microbiome lakehouse as a guided walk — cystic-fibrosis patient cohorts, community composition by DNA and by activity, and a workbench that designs and scores anti-pathogen commensal consortia.',
+    section: 'project',
+    facets: [FACETS.genomes, FACETS.ecology],
+    topics: ['Airway microbiome', 'Cystic fibrosis', 'Consortium design'],
+    // `asma sources` is still a stub, so these are the rows docs/DATA_SOURCES.md
+    // marks live in-app, cross-checked against the cache paths in config.py.
+    sources: [
+      'PROTECT (UC Berkeley)',
+      'GenomeDepot',
+      'KBase KE-pangenome',
+      'GTDB',
+      'BacDive',
+      'NMDC',
+      'MicrobeAtlas',
+      'curatedMetagenomicData',
+      'Goddard CF airway cohort',
+      'Pathogen catalog (ABSA · PHAC · WHO · CDC · LPSN)',
+      'KEGG BRITE',
+      'ModelSEED Biochemistry',
+    ],
+    // Nothing serves /portals/asma/ yet, so this is the newest tag. release.yaml
+    // already names v0.2.0, which is not tagged.
+    version: 'v0.1.0-review',
+    updated: '2026-09-02',
+    undeployed: true,
+  },
+  {
     // Repo and CLI are `ideas-portal`; the deployed path is /portals/ideas/.
     slug: 'ideas',
     title: 'IDEAS Portal',

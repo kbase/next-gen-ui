@@ -1,7 +1,9 @@
 .input {
   font-family: var(--f-sans);
-  font-size: var(--fs-4);
-  padding: var(--s-2) var(--s-4);
+  /* Height, side padding and type come from the density tier (tokens.css). */
+  min-height: var(--ctl-h);
+  padding: 0 var(--ctl-px);
+  font-size: var(--ctl-fs);
   border: 1px solid var(--c-border2);
   border-radius: var(--r-md);
   background: var(--c-surface);
@@ -30,10 +32,9 @@
   }
 }
 
+/* Round chrome only; a pill defaults to size="sm" in Input.tsx. */
 .pill {
   border-radius: var(--r-full);
-  font-size: var(--fs-3);
-  padding: var(--s-1) var(--s-3);
   border-color: var(--c-border);
   background: var(--c-bg);
 }

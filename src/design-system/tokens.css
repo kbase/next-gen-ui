@@ -391,6 +391,60 @@
   /* layout. The page column is the portals gallery's (src/routes/portals.module.css), so a
      portal opened from the gallery keeps the same edges. */
   --w-page: 1180px;
+
+  /* density. Controls and rows read the unsuffixed role tokens below (--ctl-h, --row-py, …),
+     never --s-N directly, so that one attribute can resize all of them together. Each role is
+     stated per tier here; DENSITY SELECTION at the end of this file picks a tier for a subtree
+     (data-density) or one element (data-size). Only these roles scale: checkbox, switch, avatar
+     and icon sizes are fixed at every density.
+
+     md is the page default, sm is a data-dense screen (Blueprint's default sizes),
+     xs is a control that sits inside a row. */
+  --ctl-h-md: 34px; /* button, input, select trigger, tab, search bar */
+  --ctl-h-sm: 30px;
+  --ctl-h-xs: 24px;
+  --ctl-px-md: var(--s-4); /* horizontal padding of a text control */
+  --ctl-px-sm: var(--s-3);
+  --ctl-px-xs: var(--s-2);
+  --ctl-fs-md: var(--fs-4); /* text in a control, a menu item, a table cell */
+  --ctl-fs-sm: var(--fs-3);
+  --ctl-fs-xs: var(--fs-2);
+  --btn-px-md: var(--s-6); /* buttons sit wider and a size larger than text controls */
+  --btn-px-sm: var(--s-4);
+  --btn-px-xs: var(--s-3);
+  --btn-fs-md: var(--fs-5);
+  --btn-fs-sm: var(--fs-3);
+  --btn-fs-xs: var(--fs-2);
+  --row-py-md: var(--s-3); /* table cell, tab */
+  --row-py-sm: var(--s-1);
+  --row-py-xs: 2px;
+  --row-px-md: var(--s-5);
+  --row-px-sm: var(--s-3);
+  --row-px-xs: var(--s-2);
+  --item-py-md: var(--s-2); /* menu, select and autocomplete item */
+  --item-py-sm: var(--s-1);
+  --item-py-xs: 2px;
+  --th-fs-md: var(--fs-3); /* table header: a step below the cell */
+  --th-fs-sm: var(--fs-2);
+  --th-fs-xs: var(--fs-1);
+  --gap-md: var(--s-3); /* between controls in a toolbar or form row */
+  --gap-sm: var(--s-2);
+  --gap-xs: var(--s-1);
+  --gap-tight-md: var(--s-2); /* within a control: icon to label, buttons in a group */
+  --gap-tight-sm: var(--s-1);
+  --gap-tight-xs: var(--s-1);
+
+  --ctl-h: var(--ctl-h-md);
+  --ctl-px: var(--ctl-px-md);
+  --ctl-fs: var(--ctl-fs-md);
+  --btn-px: var(--btn-px-md);
+  --btn-fs: var(--btn-fs-md);
+  --row-py: var(--row-py-md);
+  --row-px: var(--row-px-md);
+  --item-py: var(--item-py-md);
+  --th-fs: var(--th-fs-md);
+  --gap: var(--gap-md);
+  --gap-tight: var(--gap-tight-md);
 }
 
 /* ================================================================
@@ -410,4 +464,61 @@
 
 :root[data-theme='dark'] {
   color-scheme: dark;
+}
+
+/* ================================================================
+   DENSITY SELECTION
+   Custom properties inherit, so an attribute on any element sets the tier
+   for everything inside it: data-density on <html> or an app root for a
+   whole screen, data-size (what a component's `size` prop renders) on one
+   control. An element's own attribute outranks an inherited one, so a
+   size="md" table stays md inside a compact region, and
+   data-density="comfortable" restores the default inside one.
+
+   Popups are portaled to <body>, so a data-density set on a mid-page
+   region does not reach them; put it on <html> or <body>, or pass `size`
+   to the popup part as well.
+   ================================================================ */
+[data-density='comfortable'],
+[data-size='md'] {
+  --ctl-h: var(--ctl-h-md);
+  --ctl-px: var(--ctl-px-md);
+  --ctl-fs: var(--ctl-fs-md);
+  --btn-px: var(--btn-px-md);
+  --btn-fs: var(--btn-fs-md);
+  --row-py: var(--row-py-md);
+  --row-px: var(--row-px-md);
+  --item-py: var(--item-py-md);
+  --th-fs: var(--th-fs-md);
+  --gap: var(--gap-md);
+  --gap-tight: var(--gap-tight-md);
+}
+
+[data-density='compact'],
+[data-size='sm'] {
+  --ctl-h: var(--ctl-h-sm);
+  --ctl-px: var(--ctl-px-sm);
+  --ctl-fs: var(--ctl-fs-sm);
+  --btn-px: var(--btn-px-sm);
+  --btn-fs: var(--btn-fs-sm);
+  --row-py: var(--row-py-sm);
+  --row-px: var(--row-px-sm);
+  --item-py: var(--item-py-sm);
+  --th-fs: var(--th-fs-sm);
+  --gap: var(--gap-sm);
+  --gap-tight: var(--gap-tight-sm);
+}
+
+[data-size='xs'] {
+  --ctl-h: var(--ctl-h-xs);
+  --ctl-px: var(--ctl-px-xs);
+  --ctl-fs: var(--ctl-fs-xs);
+  --btn-px: var(--btn-px-xs);
+  --btn-fs: var(--btn-fs-xs);
+  --row-py: var(--row-py-xs);
+  --row-px: var(--row-px-xs);
+  --item-py: var(--item-py-xs);
+  --th-fs: var(--th-fs-xs);
+  --gap: var(--gap-xs);
+  --gap-tight: var(--gap-tight-xs);
 }

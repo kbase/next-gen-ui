@@ -12,20 +12,6 @@
   border: none;
   border-radius: 0;
   background: none;
-
-  /* One step down the type scale and the spacing scale from the standard
-     table, rather than the same values restated. */
-  .table {
-    font-size: var(--fs-3);
-  }
-  .th {
-    padding: var(--s-1) var(--s-3);
-    font-size: var(--fs-2);
-  }
-  .td {
-    padding: var(--s-1) var(--s-3);
-    font-size: var(--fs-3);
-  }
 }
 
 .table {
@@ -35,7 +21,8 @@
      instead of squeezing cells into multi-line wraps. */
   min-width: max-content;
   border-collapse: collapse;
-  font-size: var(--fs-4);
+  /* Cell padding and type come from the density tier (tokens.css). */
+  font-size: var(--ctl-fs);
 }
 
 .thead {
@@ -43,13 +30,13 @@
 }
 
 .th {
-  font-size: var(--fs-3);
+  font-size: var(--th-fs);
   font-weight: var(--fw-bold);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--c-ink4);
   text-align: left;
-  padding: var(--s-2) var(--s-4);
+  padding: var(--row-py) var(--row-px);
   border-bottom: 1px solid var(--c-border);
   white-space: nowrap;
 }
@@ -98,7 +85,7 @@
 }
 
 .td {
-  padding: var(--s-3) var(--s-5);
+  padding: var(--row-py) var(--row-px);
   color: var(--c-ink2);
   vertical-align: middle;
 }

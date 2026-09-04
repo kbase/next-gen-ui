@@ -17,6 +17,14 @@
   align-items: center;
   white-space: nowrap;
   flex-shrink: 0;
+  /* Size comes from the density tokens (tokens.css), which the `size` prop
+     selects through data-size on this element. Variants own color/border
+     only, so a primary md and a ghost md sit identically in space; all sizes
+     share --r-button. */
+  min-height: var(--ctl-h);
+  padding: 0 var(--btn-px);
+  font-size: var(--btn-fs);
+  gap: var(--gap-tight);
 
   &:active,
   &[data-pressed] {
@@ -107,8 +115,6 @@
   }
 }
 
-/* Qualified with .btn so the padding below outranks the size classes, which
-   come later in this file. */
 .btn.link {
   background: none;
   border-color: transparent;
@@ -120,6 +126,7 @@
   /* The one variant that overrides the size box: it sits beside text rather
      than in a box of its own, so it keeps only the size's font-size and gap.
      Still inline-flex, so it will not wrap mid-label inside a paragraph. */
+  min-height: 0;
   padding: 0;
   border-width: 0;
   letter-spacing: inherit;
@@ -143,26 +150,4 @@
     background: none;
     border-color: transparent;
   }
-}
-
-/* Sizes own padding, font-size, gap. Variants own color/border only;
-   no padding overrides, so a primary md and a ghost md sit identically
-   in space. All sizes share --r-button radius for visual consistency
-   (no per-size radius drift). `link` overrides padding; see its rule. */
-.md {
-  padding: var(--s-3) var(--s-6);
-  font-size: var(--fs-5);
-  gap: var(--s-2);
-}
-
-.sm {
-  padding: var(--s-2) var(--s-4);
-  font-size: var(--fs-3);
-  gap: var(--s-1);
-}
-
-.xs {
-  padding: var(--s-1) var(--s-3);
-  font-size: var(--fs-2);
-  gap: var(--s-1);
 }

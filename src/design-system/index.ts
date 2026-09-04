@@ -1,4 +1,5 @@
 export { cx } from './util/cx';
+export type { Size } from './util/size';
 
 // Theme
 export { useTheme, themeInitScript } from './theme/useTheme';

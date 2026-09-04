@@ -299,9 +299,11 @@ export function Section07Data() {
 
       <div className={s.sub}>Compact density</div>
       <p className={s.note}>
-        Pass <code>compact</code> for smaller type, tighter padding, and no border or radius. Use
-        inside cards or panels where the standard table's frame would repeat the surrounding
-        container's.
+        Pass <code>compact</code> for no border or radius and <code>size=&quot;sm&quot;</code>{' '}
+        padding and type. Use inside cards or panels where the standard table&apos;s frame would
+        repeat the surrounding container&apos;s. <code>size</code> alone keeps the frame; a{' '}
+        <code>data-density=&quot;compact&quot;</code> ancestor sets the same tier for every table
+        and control below it.
       </p>
       <Frame padding={0}>
         <Table compact>
@@ -345,7 +347,11 @@ export function Section07Data() {
       </Frame>
       <CodeBlock
         language="tsx"
-        code={`<Table compact>...</Table>  // flat, no border/radius, for tables inside cards`}
+        code={`<Table compact>...</Table>     // flat, no border/radius, size="sm"
+<Table size="sm">...</Table>   // framed, sm padding and type
+<div data-density="compact">   // every table and control below is sm
+  <Table>...</Table>
+</div>`}
       />
 
       <div className={s.sub}>Sortable headers</div>

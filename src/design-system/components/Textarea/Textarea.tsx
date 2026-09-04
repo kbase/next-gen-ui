@@ -3,6 +3,7 @@ import { Input as BaseInput } from '@base-ui/react/input';
 import styles from './Textarea.module.scss';
 import { cx } from '../../util/cx';
 import { useSubmitMode, type SubmitOn } from '../../util/useSubmitMode';
+import type { Size } from '../../util/size';
 
 export type { SubmitOn };
 
@@ -12,8 +13,12 @@ const CSS_SIZED = typeof CSS !== 'undefined' && !!CSS.supports?.('field-sizing',
 
 /* onSubmit is omitted and redefined: a textarea never fires a native submit
    event, so the DOM prop is dead here and the name is the one consumers reach
-   for. */
-export interface TextareaProps extends Omit<BaseInput.Props, 'className' | 'render' | 'onSubmit'> {
+   for. `size` is redefined as the density tier; the native attribute is a width in
+   characters and does not apply to a textarea. */
+export interface TextareaProps extends Omit<
+  BaseInput.Props,
+  'className' | 'render' | 'onSubmit' | 'size'
+> {
   rows?: number;
   /** Grows with its content rather than scrolling, up to `maxRows`. */
   autoGrow?: boolean;
@@ -27,6 +32,8 @@ export interface TextareaProps extends Omit<BaseInput.Props, 'className' | 'rend
    * A soft keyboard has neither modifier, so it always gets `'modifier'`.
    */
   submitOn?: SubmitOn;
+  /** Density tier; unset, the enclosing `data-density` applies. */
+  size?: Size;
   className?: string;
 }
 
@@ -41,6 +48,7 @@ export function Textarea({
   onKeyDown,
   onInput,
   value,
+  size,
   className,
   style,
   ...props
@@ -113,6 +121,7 @@ export function Textarea({
     <BaseInput
       render={<textarea ref={ref} rows={rows} />}
       className={cx(styles.textarea, autoGrow && styles.autoGrow, className)}
+      data-size={size}
       // Labels the return key on a soft keyboard, and only where it sends.
       enterKeyHint={onSubmit && mode === 'enter' ? 'send' : undefined}
       value={value}

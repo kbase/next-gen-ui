@@ -1,7 +1,7 @@
 .root {
   display: flex;
   align-items: center;
-  gap: var(--s-3);
+  gap: var(--gap);
 
   &[data-orientation='vertical'] {
     flex-direction: column;
@@ -13,7 +13,7 @@
 .group {
   display: flex;
   align-items: center;
-  gap: var(--s-2);
+  gap: var(--gap-tight);
 
   &[data-orientation='vertical'] {
     flex-direction: column;

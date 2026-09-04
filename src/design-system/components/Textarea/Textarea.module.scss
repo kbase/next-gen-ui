@@ -4,8 +4,9 @@
   --textarea-border: 1px;
 
   font-family: var(--f-sans);
-  font-size: var(--fs-4);
-  padding: var(--textarea-pad-y) var(--s-4);
+  /* Side padding and type come from the density tier (tokens.css). */
+  font-size: var(--ctl-fs);
+  padding: var(--textarea-pad-y) var(--ctl-px);
   border: var(--textarea-border) solid var(--c-border2);
   border-radius: var(--r-md);
   background: var(--c-surface);

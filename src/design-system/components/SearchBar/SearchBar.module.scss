@@ -1,10 +1,12 @@
 .root {
   display: flex;
   align-items: center;
-  gap: var(--s-3);
+  /* Height, side padding, gap and type come from the density tier (tokens.css). */
+  gap: var(--gap);
+  min-height: var(--ctl-h);
   border: 1px solid var(--c-border2);
   border-radius: var(--r-full);
-  padding: var(--s-2) var(--s-4);
+  padding: 0 var(--ctl-px);
   background: var(--c-surface);
   transition: border-color var(--t-base);
   min-width: 180px;
@@ -27,7 +29,7 @@
 .input {
   all: unset;
   font-family: var(--f-sans);
-  font-size: var(--fs-4);
+  font-size: var(--ctl-fs);
   color: var(--c-ink);
   flex: 1;
   min-width: 0;

@@ -277,7 +277,7 @@ that uses them, with no stylesheet holding a hardcoded value:
 |                 | `--r-full`                                 | **leave alone.** Radio and the Switch track use it to stay circular, and a square radio reads as a checkbox. Shape is carrying meaning, not style |
 | Type scale      | `--fs-1`–`--fs-11`, `--fs-hero`            | sequential, smallest to largest                                                                                                                   |
 | Weight          | `--fw-normal`, `--fw-bold`                 | two, because `fonts.css` serves two faces                                                                                                         |
-| Density         | `--s-1`–`--s-12`                           | the whole spacing scale                                                                                                                           |
+| Density         | `--s-1`–`--s-12`                           | the whole spacing scale. The per-tier control tokens (`--ctl-h-md`, `--row-py-sm`, … in `tokens.css`) are built on it and can be re-pointed too   |
 | Page column     | `--w-page`                                 | the width a portal centres its content in. The default matches the portals gallery, so a portal opened from the gallery keeps the same edges      |
 | Motion          | `--t-fast`, `--t-base`, `--t-slow`         |                                                                                                                                                   |
 
@@ -292,6 +292,48 @@ brand serves a family with real intermediate weights adds the faces to its own
 stylesheet and a token to match.
 
 `example-brand.css` sets the typeface and the box radii as well as its colors.
+
+## Density
+
+Controls and rows are sized in three tiers, `md` (the page default), `sm`
+(a data-dense screen; Blueprint's default sizes) and `xs` (a control inside a
+row). A tier is a set of custom properties — `--ctl-h`, `--ctl-px`,
+`--ctl-fs`, `--btn-px`, `--btn-fs`, `--row-py`, `--row-px`, `--item-py`,
+`--th-fs`, `--gap`, `--gap-tight` — that Button, Input, Textarea, Select,
+Autocomplete, Menu, Tabs, Toolbar, Table and SearchBar read instead of the raw
+scales. Checkbox, Switch, Avatar and icon sizes do not change with the tier.
+
+Two attributes pick a tier, and either works in static HTML, Solara or
+JupyterLab as well as in React:
+
+```html
+<!-- every control on the page is sm -->
+<html data-density="compact"></html>
+<!-- one region -->
+<section data-density="compact"></section>
+<!-- back to md inside a compact region -->
+<section data-density="comfortable"></section>
+<!-- one element -->
+<button class="kb-button--btn kb-button--primary" data-size="xs"></button>
+```
+
+In React a component's `size` prop renders `data-size` on its root:
+
+```tsx
+<div data-density="compact">
+  <Input /> {/* sm, inherited */}
+  <Button size="xs">Go</Button> {/* xs: the element's own attribute wins */}
+</div>
+```
+
+`data-density` reaches everything below it in the DOM. Select, Menu and
+Autocomplete popups are portaled to `<body>`, so a region's density does not
+reach them: set `data-density` on `<html>` or `<body>`, or pass `size` to
+the popup part (`Select.Popup`, `Menu.Popup`; Autocomplete's `size` covers
+both its input and its popup).
+
+`Table`'s `compact` prop removes the border, radius and background and
+defaults the table to `sm`; `size` overrides the tier independently.
 
 ## Layout
 

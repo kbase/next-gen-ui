@@ -392,8 +392,8 @@ const DECLARED: readonly Portal[] = [
       'KEGG BRITE',
       'ModelSEED Biochemistry',
     ],
-    // Nothing serves /portals/asma/ yet, so this is the newest tag. release.yaml
-    // already names v0.2.0, which is not tagged.
+    // The deployed portal is behind a shared-team password gate, so its header
+    // is unread and this is the newest tag. release.yaml names v0.2.0, untagged.
     version: 'v0.1.0-review',
     updated: '2026-09-02',
     undeployed: true,

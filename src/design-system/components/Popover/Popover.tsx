@@ -17,12 +17,37 @@ export const Trigger = forwardRef<HTMLButtonElement, BasePopover.Trigger.Props>(
 
 export interface PopupProps extends Omit<BasePopover.Popup.Props, 'className'> {
   className?: string;
+  /**
+   * Positions against this element instead of the Trigger — for a
+   * controlled popover whose opener is some other control (a menu item).
+   */
+  anchor?: BasePopover.Positioner.Props['anchor'];
+  side?: BasePopover.Positioner.Props['side'];
+  sideOffset?: BasePopover.Positioner.Props['sideOffset'];
+  /** A tall popup on a small anchor wants `start`, not the centered default. */
+  align?: BasePopover.Positioner.Props['align'];
+  alignOffset?: BasePopover.Positioner.Props['alignOffset'];
 }
 
-export function Popup({ className, ...props }: PopupProps) {
+export function Popup({
+  className,
+  anchor,
+  side,
+  sideOffset,
+  align,
+  alignOffset,
+  ...props
+}: PopupProps) {
   return (
     <BasePopover.Portal>
-      <BasePopover.Positioner className={styles.positioner}>
+      <BasePopover.Positioner
+        className={styles.positioner}
+        anchor={anchor}
+        side={side}
+        sideOffset={sideOffset}
+        align={align}
+        alignOffset={alignOffset}
+      >
         <BasePopover.Popup className={cx(styles.popup, className)} {...props} />
       </BasePopover.Positioner>
     </BasePopover.Portal>

@@ -19,6 +19,7 @@ CONF_OUT=/etc/nginx/conf.d/default.conf
 HTML_IN=/etc/nginx/index.html.in
 HTML_OUT=/usr/share/nginx/html/index.html
 HASH_FILE=/etc/nginx/.csp-script-hash
+REGISTRY_OUT=/etc/nginx/conf.d/plugin-registry.conf
 
 # Optional, with the same defaults the app assumed when config was baked in.
 IDP_ORIGINS="${IDP_ORIGINS:-https://orcid.org}"
@@ -60,11 +61,21 @@ render() {
 render "$AUTH_ORIGIN_CSP" "$CONF_IN" "$CONF_OUT"
 render "$AUTH_ORIGIN_META" "$HTML_IN" "$HTML_OUT"
 
+# The plugin registry is proxied under /plugin-registry/ when an upstream
+# (host:port) is given; without one the path answers an empty list and the
+# app runs on its bundled plugins.
+if [ -n "${REGISTRY_UPSTREAM:-}" ]; then
+  sed -e "s#__REGISTRY_UPSTREAM__#$(esc "$REGISTRY_UPSTREAM")#g" \
+      /etc/nginx/plugin-registry.proxy.conf.in > "$REGISTRY_OUT"
+else
+  cp /etc/nginx/plugin-registry.empty.conf "$REGISTRY_OUT"
+fi
+
 # The nginx conf must be fully substituted -- a stray __VAR__ in a CSP is a
 # broken policy. index.html may keep the two "not configured" markers above,
 # which the app reads deliberately; anything else there is a placeholder
 # someone added to a template without wiring it up here.
-conf_leftover="$(grep -oh '__[A-Z_]*__' "$CONF_OUT" || true)"
+conf_leftover="$(grep -oh '__[A-Z_]*__' "$CONF_OUT" "$REGISTRY_OUT" || true)"
 html_leftover="$(grep -oh '__[A-Z_]*__' "$HTML_OUT" \
   | grep -vE '^(__AUTH_ORIGIN__|__COOKIE_DOMAIN__)$' || true)"
 leftover="$(printf '%s\n%s' "$conf_leftover" "$html_leftover" | grep -v '^$' || true)"

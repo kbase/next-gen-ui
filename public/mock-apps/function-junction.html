@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Function Junction (mock)</title>
+    <style>
+      body { margin: 0; font-family: system-ui, sans-serif; color: #1f2a37; background: #f7f9fb; }
+      main { padding: 24px; max-width: 720px; }
+      h1 { font-size: 20px; margin: 0 0 8px; }
+      p { line-height: 1.5; }
+      input { font: inherit; padding: 6px 10px; width: 100%; box-sizing: border-box; }
+      .kept { margin-top: 16px; font-size: 13px; color: #55657a; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Function Junction</h1>
+      <p>Per-protein evidence report card. This page stands in for the app; it is served by the host and runs in an iframe.</p>
+      <section id="action" hidden>
+        <h2 style="font-size: 14px; margin: 0 0 4px">Action received</h2>
+        <table id="rows" style="font-size: 13px; border-collapse: collapse"></table>
+      </section>
+      <p id="noaction" class="kept">Opened with no action.</p>
+      <label>Type here, then move this tab to another group: <input id="keep" placeholder="state that should survive a move" /></label>
+      <p class="kept">Loaded at <time id="t"></time>. If the time changes after a move, the frame reloaded.</p>
+    </main>
+    <script>
+      document.getElementById('t').textContent = new Date().toLocaleTimeString();
+      // The host puts an offer's action in the frame's query; showing it
+      // is how this mock proves the action arrived.
+      const action = [...new URLSearchParams(location.search)];
+      if (action.length) {
+        document.getElementById('noaction').hidden = true;
+        document.getElementById('action').hidden = false;
+        document.getElementById('rows').innerHTML = action
+          .map(([k, v]) => `<tr><td style="padding-right:12px;color:#55657a">${k}</td><td><code>${v}</code></td></tr>`)
+          .join('');
+      }
+    </script>
+  </body>
+</html>

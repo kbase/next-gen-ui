@@ -27,6 +27,7 @@ FROM nginxinc/nginx-unprivileged:${NGINX_VERSION} AS runtime
 # `__VAR__` placeholders rather than $VAR so substitution can't collide with
 # nginx's own $-prefixed variables.
 COPY nginx.conf /etc/nginx/default.conf.in
+COPY docker/plugin-registry.proxy.conf.in docker/plugin-registry.empty.conf /etc/nginx/
 COPY --from=build /app/dist/index.html /etc/nginx/index.html.in
 # Hash of the inlined theme-init script, emitted by vite.config.ts. A
 # property of the bundle, so it is baked rather than passed in.

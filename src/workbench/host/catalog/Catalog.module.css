@@ -1,0 +1,63 @@
+.root {
+  /* A page now, not a sidebar block: room to breathe, and a measure that
+     keeps the rows readable however wide the pane is. */
+  padding: var(--s-7);
+  display: grid;
+  gap: var(--s-7);
+  align-content: start;
+  max-width: 720px;
+}
+
+.section {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--s-4);
+}
+
+/* icon | title + description | pin control. The icon spans both rows so
+   the description hangs under the title, not under the glyph. */
+.row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  column-gap: var(--s-3);
+  row-gap: var(--s-1);
+  align-items: center;
+}
+
+.rowIcon {
+  display: inline-flex;
+  color: var(--c-ink3);
+  grid-row: 1 / span 2;
+  align-self: start;
+  margin-top: 3px;
+}
+
+.rowTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.rowDesc {
+  margin: 0;
+  grid-column: 2 / -1;
+}
+
+.rowControls {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.assistantRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}

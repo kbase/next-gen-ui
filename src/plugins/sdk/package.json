@@ -1,0 +1,11 @@
+{
+  "name": "@kbase/plugin-sdk",
+  "version": "0.1.0",
+  "description": "What a next-gen-ui workbench plugin imports: the manifest schema, the panel hooks and the federation preset.",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./index.ts",
+    "./vite": "./pluginFederation.ts"
+  }
+}

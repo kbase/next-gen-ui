@@ -22,6 +22,25 @@
   }
 }
 
+/* With a footer the field spans the full width and the controls share a
+   second row: footer left, Send right. The class is doubled to outrank
+   Frame's padding: two rows need more air than the one-line composer. */
+.withFooter.withFooter {
+  grid-template-rows: auto auto;
+  row-gap: var(--s-3);
+  padding: var(--s-3) var(--s-5);
+
+  .field {
+    grid-column: 1 / -1;
+  }
+}
+
+.footerStart {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
 /* The class is doubled to outrank Frame's own. */
 .flush.flush {
   border: none;
@@ -67,8 +86,10 @@
   color: var(--c-ink4);
 }
 
-/* The root has no padding of its own, so the hint takes the surface's. */
-.flush + .hint {
+/* The root has no padding of its own, so the hint takes the surface's.
+   General sibling: the sr-only status span sits between the surface and
+   the hint. */
+.flush ~ .hint {
   padding: 0 var(--s-4) var(--s-3);
 }
 

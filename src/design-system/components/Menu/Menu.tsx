@@ -1,6 +1,7 @@
 import { forwardRef } from 'react';
 import { Menu as BaseMenu } from '@base-ui/react/menu';
 import styles from './Menu.module.scss';
+import { Check } from '@phosphor-icons/react';
 import { Button } from '../Button';
 import { cx } from '../../util/cx';
 
@@ -39,4 +40,21 @@ export function Item({ className, ...props }: ItemProps) {
 
 export function Separator() {
   return <div className={styles.separator} role="separator" />;
+}
+
+export interface CheckboxItemProps extends Omit<BaseMenu.CheckboxItem.Props, 'className'> {
+  className?: string;
+}
+
+// A toggling item. The check mark occupies its slot even when unchecked so
+// labels in one menu stay aligned.
+export function CheckboxItem({ className, children, ...props }: CheckboxItemProps) {
+  return (
+    <BaseMenu.CheckboxItem className={cx(styles.item, className)} {...props}>
+      <BaseMenu.CheckboxItemIndicator className={styles.indicator} keepMounted>
+        <Check size={14} weight="bold" aria-hidden="true" />
+      </BaseMenu.CheckboxItemIndicator>
+      {children}
+    </BaseMenu.CheckboxItem>
+  );
 }

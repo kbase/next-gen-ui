@@ -1,0 +1,13 @@
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  align-content: flex-start;
+  gap: var(--s-1);
+  padding: var(--s-2);
+}
+
+.empty {
+  margin: 0;
+  padding: var(--s-3) var(--s-4);
+}

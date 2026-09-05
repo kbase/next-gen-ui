@@ -6,7 +6,14 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['dist', 'dist-design-system', 'build', 'coverage', 'src/routeTree.gen.ts'],
+    ignores: [
+      'dist',
+      'dist-design-system',
+      'dist-plugin-sdk',
+      'build',
+      'coverage',
+      'src/routeTree.gen.ts',
+    ],
   },
   {
     files: ['**/*.{ts,tsx}'],
@@ -32,6 +39,33 @@ export default tseslint.config(
     files: ['src/routes/**/*.{ts,tsx}'],
     rules: {
       'react-refresh/only-export-components': 'off',
+    },
+  },
+  {
+    // A plugin module exports components and its definePlugin() default
+    // together on purpose: that object is what the host loads. HMR for
+    // plugin code goes through the panel, not fast refresh.
+    files: ['src/plugins/local/**/plugin.tsx'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
+  {
+    // The workbench's layout model and command registry are plain TypeScript
+    // so they can be tested without a DOM and read without React knowledge.
+    files: ['src/workbench/core/**/*.ts', 'src/workbench/commands/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['react', 'react-dom', 'react/*', 'react-dom/*', '@tanstack/*', '@kbase/*'],
+              message: 'src/workbench/core and src/workbench/commands stay framework-free.',
+            },
+          ],
+        },
+      ],
     },
   },
   {

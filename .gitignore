@@ -3,6 +3,7 @@ dist
 __pycache__
 .pytest_cache
 dist-design-system
+dist-plugin-sdk
 dist-python
 build
 coverage
@@ -30,3 +31,4 @@ npm-debug.log*
 # Emitted by the theme-init plugin during build; consumed by the
 # Dockerfile conf stage to fill script-src in the CSP.
 .csp-script-hash
+.claude/worktrees/

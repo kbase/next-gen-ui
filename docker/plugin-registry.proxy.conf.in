@@ -1,0 +1,7 @@
+# Rendered by docker-entrypoint.d/05-render-config.sh when REGISTRY_UPSTREAM is set.
+location /plugin-registry/ {
+  proxy_pass http://__REGISTRY_UPSTREAM__/;
+  proxy_set_header Host $host;
+  proxy_set_header X-Forwarded-Proto $scheme;
+  add_header Cache-Control "no-cache" always;
+}

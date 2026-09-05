@@ -9,6 +9,7 @@ import {
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import type { QueryClient } from '@tanstack/react-query';
+import type { WorkbenchServices } from '../workbench/react';
 import { Alert, Avatar, Button, Frame, Loader, NavIcon, Tooltip } from '@kbase/design-system';
 import { MapTrifold } from '@phosphor-icons/react';
 
@@ -24,29 +25,42 @@ import {
 declare module '@tanstack/react-router' {
   interface StaticDataRouteOption {
     title?: string;
+    // 'workbench' routes paint the whole viewport themselves.
+    chrome?: 'workbench';
   }
 }
 
 export interface RouterContext {
   queryClient: QueryClient;
+  workbench: WorkbenchServices;
 }
 
 // The design system is documentation, so it is readable without an account.
 // /portals is the public front door: a gallery of published portals that
-// anyone can browse before they have a KBase identity.
+// anyone can browse before they have a KBase identity. The workbench is a
+// prototype running entirely on mocked plugins, so it is browsable without
+// an account until real plugins carry user data.
 const PUBLIC_ROUTES: ReadonlyArray<string> = [
   '/login',
   '/login/continue',
   '/design-system',
   '/portals',
+  '/workbench',
 ];
+
+// Prefix-matched: plugin deep links (/p/<pluginId>/…) open documents in the
+// workbench shell, so they share its visibility.
+const PUBLIC_PREFIXES: ReadonlyArray<string> = ['/p/'];
 
 function isPublic(pathname: string): boolean {
   // Trailing slashes reach the gate verbatim -- a pasted `/portals/`, or a
   // browser replaying a cached 301 from an older build. Exact matching would
   // send those to /login even though the route is public.
   const normalized = pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname;
-  return PUBLIC_ROUTES.includes(normalized);
+  return (
+    PUBLIC_ROUTES.includes(normalized) ||
+    PUBLIC_PREFIXES.some((prefix) => normalized.startsWith(prefix))
+  );
 }
 
 export const Route = createRootRouteWithContext<RouterContext>()({
@@ -147,11 +161,20 @@ function RootLayout() {
     select: (s) => ({ pathname: s.location.pathname, matches: s.matches }),
   });
   const isAuthLayout = isPublic(pathname);
+  const ownChrome = matches.some((m) => m.staticData?.chrome === 'workbench');
 
   return (
     <>
-      {isAuthLayout ? <AuthLayout /> : <AppLayout pathname={pathname} matches={matches} />}
-      {import.meta.env.DEV && (
+      {ownChrome ? (
+        <Outlet />
+      ) : isAuthLayout ? (
+        <AuthLayout />
+      ) : (
+        <AppLayout pathname={pathname} matches={matches} />
+      )}
+      {/* Opt-in: the floating badges cover real UI. VITE_DEVTOOLS=true in
+          .env.development.local brings them back. */}
+      {import.meta.env.DEV && import.meta.env.VITE_DEVTOOLS === 'true' && (
         <>
           {/* Default bottom-left collides with the sidebar avatar; top-right is empty. */}
           <TanStackRouterDevtools position="top-right" />

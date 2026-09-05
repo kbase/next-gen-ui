@@ -16,11 +16,12 @@
   color: var(--c-ink4);
   transition: color var(--t-fast);
 
+  /* No weight change: bold widens the label and shifts the whole strip
+     on every selection. Color and underline carry the state. */
   &[data-selected],
   &[data-active] {
     color: var(--ct-primary);
     border-bottom-color: var(--c-primary);
-    font-weight: var(--fw-bold);
   }
 
   &:hover:not([data-selected]):not([data-active]) {
@@ -35,4 +36,20 @@
 
 .panel {
   padding: var(--s-5) 0;
+}
+
+/* Opt-in for dense strips of same-shaped tabs (document tabs): an inset
+   hairline between neighbours. Pseudo-element, so widths never shift. */
+.list.dividers .tab {
+  position: relative;
+}
+
+.list.dividers .tab + .tab::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 28%;
+  bottom: 28%;
+  width: 1px;
+  background: var(--c-border);
 }

@@ -189,8 +189,8 @@ const DECLARED: readonly Portal[] = [
       'NMDC',
       'SPIRE / GBIF',
     ],
-    version: 'v0.2.0',
-    updated: '2026-08-21',
+    version: 'v0.3.0',
+    updated: '2026-08-31',
   },
   {
     slug: 'genknown',
@@ -216,8 +216,9 @@ const DECLARED: readonly Portal[] = [
       'NMDC',
       'GOLD',
     ],
-    version: 'v0.1.3',
-    updated: '2026-08-21',
+    // The deployed portal prints no version, so this is the newest tag.
+    version: 'v0.1.7',
+    updated: '2026-09-07',
   },
   {
     slug: 'fungal-jungle',
@@ -227,29 +228,31 @@ const DECLARED: readonly Portal[] = [
     section: 'kbase',
     facets: [FACETS.genomes, FACETS.ecology, FACETS.proteins],
     topics: ['Fungi', 'CAZymes', 'Structure'],
+    // src/fungal_jungle/sources.py
     sources: [
-      'Ensembl Fungi',
       'JGI MycoCosm',
+      'Ensembl Fungi',
+      'GBIF',
+      'CAZy',
+      'dbCAN',
+      'MEROPS',
+      'UniProt',
+      'InterPro',
+      'AlphaFold DB',
+      'FUNGuild',
+      'MIBiG',
+      'antiSMASH-DB',
+      'WorldClim v2',
+      'SoilGrids',
+      'Fungal Fitness Browser (RB-TnSeq)',
+      'Yeast HIP-HOP chemical genomics',
       'SGD',
       'PomBase',
       'CGD',
       'NCBI Datasets / Taxonomy',
-      'GBIF backbone',
-      'CAZy',
-      'dbCAN',
-      'MEROPS',
-      'TCDB',
-      'InterPro',
-      'MIBiG',
-      'antiSMASH-DB',
-      'FunGuild',
-      'AlphaFold DB',
-      'UniProt',
-      'WorldClim v2',
-      'SoilGrids',
     ],
-    version: 'v0.6.0',
-    updated: '2026-08-21',
+    version: 'v0.7.5',
+    updated: '2026-09-01',
   },
   {
     slug: 'plant-terra',
@@ -275,8 +278,8 @@ const DECLARED: readonly Portal[] = [
       'SSURGO',
       'GBIF',
     ],
-    version: 'v0.2.2',
-    updated: '2026-08-25',
+    version: 'v0.2.3',
+    updated: '2026-08-29',
   },
   {
     slug: 'diaspora',
@@ -286,23 +289,33 @@ const DECLARED: readonly Portal[] = [
     section: 'kbase',
     facets: [FACETS.ecology, FACETS.environment],
     topics: ['Metagenomics', 'Biogeography', 'Pangenomes'],
+    // src/diaspora/attribution.py
     sources: [
       'NMDC',
-      'NEON',
       'EMP',
-      'GROWdb (USGS)',
-      'PlanetMicrobe',
-      'agmicrobiome',
+      'Tara Oceans',
       'MGnify',
       'SPIRE',
-      'SMAG',
       'JGI-GEM',
-      'Tara Oceans',
       'Microbe Atlas',
-      'KBase KE-pangenome',
+      'SMAG',
+      'GROW (USGS)',
+      'PlanetMicrobe',
+      'agmicrobiome',
+      'NEON (via NMDC)',
+      'GTDB',
+      'eggNOG',
+      'KEGG',
+      'NCBI Taxonomy / BioSample / SRA',
+      'ENVO',
+      'Microbial trait tables (Madin · BactoTraits · metaTraits · FAPROTAX)',
+      'EarthEnv',
+      'CHELSA',
+      'Copernicus GLO-30 DEM',
+      'Google Earth Engine rasters (ERA5 · NDVI/EVI · soil)',
     ],
-    version: 'v0.2.0',
-    updated: '2026-08-21',
+    version: 'v0.4.1',
+    updated: '2026-09-07',
   },
   {
     slug: 'enigma-strata',
@@ -323,8 +336,10 @@ const DECLARED: readonly Portal[] = [
       'Web of Microbes',
       'NOAA GHCN-Daily',
     ],
-    version: 'v0.4.0',
-    updated: '2026-08-21',
+    // The deployed portal sits behind a team-password gate (2026-09), so its
+    // printed version is unreadable from outside; this is the newest tag.
+    version: 'v0.5.0',
+    updated: '2026-08-31',
   },
   {
     slug: 'pmi-understory',
@@ -351,9 +366,10 @@ const DECLARED: readonly Portal[] = [
       'GapMind',
       'NCBI Taxonomy / Datasets',
     ],
-    // The deployed portal prints no version, so this is the newest tag.
-    version: 'v0.2.2',
-    updated: '2026-08-26',
+    // The deployed portal sits behind a team-password gate (2026-09), so its
+    // printed version is unreadable from outside; this is the newest tag.
+    version: 'v0.3.2',
+    updated: '2026-09-01',
   },
   {
     slug: 'phagecast',
@@ -365,8 +381,10 @@ const DECLARED: readonly Portal[] = [
     topics: ['Phage', 'Host range', 'Receptors'],
     // No sources registry yet; these are from the README and docs/STORAGE.md.
     sources: ['Phage Foundry (DOE BER)', 'GenomeDepot'],
-    version: 'v0.46.0',
-    updated: '2026-08-24',
+    // The deployed portal sits behind a team-password gate (2026-09), so its
+    // printed version is unreadable from outside; this is the newest tag.
+    version: 'v0.48.0',
+    updated: '2026-09-04',
   },
   {
     slug: 'asma',
@@ -392,10 +410,10 @@ const DECLARED: readonly Portal[] = [
       'KEGG BRITE',
       'ModelSEED Biochemistry',
     ],
-    // The deployed portal prints no version, in its header or its footer, so
-    // this is the newest tag. release.yaml names v0.2.0, which is not tagged.
-    version: 'v0.1.0-review',
-    updated: '2026-09-02',
+    // The deployed portal sits behind a team-password gate (2026-09), so its
+    // printed version is unreadable from outside; this is the newest tag.
+    version: 'v0.3.0',
+    updated: '2026-09-07',
   },
   {
     // Repo and CLI are `ideas-portal`; the deployed path is /portals/ideas/.
@@ -410,8 +428,8 @@ const DECLARED: readonly Portal[] = [
     sources: ['IDEAS program (Argonne)', 'PubChem', 'UniProt', 'RCSB PDB'],
     // The deployed portal prints no app version (the "v1" it shows is the
     // dataset's), so this is the newest tag.
-    version: 'v0.1.4',
-    updated: '2026-08-25',
+    version: 'v0.1.7',
+    updated: '2026-09-01',
   },
 ];
 

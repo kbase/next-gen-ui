@@ -1,0 +1,72 @@
+/* Appearance comes from Button's outline variant. This reshapes it into a 30px
+   pill so the icon form is a circle, level with NavIcon and the sm buttons,
+   and the words, when shown, sit in the same pill. Button.module.scss is
+   imported first, in the bundle and in components.css, so the radius here
+   wins at equal specificity. */
+.pill {
+  height: 30px;
+  /* With the 1px border, the 18px glyph's ring sits 6px inside the pill's. */
+  padding: 0 5px;
+  border-radius: var(--r-full);
+  gap: var(--s-2);
+  font-size: var(--fs-3);
+
+  /* Words need more optical inset than a circle does. */
+  &[data-labelled] {
+    padding-right: 11px;
+  }
+}
+
+/* Both glyphs are rendered and the toggle's own data-pressed picks one, so
+   the trigger reads its state from Base UI, not from React. */
+.check,
+[data-pressed] .plus {
+  display: none;
+}
+
+[data-pressed] .check {
+  display: block;
+}
+
+/* Set the z-index here, not on .popup. See --z-anchored in tokens.css. */
+.positioner {
+  z-index: var(--z-anchored);
+}
+
+/* The hover form is the pill drawn again over the trigger and extended with
+   the words, so nothing in the row changes width. The positioner's sideOffset
+   is -30, the pill's width: from the right the popup starts at the trigger's
+   left edge; flipped to the left it ends at the trigger's right edge and the
+   order reverses. Colours are the outline variant's hover state. */
+.popup {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  height: 30px;
+  padding: 0 11px 0 5px;
+  border: 1px solid var(--c-border2);
+  border-radius: var(--r-full);
+  background: var(--c-raised);
+  color: var(--c-ink2);
+  font-family: var(--f-sans);
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-3);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  cursor: pointer;
+
+  svg {
+    display: block;
+    flex-shrink: 0;
+  }
+
+  &[data-side='left'] {
+    flex-direction: row-reverse;
+    padding: 0 5px 0 11px;
+  }
+
+  /* It covers the trigger, so it shows the trigger's focus ring. */
+  &[data-instant='focus'] {
+    box-shadow: 0 0 0 3px var(--c-focus);
+  }
+}

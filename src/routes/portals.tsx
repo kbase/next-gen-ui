@@ -336,8 +336,7 @@ const DECLARED: readonly Portal[] = [
       'Web of Microbes',
       'NOAA GHCN-Daily',
     ],
-    // The deployed portal sits behind a team-password gate (2026-09), so its
-    // printed version is unreadable from outside; this is the newest tag.
+    // Behind a team-password gate (2026-09); the portal prints this inside it.
     version: 'v0.5.0',
     updated: '2026-08-31',
   },
@@ -410,8 +409,8 @@ const DECLARED: readonly Portal[] = [
       'KEGG BRITE',
       'ModelSEED Biochemistry',
     ],
-    // The deployed portal sits behind a team-password gate (2026-09), so its
-    // printed version is unreadable from outside; this is the newest tag.
+    // Behind a team-password gate (2026-09); inside it the portal prints no
+    // version, so this is the newest tag.
     version: 'v0.3.0',
     updated: '2026-09-07',
   },

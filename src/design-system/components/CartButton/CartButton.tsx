@@ -6,7 +6,8 @@ import buttonStyles from '../Button/Button.module.scss';
 import styles from './CartButton.module.scss';
 import { cx } from '../../util/cx';
 
-/** The glyph, in px. The pill is 30: 18 + 2 × (5 padding + 1 border). */
+/* The glyph and the pill, in px. 30 = 18 + 2 × (5 padding + 1 border); the
+   padding and border are set in CartButton.module.scss. */
 const GLYPH = 18;
 const PILL = 30;
 
@@ -14,13 +15,16 @@ export interface CartButtonProps extends Omit<
   BaseToggle.Props,
   'className' | 'children' | 'value' | 'render'
 > {
-  /** The button's name. Defaults to "Add to cart". It does not change when pressed. */
+  /**
+   * The accessible name of the icon form, and the labelled form's words at
+   * rest. Defaults to "Add to cart".
+   */
   label?: string;
   /** The words shown once the item is in the cart. Defaults to "In cart". */
   pressedLabel?: string;
   /**
-   * Keep the words in the pill instead of showing them on hover. For a
-   * prominent placement; in a table the icon form is the resting state.
+   * Words stay in the pill and the popup is off. For a prominent placement;
+   * the icon form is for tables and tight rows.
    */
   labelled?: boolean;
   className?: string;
@@ -28,14 +32,15 @@ export interface CartButtonProps extends Omit<
 
 /**
  * A toggle that puts an item in the cart. Base UI's Toggle owns the pressed
- * state, controlled or not, and its keyboard and `aria-pressed` handling; the
- * name stays "Add to cart" and the state says whether it is in. On hover or
- * focus the words appear beside the plus, in a tooltip that overlays the pill,
- * so a row of them never changes width. Base UI flips it to the left when
- * there is no room on the right.
+ * state, controlled or not, and its keyboard and `aria-pressed` handling. The
+ * icon form keeps one name, `label`, and `aria-pressed` carries the state; the
+ * labelled form is named by its visible words, which change with the state.
+ * On hover or focus the icon form's words appear beside the glyph, in a
+ * tooltip that overlays the pill, so a row of them never changes width. Base
+ * UI flips it to the left when there is no room on the right.
  *
- * forwardRef for the same reason as Button: Base UI reaches the trigger
- * through a ref to position the popup.
+ * forwardRef so a Base UI part can take this as its `render` element on
+ * React 18; see Button.
  */
 export const CartButton = forwardRef<HTMLButtonElement, CartButtonProps>(function CartButton(
   {
@@ -101,6 +106,7 @@ export const CartButton = forwardRef<HTMLButtonElement, CartButtonProps>(functio
           <BaseTooltip.Popup
             className={styles.popup}
             aria-hidden
+            data-pressed={isPressed || undefined}
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => trigger.current?.click()}
           >

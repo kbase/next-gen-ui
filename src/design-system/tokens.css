@@ -40,16 +40,16 @@
      skin wanting a different ground lightness sets these outright. */
   --c-bg: light-dark(
     oklch(from var(--c-neutral) 0.9624 calc(c * 0.343) h),
-    oklch(from var(--c-neutral) 0.193 calc(c * 0.597) h)
+    oklch(from var(--c-neutral) 0.16 calc(c * 0.597) h)
   );
   --c-raised: light-dark(
     oklch(from var(--c-neutral) 0.9845 calc(c * 0.145) h),
-    oklch(from var(--c-neutral) 0.2534 calc(c * 0.949) h)
+    oklch(from var(--c-neutral) 0.26 calc(c * 0.949) h)
   );
   /* Light surface is white: chroma 0 discards the base's, by design. */
   --c-surface: light-dark(
     oklch(from var(--c-neutral) 1 0 h),
-    oklch(from var(--c-neutral) 0.2237 calc(c * 0.578) h)
+    oklch(from var(--c-neutral) 0.215 calc(c * 0.578) h)
   );
   --c-ink: light-dark(
     oklch(from var(--c-neutral) 0.207 calc(c * 0.415) h),

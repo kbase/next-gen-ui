@@ -6,8 +6,9 @@ import buttonStyles from '../Button/Button.module.scss';
 import styles from './CartButton.module.scss';
 import { cx } from '../../util/cx';
 
-/* The glyph and the pill, in px. 30 = 18 + 2 × (5 padding + 1 border); the
-   padding and border are set in CartButton.module.scss. */
+/* The glyph and the pill, in px. The pill is the sm control tier, --ctl-h-sm
+   in tokens.css, 30 = 18 + 2 × (5 padding + 1 border); the padding and border
+   are set in CartButton.module.scss. */
 const GLYPH = 18;
 const PILL = 30;
 
@@ -84,6 +85,7 @@ export const CartButton = forwardRef<HTMLButtonElement, CartButtonProps>(functio
             }}
             aria-label={labelled ? undefined : label}
             data-labelled={labelled || undefined}
+            data-size="sm"
             className={cx(buttonStyles.btn, buttonStyles.outline, styles.pill, className)}
             {...props}
           />

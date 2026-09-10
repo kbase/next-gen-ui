@@ -84,7 +84,7 @@ def test_none_can_be_the_default(resources):
 # Chromium's own numbers for the same tokens.css: each token painted as `color`, read back through
 # a 1px canvas, in a page under each colour scheme. Every token agreed within one unit per channel.
 BROWSER = {
-    ("c-bg", "light"): "#f5f2ee", ("c-bg", "dark"): "#18140f",
+    ("c-bg", "light"): "#f5f2ee", ("c-bg", "dark"): "#100c08",
     ("c-ink", "light"): "#1a1714", ("c-ink", "dark"): "#f6f3ef",
     ("bg-primary", "light"): "#e1ebf3", ("bg-primary", "dark"): "#192c3c",
     ("bgw-green", "light"): "#e4eddf", ("bgw-green", "dark"): "#293621",

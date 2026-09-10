@@ -158,4 +158,31 @@ describe('PromptInput', () => {
     expect(onSubmit).not.toHaveBeenCalled();
     expect(field()).toHaveValue('a\nb');
   });
+
+  // The slot above the field, for what travels with the message. Inside the
+  // surface rather than over it, so the composer stays one object.
+  it('puts attachments inside the surface, above the field', () => {
+    render(
+      <PromptInput
+        label="Ask"
+        value=""
+        onValueChange={() => {}}
+        onSubmit={() => {}}
+        attachments={<p data-testid="cart">2 attached</p>}
+      />,
+    );
+    const attached = screen.getByTestId('cart');
+    const field = screen.getByRole('textbox');
+    expect(attached).toBeInTheDocument();
+    // Before the field in document order, and under the same surface as it.
+    expect(attached.compareDocumentPosition(field) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(attached.closest('[class*="surface"]')).toBe(field.closest('[class*="surface"]'));
+  });
+
+  it('leaves no attachments row when none are passed', () => {
+    const { container } = render(
+      <PromptInput label="Ask" value="" onValueChange={() => {}} onSubmit={() => {}} />,
+    );
+    expect(container.querySelector('[class*="attachments"]')).toBeNull();
+  });
 });

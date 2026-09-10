@@ -7,7 +7,9 @@
 .pill {
   color: var(--ct-primary);
   border-color: var(--bo-primary);
-  height: 30px;
+  /* The sm tier, set by data-size on the trigger: 30px, level with the sm
+     buttons whatever density the region around it declares. */
+  height: var(--ctl-h);
   /* With the 1px border, the 18px glyph's ring sits 6px inside the pill's. */
   padding: 0 5px;
   border-radius: var(--r-full);
@@ -57,7 +59,8 @@
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);
-  height: 30px;
+  /* Portaled, so the tier is named rather than inherited. */
+  height: var(--ctl-h-sm);
   padding: 0 11px 0 5px;
   border: 1px solid var(--bo-primary);
   border-radius: var(--r-full);

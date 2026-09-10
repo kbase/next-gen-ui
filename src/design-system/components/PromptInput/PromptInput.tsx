@@ -5,6 +5,7 @@ import { Frame } from '../Frame';
 import { Button } from '../Button';
 import { Alert } from '../Alert';
 import { Textarea } from '../Textarea';
+import type { TextareaProps } from '../Textarea';
 import { useSubmitMode, useHardwareKeyboard, type SubmitOn } from '../../util/useSubmitMode';
 import styles from './PromptInput.module.scss';
 import { cx } from '../../util/cx';
@@ -40,10 +41,28 @@ export interface PromptInputProps {
   onStop?: () => void;
   /** Replaces the send button, in every state. */
   action?: ReactNode;
+  /**
+   * A row inside the surface, below the field and left of Send — the
+   * composer's own controls (a destination, a picker), like an email's
+   * To line.
+   */
+  footer?: ReactNode;
+  /**
+   * A row inside the surface, above the field — what is travelling with the
+   * message, as a mail client puts its attachments in the draft rather than
+   * beside it. Inside, because a bordered strip stacked above the composer
+   * reads as a second control; these are part of what Send sends.
+   */
+  attachments?: ReactNode;
   disabled?: boolean;
   maxRows?: number;
   autoFocus?: boolean;
   className?: string;
+  /**
+   * Spread onto the field, for a completion popup's combobox wiring
+   * (`role`, `aria-*`) and its key handling. The component's own props win.
+   */
+  fieldProps?: Omit<TextareaProps, 'value' | 'onValueChange' | 'onSubmit'>;
 }
 
 export function PromptInput({
@@ -60,10 +79,13 @@ export function PromptInput({
   busy,
   onStop,
   action,
+  footer,
+  attachments,
   disabled,
   maxRows = 6,
   autoFocus,
   className,
+  fieldProps,
 }: PromptInputProps) {
   const empty = !value.trim();
   const mode = useSubmitMode(submitOn);
@@ -80,8 +102,19 @@ export function PromptInput({
     <Field.Root className={cx(styles.root, className)}>
       <Field.Label className={cx(!labelVisible && styles.srOnly)}>{label}</Field.Label>
 
-      <Frame paddingY={2} paddingX={4} className={cx(styles.surface, flush && styles.flush)}>
+      <Frame
+        paddingY={2}
+        paddingX={4}
+        className={cx(
+          styles.surface,
+          footer != null && styles.withFooter,
+          attachments != null && styles.withAttachments,
+          flush && styles.flush,
+        )}
+      >
+        {attachments && <div className={styles.attachments}>{attachments}</div>}
         <Textarea
+          {...fieldProps}
           rows={1}
           autoGrow
           maxRows={maxRows}
@@ -94,6 +127,7 @@ export function PromptInput({
           autoFocus={autoFocus}
           className={styles.field}
         />
+        {footer && <div className={styles.footerStart}>{footer}</div>}
         {action ??
           (busy ? (
             <Button variant="primary" size="sm" onClick={onStop} className={styles.send}>

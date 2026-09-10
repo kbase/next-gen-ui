@@ -46,3 +46,13 @@
   background: var(--c-border);
   margin: var(--s-2) 0;
 }
+
+.indicator {
+  display: inline-flex;
+  width: 14px;
+  justify-content: center;
+
+  &[data-unchecked] {
+    visibility: hidden;
+  }
+}

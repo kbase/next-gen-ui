@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import s from './showcase.module.scss';
 import { Frame } from '../components/Frame';
+import * as Tabs from '../components/Tabs';
 import * as Tree from '../components/Tree';
 import * as Stepper from '../components/Stepper';
 import { SearchBar } from '../components/SearchBar';
@@ -107,7 +108,8 @@ export function Section12Navigation() {
       <div className={s.sNum}>12</div>
       <div className={s.sTitle}>Navigation</div>
       <p className={s.sDesc}>
-        Tree for hierarchical browsing. Stepper for multi-step flows. Both use keyboard navigation.
+        Tree for hierarchical browsing. Tabs for switching views. Stepper for multi-step flows. All
+        use keyboard navigation.
       </p>
 
       <div className={s.sub}>Tree</div>
@@ -182,6 +184,34 @@ function handleFilter(query: string) {
 
 <Tree.Root items={items} expanded={expanded} onExpandedChange={setExpanded} />`}
       />
+
+      <div className={s.sub} style={{ marginTop: 'var(--s-9)' }}>
+        Tabs
+      </div>
+      <p className={s.note}>
+        One tab treatment everywhere: the selected tab is underlined in primary. Content tabs use
+        the component; strips it cannot host (closeable, draggable window tabs like the
+        workbench&apos;s) apply <code>Tabs.tabClasses</code> to their own markup so they render
+        identically.
+      </p>
+      <div style={{ maxWidth: 420 }}>
+        <Tabs.Root defaultValue="mine">
+          <Tabs.List>
+            <Tabs.Tab value="mine">Mine</Tabs.Tab>
+            <Tabs.Tab value="shared">Shared</Tabs.Tab>
+            <Tabs.Tab value="public">Public</Tabs.Tab>
+          </Tabs.List>
+          <Tabs.Panel value="mine">
+            <span className="body">Narratives you own.</span>
+          </Tabs.Panel>
+          <Tabs.Panel value="shared">
+            <span className="body">Narratives shared with you.</span>
+          </Tabs.Panel>
+          <Tabs.Panel value="public">
+            <span className="body">Public narratives.</span>
+          </Tabs.Panel>
+        </Tabs.Root>
+      </div>
 
       <div className={s.sub} style={{ marginTop: 'var(--s-9)' }}>
         Stepper, horizontal

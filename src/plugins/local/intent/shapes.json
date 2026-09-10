@@ -1,0 +1,444 @@
+{
+  "bioregistry": "v0.14.5",
+  "shapes": [
+    {
+      "prefix": "bioproject",
+      "name": "BioProject",
+      "words": ["BioProject"],
+      "aliases": ["bioproject"],
+      "pattern": "^PRJ[DEN][A-Z]\\d+$",
+      "bare": true
+    },
+    {
+      "prefix": "biosample",
+      "name": "BioSample",
+      "words": ["BioSample", "biosamples"],
+      "aliases": ["biosample", "biosamples"],
+      "pattern": "^SAM[NED](\\w)?\\d+$",
+      "bare": true
+    },
+    {
+      "prefix": "cas",
+      "name": "Chemical Abstracts Service Registry Number",
+      "words": [
+        "Chemical Abstracts Service Registry Number",
+        "CASID",
+        "CAS_RN",
+        "SECONDARY_CAS_RN",
+        "cas_id"
+      ],
+      "aliases": ["cas", "cas_id", "cas_rn", "casid", "secondary_cas_rn"],
+      "pattern": "^\\d{1,7}\\-\\d{2}\\-\\d$",
+      "bare": true
+    },
+    {
+      "prefix": "chebi",
+      "name": "Chemical Entities of Biological Interest",
+      "words": ["Chemical Entities of Biological Interest", "CHEBI", "CHEBIID", "ChEBI"],
+      "aliases": ["chebi", "chebiid"],
+      "pattern": "^\\d+$",
+      "bare": false
+    },
+    {
+      "prefix": "doi",
+      "name": "Digital Object Identifier",
+      "words": ["Digital Object Identifier"],
+      "aliases": ["doi"],
+      "pattern": "^10.\\d{2,9}/.*$",
+      "bare": true
+    },
+    {
+      "prefix": "ec",
+      "name": "Enzyme Nomenclature",
+      "words": [
+        "Enzyme Nomenclature",
+        "EC",
+        "EC number",
+        "EC-CODE",
+        "ECCODE",
+        "EC_CODE",
+        "ec-code",
+        "eccode",
+        "intenz"
+      ],
+      "aliases": ["ec", "ec-code", "ec_code", "eccode", "intenz"],
+      "pattern": "^\\d{1,2}\\.\\d{1,3}\\.\\d{1,3}\\.(?:\\d{1,3}|-)$",
+      "bare": true
+    },
+    {
+      "prefix": "go",
+      "name": "Gene Ontology",
+      "words": ["Gene Ontology", "gobp", "gobpid", "gocc", "goccid", "gomf", "gomfid"],
+      "aliases": ["go", "gobp", "gobpid", "gocc", "goccid", "gomf", "gomfid"],
+      "pattern": "^\\d{7}$",
+      "bare": false
+    },
+    {
+      "prefix": "gold",
+      "name": "Genomes Online Database",
+      "words": ["Genomes Online Database"],
+      "aliases": ["gold"],
+      "pattern": "^G[abps]\\d{7}$",
+      "bare": true
+    },
+    {
+      "prefix": "gtdb",
+      "name": "Genome Taxonomy Database",
+      "words": ["Genome Taxonomy Database"],
+      "aliases": ["gtdb"],
+      "pattern": "^[cdfgops]__\\w+\\S+$",
+      "bare": true
+    },
+    {
+      "prefix": "gtdb.genome",
+      "name": "GTDB genome",
+      "words": ["GTDB", "genome", "assembly", "accession", "RefSeq", "GenBank"],
+      "aliases": ["gtdb.genome"],
+      "pattern": "^(?:RS|GB)_GC[AF]_\\d{9}\\.\\d+$",
+      "bare": true
+    },
+    {
+      "prefix": "img.gene",
+      "name": "Integrated Microbial Genomes Gene",
+      "words": ["Integrated Microbial Genomes Gene"],
+      "aliases": ["img.gene"],
+      "pattern": "^\\d+$",
+      "bare": false
+    },
+    {
+      "prefix": "img.taxon",
+      "name": "Integrated Microbial Genomes Taxon",
+      "words": ["Integrated Microbial Genomes Taxon"],
+      "aliases": ["img.taxon"],
+      "pattern": "^\\d+$",
+      "bare": false
+    },
+    {
+      "prefix": "insdc",
+      "name": "Nucleotide Sequence Database",
+      "words": ["Nucleotide Sequence Database"],
+      "aliases": ["insdc"],
+      "pattern": "^([A-Z]\\d{5}|[A-Z]{2}\\d{6}|[A-Z]{4,6}\\d{8,10}|[A-J][A-Z]{2}\\d{5})(\\.\\d+)?$",
+      "bare": true
+    },
+    {
+      "prefix": "insdc.gca",
+      "name": "Genome assembly database - INSDC accessions",
+      "words": ["Genome assembly database - INSDC accessions"],
+      "aliases": ["insdc.gca"],
+      "pattern": "^GCA_[0-9]{9}(\\.[0-9]+)?$",
+      "bare": true
+    },
+    {
+      "prefix": "insdc.gcf",
+      "name": "Genome assembly database - RefSeq accessions",
+      "words": ["Genome assembly database - RefSeq accessions", "insdc.gcf"],
+      "aliases": ["insdc.gcf"],
+      "pattern": "^GCF_[0-9]{9}(\\.[0-9]+)?$",
+      "bare": true
+    },
+    {
+      "prefix": "insdc.sra",
+      "name": "Sequence Read Archive",
+      "words": ["Sequence Read Archive"],
+      "aliases": ["insdc.sra"],
+      "pattern": "^[SED]R[APRSXZ]\\d+$",
+      "bare": true
+    },
+    {
+      "prefix": "interpro",
+      "name": "InterPro",
+      "words": ["InterPro", "IP", "IPR", "InterPro"],
+      "aliases": ["interpro", "ip", "ipr"],
+      "pattern": "^IPR\\d{6}$",
+      "bare": true
+    },
+    {
+      "prefix": "kegg.compound",
+      "name": "KEGG Compound",
+      "words": ["KEGG Compound", "KEGG COMPOUND", "KEGG.COMPOUND"],
+      "aliases": ["kegg.compound"],
+      "pattern": "^C\\d{5}$",
+      "bare": true
+    },
+    {
+      "prefix": "kegg.module",
+      "name": "KEGG Module",
+      "words": ["KEGG Module"],
+      "aliases": ["kegg.module"],
+      "pattern": "^M\\d{5}$",
+      "bare": true
+    },
+    {
+      "prefix": "kegg.orthology",
+      "name": "KEGG Orthology",
+      "words": ["KEGG Orthology"],
+      "aliases": ["kegg.orthology"],
+      "pattern": "^K\\d{5}$",
+      "bare": true
+    },
+    {
+      "prefix": "kegg.pathway",
+      "name": "KEGG pathway",
+      "words": ["KEGG pathway", "KEGG-path", "KEGG_PATHWAY"],
+      "aliases": ["kegg-path", "kegg.pathway", "kegg_pathway"],
+      "pattern": "^\\w{2,4}\\d{5}$",
+      "bare": false
+    },
+    {
+      "prefix": "kegg.reaction",
+      "name": "KEGG Reaction",
+      "words": ["KEGG Reaction", "KEGG_REACTION"],
+      "aliases": ["kegg.reaction", "kegg_reaction"],
+      "pattern": "^R\\d{5}$",
+      "bare": true
+    },
+    {
+      "prefix": "mesh",
+      "name": "Medical Subject Headings",
+      "words": [
+        "Medical Subject Headings",
+        "MESH",
+        "MESHA",
+        "MESHC",
+        "MESHCS",
+        "MESHD",
+        "MESHPP",
+        "MESH_DESCRIPTOR_UI",
+        "MESH_SUPPLEMENTAL_RECORD_UI",
+        "MSH",
+        "MSH2010_2010_02_22",
+        "MeSH",
+        "meshUID"
+      ],
+      "aliases": [
+        "mesh",
+        "mesh_descriptor_ui",
+        "mesh_supplemental_record_ui",
+        "mesha",
+        "meshc",
+        "meshcs",
+        "meshd",
+        "meshpp",
+        "meshuid",
+        "msh",
+        "msh2010_2010_02_22"
+      ],
+      "pattern": "^(C|D|Q)\\d+$",
+      "bare": false
+    },
+    {
+      "prefix": "ncbigene",
+      "name": "NCBI Gene",
+      "words": [
+        "NCBI Gene",
+        "EGID",
+        "EntrezGene",
+        "GeneID",
+        "NCBIGene",
+        "NCBI_GeneID",
+        "entrez",
+        "entrez gene/locuslink",
+        "nihgeneid"
+      ],
+      "aliases": ["egid", "entrez", "entrezgene", "geneid", "ncbi_geneid", "ncbigene", "nihgeneid"],
+      "pattern": "^\\d+$",
+      "bare": false
+    },
+    {
+      "prefix": "ncbitaxon",
+      "name": "NCBI Taxonomy",
+      "words": [
+        "NCBI Taxonomy",
+        "NCBI Taxonomy",
+        "NCBITaxon",
+        "NCBITaxonomyID",
+        "NCBI_Taxon_ID",
+        "NCBI_taxid",
+        "TAX",
+        "TaxonomyID",
+        "ncbiTaxUID",
+        "taxid",
+        "taxon",
+        "taxonomy",
+        "uniprot.taxonomy"
+      ],
+      "aliases": [
+        "ncbi",
+        "ncbi_taxid",
+        "ncbi_taxon_id",
+        "ncbitaxon",
+        "ncbitaxonomyid",
+        "ncbitaxuid",
+        "tax",
+        "taxid",
+        "taxon",
+        "taxonomy",
+        "taxonomyid",
+        "uniprot.taxonomy"
+      ],
+      "pattern": "^\\d+$",
+      "bare": false
+    },
+    {
+      "prefix": "nmdc",
+      "name": "National Microbiome Data Collaborative",
+      "words": ["National Microbiome Data Collaborative"],
+      "aliases": ["nmdc"],
+      "pattern": "^[a-z]{1,6}-[0-9][a-z]{0,6}[0-9]-[A-Za-z0-9]+(?:\\.[A-Za-z0-9]+)*(?:_[A-Za-z0-9_.-]+)?$",
+      "bare": false
+    },
+    {
+      "prefix": "panther.family",
+      "name": "PANTHER Family",
+      "words": ["PANTHER Family"],
+      "aliases": ["panther.family"],
+      "pattern": "^PTHR\\d{5}(\\:SF\\d{1,3})?$",
+      "bare": true
+    },
+    {
+      "prefix": "pdb",
+      "name": "PDB Structure",
+      "words": ["PDB Structure", "RCSB_PDB", "pdbe", "pdbj", "wwpdb"],
+      "aliases": ["pdb", "pdbe", "pdbj", "rcsb_pdb", "wwpdb"],
+      "pattern": "^(?=.*[A-Za-z])[0-9][A-Za-z0-9]{3}$",
+      "bare": true
+    },
+    {
+      "prefix": "pfam",
+      "name": "Pfam protein family",
+      "words": ["Pfam protein family", "PF"],
+      "aliases": ["pf", "pfam"],
+      "pattern": "^PF\\d{5}$",
+      "bare": true
+    },
+    {
+      "prefix": "pubchem.compound",
+      "name": "PubChem compound",
+      "words": [
+        "PubChem compound",
+        "CID",
+        "DSSTox_CID",
+        "PUBCHEM_CID",
+        "PubChem_Compound_CID",
+        "Pubchem",
+        "pubchem_id"
+      ],
+      "aliases": [
+        "cid",
+        "dsstox_cid",
+        "pubchem",
+        "pubchem.compound",
+        "pubchem_cid",
+        "pubchem_compound_cid",
+        "pubchem_id"
+      ],
+      "pattern": "^\\d+$",
+      "bare": false
+    },
+    {
+      "prefix": "pubmed",
+      "name": "PubMed",
+      "words": ["PubMed", "MEDLINE", "PMID", "PubMed", "PubMed ID", "pmid"],
+      "aliases": ["medline", "pmid", "pubmed"],
+      "pattern": "^\\d+$",
+      "bare": false
+    },
+    {
+      "prefix": "refseq",
+      "name": "Reference Sequence Collection",
+      "words": ["Reference Sequence Collection", "REFSEQ_PROT"],
+      "aliases": ["refseq", "refseq_prot"],
+      "pattern": "^(((AC|AP|NC|NG|NM|NP|NR|NT|NW|WP|XM|XP|XR|YP|ZP)_\\d+)|(NZ_[A-Z]{2,4}\\d+))(\\.\\d+)?$",
+      "bare": true
+    },
+    {
+      "prefix": "rfam",
+      "name": "RNA family database",
+      "words": ["RNA family database"],
+      "aliases": ["rfam"],
+      "pattern": "^RF\\d{5}$",
+      "bare": true
+    },
+    {
+      "prefix": "rhea",
+      "name": "Rhea reaction",
+      "words": ["Rhea reaction", "RHEA"],
+      "aliases": ["rhea"],
+      "pattern": "^\\d{5}$",
+      "bare": false
+    },
+    {
+      "prefix": "seed.compound",
+      "name": "SEED Compound",
+      "words": ["SEED Compound"],
+      "aliases": ["seed.compound"],
+      "pattern": "^cpd\\d+$",
+      "bare": true
+    },
+    {
+      "prefix": "seed.reaction",
+      "name": "SEED Reactions",
+      "words": ["SEED Reactions"],
+      "aliases": ["seed.reaction"],
+      "pattern": "^rxn\\d+$",
+      "bare": true
+    },
+    {
+      "prefix": "tigrfam",
+      "name": "TIGRFAMS",
+      "words": ["TIGRFAMS"],
+      "aliases": ["tigrfam"],
+      "pattern": "^TIGR\\d+$",
+      "bare": true
+    },
+    {
+      "prefix": "uniparc",
+      "name": "UniParc",
+      "words": ["UniParc"],
+      "aliases": ["uniparc"],
+      "pattern": "^UPI[A-F0-9]{10}$",
+      "bare": true
+    },
+    {
+      "prefix": "uniprot",
+      "name": "UniProt Protein",
+      "words": [
+        "UniProt Protein",
+        "SwissProt",
+        "UP",
+        "UniProt",
+        "UniProtKB",
+        "Uniprot ID",
+        "uniprot/swiss-prot"
+      ],
+      "aliases": ["swissprot", "uniprot", "uniprotkb", "up"],
+      "pattern": "^(?:[OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9](?:[A-Z][A-Z0-9]{2}[0-9]){1,2})$",
+      "bare": true
+    },
+    {
+      "prefix": "uniprot.isoform",
+      "name": "UniProt Isoform",
+      "words": ["UniProt Isoform", "UPISO"],
+      "aliases": ["uniprot.isoform", "upiso"],
+      "pattern": "^(?:[OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9](?:[A-Z][A-Z0-9]{2}[0-9]){1,2})-\\d+$",
+      "bare": true
+    },
+    {
+      "prefix": "uniref",
+      "name": "UniRef",
+      "words": ["UniRef"],
+      "aliases": ["uniref"],
+      "pattern": "^UniRef(100|90|50)_([OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2}|UPI[A-F0-9]{10})$",
+      "bare": true
+    },
+    {
+      "prefix": "upa",
+      "name": "KBase workspace object",
+      "words": ["KBase", "workspace", "UPA", "object reference", "dataset", "ref"],
+      "aliases": ["dataset", "upa", "workspace", "ws"],
+      "pattern": "^\\d+/\\d+(?:/\\d+)?$",
+      "bare": true
+    }
+  ]
+}

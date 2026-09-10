@@ -1,0 +1,206 @@
+/* Reference layout: a rail that stays put and one column of content at
+   reading measure. The panel is the scroller, so the rail is sticky against
+   the panel rather than the window. */
+
+.layout {
+  display: grid;
+  grid-template-columns: 14rem minmax(0, 1fr);
+  gap: var(--s-7);
+  align-items: start;
+  padding: var(--s-7);
+}
+
+/* Under about 60rem the rail would take a third of the column it indexes. */
+@media (max-width: 60rem) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rail {
+    display: none;
+  }
+}
+
+.rail {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  padding-block: var(--s-2);
+  font-size: var(--fs-3);
+}
+
+.railList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--s-1);
+}
+
+.railList .railList {
+  margin-block: var(--s-1) var(--s-3);
+  padding-inline-start: var(--s-3);
+  border-inline-start: 1px solid var(--c-border);
+}
+
+.railTop,
+.railItem {
+  display: block;
+  inline-size: 100%;
+  padding: var(--s-1) var(--s-2);
+  border: 0;
+  border-radius: var(--r-sm);
+  background: none;
+  text-align: start;
+  cursor: pointer;
+  color: var(--c-ink2);
+}
+
+.railTop {
+  font-weight: var(--fw-bold, 700);
+  color: var(--c-ink);
+}
+
+.railTop:hover,
+.railItem:hover {
+  background: var(--c-raised);
+  color: var(--c-ink);
+}
+
+.root {
+  display: grid;
+  gap: var(--s-8);
+  align-content: start;
+  max-inline-size: 62rem;
+}
+
+.head {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.lede,
+.para {
+  margin: 0;
+  max-inline-size: 46rem;
+}
+
+.lede {
+  color: var(--c-ink2);
+}
+
+/* The friendly account of a section, at body size. */
+.narrative {
+  margin: 0;
+  max-inline-size: 46rem;
+}
+
+/* The rules, framed and a step smaller, under the narrative and the example. */
+.explainer {
+  display: grid;
+  gap: var(--s-3);
+  max-inline-size: 46rem;
+  padding: var(--s-4) var(--s-5);
+  background: var(--c-raised);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  font-size: var(--fs-4);
+}
+
+.part {
+  display: grid;
+  gap: var(--s-6);
+  align-content: start;
+}
+
+/* One module of the contract: name, when the host reaches it, types, example,
+   constraints. The rule under the name is what separates two entries in a
+   long page; sections inside an entry are separated by space alone. */
+.entry {
+  display: grid;
+  gap: var(--s-4);
+  align-content: start;
+  padding-block-start: var(--s-4);
+  border-block-start: 1px solid var(--c-border);
+}
+
+.entryHead {
+  display: grid;
+  gap: var(--s-1);
+}
+
+.entryName {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-6);
+}
+
+.when {
+  margin: 0;
+  max-inline-size: 46rem;
+  font-size: var(--fs-3);
+  color: var(--c-ink3);
+}
+
+/* A named export inside an entry: same head as the entry, one step smaller,
+   indented so the entry's example file reads as belonging to all of them. */
+.export {
+  display: grid;
+  gap: var(--s-3);
+  padding-inline-start: var(--s-4);
+  border-inline-start: 2px solid var(--c-border);
+}
+
+.exportName {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-5);
+}
+
+.file {
+  margin: 0;
+  display: grid;
+  gap: var(--s-2);
+}
+
+.fileName {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2);
+  color: var(--c-ink3);
+}
+
+/* "The smallest plugin" under A plugin. */
+.subhead {
+  margin: var(--s-3) 0 0;
+  font-size: var(--fs-5);
+}
+
+.inline {
+  font-family: var(--font-mono);
+  font-size: var(--fs-3);
+  overflow-wrap: anywhere;
+}
+
+/* Symptom, cause, fix. A definition list rather than a table: the symptom is
+   short and the fix is a sentence, and a three-column grid would set the fix
+   in a gutter. */
+.trouble {
+  display: grid;
+  gap: var(--s-5);
+  max-inline-size: 46rem;
+}
+
+.symptom {
+  display: grid;
+  gap: var(--s-1);
+}
+
+.symptomName {
+  margin: 0;
+  font-size: var(--fs-4);
+}
+
+.symptomName code {
+  font-family: var(--font-mono);
+  font-size: var(--fs-3);
+}

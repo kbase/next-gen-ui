@@ -5,6 +5,7 @@ import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/rea
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { routeTree } from '../routeTree.gen';
+import { testWorkbench } from '../test/workbench';
 import { COOKIE_NAME, clearToken } from '../api/auth';
 import { server } from '../test/setup';
 
@@ -21,7 +22,7 @@ function mountAt(path: string) {
   });
   const router = createRouter({
     routeTree,
-    context: { queryClient },
+    context: { queryClient, workbench: testWorkbench() },
     history: createMemoryHistory({ initialEntries: [path] }),
   });
   render(
@@ -121,7 +122,7 @@ describe('root gate', () => {
     queryClient.setQueryData(['auth', 'tokenInfo'], { id: 'session-1', user: 't', mfa: 'Used' });
     const router = createRouter({
       routeTree,
-      context: { queryClient },
+      context: { queryClient, workbench: testWorkbench() },
       history: createMemoryHistory({ initialEntries: ['/'] }),
     });
     render(

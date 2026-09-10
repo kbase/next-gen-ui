@@ -12,9 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as PortalsRouteImport } from './routes/portals'
 import { Route as DesignSystemRouteImport } from './routes/design-system'
 import { Route as AccountRouteImport } from './routes/account'
+import { Route as WorkbenchRouteImport } from './routes/_workbench'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LoginIndexRouteImport } from './routes/login/index'
 import { Route as LoginContinueRouteImport } from './routes/login/continue'
+import { Route as WorkbenchWorkbenchRouteImport } from './routes/_workbench/workbench'
+import { Route as WorkbenchPPluginIdSplatRouteImport } from './routes/_workbench/p.$pluginId.$'
 
 const PortalsRoute = PortalsRouteImport.update({
   id: '/portals',
@@ -29,6 +32,10 @@ const DesignSystemRoute = DesignSystemRouteImport.update({
 const AccountRoute = AccountRouteImport.update({
   id: '/account',
   path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WorkbenchRoute = WorkbenchRouteImport.update({
+  id: '/_workbench',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -46,31 +53,48 @@ const LoginContinueRoute = LoginContinueRouteImport.update({
   path: '/login/continue',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WorkbenchWorkbenchRoute = WorkbenchWorkbenchRouteImport.update({
+  id: '/workbench',
+  path: '/workbench',
+  getParentRoute: () => WorkbenchRoute,
+} as any)
+const WorkbenchPPluginIdSplatRoute = WorkbenchPPluginIdSplatRouteImport.update({
+  id: '/p/$pluginId/$',
+  path: '/p/$pluginId/$',
+  getParentRoute: () => WorkbenchRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/design-system': typeof DesignSystemRoute
   '/portals': typeof PortalsRoute
+  '/workbench': typeof WorkbenchWorkbenchRoute
   '/login/continue': typeof LoginContinueRoute
   '/login/': typeof LoginIndexRoute
+  '/p/$pluginId/$': typeof WorkbenchPPluginIdSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/design-system': typeof DesignSystemRoute
   '/portals': typeof PortalsRoute
+  '/workbench': typeof WorkbenchWorkbenchRoute
   '/login/continue': typeof LoginContinueRoute
   '/login': typeof LoginIndexRoute
+  '/p/$pluginId/$': typeof WorkbenchPPluginIdSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_workbench': typeof WorkbenchRouteWithChildren
   '/account': typeof AccountRoute
   '/design-system': typeof DesignSystemRoute
   '/portals': typeof PortalsRoute
+  '/_workbench/workbench': typeof WorkbenchWorkbenchRoute
   '/login/continue': typeof LoginContinueRoute
   '/login/': typeof LoginIndexRoute
+  '/_workbench/p/$pluginId/$': typeof WorkbenchPPluginIdSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -79,28 +103,36 @@ export interface FileRouteTypes {
     | '/account'
     | '/design-system'
     | '/portals'
+    | '/workbench'
     | '/login/continue'
     | '/login/'
+    | '/p/$pluginId/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/account'
     | '/design-system'
     | '/portals'
+    | '/workbench'
     | '/login/continue'
     | '/login'
+    | '/p/$pluginId/$'
   id:
     | '__root__'
     | '/'
+    | '/_workbench'
     | '/account'
     | '/design-system'
     | '/portals'
+    | '/_workbench/workbench'
     | '/login/continue'
     | '/login/'
+    | '/_workbench/p/$pluginId/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  WorkbenchRoute: typeof WorkbenchRouteWithChildren
   AccountRoute: typeof AccountRoute
   DesignSystemRoute: typeof DesignSystemRoute
   PortalsRoute: typeof PortalsRoute
@@ -131,6 +163,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_workbench': {
+      id: '/_workbench'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof WorkbenchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -152,11 +191,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginContinueRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_workbench/workbench': {
+      id: '/_workbench/workbench'
+      path: '/workbench'
+      fullPath: '/workbench'
+      preLoaderRoute: typeof WorkbenchWorkbenchRouteImport
+      parentRoute: typeof WorkbenchRoute
+    }
+    '/_workbench/p/$pluginId/$': {
+      id: '/_workbench/p/$pluginId/$'
+      path: '/p/$pluginId/$'
+      fullPath: '/p/$pluginId/$'
+      preLoaderRoute: typeof WorkbenchPPluginIdSplatRouteImport
+      parentRoute: typeof WorkbenchRoute
+    }
   }
 }
 
+interface WorkbenchRouteChildren {
+  WorkbenchWorkbenchRoute: typeof WorkbenchWorkbenchRoute
+  WorkbenchPPluginIdSplatRoute: typeof WorkbenchPPluginIdSplatRoute
+}
+
+const WorkbenchRouteChildren: WorkbenchRouteChildren = {
+  WorkbenchWorkbenchRoute: WorkbenchWorkbenchRoute,
+  WorkbenchPPluginIdSplatRoute: WorkbenchPPluginIdSplatRoute,
+}
+
+const WorkbenchRouteWithChildren = WorkbenchRoute._addFileChildren(
+  WorkbenchRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  WorkbenchRoute: WorkbenchRouteWithChildren,
   AccountRoute: AccountRoute,
   DesignSystemRoute: DesignSystemRoute,
   PortalsRoute: PortalsRoute,

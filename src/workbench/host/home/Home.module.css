@@ -1,0 +1,229 @@
+.root {
+  padding: var(--s-7);
+  display: grid;
+  gap: var(--s-7);
+  align-content: start;
+}
+
+/* The search and the way out of it: one looks for a tool, the other goes to
+   the page that governs all of them. */
+.find {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.find .search {
+  flex: 1;
+}
+
+.search {
+  max-width: 420px;
+}
+
+.section {
+  display: grid;
+  gap: var(--s-4);
+}
+
+.grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--s-4);
+}
+
+/* icon | title over description; the whole card is the control. */
+.card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: var(--s-4);
+  row-gap: var(--s-1);
+  width: 100%;
+  padding: var(--s-5);
+  text-align: left;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    border-color var(--t-base),
+    box-shadow var(--t-base);
+}
+
+.card:hover {
+  border-color: var(--c-border2);
+  box-shadow: var(--e-2);
+}
+
+.card:focus-visible {
+  outline: none;
+  border-color: var(--c-primary);
+  box-shadow: 0 0 0 3px var(--c-focus);
+}
+
+.cardIcon {
+  grid-row: 1 / span 2;
+  align-self: start;
+  display: inline-flex;
+  color: var(--c-ink3);
+  margin-top: 2px;
+}
+
+.cardTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  font-size: var(--fs-5);
+  font-weight: var(--fw-bold);
+  color: var(--c-ink);
+}
+
+.cardDesc {
+  margin: 0;
+  grid-column: 2;
+}
+
+/* The tour is instructions about the prototype, not part of it: raised
+   rather than surface, so it reads as a note pinned to the page. */
+.tour {
+  display: grid;
+  gap: var(--s-5);
+  padding: var(--s-6);
+  background: var(--c-raised);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+}
+
+.tourHead {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.tourHead h2 {
+  margin: 0;
+}
+
+/* The path a first visit takes. Numbered because the steps are in order and
+   the reader is meant to walk them, but the marker is set outside the text so
+   the headlines line up as a column a reader can skim on their own. */
+.journey {
+  display: grid;
+  gap: var(--s-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-width: 72ch;
+  counter-reset: step;
+}
+
+.step {
+  display: grid;
+  grid-template-columns: 1.75rem 1fr;
+  gap: var(--s-4);
+  align-items: start;
+}
+
+.stepNum {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  border-radius: var(--r-full);
+  background: var(--bg-primary);
+  color: var(--ct-primary);
+  font-family: var(--f-mono);
+  font-size: var(--fs-3);
+  /* Optical: the numeral sits with the headline's cap height, not its line. */
+  margin-block-start: 1px;
+}
+
+.stepBody {
+  display: grid;
+  gap: var(--s-1);
+  min-inline-size: 0;
+}
+
+/* Skimmable on its own: a reader who reads only these four lines has the
+   journey, and the sentence under each is the part they can skip. */
+.stepTitle {
+  margin: 0;
+  font-size: var(--fs-5);
+  font-weight: var(--fw-bold);
+  color: var(--c-ink);
+}
+
+.stepText {
+  margin: 0;
+  color: var(--c-ink2);
+}
+
+/* Everything the workbench can do that is not on the path. Set apart and
+   smaller, so it does not read as steps five to eight. */
+.tourMore {
+  display: grid;
+  gap: var(--s-2);
+  padding-block-start: var(--s-4);
+  border-block-start: 1px solid var(--c-border);
+  max-width: 72ch;
+}
+
+.tourMoreTitle {
+  margin: 0;
+  font-size: var(--fs-3);
+  font-weight: var(--fw-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--c-ink4);
+}
+
+.tourMoreList {
+  display: grid;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-4);
+  color: var(--c-ink3);
+}
+
+.tourMoreList b {
+  color: var(--c-ink2);
+  font-weight: var(--fw-bold);
+}
+
+.key {
+  padding: 1px var(--s-2);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border2);
+  border-radius: var(--r-sm);
+  font-family: var(--f-mono);
+  font-size: var(--fs-3);
+  white-space: nowrap;
+}
+
+.tourLink {
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--c-primary);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.tourLink:focus-visible {
+  outline: 2px solid var(--c-primary);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+.tourNote {
+  margin: 0;
+  max-width: 78ch;
+}

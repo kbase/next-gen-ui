@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Background, CommandCall, Query } from '../../plugins/sdk';
+import type { CartItem } from '../core';
 import {
   createCartStore,
   createQueryStore,
@@ -106,11 +107,14 @@ describe('the ambient page query', () => {
   });
 });
 
-const item = (id: string, terms?: string[]) => ({
+// These tests turn on the terms an item carries and on how many items there
+// are; the rest is whatever the store requires.
+const item = (id: string, terms?: string[]): CartItem => ({
   id,
+  plugin: 'fj',
   name: id,
   terms,
-  source: { path: `/${id}` },
+  addedAt: 0,
 });
 
 describe('the ambient cart query', () => {

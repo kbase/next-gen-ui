@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { CartItem } from '../core';
+import type { StoredCartItem } from '../core';
 import { CART_STORAGE_KEY, defaultLayout, serialize } from '../core';
 import { LAYOUT_STORAGE_KEY, loadWorkbench } from './persistence';
 import { SETTINGS_STORAGE_KEY } from './settings';
@@ -28,7 +28,7 @@ function refusing(op: 'getItem' | 'setItem'): Storage {
   };
 }
 
-const item: CartItem = { id: 'gk:P0AEX9', plugin: 'gk', name: 'SecA' };
+const item: StoredCartItem = { id: 'gk:P0AEX9', plugin: 'gk', name: 'SecA' };
 
 describe('loading a workbench from storage', () => {
   it('has nothing for a first visit', async () => {

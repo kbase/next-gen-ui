@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createCartStore, readCart } from './cart';
-import type { CartItem } from './cart';
+import type { StoredCartItem } from './cart';
 
-const item = (id: string, over: Partial<CartItem> = {}): CartItem => ({
+const item = (id: string, over: Partial<StoredCartItem> = {}): StoredCartItem => ({
   id,
   plugin: 'function-junction',
   name: id,
@@ -39,6 +39,20 @@ describe('the cart', () => {
     expect(back[0].context).toEqual({ measuredOver: '8 phyla', reach: 'direct' });
     expect(back[0].source).toEqual({ command: 'open', args: { q: 'P0AEX9' } });
     expect(back[1].source).toEqual({ command: 'fitness' });
+  });
+
+  // The stored item is the SDK's without `answers`: a plugin's item says which
+  // of the terms a question carried it answered, and the cart asks nothing. An
+  // item added straight off a Related row brings one, and it is dropped rather
+  // than treated as damage — the thing is still a thing, the reason is not.
+  it('reads an item that arrived with its evidence, and stores it without', () => {
+    const offered = {
+      ...item('gk:genome:511145'),
+      answers: [{ term: 'ncbitaxon:562', kind: 'record' }],
+    };
+    const back = readCart(JSON.stringify([offered]));
+    expect(back).toHaveLength(1);
+    expect(back[0]).not.toHaveProperty('answers');
   });
 
   it('treats unreadable storage as an empty cart', () => {

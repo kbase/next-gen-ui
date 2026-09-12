@@ -60,7 +60,10 @@ export function resolve(registry: CommandRegistry, input: string): Resolved {
   return { ok: true, command: found.command, values: result.values };
 }
 
-export interface Suggestion {
+// A way of finishing the text in the bar: what the input becomes when the row
+// is accepted. Not an SDK `Suggestion`, which is a call an intent ranked and
+// the bar runs — this one types for the user and runs nothing.
+export interface Completion {
   // What replaces the input when accepted.
   value: string;
   label: string;
@@ -81,7 +84,7 @@ export function displayName(registry: CommandRegistry, command: Command): string
 // Every registered command is offered: whether one can act on the layout as
 // it stands is answered by running it, which is also the only moment a
 // keybinding passes through.
-export async function complete(registry: CommandRegistry, input: string): Promise<Suggestion[]> {
+export async function complete(registry: CommandRegistry, input: string): Promise<Completion[]> {
   const parsed = parse(input);
   if (parsed.kind !== 'command') return [];
 

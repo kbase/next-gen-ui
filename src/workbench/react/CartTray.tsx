@@ -9,7 +9,7 @@ import 'prismjs/components/prism-json.js';
 import { ShoppingCartSimple, X } from '@phosphor-icons/react';
 import { AlertDialog, Button, CodeBlock, Dialog, Tooltip } from '@kbase/design-system';
 import { qualifyCommand } from '../../plugins/sdk';
-import type { CartItem } from '../core';
+import type { StoredCartItem } from '../core';
 import { iconFor } from '../host/icons';
 import { useRun, useServices } from './context';
 import styles from './Workbench.module.css';
@@ -40,7 +40,7 @@ import styles from './Workbench.module.css';
 export function CartTray() {
   const { cart, source } = useServices();
   useSyncExternalStore(cart.subscribe, cart.version, cart.version);
-  const [preview, setPreview] = useState<CartItem | null>(null);
+  const [preview, setPreview] = useState<StoredCartItem | null>(null);
   const items = cart.items();
   if (items.length === 0) return null;
 
@@ -167,7 +167,7 @@ export function CartTray() {
 
 // Everything the item is carrying, in the order a reader needs it: what it is,
 // what an assistant would be told about it, and how to get back to it.
-function Preview({ item, plugin }: { item: CartItem; plugin?: string }) {
+function Preview({ item, plugin }: { item: StoredCartItem; plugin?: string }) {
   const json = (value: unknown) => JSON.stringify(value, null, 2);
   const run = useRun();
   const source = item.source;

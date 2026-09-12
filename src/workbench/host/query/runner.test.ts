@@ -8,7 +8,7 @@ import type {
   TermsQuery,
   TypedQuery,
 } from '../../../plugins/sdk';
-import { createQueryStore } from '../../core';
+import { createQueryStore, mergeRecommendations } from '../../core';
 import type { HostIndex } from '../installed';
 import { BUDGET_MS, SETTLE_MS, createQueryRunner } from './runner';
 
@@ -305,6 +305,38 @@ describe('the page and cart loop', () => {
       'p:taxon:83333',
     ]);
     expect(store.get('page').pool).toEqual(['uniprot:P0AEX9', 'taxon:83333']);
+  });
+
+  // K75. The plugin is asked about the added term alone, so the genome it
+  // answers with arrives a second time, under that term and no other. Keeping
+  // the copy already shown and dropping the new one left the row saying the
+  // cart holds P11558 and never that it also holds the taxon.
+  it('a cart that gains a term leaves the item answering both', async () => {
+    const genome = (term: string): CartItem => ({
+      id: 'gk:genome:511145',
+      name: 'E. coli K-12 MG1655',
+      answers: [{ term, kind: 'record' }],
+    });
+    const relate = vi.fn<(q: TermsQuery) => CartItem[]>(({ terms }) => terms.map(genome));
+    const store = createQueryStore();
+    const runner = createQueryRunner(index({ gk: { relate } }), store);
+    runner.set('cart', { terms: ['uniprot:P11558'], label: '1 item' });
+    await vi.advanceTimersByTimeAsync(SETTLE_MS);
+    runner.set('cart', { terms: ['uniprot:P11558', 'ncbitaxon:562'], label: '2 items' });
+    await vi.advanceTimersByTimeAsync(SETTLE_MS);
+    expect(relate.mock.calls[1][0].terms).toEqual(['ncbitaxon:562']);
+    const items = store.get('cart').answers[0].items;
+    expect(items.map((i) => i.id)).toEqual(['gk:genome:511145']);
+    expect(items[0].answers).toEqual([
+      { term: 'uniprot:P11558', kind: 'record' },
+      { term: 'ncbitaxon:562', kind: 'record' },
+    ]);
+    // The sentence the Related row is built from, from the same answers.
+    const rows = mergeRecommendations([], [{ source: 'cart', state: store.get('cart') }]);
+    expect(rows[0].offeredBy[0].answers.map((a) => a.term)).toEqual([
+      'uniprot:P11558',
+      'ncbitaxon:562',
+    ]);
   });
 
   // K70: the third case, beside a pool that grew and a question that changed.

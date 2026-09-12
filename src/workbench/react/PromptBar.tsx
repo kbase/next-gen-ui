@@ -4,7 +4,7 @@ import { ArrowUpRight, CaretRight, CaretUpDown, Check } from '@phosphor-icons/re
 import type { IconProps } from '@phosphor-icons/react';
 import { Menu, PromptInput, cx } from '@kbase/design-system';
 import type { Prompt } from '../../plugins/sdk';
-import type { Suggestion } from '../commands';
+import type { Completion } from '../commands';
 import { complete, parse, qualifiedName, resolve, usage } from '../commands';
 import { pluginHostFor } from '../host/createWorkbench';
 import { openRoute } from '../host/open';
@@ -15,11 +15,12 @@ import { useLayout, useRun, useServices } from './context';
 import { focusPanelElement } from './useFocusSync';
 import styles from './Workbench.module.css';
 
-// A suggestion that acts directly, for calls whose arguments no command
-// string could carry, and that says whose it is. Only a completion carries
-// the command it completes (`Suggestion.command`); a row the intent ranked
-// has none, so this shares just the fields both kinds of row render.
-type BarSuggestion = Pick<Suggestion, 'value' | 'label' | 'detail'> & {
+// A row in the bar's list, from either producer: a completion of a slash
+// command, or a call the intent ranked. Only a completion carries the command
+// it completes (`Completion.command`); a ranked row carries a `run` instead,
+// for calls whose arguments no command string could carry. What is shared is
+// the three fields both kinds of row render.
+type BarSuggestion = Pick<Completion, 'value' | 'label' | 'detail'> & {
   run?: () => void;
   icon?: ComponentType<IconProps>;
   // A command name is code and set in the mono face; an offer is a

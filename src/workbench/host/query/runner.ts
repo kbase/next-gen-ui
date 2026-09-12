@@ -8,7 +8,7 @@ import type {
 } from '../../../plugins/sdk';
 import { qualifyCommand } from '../../../plugins/sdk';
 import type { Answer, PluginOffers, QuerySource, QueryStore } from '../../core';
-import { EMPTY_TYPING } from '../../core';
+import { EMPTY_TYPING, unionAnswers } from '../../core';
 import type { HostIndex } from '../installed';
 
 // Asking every plugin what it offers for the text, what it has about a
@@ -21,8 +21,9 @@ import type { HostIndex } from '../installed';
 // and cheap — and asks every `offer` with the text and the pooled terms. The
 // intent is asked with the offers that came back at once, then again as a
 // slower plugin's offer lands. Nothing here waits: there is no settle and no
-// budget, because there is nothing a reader would wait for. The answers are
-// the prompt bar's offer rows.
+// budget, because there is nothing a reader would wait for. What the intent
+// answers is every row the prompt bar draws; an offer no intent is there to
+// rank reaches nobody.
 //
 // The intent is also given what the page and the cart are being asked about,
 // under their own tiers, and is asked again when either moves under text
@@ -76,7 +77,8 @@ export interface QueryRunner {
 
 export interface RunnerOptions {
   // The intent module Settings names, once loaded. Read on every keystroke,
-  // so a change of setting takes effect on the next one.
+  // so a change of setting takes effect on the next one. Undefined while the
+  // module is on its way, and for good if the plugin named is not installed.
   intent?: () => Intent | undefined;
 }
 
@@ -95,10 +97,22 @@ function sameQuestion(a: readonly string[], b: readonly string[]): boolean {
 
 // The union of two answers from one plugin, for a pool that grew: items the
 // plugin gave for the earlier terms stay, items for the new terms join them.
+// An item offered in both rounds keeps the caption the reader already has and
+// gains the terms the new round says it answers, because the plugin was asked
+// about the new terms alone and its evidence for the old ones is in the copy
+// on screen; dropping the second copy whole would leave the row saying the
+// cart holds P11558 and not the taxon just added.
 function merged(prev: Answer | undefined, next: Answer): Answer {
   if (!prev) return next;
+  const again = new Map(next.items.map((i) => [i.id, i]));
+  const items: CartItem[] = prev.items.map((item) => {
+    const now = again.get(item.id);
+    if (!now) return item;
+    const answers = unionAnswers(item.answers, now.answers);
+    return answers.length ? { ...item, answers } : item;
+  });
   const seen = new Set(prev.items.map((i) => i.id));
-  const items: CartItem[] = [...prev.items, ...next.items.filter((i) => !seen.has(i.id))];
+  items.push(...next.items.filter((i) => !seen.has(i.id)));
   return { plugin: next.plugin, items };
 }
 
@@ -148,7 +162,8 @@ export function createQueryRunner(
   // The chosen intent's suggestions for the text, on the keystroke: a sync
   // answer lands at once, an async one when it arrives unless the question has
   // moved on. Until it lands the previous suggestions stay. A `suggest` that
-  // throws or rejects is that plugin's problem.
+  // throws or rejects is that plugin's problem. With no intent in hand there
+  // are no rows at all — the bar has no answer of its own to fall back on.
   const suggest = (text: string, terms: string[], offers: Offer[]) => {
     suggesting?.abort();
     const intent = options.intent?.();

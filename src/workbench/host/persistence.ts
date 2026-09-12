@@ -1,4 +1,4 @@
-import type { CartItem, Layout } from '../core';
+import type { Layout, StoredCartItem } from '../core';
 import { CART_STORAGE_KEY, defaultLayout, deserialize, readCart } from '../core';
 import type { Settings } from './settings';
 import { SETTINGS_STORAGE_KEY, SettingsSchema } from './settings';
@@ -13,7 +13,7 @@ export const LAYOUT_STORAGE_KEY = 'workbench.layout.v4';
 // shape a wire cannot carry.
 export interface WorkbenchDocs {
   layout: Layout;
-  cart: readonly CartItem[];
+  cart: readonly StoredCartItem[];
   settings: Settings;
 }
 

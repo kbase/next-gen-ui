@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { CartItem } from '../../plugins/sdk';
 
 // Things the user has set aside to work with.
 //
@@ -13,6 +14,18 @@ import { z } from 'zod';
 // the same reason it is host-owned: it is written to storage now and may be
 // synced to an account later, and neither is possible if an item can hold a
 // function, a DOM node, or a class instance.
+//
+// The SDK's item and this one are one thing at two moments, so this one is
+// derived: an item a plugin hands over (`plugins/sdk/cart.ts`) and the same
+// item once the cart holds it. The stamp is what the moment adds — `plugin` is
+// optional in flight and certain here — and the evidence is what it drops:
+// `answers` says which of the terms a question carried this item answered, and
+// the cart is not a question, so the schema below has no field for it and
+// storage never sees one.
+export type StoredCartItem = Omit<CartItem, 'plugin' | 'answers'> & { plugin: string };
+
+// What `satisfies` holds to: anything this parses is an item the rest of the
+// workbench can hold, so a field the SDK adds reaches storage or fails here.
 export const CartItemSchema = z.object({
   // Stable and content-derived, so adding the same thing twice is idempotent
   // rather than a second copy. A plugin builds it from what the item *is* —
@@ -54,15 +67,13 @@ export const CartItemSchema = z.object({
   // item carries no data: a consumer fetches what the terms and the source
   // name from where it lives.
   context: z.record(z.string(), z.unknown()).optional(),
-});
-
-export type CartItem = z.infer<typeof CartItemSchema>;
+}) satisfies z.ZodType<StoredCartItem>;
 
 export interface CartStore {
-  items: () => readonly CartItem[];
+  items: () => readonly StoredCartItem[];
   // Idempotent on `id`: adding the same thing twice replaces it, so a plugin
   // may re-add to refresh a payload without the user seeing a duplicate.
-  add: (item: CartItem) => void;
+  add: (item: StoredCartItem) => void;
   remove: (id: string) => void;
   clear: () => void;
   has: (id: string) => boolean;
@@ -75,7 +86,7 @@ export const CART_STORAGE_KEY = 'kbase-workbench-cart.v4';
 // A stored cart that does not match the schema is an empty cart, not a
 // crash: the key names the shape, so anything under it was written by a build
 // that agreed on `CartItemSchema`, and anything that disagrees is damage.
-export function readCart(raw: string | null): CartItem[] {
+export function readCart(raw: string | null): StoredCartItem[] {
   if (!raw) return [];
   try {
     const parsed = z.array(CartItemSchema).safeParse(JSON.parse(raw));
@@ -85,8 +96,8 @@ export function readCart(raw: string | null): CartItem[] {
   }
 }
 
-export function createCartStore(initial: CartItem[] = []): CartStore {
-  const items = new Map<string, CartItem>(initial.map((i) => [i.id, i]));
+export function createCartStore(initial: StoredCartItem[] = []): CartStore {
+  const items = new Map<string, StoredCartItem>(initial.map((i) => [i.id, i]));
   let version = 0;
   const listeners = new Set<() => void>();
   const changed = () => {

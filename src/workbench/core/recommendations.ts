@@ -10,7 +10,11 @@ import type { QuerySource, SourceState } from './query';
 // A row leaves only when no source that is still open offers it: while a
 // source is being asked again, what it offered last time stays.
 
-export interface Offer {
+// One plugin putting one item forward from one source. Not an SDK `Offer`,
+// which is a command volunteered for typed text: this is a thing volunteered
+// for the terms a page or the cart carries, and it is the row's provenance
+// rather than something the reader can press.
+export interface ItemOffer {
   plugin: string;
   source: QuerySource;
   // The terms this plugin's item answered, as that plugin gave them. Held per
@@ -25,7 +29,24 @@ export interface Recommendation {
   id: string;
   item: CartItem;
   // Who offers it, from which source and for which terms, first offer first.
-  offeredBy: Offer[];
+  offeredBy: ItemOffer[];
+}
+
+// Everything one plugin's item is known to answer, once each, in the order the
+// terms were first named. The same id comes back with different evidence
+// twice: from two items in one round, which `mergeRecommendations` folds into
+// one offer, and from two rounds about a pool that grew, which the query
+// runner folds into one item (host/query/runner.ts). Both are the plugin
+// answering about one thing under terms it was asked about separately, and a
+// row that kept one set would name half the reason it is there. The first
+// mention of a term keeps its kind: a later round cannot weaken to `name` what
+// an earlier one found in a record.
+export function unionAnswers(first: readonly Match[] = [], second: readonly Match[] = []): Match[] {
+  const answers = [...first];
+  for (const match of second) {
+    if (!answers.some((a) => a.term === match.term)) answers.push(match);
+  }
+  return answers;
 }
 
 export function mergeRecommendations(
@@ -43,12 +64,8 @@ export function mergeRecommendations(
         const answers = item.answers ?? [];
         // One plugin answering one source twice with the same id — two terms
         // it resolved separately — is one offer for both terms.
-        if (already) {
-          for (const m of answers)
-            if (!already.answers.some((a) => a.term === m.term)) already.answers.push(m);
-        } else {
-          row.offeredBy.push({ plugin: answer.plugin, source, answers: [...answers] });
-        }
+        if (already) already.answers = unionAnswers(already.answers, answers);
+        else row.offeredBy.push({ plugin: answer.plugin, source, answers: [...answers] });
         offered.set(item.id, row);
       }
     }

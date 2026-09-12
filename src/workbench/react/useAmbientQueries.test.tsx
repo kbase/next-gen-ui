@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Background, CartItem, TermsQuery } from '../../plugins/sdk';
-import type { CartItem as StoredItem } from '../core';
+import type { StoredCartItem } from '../core';
 import {
   createCartStore,
   createQueryStore,
@@ -107,7 +107,7 @@ describe('the ambient page query', () => {
 
 // These tests turn on the terms an item carries and on how many items there
 // are; the rest is whatever the store requires.
-const item = (id: string, terms?: string[]): StoredItem => ({
+const item = (id: string, terms?: string[]): StoredCartItem => ({
   id,
   plugin: 'fj',
   name: id,

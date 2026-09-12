@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { CartItem } from '../../plugins/sdk';
 import type { SourceState } from './query';
-import { mergeRecommendations } from './recommendations';
+import { mergeRecommendations, unionAnswers } from './recommendations';
 
 const item = (id: string): CartItem => ({ id, name: id });
 // The same item, said to answer these terms: what a plugin returns when it
@@ -22,6 +22,32 @@ const state = (
   })),
   pending,
   loading: pending.length > 0,
+});
+
+// The rule both merges call: `mergeRecommendations` for two items in one
+// round, the query runner for two rounds about a pool that grew.
+describe('unionAnswers', () => {
+  it('keeps the first mention of a term, so a later answer cannot weaken it', () => {
+    expect(
+      unionAnswers(
+        [{ term: 'uniprot:P11558', kind: 'record' }],
+        [
+          { term: 'uniprot:P11558', kind: 'name' },
+          { term: 'ncbitaxon:562', kind: 'record' },
+        ],
+      ),
+    ).toEqual([
+      { term: 'uniprot:P11558', kind: 'record' },
+      { term: 'ncbitaxon:562', kind: 'record' },
+    ]);
+  });
+
+  it('is the other list when either side has none', () => {
+    const answers = [{ term: 'ncbitaxon:562', kind: 'record' as const }];
+    expect(unionAnswers(undefined, answers)).toEqual(answers);
+    expect(unionAnswers(answers, undefined)).toEqual(answers);
+    expect(unionAnswers()).toEqual([]);
+  });
 });
 
 describe('mergeRecommendations', () => {

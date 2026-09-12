@@ -3,15 +3,11 @@ import type { PluginHost } from '../../plugins/sdk';
 import { qualifyCommand } from '../../plugins/sdk';
 import type { PluginId } from '../core';
 import {
-  CART_STORAGE_KEY,
   createCartStore,
   createQueryStore,
   createTermStore,
   createWorkbenchStore,
   defaultLayout,
-  deserialize,
-  readCart,
-  serialize,
 } from '../core';
 import type { Command } from '../commands';
 import { createCommandRegistry, createRunStore, workbenchCommands } from '../commands';
@@ -23,18 +19,16 @@ import type { InstalledPlugin } from './installed';
 import { createHostIndex } from './installed';
 import { openPane, openRoute } from './open';
 import { hostPlugins } from './pages';
+import type { WorkbenchPersistence } from './persistence';
 import { createQueryRunner } from './query/runner';
 import { createSettingsStore } from './settings';
 import { createStatusStore } from './status';
 
-// The key names the saved shape. A layout written against a different
-// `LayoutSchema` lives under a different key and is never read again.
-export const LAYOUT_STORAGE_KEY = 'workbench.layout.v3';
-
 export interface CreateWorkbenchOptions {
   installed: InstalledPlugin[];
-  // null for tests and for a browser with storage disabled.
-  storage: Storage | null;
+  // What a previous session left, already loaded, and where changes go.
+  // `noPersistence` is a workbench that starts fresh and forgets.
+  persistence: WorkbenchPersistence;
   defaultPinned?: PluginId[];
   // The plugin whose prompt module answers the bar until the user picks.
   defaultAssistant?: PluginId | null;
@@ -43,11 +37,11 @@ export interface CreateWorkbenchOptions {
 }
 
 // Builds the store, the command registry and their companions once, before
-// React mounts. The layout is read from storage here so the first render is
-// already the restored one.
+// React mounts, on top of documents the caller has already loaded, so the
+// first render is already the restored one.
 export function createWorkbench({
   installed,
-  storage,
+  persistence: { loaded, save },
   defaultPinned = [],
   defaultAssistant = null,
   defaultIntent = null,
@@ -60,17 +54,16 @@ export function createWorkbench({
   const focusIntentRef: WorkbenchServices['focusIntentRef'] = { current: 'command' };
   const navIntentRef: WorkbenchServices['navIntentRef'] = { current: 'push' };
   const source = createHostIndex([...installed, ...hostPlugins(() => services)]);
-  const settings = createSettingsStore(storage, {
-    assistant: defaultAssistant,
-    intent: defaultIntent,
-  });
+  const settings = createSettingsStore(
+    loaded.settings ?? { assistant: defaultAssistant, intent: defaultIntent },
+  );
   // The cart is host state, not layout: it survives a layout reset, and it is
   // the thing most likely to move to the account later.
-  const cart = createCartStore(readCart(storage?.getItem(CART_STORAGE_KEY) ?? null));
+  const cart = createCartStore([...(loaded.cart ?? [])]);
 
   // A saved layout is restored verbatim; `defaultPinned` only builds a fresh
   // one, which is what a reader with no readable layout gets.
-  const initial = deserialize(read(storage), () => defaultLayout({ pinned: defaultPinned }));
+  const initial = loaded.layout ?? defaultLayout({ pinned: defaultPinned });
   const store = createWorkbenchStore({
     initial,
     title: (id, panel) => titles.get(id) ?? fallbackTitle(services, panel, id),
@@ -135,25 +128,12 @@ export function createWorkbench({
   registry.onRun(() => status.refresh());
   status.refresh();
 
-  if (storage) {
-    store.subscribe(() => {
-      try {
-        storage.setItem(LAYOUT_STORAGE_KEY, serialize(store.get()));
-      } catch {
-        // Quota or privacy mode: the session still works, it just won't persist.
-      }
-    });
-    // Written separately from the layout: a cart outlives an arrangement, and
-    // a corrupt layout should not take the user's collected work with it.
-    cart.subscribe(() => {
-      try {
-        storage.setItem(CART_STORAGE_KEY, JSON.stringify(cart.items()));
-      } catch {
-        // A payload can be large. Losing persistence is better than losing the
-        // session, so a full quota is not an error the user has to handle.
-      }
-    });
-  }
+  store.subscribe(() => save('layout', store.get()));
+  // Saved as its own document: a cart outlives an arrangement, and a corrupt
+  // layout should not take the user's collected work with it. Settings are
+  // separate for the same reason — resetting the layout keeps them.
+  cart.subscribe(() => save('cart', cart.items()));
+  settings.subscribe(() => save('settings', settings.get()));
   return services;
 }
 
@@ -221,12 +201,4 @@ export function pluginHostFor(services: WorkbenchServices, plugin: PluginId): Pl
       subscribe: (listener) => services.cart.subscribe(listener),
     },
   };
-}
-
-function read(storage: Storage | null): string | null {
-  try {
-    return storage?.getItem(LAYOUT_STORAGE_KEY) ?? null;
-  } catch {
-    return null;
-  }
 }

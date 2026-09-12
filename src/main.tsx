@@ -18,7 +18,7 @@ import {
   installCrossTabAuthSync,
 } from './api/auth';
 import { localPlugins } from './plugins/local';
-import { createWorkbench, loadInstalled } from './workbench/host';
+import { createWorkbench, loadInstalled, loadWorkbench } from './workbench/host';
 import { DEFAULT_ASSISTANT, DEFAULT_INTENT, DEFAULT_PINNED } from './workbenchDefaults';
 import './styles.css';
 
@@ -42,9 +42,13 @@ installAuthExpiryWatcher(queryClient);
 //
 // A bundled plugin wins over a registry entry with the same id, which is what
 // stops a registry from replacing first-party code.
+//
+// The last session's layout, cart and settings are loaded before the
+// workbench exists, from localStorage today. An account service replaces
+// this call with one that fetches; `createWorkbench` does not change.
 const workbench = createWorkbench({
   installed: await loadInstalled(localPlugins),
-  storage: window.localStorage,
+  persistence: await loadWorkbench(window.localStorage),
   defaultPinned: [...DEFAULT_PINNED],
   defaultAssistant: DEFAULT_ASSISTANT,
   defaultIntent: DEFAULT_INTENT,

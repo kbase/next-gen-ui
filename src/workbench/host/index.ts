@@ -1,5 +1,7 @@
-export { createWorkbench, LAYOUT_STORAGE_KEY } from './createWorkbench';
+export { createWorkbench } from './createWorkbench';
 export type { CreateWorkbenchOptions } from './createWorkbench';
+export { loadWorkbench, noPersistence, LAYOUT_STORAGE_KEY } from './persistence';
+export type { LoadedDocs, SaveWorkbench, WorkbenchDocs, WorkbenchPersistence } from './persistence';
 export { createHostIndex } from './installed';
 export type { HostIndex, InstalledPlugin, ModuleLoaders, PluginInfo } from './installed';
 export { localPlugin } from './local';

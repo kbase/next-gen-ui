@@ -1,5 +1,5 @@
 import { localPlugins } from '../plugins/local';
-import { createWorkbench } from '../workbench/host';
+import { createWorkbench, noPersistence } from '../workbench/host';
 import type { CreateWorkbenchOptions } from '../workbench/host/createWorkbench';
 import type { WorkbenchServices } from '../workbench/react';
 import { DEFAULT_ASSISTANT, DEFAULT_INTENT, DEFAULT_PINNED } from '../workbenchDefaults';
@@ -9,11 +9,13 @@ import { DEFAULT_ASSISTANT, DEFAULT_INTENT, DEFAULT_PINNED } from '../workbenchD
 // passes its own `defaultPinned`/`defaultAssistant`/`defaultIntent` here
 // rather than editing the default.
 export function testWorkbench(
-  overrides: Partial<Pick<CreateWorkbenchOptions, 'defaultPinned' | 'defaultAssistant' | 'defaultIntent'>> = {},
+  overrides: Partial<
+    Pick<CreateWorkbenchOptions, 'defaultPinned' | 'defaultAssistant' | 'defaultIntent'>
+  > = {},
 ): WorkbenchServices {
   return createWorkbench({
     installed: localPlugins,
-    storage: null,
+    persistence: noPersistence,
     defaultPinned: [...DEFAULT_PINNED],
     defaultAssistant: DEFAULT_ASSISTANT,
     defaultIntent: DEFAULT_INTENT,

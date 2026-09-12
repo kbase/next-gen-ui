@@ -2,7 +2,8 @@ import { configure, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { localPlugins } from '../../plugins/local';
-import { createWorkbench } from '../host';
+import { createWorkbench, loadWorkbench, noPersistence } from '../host';
+import type { WorkbenchPersistence } from '../host';
 import { WorkbenchProvider } from './WorkbenchProvider';
 import { Workbench } from './Workbench';
 
@@ -24,14 +25,14 @@ function memoryStorage(): Storage {
   };
 }
 
-function mount(storage: Storage | null = null) {
+function mount(persistence: WorkbenchPersistence = noPersistence) {
   // This suite drives the shell through the jobs plugin's sidebar list
   // (open/focus/close/move panels, keyboard shortcuts, layout lock) and
   // through koros's assistant reply, so both need to be pinned here
   // regardless of what a fresh workbench ships with.
   const services = createWorkbench({
     installed: localPlugins,
-    storage,
+    persistence,
     defaultPinned: ['koros', 'data', 'jobs'],
     defaultAssistant: 'koros',
   });
@@ -106,14 +107,15 @@ describe('Workbench', () => {
   it('restores the layout from storage on the next mount', async () => {
     const user = userEvent.setup();
     const storage = memoryStorage();
-    const first = mount(storage);
+    const first = mount(await loadWorkbench(storage));
     await openJob(user, /nifh search/i);
     expect(Object.values(first.store.get().panels)).toContainEqual(
       expect.objectContaining({ plugin: 'jobs', kind: 'route', path: '/20' }),
     );
 
     document.body.innerHTML = '';
-    mount(storage);
+    // A reload loads again from the same storage; nothing carries over in memory.
+    mount(await loadWorkbench(storage));
     expect(await screen.findByRole('tab', { name: /job 20/i })).toBeInTheDocument();
   });
 

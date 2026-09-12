@@ -2,14 +2,14 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { localPlugins } from '../../plugins/local';
-import { createWorkbench } from '../host';
+import { createWorkbench, noPersistence } from '../host';
 import { WorkbenchProvider } from './WorkbenchProvider';
 import { PromptBar } from './PromptBar';
 
 function mount() {
   const services = createWorkbench({
     installed: localPlugins,
-    storage: null,
+    persistence: noPersistence,
     defaultPinned: ['koros', 'data', 'jobs'],
     defaultAssistant: 'koros',
   });

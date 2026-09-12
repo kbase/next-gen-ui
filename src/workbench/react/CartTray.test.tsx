@@ -2,7 +2,7 @@ import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { localPlugins } from '../../plugins/local';
-import { createWorkbench } from '../host';
+import { createWorkbench, noPersistence } from '../host';
 import { WorkbenchProvider } from './WorkbenchProvider';
 import { PromptBar } from './PromptBar';
 import { CartTray } from './CartTray';
@@ -23,7 +23,7 @@ function mount(
   // there is nothing here for a non-default layout to be about.
   const services = createWorkbench({
     installed: localPlugins,
-    storage: null,
+    persistence: noPersistence,
     defaultPinned: [...DEFAULT_PINNED],
     defaultAssistant: DEFAULT_ASSISTANT,
     defaultIntent: DEFAULT_INTENT,
@@ -133,7 +133,7 @@ describe('the cart tray', () => {
   it('leaves no trace in the composer when it is empty', () => {
     const services = createWorkbench({
       installed: localPlugins,
-      storage: null,
+      persistence: noPersistence,
       defaultPinned: [...DEFAULT_PINNED],
       defaultAssistant: DEFAULT_ASSISTANT,
       defaultIntent: DEFAULT_INTENT,

@@ -18,18 +18,13 @@ export interface SettingsStore {
   subscribe: (listener: () => void) => () => void;
 }
 
-export function createSettingsStore(storage: Storage | null, defaults: Settings): SettingsStore {
-  let current: Settings = read(storage) ?? defaults;
+export function createSettingsStore(initial: Settings): SettingsStore {
+  let current: Settings = initial;
   const listeners = new Set<() => void>();
   return {
     get: () => current,
     set(patch) {
       current = { ...current, ...patch };
-      try {
-        storage?.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(current));
-      } catch {
-        // Persistence is best-effort.
-      }
       listeners.forEach((l) => l());
     },
     subscribe(listener) {
@@ -37,15 +32,4 @@ export function createSettingsStore(storage: Storage | null, defaults: Settings)
       return () => listeners.delete(listener);
     },
   };
-}
-
-function read(storage: Storage | null): Settings | null {
-  try {
-    const text = storage?.getItem(SETTINGS_STORAGE_KEY);
-    if (!text) return null;
-    const parsed = SettingsSchema.safeParse(JSON.parse(text));
-    return parsed.success ? parsed.data : null;
-  } catch {
-    return null;
-  }
 }

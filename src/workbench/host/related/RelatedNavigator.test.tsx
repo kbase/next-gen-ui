@@ -7,6 +7,7 @@ import { makeRoute } from '../../core';
 import { ServicesContext } from '../../react/context';
 import { useAmbientQueries } from '../../react/useAmbientQueries';
 import { createWorkbench, pluginHostFor } from '../createWorkbench';
+import { noPersistence } from '../persistence';
 import { localPlugin } from '../local';
 import { BUDGET_MS, SETTLE_MS } from '../query/runner';
 import { RelatedNavigator } from './RelatedNavigator';
@@ -70,7 +71,7 @@ async function mount(cartItems: (q: Query) => Promise<CartItem[]>) {
         background: () => Promise.resolve({ recommend: { cartItems } } satisfies Background),
       }),
     ],
-    storage: null,
+    persistence: noPersistence,
   });
   // The background module arrives on a microtask; a question asked before it
   // does is asked of nobody.

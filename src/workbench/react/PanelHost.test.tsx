@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { Route } from '../../plugins/sdk';
 import { defineRoute } from '../../plugins/sdk';
 import type { Panel } from '../core';
-import { createWorkbench } from '../host';
+import { createWorkbench, noPersistence } from '../host';
 import { localPlugin } from '../host/local';
 import { WorkbenchProvider } from './WorkbenchProvider';
 import { PanelBoundary, PanelHost } from './PanelHost';
@@ -32,7 +32,7 @@ function mountFlaky(failures: number) {
         : Promise.resolve(body);
     },
   });
-  const services = createWorkbench({ installed: [plugin], storage: null });
+  const services = createWorkbench({ installed: [plugin], persistence: noPersistence });
   render(
     <WorkbenchProvider services={services}>
       <PanelHost panel={panel} />

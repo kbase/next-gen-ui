@@ -1,5 +1,5 @@
-import { useCallback, useContext, useSyncExternalStore } from 'react';
-import { HostContext } from './host';
+import { useSyncExternalStore } from 'react';
+import { useHost } from './host';
 
 // Adding something to the cart, from inside a plugin.
 //
@@ -77,23 +77,11 @@ export interface Cart {
 
 // The host's cart handle, re-rendering the caller on change so a button
 // that reads `has()` updates when the user removes the item from the tray
-// rather than from the button.
+// rather than from the button. Outside a panel it throws, like `useHost()`.
 export function useCart(): Cart {
-  const host = useContext(HostContext);
-  const cart = host?.cart;
-  useSyncExternalStore(
-    useCallback((cb: () => void) => cart?.subscribe(cb) ?? (() => {}), [cart]),
-    () => cart?.count() ?? 0,
-    () => 0,
-  );
-  const add = useCallback((item: CartItem) => cart?.add(item), [cart]);
-  const remove = useCallback((id: string) => cart?.remove(id), [cart]);
-  const items = useCallback(() => cart?.items() ?? [], [cart]);
-  const has = useCallback((id: string) => cart?.has(id) ?? false, [cart]);
-  const count = useCallback(() => cart?.count() ?? 0, [cart]);
-  const subscribe = useCallback(
-    (listener: () => void) => cart?.subscribe(listener) ?? (() => {}),
-    [cart],
-  );
-  return { add, remove, items, has, count, subscribe };
+  const { cart } = useHost();
+  // Subscribed only to force the re-render: `count()` is the cheapest
+  // snapshot that moves when this plugin's slice gains or loses an item.
+  useSyncExternalStore(cart.subscribe, cart.count);
+  return cart;
 }

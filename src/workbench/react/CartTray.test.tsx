@@ -6,6 +6,7 @@ import { createWorkbench } from '../host';
 import { WorkbenchProvider } from './WorkbenchProvider';
 import { PromptBar } from './PromptBar';
 import { CartTray } from './CartTray';
+import promptStyles from '../../design-system/components/PromptInput/PromptInput.module.scss';
 
 function mount(
   items: {
@@ -137,11 +138,11 @@ describe('the cart tray', () => {
         <PromptBar />
       </WorkbenchProvider>,
     );
-    expect(container.querySelector('[class*="cartRow"]')).toBeNull();
-    expect(container.querySelector('[class*="attachments"]')).toBeNull();
+    expect(screen.queryByRole('list', { name: /Cart/ })).toBeNull();
+    expect(container.querySelector(`.${promptStyles.attachments}`)).toBeNull();
 
     act(() => services.cart.add({ id: 'a', plugin: 'data', name: 'one', addedAt: 1 }));
-    expect(container.querySelector('[class*="cartRow"]')).not.toBeNull();
-    expect(container.querySelector('[class*="attachments"]')).not.toBeNull();
+    expect(screen.queryByRole('list', { name: /Cart/ })).not.toBeNull();
+    expect(container.querySelector(`.${promptStyles.attachments}`)).not.toBeNull();
   });
 });

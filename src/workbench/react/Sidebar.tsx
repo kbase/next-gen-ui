@@ -1,5 +1,5 @@
 import { useRef, useSyncExternalStore } from 'react';
-import type { RefObject } from 'react';
+import type { ReactElement, RefObject } from 'react';
 // Chrome glyphs come straight from Phosphor, never from the host's icon
 // table — the table is the plugins' namespace (host/icons.ts).
 import { CaretDown, DotsThree, PushPin, X } from '@phosphor-icons/react';
@@ -16,7 +16,8 @@ import type { Panel, PluginId } from '../core';
 import { makePane, sidebarPanels } from '../core';
 import type { PluginInfo } from '../host/installed';
 import { useDispatch, useLayout, useRun, useServices, useTitle } from './context';
-import { PanelHost } from './PanelHost';
+import { panelDomId } from './domIds';
+import { usePanelSlot } from './panelSlots';
 import { SplitView } from './SplitView';
 import { useDragPanel, useDragging, useDropTarget } from './useDnd';
 import styles from './Workbench.module.css';
@@ -30,6 +31,7 @@ import styles from './Workbench.module.css';
 export function Sidebar() {
   const layout = useLayout();
   const dispatch = useDispatch();
+  const run = useRun();
   const { source, preview: previewHandle } = useServices();
   useSyncExternalStore(source.subscribe, source.version, source.version);
   const { sidebar } = layout;
@@ -78,9 +80,22 @@ export function Sidebar() {
           const label = info?.title ?? plugin;
           const Icon = info?.icon ?? PushPin;
           return (
-            <PopoutIcon key={plugin} plugin={plugin} label={label}>
-              <Icon size={18} aria-hidden="true" />
-            </PopoutIcon>
+            <PanePopout
+              key={plugin}
+              panel={makePane(plugin)}
+              label={label}
+              // No leading glyph in the header: the rail icon this flew out
+              // from is right beside it and already is one.
+              trigger={
+                <Toolbar.Button
+                  render={
+                    <NavIcon aria-label={label}>
+                      <Icon size={18} aria-hidden="true" />
+                    </NavIcon>
+                  }
+                />
+              }
+            />
           );
         })}
         {unpinned.length > 0 && (
@@ -91,12 +106,20 @@ export function Sidebar() {
       </Toolbar.Root>
 
       {/* Collapsed, a preview flies out beside the ⋯ icon like the pinned
-          popouts; the layout — and the collapsed state — are untouched. */}
+          popouts; the layout — and the collapsed state — are untouched. The
+          two are alternatives, never both: a pane is drawn in one place. */}
       {sidebar.collapsed && previewing && (
-        <PreviewPopout
-          plugin={previewing}
-          info={infoOf(previewing)}
+        <PanePopout
+          panel={makePane(previewing)}
+          label={infoOf(previewing)?.title ?? previewing}
+          name={`${infoOf(previewing)?.title ?? previewing} preview`}
+          icon={infoOf(previewing)?.icon ?? PushPin}
           anchor={moreAnchorRef}
+          open
+          onPin={() => {
+            void run('workbench:pin', { plugin: previewing });
+            onDismissPreview();
+          }}
           onDismiss={onDismissPreview}
         />
       )}
@@ -151,7 +174,7 @@ export function Sidebar() {
           )}
         </div>
 
-        {previewing && (
+        {previewing && !sidebar.collapsed && (
           <PreviewBlock
             plugin={previewing}
             info={infoOf(previewing)}
@@ -167,10 +190,20 @@ function Block({ panel, info }: { panel: Panel; info: PluginInfo | undefined }) 
   const layout = useLayout();
   const dispatch = useDispatch();
   const run = useRun();
-  const { focusIntentRef } = useServices();
+  const { focusIntentRef, source } = useServices();
   const title = useTitle(panel);
   const Icon = info?.icon ?? PushPin;
   const folded = layout.sidebar.folded.includes(panel.id);
+  const collapsed = layout.sidebar.collapsed;
+  // Collapsed, the blocks are cropped away and the pane is drawn in the
+  // flyout its rail icon opens; the slot stays registered so the pane keeps
+  // its mount while nothing is showing it.
+  const slot = usePanelSlot<HTMLDivElement>({
+    panel,
+    hidden: collapsed,
+    activates: true,
+    sizing: source.loaded(panel.plugin, 'pane')?.fit === 'content' ? 'content' : undefined,
+  });
   const focused = layout.focus === panel.id;
   const headerId = `wb-block-${panel.plugin}`;
   const at = layout.sidebar.pinned.indexOf(panel.plugin);
@@ -190,6 +223,10 @@ function Block({ panel, info }: { panel: Panel; info: PluginInfo | undefined }) 
       ref={dropRef}
       className={styles.block}
       aria-labelledby={headerId}
+      // The pane's body is drawn in the panel layer, outside this element;
+      // `aria-owns` puts it back inside the region its header names, which
+      // containing it used to do.
+      aria-owns={folded ? undefined : panelDomId(panel.id)}
       data-focused={focused || undefined}
       data-folded={folded || undefined}
       data-over={isOver || undefined}
@@ -253,28 +290,7 @@ function Block({ panel, info }: { panel: Panel; info: PluginInfo | undefined }) 
           </ContextMenu.Item>
         </ContextMenu.Popup>
       </ContextMenu.Root>
-      {!folded && (
-        <div
-          className={styles.blockBody}
-          data-panel={panel.id}
-          // Pointer as well as focus: clicking plain text fires no focus
-          // event, so the workbench focus would stay where it last was.
-          onPointerDownCapture={() => {
-            if (layout.focus !== panel.id) {
-              focusIntentRef.current = 'user';
-              dispatch({ type: 'focus', panel: panel.id });
-            }
-          }}
-          onFocusCapture={() => {
-            if (layout.focus !== panel.id) {
-              focusIntentRef.current = 'user';
-              dispatch({ type: 'focus', panel: panel.id });
-            }
-          }}
-        >
-          <PanelHost panel={panel} />
-        </div>
-      )}
+      {!folded && <div ref={slot} className={styles.blockBody} data-panel-slot={panel.id} />}
     </section>
   );
 }
@@ -359,17 +375,24 @@ function PreviewBlock({
   onDismiss: () => void;
 }) {
   const run = useRun();
+  const { source } = useServices();
+  const panel = makePane(plugin);
   const title = info?.title ?? plugin;
   const Icon = info?.icon ?? PushPin;
   const { dragRef, dragHandlers, isDragging } = useDragPanel({
-    panel: makePane(plugin).id,
+    panel: panel.id,
     kind: 'pane',
     pins: plugin,
+  });
+  const slot = usePanelSlot<HTMLDivElement>({
+    panel,
+    sizing: source.loaded(plugin, 'pane')?.fit === 'content' ? 'content' : undefined,
   });
   return (
     <section
       className={`${styles.block} ${styles.previewBlock}`}
       aria-label={`${title} preview`}
+      aria-owns={panelDomId(panel.id)}
       data-dragging={isDragging || undefined}
     >
       <div className={`${styles.blockHeader} ${styles.previewHeader}`}>
@@ -402,33 +425,55 @@ function PreviewBlock({
           <X size={13} aria-hidden="true" />
         </Button>
       </div>
-      <div className={styles.blockBody}>
-        <PanelHost panel={makePane(plugin)} />
-      </div>
+      <div ref={slot} className={styles.blockBody} data-panel-slot={panel.id} />
     </section>
   );
 }
 
-// The collapsed form of the preview: the chosen navigator in a flyout
-// beside the rail, with the same Pin offer the preview block makes.
-function PreviewPopout({
-  plugin,
-  info,
+// A pane in a flyout beside the rail: a pinned plugin's, opened from its
+// icon while the sidebar is collapsed, or an unpinned one being previewed
+// there. One component for both because there is one difference between
+// them — the preview is opened from the More menu rather than by its own
+// trigger, and offers to pin what it is showing.
+function PanePopout({
+  panel,
+  label,
+  name = label,
+  icon: Icon,
+  trigger,
   anchor,
+  open,
+  onPin,
   onDismiss,
 }: {
-  plugin: PluginId;
-  info: PluginInfo | undefined;
-  anchor: RefObject<HTMLElement | null>;
-  onDismiss: () => void;
+  panel: Panel;
+  label: string;
+  // The flyout's accessible name, when it differs from the header's words.
+  name?: string;
+  icon?: PluginInfo['icon'];
+  trigger?: ReactElement;
+  anchor?: RefObject<HTMLElement | null>;
+  open?: boolean;
+  onPin?: () => void;
+  onDismiss?: () => void;
 }) {
-  const run = useRun();
   const width = useLayout().sidebar.width;
-  const fit = useServices().source.loaded(plugin, 'pane')?.fit;
-  const title = info?.title ?? plugin;
-  const Icon = info?.icon ?? PushPin;
+  // A content-fit pane's flyout hugs its content too.
+  const fit = useServices().source.loaded(panel.plugin, 'pane')?.fit;
+  // Priority over the block's slot: while this is open it is where the pane
+  // is drawn, and the block's slot is the hidden one. `anchored` puts the
+  // body above the popover it is drawn into.
+  const slot = usePanelSlot<HTMLDivElement>({
+    panel,
+    priority: 1,
+    anchored: true,
+    sizing: fit === 'content' ? 'content' : undefined,
+  });
   return (
-    <Popover.Root open onOpenChange={(open) => !open && onDismiss()}>
+    <Popover.Root open={open} onOpenChange={(next) => !next && onDismiss?.()}>
+      {trigger && <Popover.Trigger render={trigger} />}
+      {/* Beside the rail with its top at the icon: the default bottom-
+          centered placement would cover the icons under the clicked one. */}
       <Popover.Popup
         anchor={anchor}
         side="right"
@@ -437,75 +482,28 @@ function PreviewPopout({
         alignOffset={6}
         className={styles.popout}
         style={{ width, height: fit === 'content' ? 'auto' : undefined }}
-        aria-label={`${title} preview`}
+        aria-label={name}
+        // The pane's body is drawn over this flyout, not inside it.
+        aria-owns={panelDomId(panel.id)}
       >
         <div className={styles.popoutBody}>
           <div className={styles.popoutHeader}>
-            <span className={styles.blockIcon} aria-hidden="true">
-              <Icon size={14} />
-            </span>
-            <span className={styles.popoutTitle}>{title}</span>
-            <div className={styles.spacer} />
-            <Button
-              size="xs"
-              variant="outline"
-              onClick={() => {
-                void run('workbench:pin', { plugin });
-                onDismiss();
-              }}
-            >
-              Pin
-            </Button>
-          </div>
-          <div className={styles.blockBody}>
-            <PanelHost panel={makePane(plugin)} />
-          </div>
-        </div>
-      </Popover.Popup>
-    </Popover.Root>
-  );
-}
-
-// A pinned plugin's icon while the sidebar is collapsed: its navigator pops
-// out beside the icon, and the layout is untouched.
-function PopoutIcon({
-  plugin,
-  label,
-  children,
-}: {
-  plugin: PluginId;
-  label: string;
-  children: React.ReactNode;
-}) {
-  const panel = makePane(plugin);
-  const width = useLayout().sidebar.width;
-  // A content-fit pane's flyout hugs its content too.
-  const fit = useServices().source.loaded(plugin, 'pane')?.fit;
-  return (
-    <Popover.Root>
-      <Popover.Trigger
-        render={<Toolbar.Button render={<NavIcon aria-label={label}>{children}</NavIcon>} />}
-      />
-      {/* Beside the rail with its top at the icon: the default bottom-
-          centered placement would cover the icons under the clicked one. */}
-      <Popover.Popup
-        side="right"
-        sideOffset={8}
-        align="start"
-        alignOffset={6}
-        className={styles.popout}
-        style={{ width, height: fit === 'content' ? 'auto' : undefined }}
-        aria-label={label}
-      >
-        <div className={styles.popoutBody}>
-          {/* No leading glyph: the rail icon this flew out from is right
-              beside the header and already is one. */}
-          <div className={styles.popoutHeader}>
+            {Icon && (
+              <span className={styles.blockIcon} aria-hidden="true">
+                <Icon size={14} />
+              </span>
+            )}
             <span className={styles.popoutTitle}>{label}</span>
+            {onPin && (
+              <>
+                <div className={styles.spacer} />
+                <Button size="xs" variant="outline" onClick={onPin}>
+                  Pin
+                </Button>
+              </>
+            )}
           </div>
-          <div className={styles.blockBody}>
-            <PanelHost panel={panel} />
-          </div>
+          <div ref={slot} className={styles.blockBody} data-panel-slot={panel.id} />
         </div>
       </Popover.Popup>
     </Popover.Root>

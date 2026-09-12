@@ -1,8 +1,8 @@
 import { Toast } from '@kbase/design-system';
 import { useLayout, useServices } from './context';
-import { FrameLayerProvider } from './FrameLayer';
 import { LiveRegion } from './LiveRegion';
 import { MainArea } from './MainArea';
+import { PanelLayer } from './PanelLayer';
 import { PromptBar } from './PromptBar';
 import { Sidebar } from './Sidebar';
 import { StatusBar } from './StatusBar';
@@ -24,7 +24,7 @@ export function Workbench() {
       <div className={styles.root} data-locked={layout.locked || undefined}>
         <WorkbenchMenubar />
         <WorkbenchDnd>
-          <FrameLayerProvider>
+          <PanelLayer>
             <div className={styles.body}>
               <Sidebar />
               <div className={styles.mainColumn}>
@@ -32,7 +32,7 @@ export function Workbench() {
                 {layout.bars.prompt && <PromptBar />}
               </div>
             </div>
-          </FrameLayerProvider>
+          </PanelLayer>
         </WorkbenchDnd>
         {layout.bars.status && <StatusBar />}
         <LiveRegion />

@@ -48,6 +48,17 @@ window.matchMedia = (query: string) =>
 
 afterEach(() => mediaOverrides.clear());
 
+// jsdom has no ResizeObserver, and no layout for one to report: every box is
+// zero. A stub keeps the panel layer on its one code path — it measures, gets
+// nothing, and leaves the bodies where they are.
+class NoLayoutResizeObserver implements ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+window.ResizeObserver = NoLayoutResizeObserver;
+globalThis.ResizeObserver = NoLayoutResizeObserver;
+
 // Default handler set: a happy /api/V2/me. Tests override per-case
 // via `server.use(...)`. The wildcard host avoids depending on the
 // resolved VITE_AUTH_ORIGIN at test time. `idents`, `created`,

@@ -32,7 +32,14 @@ function mountFlaky(failures: number) {
         : Promise.resolve(body);
     },
   });
-  const services = createWorkbench({ installed: [plugin], persistence: noPersistence });
+  const services = createWorkbench({
+    installed: [plugin],
+    persistence: noPersistence,
+    // Neither module exists anywhere here, and naming a plugin that is not
+    // installed is how a workbench is built without an assistant or an intent.
+    defaultAssistant: 'none',
+    defaultIntent: 'none',
+  });
   render(
     <WorkbenchProvider services={services}>
       <PanelHost panel={panel} />

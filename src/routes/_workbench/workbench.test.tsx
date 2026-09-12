@@ -5,7 +5,8 @@ import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/rea
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { routeTree } from '../../routeTree.gen';
-import { testWorkbench } from '../../test/workbench';
+import { panelBody, testWorkbench } from '../../test/workbench';
+import { paneId } from '../../workbench/core';
 
 // Lazy plugin modules and route loaders both run before a panel appears;
 // under a loaded test run that exceeds the 1s default.
@@ -67,11 +68,12 @@ describe('workbench deep links', () => {
     // that.
     const { router } = mountAt('/workbench', { defaultPinned: ['jobs'] });
     const sidebar = await screen.findByRole('region', { name: 'Sidebar' });
-    await user.click(await within(sidebar).findByRole('button', { name: /assemble reads/i }));
+    const pane = await panelBody(paneId('jobs'));
+    await user.click(await within(pane).findByRole('button', { name: /assemble reads/i }));
     await waitFor(() => expect(pathname(router)).toBe('/p/jobs/12'));
     // Same sidebar node: the shell must not remount when the URL changes.
     expect(sidebar.isConnected).toBe(true);
-    await user.click(await within(sidebar).findByRole('button', { name: /nifh search/i }));
+    await user.click(await within(pane).findByRole('button', { name: /nifh search/i }));
     await waitFor(() => expect(pathname(router)).toBe('/p/jobs/20'));
     await user.click(screen.getByRole('tab', { name: /job 12/i }));
     await waitFor(() => expect(pathname(router)).toBe('/p/jobs/12'));

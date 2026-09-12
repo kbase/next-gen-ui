@@ -7,13 +7,14 @@ import { useDispatch, useLayout, useRun, useServices, useTitle } from './context
 import { Breadcrumbs } from './Breadcrumbs';
 import { useGroupLabels } from './useGroupLabels';
 import { panelDomId, tabDomId } from './domIds';
-import { PanelHost } from './PanelHost';
+import { usePanelSlot } from './panelSlots';
 import { useDragPanel, useDropTarget } from './useDnd';
 import { GroupDropZones } from './WorkbenchDnd';
 import styles from './Workbench.module.css';
 
-// One tab strip and its panels. Every panel stays mounted and is hidden
-// when inactive, so switching tabs keeps scroll positions and iframe state.
+// One tab strip and the boxes its panels are drawn over. Every panel stays
+// mounted and is hidden when inactive, so switching tabs keeps scroll
+// positions and whatever else the panel holds.
 export function TabGroup({ group }: { group: Group }) {
   const layout = useLayout();
   const dispatch = useDispatch();
@@ -98,41 +99,41 @@ export function TabGroup({ group }: { group: Group }) {
       </div>
       {group.active && <Breadcrumbs panel={group.active} />}
       <div className={styles.groupBody}>
-        {group.tabs.map((id) => {
-          const panel = layout.panels[id];
-          return (
-            <div
-              key={id}
-              role="tabpanel"
-              id={panelDomId(id)}
-              aria-labelledby={tabDomId(id)}
-              hidden={group.active !== id}
-              className={styles.tabpanel}
-              data-panel={id}
-              // Pointer as well as focus: most of a panel is plain text,
-              // and clicking it fires no focus event, so the workbench
-              // focus would stay wherever it last was.
-              onPointerDownCapture={() => {
-                if (layout.focus !== id) {
-                  focusIntentRef.current = 'user';
-                  dispatch({ type: 'focus', panel: id });
-                }
-              }}
-              onFocusCapture={() => {
-                if (layout.focus !== id) {
-                  focusIntentRef.current = 'user';
-                  dispatch({ type: 'focus', panel: id });
-                }
-              }}
-            >
-              {panel && <PanelHost panel={panel} />}
-            </div>
-          );
-        })}
+        {group.tabs.map((id) => (
+          <TabPanelSlot key={id} panel={layout.panels[id]} id={id} active={group.active === id} />
+        ))}
         <GroupDropZones group={group.id} />
       </div>
     </div>
   );
+}
+
+// Where this tab's panel is drawn, not what draws it: the body lives in the
+// layer and is laid over this box, so a tab moved to another group changes
+// which box its body follows and not what its body hangs from. The tabpanel
+// role, and the id the tab's `aria-controls` names, travel with the body.
+function TabPanelSlot({
+  panel,
+  id,
+  active,
+}: {
+  panel: Panel | undefined;
+  id: PanelId;
+  active: boolean;
+}) {
+  const slot = usePanelSlot<HTMLDivElement>(
+    panel
+      ? {
+          panel,
+          hidden: !active,
+          activates: true,
+          shape: 'group',
+          role: 'tabpanel',
+          labelledBy: tabDomId(id),
+        }
+      : null,
+  );
+  return <div ref={slot} hidden={!active} className={styles.tabpanel} data-panel-slot={id} />;
 }
 
 // The Panel menu's splits, aimed at this tab rather than the focused one.

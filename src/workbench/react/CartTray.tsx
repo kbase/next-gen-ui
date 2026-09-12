@@ -207,6 +207,3 @@ function Preview({ item, plugin }: { item: CartItem; plugin?: string }) {
 function countOf(n: number): string {
   return n === 1 ? '1 item' : `${n} items`;
 }
-
-// On the disclosure label, so a reader knows whether opening it costs them the
-// screen before they press it.

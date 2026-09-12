@@ -75,7 +75,9 @@ export function workbenchCommands({
   focusPrompt,
 }: WorkbenchCommandDeps): Command[] {
   const focusTo = (target: PanelId | null) => {
-    if (target) dispatch({ type: 'focus', panel: target });
+    // A named action moves the caret to the panel it names, so the focus sync
+    // has to hear that this was a command and not a pointer landing somewhere.
+    if (target) dispatch({ type: 'focus', panel: target, by: 'command' });
   };
   // Every command that acts on one panel takes it the same way: absent, the
   // focused panel; named, whatever the surface that called was acting on.

@@ -298,6 +298,77 @@ describe('the page and cart loop', () => {
     expect(store.get('page').pool).toEqual(['uniprot:P0AEX9', 'taxon:83333']);
   });
 
+  // K70: the third case, beside a pool that grew and a question that changed.
+  it('the same terms put again ask nobody and leave the rows alone', async () => {
+    const relate = vi.fn<(q: TermsQuery) => CartItem[]>(({ terms }) =>
+      terms.map((t) => ({ id: `p:${t}`, name: t })),
+    );
+    const store = createQueryStore();
+    const runner = createQueryRunner(index({ p: { relate } }), store);
+    runner.set('page', { terms: ['a:1', 'b:2'], label: 'A' });
+    await vi.advanceTimersByTimeAsync(SETTLE_MS);
+    const shown = store.get('page');
+    runner.set('page', { terms: ['a:1', 'b:2'], label: 'A' });
+    await vi.advanceTimersByTimeAsync(SETTLE_MS + BUDGET_MS);
+    expect(relate).toHaveBeenCalledTimes(1);
+    // Not a row moved, dimmed or reloaded: the state is the one on screen.
+    expect(store.get('page')).toBe(shown);
+  });
+
+  // The cart orders its terms newest-first (react/useAmbientQueries.ts), and
+  // no `relate` reads that order: a reorder is the same question.
+  it('the same terms in a new order ask nobody', async () => {
+    const relate = vi.fn<(q: TermsQuery) => CartItem[]>(() => []);
+    const store = createQueryStore();
+    const runner = createQueryRunner(index({ p: { relate } }), store);
+    runner.set('cart', { terms: ['a:1', 'b:2'], label: '2 items' });
+    await vi.advanceTimersByTimeAsync(SETTLE_MS);
+    runner.set('cart', { terms: ['b:2', 'a:1'], label: '2 items' });
+    await vi.advanceTimersByTimeAsync(SETTLE_MS);
+    expect(relate).toHaveBeenCalledTimes(1);
+    expect(store.get('cart').pool).toEqual(['a:1', 'b:2']);
+  });
+
+  // The identical question during the settle is the one already waiting, not
+  // a reason to start the wait over.
+  it('the same terms put again before the settle do not restart it', async () => {
+    const relate = vi.fn<(q: TermsQuery) => CartItem[]>(() => []);
+    const store = createQueryStore();
+    const runner = createQueryRunner(index({ p: { relate } }), store);
+    runner.set('page', { terms: ['a:1'] });
+    await vi.advanceTimersByTimeAsync(SETTLE_MS - 50);
+    runner.set('page', { terms: ['a:1'] });
+    await vi.advanceTimersByTimeAsync(50);
+    expect(relate).toHaveBeenCalledTimes(1);
+  });
+
+  it('the same terms under a new name rename the heading and ask nobody', async () => {
+    const relate = vi.fn<(q: TermsQuery) => CartItem[]>(() => [{ id: 'p:row', name: 'row' }]);
+    const store = createQueryStore();
+    const runner = createQueryRunner(index({ p: { relate } }), store);
+    runner.set('page', { terms: ['a:1'], label: '/protein/P0AEX9' });
+    await vi.advanceTimersByTimeAsync(SETTLE_MS);
+    runner.set('page', { terms: ['a:1'], label: 'P0AEX9' });
+    await vi.advanceTimersByTimeAsync(SETTLE_MS);
+    expect(relate).toHaveBeenCalledTimes(1);
+    expect(store.get('page').label).toBe('P0AEX9');
+    expect(store.get('page').answers[0].stale).toBeUndefined();
+    expect(store.get('page').answers[0].items.map((i) => i.id)).toEqual(['p:row']);
+  });
+
+  // A different panel with the same terms is a different question: its own
+  // plugin is the one left out.
+  it('the same terms from a new owner are a new question', async () => {
+    const relate = vi.fn<(q: TermsQuery) => CartItem[]>(() => []);
+    const store = createQueryStore();
+    const runner = createQueryRunner(index({ p: { relate }, q: { relate } }), store);
+    runner.set('page', { terms: ['a:1'], owner: 'p' });
+    await vi.advanceTimersByTimeAsync(SETTLE_MS);
+    runner.set('page', { terms: ['a:1'], owner: 'q' });
+    await vi.advanceTimersByTimeAsync(SETTLE_MS);
+    expect(relate).toHaveBeenCalledTimes(2);
+  });
+
   it('a new label renames the heading and asks nobody, during the settle and after it', async () => {
     const relate = vi.fn<(q: TermsQuery) => CartItem[]>(() => [{ id: 'p:row', name: 'row' }]);
     const store = createQueryStore();

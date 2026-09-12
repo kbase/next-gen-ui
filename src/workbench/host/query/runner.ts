@@ -67,6 +67,19 @@ export interface RunnerOptions {
   intent?: () => Intent | undefined;
 }
 
+// Two pools are the same question when they hold the same terms. Order is not
+// part of the question: `relate` is given a bag of terms and no plugin is told
+// which one came first, and the Related pane keeps the order rows first
+// appeared (core/recommendations.ts), so asking again in a new order could not
+// move a row the reader already has. The cart's newest-first order therefore
+// decides which answers arrive first within one round, not whether a round
+// runs.
+function sameQuestion(a: readonly string[], b: readonly string[]): boolean {
+  if (a.length !== b.length) return false;
+  const have = new Set(a);
+  return b.every((t) => have.has(t));
+}
+
 // The union of two answers from one plugin, for a pool that grew: items the
 // plugin gave for the earlier terms stay, items for the new terms join them.
 function merged(prev: Answer | undefined, next: Answer): Answer {
@@ -273,6 +286,13 @@ export function createQueryRunner(
     publish();
   };
 
+  // The heading over the answers already in hand.
+  const relabel = (source: QuerySource, label: string) => {
+    const state = store.get(source);
+    if (state.label === label) return;
+    store.set(source, { ...state, label });
+  };
+
   return {
     typed(text) {
       if (!text) {
@@ -284,9 +304,18 @@ export function createQueryRunner(
       offerFor(text, termsIn(text));
     },
     set(source, input) {
-      window.clearTimeout(timers.get(source));
       const terms = [...new Set(input.terms)];
       const label = input.label ?? '';
+      const before = asked.get(source);
+      // The question already asked, put again: the same terms in any order,
+      // from the same owner. Nothing to ask — the answers in hand are the
+      // answers to it, and a round still settling or in flight is this round.
+      // Only the heading can have moved.
+      if (before && before.owner === input.owner && sameQuestion(before.pool, terms)) {
+        relabel(source, label);
+        return;
+      }
+      window.clearTimeout(timers.get(source));
       if (terms.length === 0) {
         inflight.get(source)?.abort();
         asked.delete(source);
@@ -296,13 +325,13 @@ export function createQueryRunner(
       // A pool that only grew — a page whose terms arrive as it loads, a cart
       // with one more item — is asked about the new terms alone, and the
       // answers join the sections already showing rather than replacing them.
-      const before = asked.get(source);
+      // Every old term still present makes this a growth: the equal pool left
+      // above, so terms holds something the pool did not.
       const grow =
         !!before &&
         before.owner === input.owner &&
         before.pool.length > 0 &&
-        before.pool.every((t) => terms.includes(t)) &&
-        terms.length > before.pool.length;
+        before.pool.every((t) => terms.includes(t));
       const question = grow ? terms.filter((t) => !before!.pool.includes(t)) : terms;
       asked.set(source, { owner: input.owner, pool: terms });
       const prev = store.get(source);
@@ -319,9 +348,7 @@ export function createQueryRunner(
       );
     },
     label(source, label) {
-      const state = store.get(source);
-      if (state.label === label) return;
-      store.set(source, { ...state, label });
+      relabel(source, label);
     },
     stop() {
       for (const timer of timers.values()) window.clearTimeout(timer);

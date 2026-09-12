@@ -8,11 +8,12 @@ import {
   useSyncExternalStore,
 } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
-import { ArrowCounterClockwise, Plug } from '@phosphor-icons/react';
+import { ArrowCounterClockwise, Placeholder, Plug } from '@phosphor-icons/react';
 import { Alert, Button, EmptyState, Loader } from '@kbase/design-system';
 import type { Crumb, Mount, PanelHandle, PluginHost } from '../../plugins/sdk';
 import type { Panel } from '../core';
-import { useServices } from './context';
+import { placementOf } from '../core';
+import { useLayout, useRun, useServices } from './context';
 import { forgetPanel } from '../host/services';
 import { pluginHostFor } from '../host/pluginHost';
 import styles from './Workbench.module.css';
@@ -182,20 +183,48 @@ function LoadFailed({
   );
 }
 
-// A panel whose plugin is no longer installed, or no longer has this kind of
-// panel. Nothing failed, so this is a nothing-here rather than an error: the
-// slot names something that is not there. The layout keeps the slot so
-// reinstalling brings it back where it was, which is what closing gives up.
+// A panel with nothing to draw, in the two ways that happens, which read
+// differently because only one of them is likely to end. A plugin the index
+// has no manifest for may be listed again the next time the registry is
+// fetched, and the layout holds its place meanwhile. A plugin whose manifest
+// lists no panel of this kind is installed and current: the place is being
+// held for something no reload will bring.
+//
+// Either way the control that gives the place up is here, because this box is
+// the whole of what the reader can see of the panel. In the sidebar that
+// control unpins: `close` refuses a pinned pane (core/reduce.ts, `close`), so
+// a Close button here would do nothing.
 function GhostPanel({ panel }: { panel: Panel }) {
-  const { dispatch } = useServices();
+  const { source } = useServices();
+  const layout = useLayout();
+  const run = useRun();
+  const manifest = source.manifest(panel.plugin);
+  const inSidebar = placementOf(layout, panel.id).zone === 'sidebar';
+  const what = panel.kind === 'pane' ? 'sidebar pane' : 'page';
+  const here = inSidebar ? 'This block' : 'This tab';
+  const { label, taking, leave } = inSidebar
+    ? {
+        label: 'Unpin',
+        taking: 'Unpinning',
+        leave: () => void run('workbench:unpin', { plugin: panel.plugin }),
+      }
+    : {
+        label: 'Close',
+        taking: 'Closing',
+        leave: () => void run('workbench:close', { panel: panel.id }),
+      };
   return (
     <EmptyState
-      icon={<Plug size={32} />}
-      title={`${panel.plugin} is not installed`}
-      description="Reinstalling it brings this panel back. Closing gives up its place in the layout."
+      icon={manifest ? <Placeholder size={32} /> : <Plug size={32} />}
+      title={manifest ? `${manifest.title} has no ${what}` : `${panel.plugin} is not installed`}
+      description={
+        manifest
+          ? `${manifest.title} is installed and has no ${what} to draw. ${taking} removes ${here.toLowerCase()}.`
+          : `${here} is held for it, so reinstalling brings the ${what} back here. ${taking} gives the place up.`
+      }
       action={
-        <Button variant="outline" onClick={() => dispatch({ type: 'close', panel: panel.id })}>
-          Close
+        <Button variant="outline" onClick={leave}>
+          {label}
         </Button>
       }
     />

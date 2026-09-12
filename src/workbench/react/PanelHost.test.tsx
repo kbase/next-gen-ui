@@ -1,13 +1,17 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { UserEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import type { Route } from '../../plugins/sdk';
 import { defineRoute } from '../../plugins/sdk';
-import type { Panel } from '../core';
+import type { Panel, PluginId } from '../core';
+import { paneId } from '../core';
 import { noPersistence } from '../host';
 import { createWorkbench } from '../compose';
 import { localPlugin } from '../host/local';
+import { panelBody, testWorkbench } from '../../test/workbench';
+import { PanelLayer } from './PanelLayer';
+import { Sidebar } from './Sidebar';
 import { WorkbenchProvider } from './WorkbenchProvider';
 import { PanelBoundary, PanelHost } from './PanelHost';
 
@@ -91,6 +95,53 @@ describe('a panel whose module fails to load', () => {
     await user.click(screen.getByRole('button', { name: 'Try again' }));
     expect(await screen.findByText('flaky panel body')).toBeInTheDocument();
     expect(attempts()).toBe(3);
+  });
+});
+
+// A pinned plugin's block, with the layer that draws the pane its slot
+// measures out: a sidebar ghost is reachable only through a block, and the
+// block is what holds it open.
+function mountPinned(plugin: PluginId) {
+  const services = testWorkbench({ defaultPinned: [plugin] });
+  render(
+    <WorkbenchProvider services={services}>
+      <PanelLayer>
+        <Sidebar />
+      </PanelLayer>
+    </WorkbenchProvider>,
+  );
+  return services;
+}
+
+describe('a pinned plugin with no pane to draw', () => {
+  // `settings` is a host plugin: installed, a page and no pane. Pinning it is
+  // the same state a plugin reaches when a new manifest drops its `pane`.
+  it('says the installed plugin has no pane, and unpins from the block', async () => {
+    const user = userEvent.setup();
+    const services = mountPinned('settings');
+    const body = await panelBody(paneId('settings'));
+    expect(body).toHaveTextContent('Settings has no sidebar pane');
+    expect(body).toHaveTextContent('Settings is installed and has no sidebar pane to draw.');
+    const run = vi.spyOn(services.registry, 'run');
+
+    await user.click(within(body).getByRole('button', { name: 'Unpin' }));
+
+    expect(run).toHaveBeenCalledWith('workbench:unpin', { plugin: 'settings' }, 'user');
+    await waitFor(() => expect(services.store.get().sidebar.pinned).toEqual([]));
+    expect(services.store.get().panels).toEqual({});
+  });
+
+  // The other nothing-here, and the one that may end: nothing unpins it, so
+  // the plugin returning finds its block where it left it.
+  it('says an uninstalled plugin is not installed, and keeps its block for it', async () => {
+    const services = mountPinned('gone');
+    const body = await panelBody(paneId('gone'));
+
+    expect(body).toHaveTextContent('gone is not installed');
+    expect(body).toHaveTextContent('This block is held for it, so reinstalling brings');
+    expect(body).not.toHaveTextContent('has no sidebar pane');
+    expect(within(body).getByRole('button', { name: 'Unpin' })).toBeInTheDocument();
+    expect(services.store.get().sidebar.pinned).toEqual(['gone']);
   });
 });
 

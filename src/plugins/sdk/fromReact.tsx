@@ -1,7 +1,8 @@
 import { Component } from 'react';
 import type { ComponentType, ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Button } from '@kbase/design-system';
+import { ArrowCounterClockwise } from '@phosphor-icons/react';
+import { Alert, Button } from '@kbase/design-system';
 import { HostContext } from './host';
 import type { Mount } from './modules';
 import { PanelContext } from './panel';
@@ -51,18 +52,23 @@ class Fence extends Component<{ children: ReactNode }, { error: Error | null }> 
     return { error };
   }
 
+  // Clearing the error draws the children again inside the root this fence
+  // is already in: the plugin's `mount` and its React root both survive, so
+  // only the component below starts over.
   render() {
     if (!this.state.error) return this.props.children;
     return (
-      <div role="alert" style={{ padding: 'var(--s-5)', display: 'grid', gap: 'var(--s-3)' }}>
-        <p className="body">This panel crashed.</p>
-        <p className="caption">{this.state.error.message}</p>
-        <div>
-          <Button size="sm" variant="outline" onClick={() => this.setState({ error: null })}>
-            Try again
+      <Alert
+        color="red"
+        trace={this.state.error.message}
+        actions={
+          <Button variant="link" size="sm" onClick={() => this.setState({ error: null })}>
+            <ArrowCounterClockwise size={12} /> Try again
           </Button>
-        </div>
-      </div>
+        }
+      >
+        <strong>This panel crashed.</strong>
+      </Alert>
     );
   }
 }

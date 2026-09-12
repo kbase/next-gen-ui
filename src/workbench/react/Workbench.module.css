@@ -554,16 +554,8 @@
   display: none;
 }
 
-.panelMessage {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--s-3);
-  padding: var(--s-5);
-}
-
-/* An alert inside a panel body, which has no padding of its own: the same
-   gutter .panelMessage sets, so a failed panel sits where a message does. The
+/* An alert inside a panel body, which has no padding of its own, so the
+   alert takes a gutter rather than sitting against the tab's edges. The
    alert draws everything else. */
 .panelAlert {
   margin: var(--s-5);

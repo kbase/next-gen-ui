@@ -1,5 +1,6 @@
 import { act } from 'react';
 import { within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { fromReact } from '../../plugins/sdk';
 import type { Mount, PanelHandle, PluginHost } from '../../plugins/sdk';
@@ -59,12 +60,19 @@ describe('a page that throws while rendering', () => {
   // rendered fence, not the log.
   const quiet = () => vi.spyOn(console, 'error').mockImplementation(() => {});
 
+  // What threw is the fence alert's `trace`, which is collapsed until Details
+  // is pressed.
+  async function trace(el: HTMLElement) {
+    await userEvent.setup().click(within(el).getByRole('button', { name: 'Details' }));
+    return within(el).findByText('the page threw while rendering');
+  }
+
   it('shows the fence from a host page', async () => {
     quiet();
     const { panel } = stubPanel();
     const el = await mount(hostReact(() => ({}) as WorkbenchServices, Boom), panel);
     expect(within(el).getByRole('alert')).toHaveTextContent('This panel crashed.');
-    expect(within(el).getByText('the page threw while rendering')).toBeInTheDocument();
+    expect(await trace(el)).toBeInTheDocument();
   });
 
   it('shows the fence from a plugin page', async () => {
@@ -72,7 +80,7 @@ describe('a page that throws while rendering', () => {
     const { panel } = stubPanel();
     const el = await mount(fromReact(Boom), panel);
     expect(within(el).getByRole('alert')).toHaveTextContent('This panel crashed.');
-    expect(within(el).getByText('the page threw while rendering')).toBeInTheDocument();
+    expect(await trace(el)).toBeInTheDocument();
   });
 });
 

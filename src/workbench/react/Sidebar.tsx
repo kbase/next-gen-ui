@@ -3,7 +3,15 @@ import type { RefObject } from 'react';
 // Chrome glyphs come straight from Phosphor, never from the host's icon
 // table — the table is the plugins' namespace (host/icons.ts).
 import { CaretDown, DotsThree, PushPin, X } from '@phosphor-icons/react';
-import { Button, ContextMenu, Menu, NavIcon, Popover, Toolbar } from '@kbase/design-system';
+import {
+  Button,
+  ContextMenu,
+  EmptyState,
+  Menu,
+  NavIcon,
+  Popover,
+  Toolbar,
+} from '@kbase/design-system';
 import type { Panel, PluginId } from '../core';
 import { groups, makePane, sidebarPanels } from '../core';
 import type { PluginInfo } from '../host/installed';
@@ -103,9 +111,11 @@ export function Sidebar() {
       >
         <div className={styles.accordion}>
           {blocks.length === 0 ? (
-            <p className={`caption ${styles.panelMessage}`}>
-              Nothing pinned. Open More to add a plugin.
-            </p>
+            <EmptyState
+              icon={<PushPin size={32} />}
+              title="Nothing pinned"
+              description="Open More to add a plugin."
+            />
           ) : (
             <SplitView
               dir="col"

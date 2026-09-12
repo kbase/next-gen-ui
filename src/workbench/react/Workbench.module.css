@@ -1354,6 +1354,20 @@
   font-size: var(--fs-2);
 }
 
+/* Why the row is there, under what the row is. It wraps where the two lines
+   above truncate: a reason cut mid-term ("because your cart has P1…") says
+   less than nothing, and two plugins answering one item need the room. Two
+   lines is the ceiling, so a row cannot push the next one off the pane. */
+.relatedWhy {
+  color: var(--c-ink5);
+  font-size: var(--fs-2);
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
 /* Turning one down. Quiet until the row is under the pointer: a list of
    suggestions should not read as a list of things to close. */
 .relatedDismiss {

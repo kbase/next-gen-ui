@@ -30,7 +30,10 @@ export type Operation =
 
 export type OperationType = Operation['type'];
 
-// Structural changes get an undo snapshot; focus, sizing and bindings do not.
+// Which operations push an undo snapshot, i.e. what one Ctrl+Z takes back.
+// Not reduce.ts's LOCKED_OUT, which answers a different question: `open` is
+// undoable yet allowed on a locked layout, `resize` is refused when locked
+// yet is no undo step.
 const UNDOABLE: ReadonlySet<OperationType> = new Set<OperationType>([
   'open',
   'close',

@@ -1,5 +1,5 @@
 import type { MainTarget, PanelId, PluginId } from '../core';
-import { makePane, makeRoute } from '../core';
+import { makePane, makeRoute, placementOf } from '../core';
 import type { WorkbenchServices } from '../react/services';
 
 // Opening a plugin's page. The one place the host compares paths, and it
@@ -54,8 +54,10 @@ export async function openRoute(
   return panel.id;
 }
 
-// A plugin's sidebar block: focused where it is pinned, opened as a tab
-// otherwise.
+// A plugin's sidebar block: focused where it already sits, opened as a tab
+// otherwise. `open` on a placed pane only moves focus, but it pushes an undo
+// step doing it, so one Ctrl+Z would go to the focus change instead of to
+// whatever the user did before. Same distinction `openRoute` makes above.
 export function openPane(services: WorkbenchServices, plugin: PluginId): boolean {
   if (!services.source.has(plugin, 'pane')) {
     services.announcer.announce(
@@ -63,7 +65,11 @@ export function openPane(services: WorkbenchServices, plugin: PluginId): boolean
     );
     return false;
   }
-  return services.dispatch({ type: 'open', panel: makePane(plugin) });
+  const panel = makePane(plugin);
+  if (placementOf(services.store.get(), panel.id).zone !== 'none') {
+    return services.dispatch({ type: 'focus', panel: panel.id });
+  }
+  return services.dispatch({ type: 'open', panel });
 }
 
 function message(err: unknown): string {

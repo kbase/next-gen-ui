@@ -1090,12 +1090,10 @@
   color: var(--c-ink3);
 }
 
-/* Colour only; the weight comes off with Button's own `quiet`. */
-.cartClear.cartClear {
-  color: var(--c-ink3);
-}
-
-.cartClear.cartClear:hover {
+/* Ghost darkens its background on hover and leaves the ink alone; on a caption
+   row there is no background to read, so the ink is what has to move. Rest
+   colour is ghost's own --c-ink3. */
+.cartClear:hover {
   color: var(--c-ink);
 }
 
@@ -1135,25 +1133,16 @@
   color: var(--c-ink4);
 }
 
-/* Doubled to outrank Dialog's own popup class, whose 520px assumes a dialog
-   whose body is a sentence and two buttons. This one holds JSON. */
+/* Size only; the column and its gap are Dialog.Popup's own. Doubled because
+   `max-inline-size` and the popup's `max-width` are one property at one class
+   of specificity, and components.css is the last layer loaded. The 520px cap
+   is right for a dialog whose body is a sentence and two buttons; this one
+   holds JSON. */
 .cartPreview.cartPreview {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-4);
   inline-size: min(46rem, 92vw);
   max-inline-size: none;
   max-block-size: 80vh;
   overflow-y: auto;
-}
-
-/* Dialog's title and description carry their own bottom margins, sized for a
-   dialog that ends at the description (var(--s-8) under it). Here the body
-   continues, and the flex gap is what spaces it — both margins would stack on
-   top of that and blow the thing apart. Doubled to outrank them. */
-.cartPreviewTitle.cartPreviewTitle,
-.cartPreviewMeta.cartPreviewMeta {
-  margin-bottom: 0;
 }
 
 .cartPreviewSummary {
@@ -1182,20 +1171,12 @@
    around it was more chrome than content. */
 /* Wrapped rather than scrolled sideways. A context value is prose as often as
    it is a number — the builder's caveats run to a sentence — and a horizontal
-   scrollbar hides the end of exactly the field a reader opened this to read. */
-/* Doubled to outrank Prism's `pre[class*="language-"]`, which sets the
-   sideways scroll a page of code wants and a five-key object does not. */
-.cartPreviewJson.cartPreviewJson {
+   scrollbar hides the end of exactly the field a reader opened this to read.
+   `anywhere` because what overflows is one unbroken token: a ref or a path.
+   The `code` inside inherits both. */
+.cartPreviewJson {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  overflow-x: hidden;
-}
-
-/* Prism sets `white-space: pre` on the inner code element too, so wrapping the
-   pre alone left the long line clipped rather than wrapped. */
-.cartPreviewJson.cartPreviewJson code {
-  white-space: inherit;
-  overflow-wrap: inherit;
 }
 
 .cartPreviewSource {

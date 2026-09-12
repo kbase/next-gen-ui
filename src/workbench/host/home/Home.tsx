@@ -181,8 +181,9 @@ function Tour({ onFocusPrompt }: { onFocusPrompt: () => void }) {
           <div className={styles.stepBody}>
             <h3 className={styles.stepTitle}>Come back to it</h3>
             <p className={styles.stepText}>
-              Reload the page. The tabs, the cart and the arc are where you left them, and the KOROS
-              panel on the left lists every arc and marks the ones waiting on you.
+              Reload the page. The tabs and the cart are where you left them, and the KOROS panel on
+              the left lists every arc and marks the ones waiting on you — except the one you just
+              made: it lives only in memory, and a reload starts it over.
             </p>
           </div>
         </li>

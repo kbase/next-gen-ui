@@ -28,11 +28,25 @@ if (existsSync(nested)) {
   rmSync(join(distRoot, 'types/src'), { recursive: true, force: true });
 }
 
+// Root package.json supplies the installed ranges the peerDependencies quote;
+// the SDK's own supplies its version. That version is also what contract.ts
+// stamps into every manifest and what shared.ts asks Module Federation for,
+// so all three read one file.
 const rootPkg = JSON.parse(readFileSync(join(repoRoot, 'package.json'), 'utf8'));
+const sdkPkg = JSON.parse(readFileSync(join(repoRoot, 'src/plugins/sdk/package.json'), 'utf8'));
+const version = sdkPkg.version;
 // CI sets SDK_VERSION from the release tag; a local build does not. Local
-// builds are marked private so `npm publish` from the dist refuses.
-const version = process.env.SDK_VERSION ?? rootPkg.version;
+// builds are marked private so `npm publish` from the dist refuses. The tag
+// cannot stand in for the in-source version: vite compiles that one into
+// config.js, so publishing under a different one would ship a package whose
+// `version` and whose manifest stamp disagree.
 const isPublishBuild = Boolean(process.env.SDK_VERSION);
+if (isPublishBuild && process.env.SDK_VERSION !== version) {
+  console.error(
+    `release tag says ${process.env.SDK_VERSION}, src/plugins/sdk/package.json says ${version}; bump the package.json and retag`,
+  );
+  process.exit(1);
+}
 const dep = (name) => rootPkg.dependencies[name] ?? rootPkg.devDependencies[name];
 
 const pkg = {

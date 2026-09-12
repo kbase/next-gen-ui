@@ -1,4 +1,5 @@
-import { dependencies, version } from '../../../package.json';
+import { dependencies, version as repoVersion } from '../../../package.json';
+import { version as sdkVersion } from './package.json';
 
 // Dependencies that resolve to one instance across host and plugins. Two
 // kinds: react, react-dom, zod, the design system and this SDK because a
@@ -25,8 +26,11 @@ export const SHARED_SINGLETONS = {
   zod: shared('zod'),
   '@phosphor-icons/react': shared('@phosphor-icons/react'),
   '@tanstack/react-router': shared('@tanstack/react-router'),
-  // Built from this repo and aliased to source in the host, so it is not in
-  // `dependencies`; host and plugins agree on the repo version.
-  '@kbase/design-system': { singleton: true, requiredVersion: version },
-  '@kbase/plugin-sdk': { singleton: true, requiredVersion: version },
+  // Built from this repo and aliased to source in the host, so neither is in
+  // `dependencies`. Each takes the version its own build publishes: the
+  // design system's from the repo root (scripts/build-design-system.mjs),
+  // the SDK's from src/plugins/sdk/package.json, the same file contract.ts
+  // stamps into every manifest.
+  '@kbase/design-system': { singleton: true, requiredVersion: repoVersion },
+  '@kbase/plugin-sdk': { singleton: true, requiredVersion: sdkVersion },
 };

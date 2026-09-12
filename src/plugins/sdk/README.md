@@ -57,5 +57,6 @@ Built rather than consumed as source because `vite.config.ts` is loaded by Node,
 import the preset out of TypeScript. `react`, `react-dom`, `zod`, `@phosphor-icons/react` and
 `@kbase/design-system` are peers, external to the build, and shared singletons at runtime.
 `SHARED_SINGLETONS` also names `@tanstack/react-router` and this SDK itself as runtime
-singletons; the federation preset shares each only with a plugin that declares it as a
-dependency.
+singletons. The preset takes every one of them from the workbench and bundles no copy of any,
+whether or not the plugin lists it as a dependency — a remote built this way runs only inside a
+workbench, so a fallback copy would be dead weight and a second React would break every hook.

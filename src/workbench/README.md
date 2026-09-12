@@ -4,6 +4,13 @@ The workbench is the shell: sidebar, dockable tab groups, menubar, prompt bar, s
 A **layout** is the saved arrangement. Plugins supply panels; the workbench decides where they
 go and remembers it. (`workspace` is the KBase data service and is not used here.)
 
+What a plugin author needs is documented elsewhere and is not repeated here: `plugins/sdk/README.md`
+for the package and its three entries, and the workbench's own **Plugin developer documentation**
+page — `/plugin-docs` in a running workbench, `react/pages/docs/Docs.tsx` in the tree — for the
+manifest, the six modules, the handles and the deployment paths. `Docs.contract.test.ts` fails when
+that page and the SDK disagree, which is why it, and not this file, is where the contract is
+written down. This file is for someone changing the workbench.
+
 ## Directories
 
 Imports run one way down this table. Each row may import the rows above it and nothing below,
@@ -16,8 +23,8 @@ and `eslint.config.js` fails the build on an edge that goes the other way.
 | `host/`             | index of installed plugins, module loading, `openRoute`, the query runner, status polling, settings, registry fetch, the panel titles, trails and announcements, `WorkbenchServices`, `pluginHostFor` | `core`, `commands`, the SDK; no React                     |
 | `react/`            | every component and hook: the shell, DnD, URL sync, panel layer, live region, the icon table, and the host's own plugins under `react/pages/`                                                         | `core`, `commands`, `host`, the SDK, the design system    |
 | `compose/`          | `createWorkbench()` and `hostPlugins()` — the one module that builds a workbench out of all four                                                                                                      | everything                                                |
-| `../plugins/sdk/`   | what a plugin imports: the manifest contract, the five `define*` helpers, `fromReact`, the hooks, the federation preset                                                                               | React, zod, the design system; nothing from the workbench |
-| `../plugins/local/` | the bundled plugins: koros, data, jobs                                                                                                                                                                | the SDK                                                   |
+| `../plugins/sdk/`   | what a plugin imports: the manifest contract, the six `define*` helpers, `fromReact`, the hooks, the federation preset                                                                                | React, zod, the design system; nothing from the workbench |
+| `../plugins/local/` | the bundled plugins: koros, data, jobs, intent                                                                                                                                                        | the SDK                                                   |
 
 Two rules in that table are not obvious. **SDK types, not SDK code**: `core` writes the layout
 model in the plugin contract's vocabulary (`CartItem`, `Offer`, `Match`), and a type import is
@@ -36,226 +43,141 @@ Routes: `src/routes/_workbench.tsx` draws the shell once; `_workbench/workbench.
 workbench and `_workbench/p.$pluginId.$.tsx` resolves a deep link through `openRoute`. Both
 children render nothing.
 
-## Layout model
+## Invariants
 
-```ts
-Layout = {
-  version: 1,
-  panels: Record<PanelId, Panel>,        // flat; every panel anywhere
-  main: Node,                            // split{dir,sizes,children} | group{id,tabs,active}
-  sidebar: { pinned: PluginId[], folded: PanelId[], sizes, collapsed, width },
-  bars: { status, prompt },
-  focus: PanelId | null,
-  keybindings: Record<chord, commandName>,
-  locked: boolean,                       // arrangement fixed; usage stays free
-}
-```
+These hold across files, so no one file states them.
 
-A panel's id is opaque and stable while the panel lives; its `path` is what it is showing. Two
-kinds: a **pane** (one per plugin, id `plugin/pane`; sidebar or main area) and a **route** (main
-area only; the plugin's page at a path, id minted on open). The host never parses a path: whether
-two paths are one page is the route module's `normalize` to say, and `host/open.ts` asks it when
-opening — a match is focused, otherwise a new panel opens. The sidebar holds no panel list of its
-own: a pinned plugin's pane is in the sidebar whenever it is not a tab in the main tree. A panel
-whose plugin is not installed is a ghost: the slot is kept, the body says why.
+**A panel is drawn once and mounted once.** Every panel body lives in one flat layer
+(`react/PanelLayer.tsx`), positioned over the box its place in the layout measures out
+(`react/panelSlots.ts`). Moving a tab between groups, splitting a group, and moving a pane
+between the sidebar and the main area change which box a body follows and never the body's
+parent, so React does not unmount it and a plugin's `mount` runs once for the life of the panel.
+Two slots may name one panel — a pinned pane's block and the flyout its rail icon opens — and the
+shown slot with the highest priority is where it is drawn, which is what keeps one panel to one
+mount. A browser reloading an `<iframe>` whenever it moves in the DOM is what forced the
+arrangement, but nothing in it is about iframes.
 
-`normalize` runs after every tree edit: empty groups go, single-child splits unwrap, same-direction
-splits merge, the root is always at least one (possibly empty) group.
+**A storage key names a shape.** `workbench.layout.v4`, `workbench.settings.v5`,
+`kbase-workbench-cart.v4`. A document that fails its schema — or a layout that breaks a
+structural rule the schema cannot state, which is `core/serialize.ts`'s `validate` — is discarded
+for the default rather than repaired: the reader loses an arrangement, not their work, and a
+default is always renderable. There is no version field inside a document and no migration step.
+A change to a shape is a new key; the old key is left in storage and never read again.
 
-## Operations, announcements, undo
+**Three documents, not one.** The cart and the settings are saved beside the layout because they
+outlive it. Discarding a layout whose shape moved must not take the reader's collected items or
+their rebound keys with it.
 
-`Operation` is the dispatch vocabulary (`open`, `close`, `focus`, `setPath`, `move`, `resize`,
-`pin`, `unpin`, `fold`, `sidebar`, `bar`, `bind`, `lock`). `reduce` is pure and returns the same object
-for a no-op; with `locked` set it refuses the structural operations (`move`, `resize`, `pin`,
-`unpin`) while usage (open, close, focus, fold, bars, collapse) stays free. `describe` words an
-operation for the one live region (`role="status"`, sr-only); titles come from the panels, so
-the store receives a title lookup. Undo restores whole snapshots: one push per structural
-operation. Focus, resizing, bindings and the lock toggle are not undo steps.
+**Keybindings are settings, not layout,** for that reason: a chord the reader chose should survive
+the next change to the layout shape. `commands/keys.ts` merges the stored table over
+`DEFAULT_KEYBINDINGS`, so only what the reader changed is stored; `''` silences a default without
+putting anything in its place, and an override naming a command that is not registered is skipped,
+so the chord means its default again while the plugin that declared the command is away and means
+the override again if it returns.
 
-Persistence: `workbench.layout.v2` in localStorage, written on every change, read before first
-render. A layout that fails schema or invariant validation is replaced by the default rather
-than repaired; keys from earlier contracts are removed on boot, never read. Settings that are
-not layout (`assistant`) live under `workbench.settings.v1`; the cart under
-`kbase-workbench-cart.v2`.
+**Focus is in the layout; the caret is not.** `focus` is a `PanelId` in the document, so it is
+restored with the arrangement. Whether DOM focus follows is `Operation.focus`'s `by`: `'user'` is a
+pointer or a focus event, whose caret is already where the reader put it, and `'command'` — what an
+absent `by` means — moves the caret to the panel that gained focus. Omitting it costs a caret jump,
+never a lost one.
 
-## Sidebar (provisional)
+**Undo restores snapshots,** so no operation needs an inverse. `operations.ts`'s `UNDOABLE` and
+`reduce.ts`'s `LOCKED_OUT` answer different questions and neither implies the other: `open` is
+undoable and is allowed on a locked layout; `resize` is refused when locked and is no undo step.
+A locked layout keeps its arrangement (`move`, `resize`, `pin`, `unpin`) while using it stays free.
 
-A host **Shortcuts** plugin (like Settings and Home, installed over the same index) shows every
-plugin's manifest `shortcuts` as buttons; being an ordinary pane, it pins,
-folds, drags and pops out of the rail like any block.
+**The host never parses a path.** A panel's `path` is everything under `/p/<plugin>`, query string
+included, carried whole. Whether two paths are one page is the route module's `normalize` to say,
+and `host/open.ts` is the only place that asks: a match is focused, otherwise a new panel opens.
+A plugin can therefore change its own URL scheme without the workbench knowing.
 
-Pinned plugins' panes stack vertically as blocks, splitting the height with dividers; each
-scrolls inside itself and the sidebar never scrolls. A block's header carries its plugin's icon
-and title (the accordion pattern) and click-toggles the fold; a block folds to its header and is
-never hidden; a plugin leaves the sidebar only by unpinning. There is no separate icon rail:
-collapsing the sidebar _is_ the icon column — the same pinned list, one icon per plugin in pin
-order, each popping its pane out beside it without changing the layout. Unpinned plugins
-live under **More** (in the footer strip expanded, among the icons collapsed): a menu naming
-them, and choosing one shows its pane as an ephemeral dashed _preview block_ at the bottom
-of the stack — two clicks to look at a plugin without pinning it; Pin or dismiss from the
-preview's header, and a reload forgets it. Pin drops it at the end of the stack; dragging the
-preview by its header onto a block pins it at that block's slot instead. It is painted at the
-bottom of the stack wherever it would land — where it sits now is not a claim about the layout
-it has not joined. Home offers the same preview for an unpinned panel,
-over the one ephemeral preview the sidebar shows (`services.preview`). Any pane can be dragged into the main area as a
-tab; closing it there returns it to the sidebar if its plugin is still pinned.
+**A tab and a trail are different content.** The tab names the thing you would switch to; the trail
+says where you are inside it. They meet in one place: when two tabs in one group carry the same
+title, `react/labels.ts` borrows the deepest crumb at which their trails differ (`Structure · P0A7B8`
+beside `Evidence · P0A7B8`) and numbers only what no trail can separate. Pressing a crumb moves that
+panel to that path — it opens nothing, which is what makes a trail a trail and not a set of links.
 
-## Breadcrumbs and tab labels
+**Every surface is one registry.** Menus, chords, the prompt bar, and a plugin's `host.execute` all
+reach `commands/registry.ts`, and nothing in the chrome does anything a command cannot. Commands are
+registered as `<source>:<name>` from the manifests before any plugin code loads, so the bar completes
+and validates cold; running one is what fetches the plugin's `commands` module. `workbench:open` is
+registered in `compose/createWorkbench.ts` and not beside the rest in `commands/workbench-commands.ts`
+because opening a page needs the host index and the route module, and `commands/` is below `host/`.
 
-A panel may declare a trail with `usePanelBreadcrumbs([{ label, action? }])`; the host draws it in
-a row between a group's tabs and its panel, for that group's active panel only. A panel that
-declares none gets no row and no gap, so a split can carry a trail on one side and nothing on the
-other. A crumb with an `action` opens it the way a prompt-bar offer does — same shape, same
-dispatch; the last crumb is where you are and links nowhere.
+**One live region.** `core/describe.ts` words an operation, `host/announcer.ts` holds the last
+sentence, and `react/LiveRegion.tsx` is the single `role="status"`. dnd-kit's own announcements are
+turned off (`WorkbenchDnd.tsx`), so a drag is spoken once, by the operation it dispatched, in the
+same words the keyboard route for it produces.
 
-A tab and a trail are different content. The tab names the thing you would switch to; the trail
-says where you are inside it, and the two are written separately. They meet in one place: when
-two tabs **in one group** carry the same title, `negotiateLabels` borrows the deepest crumb at
-which their trails differ (`Structure · P0A7B8` beside `Evidence · P0A7B8`), and numbers only what
-no trail can separate. A borrowed crumb equal to the title is not borrowed. Labels are settled per
-group, so opening or closing a tab can rename its neighbour.
+**The sidebar's preview is not a layout operation.** One unpinned plugin at a time is shown as an
+ephemeral block (`services.preview`); pinning is what commits it, and a reload forgets it. A row a
+reader reached by typing a name must not rearrange the workbench, which is why `workbench:show`
+focuses a pinned pane and previews an unpinned one, and `workbench:open` — asked for by name — is
+what makes a tab. Collapsing the sidebar is the icon rail; there is no separate strip to keep in
+step with the pinned list.
 
-## Commands and the prompt bar
+## What free text does
 
-Every command is registered as `<source>:<name>` — a plugin's from its manifest, the workbench's
-own (`workbench:close`, `workbench:undo`, `workbench:open`, …) from `commands/workbench-commands.ts`
-— before any plugin code loads, so the bar completes and validates cold; running a plugin's
-command fetches its `commands` module. The bar accepts a bare name when exactly one command
-carries it and offers the qualified forms when two do; `/plugin:name` always works. A plugin runs
-another's through `host.execute('plugin:name', args)` and checks with `host.hasCommand`; a handler
-receives `{ host, caller }`, where `caller` is the calling plugin's id or `'user'`. A rejection
-becomes a toast naming the command and the invoking control shows busy until the handler
-settles; `host.notify` raises a toast for an outcome only the plugin can see. Menus, keybindings
-and the bar are three surfaces over one registry.
+Two clocks, two questions, two destinations. `host/query/runner.ts` runs both.
 
-Free text goes to the plugin the settings name as **assistant** — one whose manifest lists a
-`prompt` module. The bar fetches that module when Settings names the plugin, calls its `handle`
-with the text, the term pool and the cart as attachments (and then empties the cart), and shows
-its `destination` above the field: the label, a menu over `options` calling `select`, and a jump
-to `path`.
+Typing, on the keystroke: every background's `terms` (synchronous, no I/O) pools what it recognises
+in the text, every `offer` is asked with the text and that pool, and the chosen intent's `suggest`
+is asked with the offers and with the terms tiered by where they came from — `typed`, `page`, `cart`.
+Nothing waits: a slow plugin's offer lands when it lands and the intent is asked again, and the next
+keystroke is a new question. The workbench matches no text itself. Every row under the bar except
+`Send to <assistant>` is the intent's answer, four at most, drawn in the order it returned them, so
+a workbench whose intent plugin is missing offers only that row.
 
-What the bar suggests comes from the **background** modules, fetched from every plugin at
-startup. Each keystroke goes to every `terms(q)` with the text; the strings that come back are
-pooled and handed straight to every `offer`, whose `CommandCall`s are the rows under the field.
-Nothing waits there: a slow plugin's offer lands when it lands, and the next keystroke is a new
-question. Under the offers the host adds what it can see for itself: shortcut buttons by name,
-apps with a `launcher` by name or description, and panes — a pinned one focused where it lives,
-an unpinned one previewed. Row zero is what Enter will do.
+The page and the cart, 250 ms after their terms change (`SETTLE_MS` — long enough that adding three
+items to the cart is one round of questions): every `relate` is asked, its answers are items, and the
+items are the rows in the Related pane. The plugin whose own front tab produced the terms is not
+asked about them. Each plugin's answer replaces its own section as it arrives, the previous one
+dimmed until then; after `BUDGET_MS` the pane stops saying it is asking, and a later answer still
+lands. A pool that only grew is asked about the new terms alone and the answers merge, so a cart
+gaining an item does not re-ask about the items already in it.
 
-The front tab's terms (never sent to the plugin that owns the tab) and the cart's are the other
-question, asked on their own clocks after a 250 ms settle (`host/query/runner.ts`): every
-`relate` is called with the terms and answers with items, and those are the rows in the Related
-pane, one list with the recommendation as the unit — a row keeps its place until nothing offers
-it, provenance sits on the row, and what is still being asked is a line under the rows. Each
-plugin's answer replaces its own section as it arrives, the previous one staying dimmed until
-then; after 2 s the pane stops saying it is asking, and a later answer still lands. A pool that
-only grew is asked about the new terms alone and the answers merge.
-
-Home (`react/pages/home/`) is that same search as a page: the apps (manifests with a
-`launcher`) and panes installed, searched over the same names and descriptions.
-
-`status()` on each background module is called once its module arrives and after every command;
-the status bar shows the last answer. Default keybindings live in `commands/keys.ts` and avoid
-chords browsers own; `/` focuses the bar; `Escape` returns to the panel.
+Two settings name plugins: the **assistant**, whose `prompt` module receives free text with the
+term pool and the cart as attachments, and the **intent**. Neither can be "none" — a workbench is
+built with both chosen (`createWorkbench`), and the only way to have neither is to name a plugin
+that is not installed. `status` and `destination` are pushes, not polls: the plugin calls `set` when
+it subscribes and again on every change, and the bar and the status bar draw the last value handed
+over. Choosing another assistant ends the previous one's destination subscription and drops its
+value, so no destination is ever shown under the wrong plugin's name.
 
 ## Deep links
 
-`/p/<pluginId><path>` names one page: the plugin's route at its own path, query string included,
-which the host carries and never parses. The route loader hands it to `openRoute`, which fetches
-the route module, runs its `normalize` on the requested path and on each open panel's, and
-focuses a match or opens a new panel. The other way, the focused route panel's path becomes the
-URL: pushed when just opened or when the panel `navigate`s, replaced when focus moves between
-open panels. Each entry the sync writes carries the panel it was written for in history state,
-so Back returns that panel to that path instead of opening another; the entry a session starts on
-is claimed for the panel it resolved to. Panes never touch the URL. Closing the addressed panel
-replaces the URL with the next focused panel's path, else `/workbench`. A link to nothing is
-announced and lands on `/workbench` with the layout untouched.
+`/p/<pluginId><path>` names one page. Each history entry the URL sync writes carries the panel it
+was written for in `history.state`, so Back returns that panel to that path instead of opening a
+second one; the entry a session starts on is claimed for the panel it resolved to. Opening pushes,
+a `navigate` inside a panel pushes unless it asked to replace, and moving focus between open panels
+replaces — so Back walks what was opened and where it went, not every click. Panes have no address
+and never touch the URL.
 
 ## Accessibility
 
 Every pointer drag has a keyboard or context-menu route (split by direction, move to sidebar,
-reorder pins) and the pointer path dispatches the same operation. One live region; dnd-kit's own
-is silenced. Focus is part of the layout and restored with it; when a command moves focus, DOM
-focus follows to the tab or block header, while pointer-driven focus is left alone. Tabs are a
-`tablist` with roving tabindex; blocks are labelled `section`s with `aria-expanded` headers;
-splitters are focusable `separator`s with `aria-valuenow`. App iframes are hidden from pointer
-events during a drag.
+reorder pins) and both paths dispatch the same operation, which is what keeps the two from drifting.
+Tabs are a `tablist` with roving tabindex; blocks are labelled `section`s with `aria-expanded`
+headers; splitters are focusable `separator`s with `aria-valuenow`. A hidden panel body stays
+mounted, so it is taken out of the accessibility tree and out of tab order with `inert` and
+`aria-hidden` rather than by not existing.
 
-## Registry API — host side
+## Deferred
 
-This is what the host expects of a registry. The registry service itself is not in this repo.
+Signing or subresource integrity of remote entries; per-plugin settings schemas; peer version ranges
+beyond the shared-singleton list; per-plugin permissions; presets and org or portal layout overrides;
+migrating a saved document instead of discarding it.
 
-### Endpoint
-
-`GET /plugin-registry/plugins` → `200` with a JSON array of manifests. The path is same-origin,
-which is what lets `script-src 'self'` cover remote entries. In dev a Vite middleware answers it
-by fetching `<prefix>/manifest.json` from each service named in `VITE_DEV_SERVICE_PROXY` on every
-request, so a plugin is listed while its server answers. The built image answers nothing at the
-path — its fallback page comes back as HTML — so a deployment either fronts `/plugin-registry/`
-and `/services/` with something that does, or runs the bundled plugins alone. The host fetches
-once at startup; a non-2xx, a non-JSON, a non-array, or a network failure logs a warning and the
-bundled plugins run alone.
-
-### Where the code is
-
-The manifest does not say. A plugin's service is mounted at `/services/<id>/`: it serves the
-built `manifest.json` there and the bundle under `/services/<id>/plugin/`, and the host fetches
-`<id>/<module>` from `/services/<id>/plugin/remoteEntry.js` for each module the manifest lists.
-In dev the Vite proxy maps the prefix to the service's origin; the built image does not proxy
-it, any more than it proxies the registry.
-
-### Manifest fields the host reads
-
-Schema: `src/plugins/sdk/contract.ts` (`ManifestSchema`). Invalid entries are skipped
-individually with a console warning; one bad manifest does not take the list down.
-
-| field                                   | use                                                                                                                                         |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `id`                                    | plugin id; federation remote name; URL segment; service mount                                                                               |
-| `title`, `description`, `icon`, `color` | catalog, sidebar icon (both are names from `react/icons.ts`; an unknown icon falls back to a pin, an unknown colour to the surrounding ink) |
-| `sdkVersion`                            | must be one of `ACCEPTED_SDK_VERSIONS`; written by the build from the SDK package version it ran with                                       |
-| `modules`                               | which of `background`, `route`, `pane`, `commands`, `prompt` the bundle exposes; written by the build from what `vite.config.ts` named      |
-| `commands[]`                            | `{ name, title, description?, args[], icon? }`; registered as `<id>:<name>` before code loads                                               |
-| `shortcuts[]`, `launcher`               | `CommandCall`s: buttons on the Shortcuts block and on Browse                                                                                |
-
-### Id rules
-
-`^[a-z][a-z0-9-]{1,40}$`. An id is URL-visible (`/p/<id>/…`), the service mount, and the key of
-saved layouts, so it never changes once published; a rename is a new plugin plus a registry-side
-redirect from the old id. A registry entry whose id matches a bundled plugin is ignored: bundled
-code wins.
-
-### Host behaviour per failure
-
-| failure                                     | behaviour                                                                                                                                           |
-| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| registry unreachable / non-array            | warning; bundled plugins only                                                                                                                       |
-| manifest invalid                            | skipped; others load                                                                                                                                |
-| remote entry or a module fails to load      | the panel shows the error inside its boundary; retry re-imports; other panels unaffected; commands of that plugin reject with the error, as a toast |
-| a listed module lacks what it should export | `route`/`pane` without `mount`: error inside the panel; `commands` without a declared name: error on run                                            |
-| `background` fails to load                  | warning; the plugin makes no terms, recommendations or status                                                                                       |
-| plugin removed from the registry            | its panels become ghosts (slot kept, body explains, Close offered); reinstalling brings them back where they were                                   |
-| panel throws while rendering                | caught by the panel's own fence (`fromReact`) or the host's boundary; the tab, its group and the chrome keep working                                |
-
-What an error boundary does **not** contain: a hang in a synchronous render, memory leaks,
-mutation of globals (window, document, prototypes), CSS that escapes the panel, and network
-activity. Those need isolation the contract does not yet provide (see Deferred).
-
-### Deferred
-
-Signing / subresource integrity of remote entries; per-plugin settings schemas; peer version
-ranges beyond the shared-singleton list; per-plugin permissions; presets and org/portal layout
-overrides; layout migrations past `version: 2`; anything in the image about where plugins live.
+An error boundary does not contain a hang in a synchronous render, a memory leak, mutation of globals
+(window, document, prototypes), CSS that escapes the panel, or network activity. Containing those
+needs isolation the plugin contract does not provide.
 
 ## Verification
 
 `npm run typecheck && npm run lint && npm test && npm run build && npm run build:plugin-sdk`.
-Manual: `npm run dev` → `/workbench`; pin/unpin from Settings (its Shortcuts button); fold a block;
-drag a pane into the main area; move a tab by menu and by keyboard; reload; paste
-`/p/koros/nitro`; type `/op`, `/workbench:open catalog` and `/cancel 12`; type a question; open
-Data → Fixtures → Crash test panel; switch the assistant to None in Settings.
 
-Settings and Home are pages, not sidebar panels: what is installed and what to open are read
-now and then, and a permanent block for each crowds the sidebar. A saved layout that pins a
-plugin whose manifest no longer lists a `pane` is unpinned once at startup, because that block
-could only render as a ghost; an uninstalled plugin keeps its slot, since reinstalling restores it.
+Manual, against `npm run dev` → `/workbench`: pin and unpin from Settings; fold a block; drag a pane
+into the main area; move a tab by menu and by keyboard; reload and check the arrangement came back;
+paste `/p/koros/nitro`; type `/op`, `/workbench:open data` and `/cancel 12`; type a question and
+watch the Related pane; open Data → Fixtures → Crash test panel and restart it; rebind a key in
+Settings → Keyboard and press it.

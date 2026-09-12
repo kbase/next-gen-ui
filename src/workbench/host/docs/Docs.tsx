@@ -22,9 +22,9 @@ export function DocsDocument() {
           <p className={styles.narrative}>
             Plugin developers add features to the workbench without changing the workbench itself. A
             plugin is a small Vite project that describes itself in one config file and adds up to
-            five things: a page, a sidebar panel, slash commands, suggestions while the user types,
-            and an assistant that answers free text. The workbench loads plugins while it runs, so
-            each one ships on its own schedule from its own server.
+            five things: a page, a sidebar panel, slash commands, answers about what the user is
+            typing or has in view, and an assistant that answers free text. The workbench loads
+            plugins while it runs, so each one ships on its own schedule from its own server.
           </p>
           <Explainer>
             <p className={styles.para}>
@@ -33,15 +33,15 @@ export function DocsDocument() {
               beginning with <Code>/</Code> runs a slash command; other text, once sent, goes to the
               plugin chosen as the assistant. The modules are <Code>route</Code>, a page;{' '}
               <Code>pane</Code>, a sidebar block (the page's tab and the block are both panels);{' '}
-              <Code>commands</Code>, the slash command handlers; <Code>background</Code>, functions
-              called as the user types in the prompt bar, to suggest commands and data related to
-              the text; <Code>prompt</Code>, the handler for sent text when the plugin is the
-              assistant; and <Code>intent</Code>, what suggests commands for the text being typed
-              when the plugin is chosen for that. <Code>pluginFederation</Code>, a Vite plugin from{' '}
-              <Code>@kbase/plugin-sdk/vite</Code>, exposes each module over Module Federation and
-              writes the config to <Code>manifest.json</Code>. The workbench reads the manifest at
-              startup and loads each module the first time it is needed, except{' '}
-              <Code>background</Code>, which it loads at startup.
+              <Code>commands</Code>, the slash command handlers; <Code>background</Code>, what the
+              plugin offers for text as it is typed and what it has about the terms an open page or
+              the cart carries; <Code>prompt</Code>, the handler for sent text when the plugin is
+              the assistant; and <Code>intent</Code>, what turns the text being typed into the rows
+              under the bar when the plugin is chosen for that. <Code>pluginFederation</Code>, a
+              Vite plugin from <Code>@kbase/plugin-sdk/vite</Code>, exposes each module over Module
+              Federation and writes the config to <Code>manifest.json</Code>. The workbench reads
+              the manifest at startup and fetches each module the first time it is needed, except{' '}
+              <Code>background</Code> and <Code>intent</Code>, which it fetches at startup.
             </p>
           </Explainer>
         </header>
@@ -135,7 +135,11 @@ npm run dev -- --port 8770`}</File>
   icon: 'Flask',
   color: 'purple',
   commands: [
-    { name: 'open', title: 'Open the evidence dossier', args: [{ name: 'id', required: true }] },
+    {
+      name: 'open',
+      title: 'Open the evidence dossier',
+      args: [{ name: 'id', description: 'a UniProt accession', required: true }],
+    },
     { name: 'compare', title: 'Compare with a taxon', args: [{ name: 'taxid' }] },
   ],
   shortcuts: [{ label: 'Dossier', command: 'open', args: { id: 'P0AEX9' } }],
@@ -157,7 +161,7 @@ npm run dev -- --port 8770`}</File>
               type for it, synonyms included; <Code>semantics.examples</Code> are phrasings that
               should reach it. An identifier in the text fills the argument whose description says
               it takes that kind of thing, so "dossier for P0AEX9" offers <Code>open</Code> with{' '}
-              <Code>q</Code> filled.
+              <Code>id</Code> filled.
             </p>
             <p className={styles.para}>
               <Code>id</Code> appears in URLs and saved layouts and must not change. Command names
@@ -198,8 +202,11 @@ export default defineRoute({
               this route's <Code>normalize</Code> ignores case and the query string.{' '}
               <Code>navigate(path)</Code> changes the tab's path and pushes a history entry.{' '}
               <Code>usePanelTerms(terms)</Code> sets the tab's terms, strings of the form{' '}
-              <Code>prefix:value</Code>; while the tab is in front, the workbench passes them to
-              every other plugin's <Code>recommend</Code> function, described under Background.
+              <Code>prefix:value</Code>; while the tab is in front, the workbench asks every other
+              plugin's <Code>relate</Code> about them 250 ms after they change, and hands them to
+              the intent as the <Code>page</Code> tier. A page that has nothing to say sets none,
+              and nothing is asked; the workbench cannot tell that from a page that has not reported
+              yet, so the Related pane says only that there is nothing to ask about.
             </p>
           </Explainer>
         </Part>
@@ -218,87 +225,130 @@ export default defineRoute({
               A plugin with a <Code>pane</Code> module can be pinned to the sidebar from Settings.{' '}
               <Code>fit: 'content'</Code> sizes the block to its content; otherwise it shares the
               sidebar's height with the other pinned panes. <Code>usePanel().path</Code> is{' '}
-              <Code>''</Code>. Folding the block unmounts the pane; with the sidebar collapsed, its
-              icon opens a popover holding a second mount, alongside the block's.
+              <Code>''</Code>. A pane is mounted once wherever it is drawn: with the sidebar
+              collapsed its rail icon opens a flyout, and the pane moves into the flyout rather than
+              being mounted a second time there. Folding the block unmounts the pane, and unfolding
+              mounts it again from scratch.
             </p>
           </Explainer>
         </Part>
 
         <Part id="background" title="Background">
           <p className={styles.narrative}>
-            The background module lets a plugin join in while the user is typing, before anything of
-            the plugin's is open. It can recognise something it understands in the text, an
-            accession or a job id, and offer a command or a piece of data for it. The workbench does
-            not interpret text itself; it passes what plugins recognised to the other plugins, so
-            each can react to what the others found. The bundled intent plugin's background is one
-            such plugin: it tags identifiers by shape under the prefix Bioregistry gives them (
+            The background module lets a plugin join in before anything of the plugin's is open. It
+            answers two questions on two clocks. While the user types, it says what this plugin
+            would do with the text — an accession it recognises, a job id, a dataset it holds — as
+            commands the prompt bar can run. Once a page is open or the cart has something in it, it
+            says what this plugin has about the terms they carry, as things the user can open or
+            keep. The workbench interprets no text itself: what one plugin recognises is pooled and
+            passed to the others, so each answers for what the others found. The bundled intent
+            plugin's background does nothing but that recognising — it tags identifiers by shape (
             <Code>uniprot:P0AEX9</Code>, <Code>ncbitaxon:562</Code>; a bare number is never tagged).
           </p>
           <File
             name="src/background.ts"
             language="typescript"
           >{`const ACCESSION = /^[A-Z][0-9][A-Z0-9]{3}[0-9]$/i;
-const idsIn = (terms) => (terms ?? []).flatMap((t) => t.match(/^uniprot:(.+)$/)?.[1] ?? []);
+const idsIn = (terms) => terms.flatMap((t) => t.match(/^uniprot:(.+)$/)?.[1] ?? []);
 
 export default defineBackground({
   terms: ({ text }) => {
-    const q = text?.trim().toUpperCase() ?? '';
+    const q = text.trim().toUpperCase();
     return ACCESSION.test(q) ? [\`uniprot:\${q}\`] : [];
   },
 
-  recommend: {
-    commands: ({ terms }) =>
-      idsIn(terms).map((id) => ({ label: \`Evidence dossier for \${id}\`, command: 'open', args: { id } })),
+  // Every keystroke, from the pooled terms alone.
+  offer: ({ terms }) =>
+    idsIn(terms).map((id) => ({
+      label: \`Evidence dossier for \${id}\`,
+      command: 'open',
+      args: { id },
+      // Recognised by its shape and not looked up, so it may name nothing.
+      match: { term: \`uniprot:\${id}\`, kind: 'identifier' },
+    })),
 
-    cartItems: async ({ terms, signal }) => {
-      const rows = await Promise.all(idsIn(terms).map((id) => fetchSummary(id, signal)));
-      return rows.map((row) => ({
-        id: \`function-junction:protein:\${row.id}\`,
-        name: row.name,
-        subject: row.id,
-        summary: row.verdict,
-        terms: [\`uniprot:\${row.id}\`, \`taxon:\${row.taxon}\`],
-        source: { path: \`/\${row.id}\` },
-        context: { measuredOver: row.population },
-      }));
-    },
+  // 250 ms after the open page's or the cart's terms change. May fetch.
+  relate: async ({ terms, signal }) => {
+    const rows = await Promise.all(idsIn(terms).map((id) => fetchSummary(id, signal)));
+    return rows.filter(Boolean).map((row) => ({
+      id: \`function-junction:protein:\${row.id}\`,
+      name: row.name,
+      subject: row.id,
+      summary: row.verdict,
+      terms: [\`uniprot:\${row.id}\`, \`ncbitaxon:\${row.taxon}\`],
+      // UniProt returned the entry, so this plugin holds the thing.
+      answers: [{ term: \`uniprot:\${row.id}\`, kind: 'record' }],
+      source: { command: 'open', args: { id: row.id } },
+      context: { measuredOver: row.population },
+    }));
   },
 
-  status: () =>
-    pending() > 0 ? [{ text: \`\${pending()} lookups running\`, action: { label: 'Show', command: 'open' } }] : [],
+  // Pushed: the lines as they stand now, and again whenever they change.
+  status: (set) => {
+    const push = () => set(pending() > 0 ? [{ text: \`\${pending()} lookups running\` }] : []);
+    push();
+    return lookups.subscribe(push);
+  },
 });`}</File>
           <Explainer>
             <p className={styles.para}>
-              The <Code>background</Code> module's default export has up to three members.{' '}
-              <Code>terms(query)</Code> is called on every keystroke with <Code>query.text</Code>{' '}
-              set to the typed text, and returns the terms found in it, synchronously.
+              The <Code>background</Code> module's default export has up to four members, each with
+              its own schedule. <Code>terms(query)</Code> is called on every keystroke with{' '}
+              <Code>query.text</Code> set to the typed text, and returns the terms it recognises in
+              it. It is synchronous and does no I/O: the answer is due before the next keystroke.
+              Every plugin's terms are pooled, and the pool is what the other two questions are
+              asked about.
             </p>
             <p className={styles.para}>
-              <Code>recommend.commands(query)</Code> is called on every keystroke, with{' '}
-              <Code>query.terms</Code> set to every term returned by every plugin: answer from the
-              terms alone, without I/O. What it returns goes to the intent plugin, which orders it
-              with its own candidates; the prompt bar shows the offers as the plugin made them only
-              when no intent is chosen or the intent answers nothing. It may be async;{' '}
-              <Code>query.signal</Code> aborts when the text changes, a result returned after that
-              is discarded, and a late answer asks the intent again.{' '}
-              <Code>recommend.cartItems</Code> is not called for typed text. Both functions are
-              called 250 ms after the front tab's terms change, with those terms, and 250 ms after
-              the cart changes, with its items' terms; a plugin is not called with its own tab's
-              terms. Returned cart items are shown in Related, a sidebar pane, where the user can
-              open one or add it to the cart, the list of items sent with the next message.
+              A term is <Code>prefix:value</Code>, and the prefix is how two plugins that know
+              nothing about each other discover they mean the same thing. The rule: where
+              Bioregistry has a prefix for the kind of thing, mint the canonical one —{' '}
+              <Code>uniprot:</Code>, <Code>ncbitaxon:</Code>, <Code>insdc.gca:</Code>,{' '}
+              <Code>kegg.orthology:</Code> — and where it has none, as for names and KBase-local
+              ids, mint one of your own and document it. Nothing enforces this: a plugin answers on
+              the prefixes it knows and stays silent on the rest, so two spellings of one identifier
+              are two terms that nobody connects.
             </p>
             <p className={styles.para}>
-              <Code>status()</Code> is called at startup and after every command, and returns lines
-              for the status bar.
+              <Code>offer(query)</Code> is called on every keystroke, with <Code>query.text</Code>{' '}
+              and <Code>query.terms</Code>, the pool. Answer from the terms alone, without I/O; a
+              lookup belongs in <Code>relate</Code>. Each offer carries the term it answers and how
+              it matched — <Code>record</Code> if the plugin holds the thing and read the offer out
+              of its own inventory, <Code>identifier</Code> if the term is an id in a namespace it
+              serves, recognised by shape and not looked up, <Code>name</Code> if words matched
+              words — and no score: one plugin's 0.8 says nothing beside another's, and the ordering
+              is the intent's job. The offers go to the intent, which decides the rows the bar
+              draws. It may be async; <Code>query.signal</Code> aborts when the text changes, an
+              answer that arrives after that is dropped, and a late answer asks the intent again.
             </p>
             <p className={styles.para}>
-              A cart item carries no data: <Code>context</Code> is what an assistant is told about
-              it (units, caveats, the population a number was measured over), and a consumer fetches
-              the thing itself from where it lives. <Code>terms</Code> are passed to other plugins'{' '}
-              <Code>recommend</Code> once the item is in the cart. <Code>source</Code> is the path{' '}
-              <Code>openRoute</Code> uses to open it, or a command that produces it again.{' '}
-              <Code>id</Code> must be unique across plugins; adding an item with an existing id
-              replaces it.
+              <Code>relate(query)</Code> is called 250 ms after the front tab's terms or the cart's
+              change, with those terms, and never for typed text. It may fetch. It answers with cart
+              items, which are shown in the Related pane, where the user opens one, keeps it or
+              dismisses it. A plugin is never asked about its own front tab's terms.{' '}
+              <Code>answers</Code> names which of the terms it was asked about the item answers, in
+              the same <Code>{'{ term, kind }'}</Code> shape an offer's <Code>match</Code> has, and
+              the row reads it out: "Function Junction, because this page is about P0AEX9". When a
+              pool only grows — the cart gains an item — the plugins are asked about the new terms
+              alone and the answers join the rows already on screen.
+            </p>
+            <p className={styles.para}>
+              <Code>status</Code> is a subscription rather than a call: <Code>set</Code> the
+              plugin's status-bar lines as it subscribes, and again whenever they change; the
+              function it returns ends whatever produces the pushes. A line that waits on a server
+              reaches the bar when it lands, because the workbench has no clock of its own for it.
+            </p>
+            <p className={styles.para}>
+              A cart item carries no data. <Code>id</Code> is unique across plugins and derived from
+              what the thing is, so adding it twice is the same item and re-adding replaces;{' '}
+              <Code>terms</Code> are what other plugins are asked about once the item is in the
+              cart; <Code>context</Code> is what an assistant is told and could not infer — units,
+              caveats, the population a number was measured over. <Code>source</Code> is the command
+              that produces the thing again, and a command rather than a path because whoever ends
+              up holding the item — the cart tray, the Related pane, an assistant — runs it through
+              the host, and a path can be opened only by the plugin that owns it. The workbench
+              stamps the adding plugin's id on <Code>plugin</Code>; a plugin cannot set it, and a
+              consumer qualifies <Code>source.command</Code> with it.
             </p>
           </Explainer>
         </Part>
@@ -317,27 +367,37 @@ export default defineBackground({
     host.openRoute(\`/\${slug}\`);
   },
   newConversation: ({ host }) => host.openRoute(\`/\${koros.newArc().slug}\`),
-  destination: { current: () => koros.destination(), subscribe: koros.subscribe },
+  // Pushed: where a message would land now, and again whenever that moves.
+  destination: (set) => {
+    const push = () => set(koros.destination());
+    push();
+    return koros.subscribe(push);
+  },
 });`}</File>
           <Explainer>
             <p className={styles.para}>
               Settings lists every plugin with a <Code>prompt</Code> module, and the user picks the
-              assistant from them. <Code>handle(query, ctx)</Code> is called when the user sends
-              text that does not start with <Code>/</Code>. <Code>query.text</Code> is the text,{' '}
-              <Code>query.terms</Code> the terms found in it, and <Code>ctx.attachments</Code> the
-              cart's items. The cart is emptied when <Code>handle</Code> is called. The workbench
-              renders nothing for the response; the handler opens the plugin's page with{' '}
-              <Code>host.openRoute</Code> and renders it there. <Code>newConversation(ctx)</Code> is
-              called when the user picks New in the prompt bar's destination menu, which every
-              assistant gets: it opens the page a fresh conversation lands on.
+              assistant from them; there is always one, and a workbench is built with a default.{' '}
+              <Code>handle(query, ctx)</Code> is called when the user sends text that does not start
+              with <Code>/</Code>. <Code>query.text</Code> is the text, <Code>query.terms</Code> the
+              terms found in it, and <Code>ctx.attachments</Code> the cart's items as they stood
+              when Enter was pressed. The box and the cart are emptied at that moment, and both come
+              back if <Code>handle</Code> rejects. The workbench renders nothing for the response;
+              the handler opens the plugin's page with <Code>host.openRoute</Code> and renders it
+              there. <Code>newConversation(ctx)</Code> is called when the user picks New in the
+              prompt bar's destination menu, which every assistant gets: it opens the page a fresh
+              conversation lands on.
             </p>
             <p className={styles.para}>
-              <Code>destination.current()</Code> returns what the prompt bar shows above the input:
-              a <Code>label</Code>; optionally a <Code>path</Code>, shown as a link that opens it
-              with <Code>openRoute</Code>; and optionally <Code>options</Code> and{' '}
-              <Code>select</Code>, the options shown as a menu and the chosen key passed to{' '}
-              <Code>select</Code>. The bar calls it again after each <Code>subscribe</Code>{' '}
-              notification.
+              <Code>destination(set)</Code> is what the prompt bar shows above the input:{' '}
+              <Code>set</Code> a <Code>label</Code>; optionally a <Code>path</Code>, shown as a link
+              that opens it with <Code>openRoute</Code>; and optionally <Code>options</Code> and{' '}
+              <Code>select</Code>, the options shown as a menu and the chosen key passed back to{' '}
+              <Code>select</Code>. Call <Code>set</Code> as you subscribe and again on every move.
+              The bar shows the last value it was handed and never asks for one, so your own call is
+              what tells it something changed; <Code>set(null)</Code> is no destination, and the bar
+              shows New conversation. Choosing another assistant ends the subscription and drops the
+              value.
             </p>
           </Explainer>
         </Part>
@@ -345,49 +405,69 @@ export default defineBackground({
         <Part id="intent" title="Intent">
           <p className={styles.narrative}>
             A plugin that can turn typed text into command suggestions can be chosen as the intent.
-            Every keystroke in the prompt bar that is not a slash command goes to it, with the terms
-            every background found, and what it suggests is shown as rows under the plugins' own
-            offers. The workbench ships one; a plugin with a better reading of text replaces it from
-            Settings.
+            There is always one, and every row the prompt bar draws under free text comes from it:
+            the workbench matches no text itself. Every keystroke that is not a slash command goes
+            to it, with the terms the backgrounds found, what the open page and the cart carry, and
+            what the plugins offered. The workbench ships one; a plugin with a better reading of
+            text replaces it from Settings.
           </p>
-          <File name="src/intent.ts" language="typescript">{`let index = buildIndex([]);
+          <File name="src/intent.ts" language="typescript">{`let index = buildIndex([], []);
 
 export default defineIntent({
-  index: (commands) => {
-    index = buildIndex(commands);
+  index: (commands, calls) => {
+    index = buildIndex(commands, calls);
   },
-  suggest: ({ text, terms }) =>
-    rank(index, text, terms).map((r) => ({
-      call: { label: r.title, command: \`\${r.plugin}:\${r.name}\`, args: r.args },
+  suggest: ({ text, terms, offers }) =>
+    rank(index, text, terms, offers).map((r) => ({
+      call: { label: r.label, command: r.command, args: r.args },
+      plugin: r.plugin,
+      detail: r.detail,
       score: r.score,
     })),
 });`}</File>
           <Explainer>
             <p className={styles.para}>
               Settings lists every plugin with an <Code>intent</Code> module, and the user picks
-              one. <Code>index(commands)</Code> is called once when the module arrives, with every
-              installed plugin's commands as their manifests declare them, each with the plugin's id
-              and title; whatever the plugin builds from them is built here, so that a keystroke
-              never sees the catalog. <Code>suggest(query)</Code> is called on every keystroke with{' '}
-              <Code>query.text</Code>, <Code>query.terms</Code>, the terms every background found,
-              and <Code>query.offers</Code>, the commands plugins offered for those terms, each{' '}
-              <Code>command</Code> qualified. The answer is the whole list: the intent keeps, moves
-              or leaves out each offer as it judges, alongside its own candidates, and the workbench
-              shows the offers as the plugins made them only when there is no answer. When an offer
-              arrives after the keystroke, <Code>suggest</Code> is called again with it. It may be
-              synchronous or return a promise; what arrives is shown, the previous suggestions stay
-              until it does, and <Code>query.signal</Code> aborts when the text changes. Each
-              suggestion is a command call with its <Code>command</Code> qualified as{' '}
-              <Code>plugin:name</Code> and a score; rows are shown in the order returned, at most
-              four.
+              one. <Code>index(commands, calls)</Code> is called once when the module arrives, with
+              everything the workbench can be asked to do: every installed plugin's declared
+              commands, each with the plugin's id and title, and every call a manifest has already
+              filled in — the launcher on Browse, each shortcut button, and one{' '}
+              <Code>workbench:show</Code> per plugin with a sidebar pane. A declared command has
+              argument holes for the text to fill; a declared call runs as written, so what the text
+              decides about it is only whether it is worth showing. Build whatever you rank from
+              here, so that a keystroke never sees the catalog.
             </p>
             <p className={styles.para}>
-              The bundled intent ranks by character n-grams over each declaration, reads an
-              identifier in the text as the kind of thing it is, and fills an argument whose
-              description says it takes that kind. An offer is a candidate with a small lift, shown
-              in the plugin's own words. The lift reads letters, not context: an offer for an
-              identifier that is a coincidence in the sentence is ordered low, not left out. Its
-              background is what tags the identifiers.
+              <Code>suggest(query)</Code> is called on every keystroke. <Code>query.text</Code> is
+              the text. <Code>query.terms</Code> is tiered: <Code>typed</Code>, the terms the
+              backgrounds found in the text; <Code>page</Code>, the front tab's; <Code>cart</Code>,
+              the terms the cart's items carry. A term that arrives by more than one road is listed
+              under the first tier that holds it, and the tier is how much the user meant it — no
+              plugin is asked about <Code>page</Code> or <Code>cart</Code> on a keystroke, because
+              that would put a bigger question to every background on every letter, and the intent
+              already ranks the whole catalog. <Code>query.offers</Code> is what the plugins offered
+              for the text, each <Code>command</Code> qualified and each carrying the term it
+              answers and how it matched.
+            </p>
+            <p className={styles.para}>
+              The answer is the whole list: the intent keeps, moves or drops each offer as it
+              judges, alongside its own candidates, and the bar draws what comes back in the order
+              it comes back, at most four rows. A suggestion's <Code>plugin</Code> is whose mark the
+              row wears where that is not the plugin whose command runs — a pane's row runs{' '}
+              <Code>workbench:show</Code> and belongs to the plugin it shows. <Code>suggest</Code>{' '}
+              is called again when a slow plugin's offer lands, and when the page or the cart moves
+              under text already typed. It may be synchronous or return a promise; the previous rows
+              stay until the next answer lands, and <Code>query.signal</Code> aborts when the
+              question changes.
+            </p>
+            <p className={styles.para}>
+              The bundled intent scores each candidate by character n-grams over the words its
+              declaration gives it, reads an identifier in the text as the kind of thing it is
+              rather than as letters, and fills an argument whose description says it takes that
+              kind — from a typed term first, then from one the page or the cart merely has around.
+              An offer is a candidate like any other, never dropped for its text score and weighted
+              by the account the plugin gave for it: a thing read out of an inventory outranks an id
+              recognised by shape, which outranks words that matched words.
             </p>
           </Explainer>
         </Part>
@@ -408,124 +488,194 @@ export default defineIntent({
 });`}</File>
           <Explainer>
             <p className={styles.para}>
-              A handler receives the arguments and a context holding <Code>host</Code>.{' '}
-              <Code>host.execute(command, args)</Code> runs a command: <Code>name</Code> runs this
-              plugin's command, <Code>plugin:name</Code> another plugin's.{' '}
-              <Code>host.hasCommand(command)</Code> returns whether it is registered.{' '}
-              <Code>host.notify(text)</Code> shows a toast. <Code>host.cart.add(item)</Code> and{' '}
-              <Code>host.cart.remove(id)</Code> change the cart; <Code>has</Code> and{' '}
-              <Code>count</Code> see only this plugin's items. <Code>useHost()</Code> returns the
-              same object inside a page or pane; <Code>CartButton</Code> renders an Add/Added button
-              for an item.
+              A handler receives the arguments, always as strings, and a context holding{' '}
+              <Code>host</Code> and <Code>caller</Code>. <Code>host.execute(command, args)</Code>{' '}
+              runs a command: <Code>name</Code> runs this plugin's command, <Code>plugin:name</Code>{' '}
+              another plugin's. <Code>host.hasCommand(command)</Code> returns whether it is
+              registered. <Code>host.notify(text)</Code> shows a toast.{' '}
+              <Code>host.cart.add(item)</Code> and <Code>host.cart.remove(id)</Code> change the
+              cart; <Code>has</Code> and <Code>count</Code> see only this plugin's items.{' '}
+              <Code>useHost()</Code> returns the same object inside a page or pane;{' '}
+              <Code>CartButton</Code> renders an Add/Added button for an item.
+            </p>
+            <p className={styles.para}>
+              <Code>ctx.caller</Code> is the id of the plugin whose <Code>execute</Code> ran the
+              command, or <Code>'user'</Code> when the workbench's own chrome did: the prompt bar, a
+              keybinding, a menu, a shortcut button, a row in a pane. It is a stamp of the
+              workbench's and a plugin cannot forge it, so a destructive command can refuse a
+              neighbour's call. Read it as "through the workbench's UI" rather than "a person
+              pressed something": a button on a plugin's own page that calls <Code>execute</Code>{' '}
+              arrives as that plugin.
             </p>
           </Explainer>
         </Part>
 
         <Part id="reference" title="Reference">
           <Entry id="r-config" name="config" when="Served as manifest.json.">
-            <Sig>{`interface Manifest {
+            <Sig>{`type PluginConfig = Omit<Manifest, 'sdkVersion' | 'modules'>;   // what the author writes
+
+interface Manifest {
   id: string;                    // /^[a-z][a-z0-9-]{1,40}$/
   title: string;
   description?: string;
   icon?: string;                 // a name from the workbench's icon table
   color?: string;                // blue | green | teal | purple | orange | red
   commands?: SlashCommand[];
-  shortcuts?: CommandCall[];
-  launcher?: CommandCall;
+  shortcuts?: CommandCall[];     // buttons in the sidebar's Shortcuts block
+  launcher?: CommandCall;        // the card on Browse
 
   // written by the build
-  sdkVersion: string;            // the SDK's package version
-  modules: ('background' | 'route' | 'pane' | 'commands' | 'prompt' | 'intent')[];
+  sdkVersion: string;            // the SDK this plugin was built against
+  modules: Module[];             // 'background' | 'route' | 'pane' | 'commands' | 'prompt' | 'intent'
 }
 
 interface SlashCommand {
   name: string;                  // /^[a-z][a-z0-9-]*$/
   title: string;
   description?: string;
-  args?: { name: string; description?: string; required?: boolean }[];   // positional, in this order
+  args?: ArgDecl[];              // positional, in this order
   icon?: string;
-  semantics?: {                  // ranked by in the prompt bar, never shown
+  semantics?: {                  // what an intent ranks by, never shown
     description: string;         // what the command does, in the words a user would type
     examples?: string[];         // phrasings that should reach it
   };
 }
 
+interface ArgDecl {
+  name: string;
+  description?: string;          // what kind of thing it takes; an intent binds a term by it
+  required?: boolean;
+}
+
 interface CommandCall {
   label: string;
   command: string;               // "plugin:name", or "name" for this plugin's own
-  args?: Record<string, string | number>;
+  args?: Record<string, string>;
 }
 
-function definePluginManifest(m: Manifest): Manifest;`}</Sig>
+function definePluginManifest(config: PluginConfig): PluginConfig;`}</Sig>
             <p className={styles.para}>
-              The workbench rejects a manifest whose <Code>sdkVersion</Code> it does not accept and
-              logs the reason.
+              The workbench accepts a manifest whose <Code>sdkVersion</Code> has the same major
+              version as its own and a minor no higher: additions bump the minor, removals the
+              major, and the patch never moves the contract. Under 0.x semver gives a minor the
+              weight of a major, so until 1.0 only the workbench's own <Code>0.minor</Code> loads.
+              Anything else is dropped before any of its code is fetched, and the console says which
+              version was served and which is accepted.
             </p>
           </Entry>
 
           <Entry id="r-vite" name="vite.config.ts" when="Read by the build.">
             <Sig>{`function pluginFederation(options: {
-  config: Manifest;              // the manifest, without the two fields the build writes
-  background?: string;           // entry point for each module
+  config: PluginConfig;          // the manifest, without the two fields the build writes
+  background?: string;           // the entry point for each module this plugin ships
   route?: string;
   pane?: string;
   commands?: string;
   prompt?: string;
-}): VitePlugin[];`}</Sig>
+  intent?: string;
+}): Plugin[];`}</Sig>
             <p className={styles.para}>
               Exposes each named entry point as a module and writes the list to{' '}
-              <Code>manifest.modules</Code>. Shares <Code>react</Code>, <Code>react-dom</Code>,{' '}
-              <Code>zod</Code>, <Code>@kbase/plugin-sdk</Code>, <Code>@kbase/design-system</Code>,{' '}
-              <Code>@phosphor-icons/react</Code> and <Code>@tanstack/react-router</Code> with the
-              workbench, for each one listed in the plugin's <Code>package.json</Code>.
+              <Code>manifest.modules</Code>. A file not named here is not part of the plugin,
+              whatever it exports. <Code>react</Code>, <Code>react-dom</Code>, <Code>zod</Code>,{' '}
+              <Code>@kbase/plugin-sdk</Code>, <Code>@kbase/design-system</Code>,{' '}
+              <Code>@phosphor-icons/react</Code> and <Code>@tanstack/react-router</Code> are taken
+              from the workbench and never bundled, whether or not the plugin lists them: these
+              remotes run only inside the workbench, so a fallback copy is weight that never loads,
+              and a second copy of React or the design system that did load would break hook and
+              context identity.
             </p>
           </Entry>
 
-          <Entry id="r-background" name="background" when="Loaded at startup.">
-            <Sig>{`function defineBackground(b: {
-  terms?: (q: Query) => string[];
-  recommend?: {
-    commands?: (q: Query) => CommandCall[] | Promise<CommandCall[]>;
-    cartItems?: (q: Query) => CartItem[] | Promise<CartItem[]>;
-  };
-  status?: () => StatusItem[];
-}): Background;`}</Sig>
+          <Entry id="r-background" name="background" when="Fetched at startup.">
+            <Sig>{`type Cleanup = () => void;
+type Subscribe<T> = (set: (value: T) => void) => Cleanup;
+
+interface Background {
+  terms?: (q: TypedText) => string[];
+  offer?: (q: TypedQuery) => Offer[] | Promise<Offer[]>;
+  relate?: (q: TermsQuery) => CartItem[] | Promise<CartItem[]>;
+  status?: Subscribe<StatusItem[]>;
+}
+
+function defineBackground(b: Background): Background;`}</Sig>
             <Export
               id="r-terms"
               name="terms"
-              when="Called on every keystroke with the text, then once more with all terms found so far. Also called with the open page's terms and the cart's terms when they change. Synchronous."
+              when="Every keystroke, with the text as typed. Synchronous and no I/O: the answer is due before the next keystroke. Every plugin's terms are pooled, and the pool is what offer and relate are asked about."
             >
-              <Sig>{`interface Query {
-  text?: string;                 // the typed text, on the first call
-  terms?: string[];              // the terms found so far, on the second
-  signal: AbortSignal;
+              <Sig>{`interface TypedText {
+  text: string;
 }`}</Sig>
             </Export>
 
             <Export
-              id="r-recommend"
-              name="recommend"
-              when="commands: on every keystroke, with the typed text's terms, and 250 ms after the open page's terms or the cart last changed. cartItems: 250 ms after the page's terms or the cart changed, never for typed text. Each plugin's answer replaces its own section as it arrives; the previous answer stays, dimmed, until then. The signal aborts when the source changes again. After 2 s the pane stops saying it is asking, but a later answer still lands. A page or cart pool that only grew is asked about the new terms, and the answers join the sections already shown."
+              id="r-offer"
+              name="offer"
+              when="Every keystroke, with the text and the pooled terms. Answer from the terms alone. The signal aborts on the next keystroke; an answer that arrives after it is dropped, and one that arrives before it asks the intent again."
             >
-              <Sig>{`interface CartItem {
-  id: string;                    // unique across plugins; prefix with the plugin id
+              <Sig>{`interface TypedQuery {
+  text: string;
+  terms: string[];               // every term every plugin found in the text
+  signal: AbortSignal;
+}
+
+type MatchKind =
+  | 'record'                     // the plugin holds the thing and read this offer out of its inventory
+  | 'identifier'                 // an id in a namespace it serves, recognised by shape, not looked up
+  | 'name';                      // words matched words
+
+interface Match {
+  term: string;                  // the term this answers, as it appeared in the query
+  kind: MatchKind;
+}
+
+interface Offer extends CommandCall {
+  match: Match;                  // why it is offered; no score — ordering is the intent's job
+}`}</Sig>
+              <p className={styles.para}>
+                An offer reaches the bar only through the chosen intent, which is handed every
+                plugin's offers with each <Code>command</Code> qualified, and answers with the rows
+                to draw.
+              </p>
+            </Export>
+
+            <Export
+              id="r-relate"
+              name="relate"
+              when="250 ms after the front tab's terms or the cart's change, with those terms; never for typed text. May fetch. A plugin is not asked about its own front tab's terms. The signal aborts when the terms change again; after 2 s the pane stops saying it is asking, and a later answer still lands."
+            >
+              <Sig>{`interface TermsQuery {
+  terms: string[];               // what the open page or the cart carries
+  signal: AbortSignal;
+}
+
+interface CartItem {
+  id: string;                    // unique across plugins; derive it from what the thing is
+  readonly plugin?: string;      // stamped by the workbench on the way in; a plugin cannot set it
   name: string;
   subject?: string;              // the identifier the item is about
   summary?: string;              // one line
   terms?: string[];              // what other plugins are asked about once the item is in the cart
-  source?: { path: string } | { command: string; args?: Record<string, string | number> };
+  answers?: Match[];             // which of the terms asked about this item answers, and how
+  source?: { command: string; args?: Record<string, string> };
   context?: Record<string, unknown>;           // what an assistant is told: units, population, caveats
 }`}</Sig>
               <p className={styles.para}>
-                Commands are shown for the typed text only, at most four. Cart items already in the
-                cart, or dismissed from Related, are not shown.
+                <Code>terms</Code> is what the item carries onward and <Code>answers</Code> is what
+                it was asked about, so an item may answer a term it does not carry and carry terms
+                nobody asked for. <Code>answers</Code> is evidence about one question rather than a
+                property of the thing: the Related row reads it off, and what the <Code>+</Code>{' '}
+                puts in the cart is the item without it. A row the user dismissed stays gone for the
+                session, whoever offers it next; a row whose item is already in the cart is shown
+                with its button pressed.
               </p>
             </Export>
 
             <Export
               id="r-status"
               name="status"
-              when="Called at startup, after any module loads, and after every command. The result is shown until the next call."
+              when="Subscribed when the module arrives. Call set with the lines as they stand, and again whenever they change; the workbench shows the last value it was handed. The returned cleanup ends whatever produces the pushes."
             >
               <Sig>{`interface StatusItem {
   text: string;
@@ -537,90 +687,141 @@ function definePluginManifest(m: Manifest): Manifest;`}</Sig>
           <Entry
             id="r-route"
             name="route"
-            when="Loaded when a tab of this plugin first opens. mount is called once per tab."
+            when="Fetched when a tab of this plugin first opens. mount runs once per tab."
           >
             <Sig>{`type Mount = (el: HTMLElement, ctx: { panel: PanelHandle; host: PluginHost }) => Cleanup | void;
-type Cleanup = () => void;
 
-function defineRoute(r: { mount: Mount; normalize: (path: string) => string }): Route;
+interface Route {
+  mount: Mount;
+  // Two paths are the same page when this maps them to one string. The
+  // workbench opens and deduplicates on what it returns, and reads no path itself.
+  normalize: (path: string) => string;
+}
+
+function defineRoute(r: Route): Route;
 function fromReact(Component: ComponentType): { mount: Mount };`}</Sig>
             <p className={styles.para}>
               <Code>{'openRoute(path, { duplicate: true })'}</Code> opens a second tab for the same
               page. <Code>{'navigate(path, { replace: true })'}</Code> replaces the history entry
-              instead of adding one.
+              instead of adding one. A panel is drawn once and mounted once: moving its tab to
+              another group, splitting the group, and moving a pane between the sidebar and the main
+              area all change where the body is drawn rather than what it sits inside, so{' '}
+              <Code>mount</Code> does not run again and an <Code>iframe</Code> inside it does not
+              reload.
             </p>
           </Entry>
 
           <Entry
             id="r-pane"
             name="pane"
-            when="Loaded when the pane is first shown. mount is called each time it is shown."
+            when="Fetched when the pane is first shown. mount runs once, and again after the block is folded and unfolded."
           >
-            <Sig>{`function definePane(p: {
+            <Sig>{`interface Pane {
   mount: Mount;
+  // The sidebar block hugs its content instead of taking a share of the
+  // stack's height — for toolbars and status panels.
   fit?: 'content';
-}): Pane;`}</Sig>
+}
+
+function definePane(p: Pane): Pane;`}</Sig>
           </Entry>
 
           <Entry
             id="r-commands"
             name="commands"
-            when="Loaded the first time one of this plugin's commands runs."
+            when="Fetched the first time one of this plugin's commands runs."
           >
-            <Sig>{`interface CommandContext { host: PluginHost; caller: string }   // the calling plugin's id, or 'user'
+            <Sig>{`interface CommandContext {
+  host: PluginHost;
+  caller: string;                // the plugin whose execute ran it, or 'user' for the workbench's chrome
+}
 
-function defineCommands(
-  handlers: Record<string, (args: Record<string, string | number>, ctx: CommandContext) => void | Promise<void>>,
-): Commands;`}</Sig>
+type CommandHandler = (args: Record<string, string>, ctx: CommandContext) => void | Promise<void>;
+type Commands = Record<string, CommandHandler>;
+
+function defineCommands(handlers: Commands): Commands;`}</Sig>
             <p className={styles.para}>
-              Arguments typed in the prompt bar arrive as strings. A handler that throws produces a
-              toast naming the command. The tab appears when <Code>openRoute</Code> is called, so a
-              handler that opens a page calls it before its first <Code>await</Code>.
+              Every argument arrives as a string, whether it was typed in the prompt bar or written
+              into a call, a shortcut or a suggestion. A handler that throws produces a toast naming
+              the command. The tab appears when <Code>openRoute</Code> is called, so a handler that
+              opens a page calls it before its first <Code>await</Code>.
             </p>
           </Entry>
 
           <Entry
             id="r-prompt"
             name="prompt"
-            when="Loaded when Settings names this plugin as the assistant. handle is called when the user sends text that is not a slash command."
+            when="Fetched when Settings names this plugin as the assistant. handle runs when the user sends text that is not a slash command; destination is subscribed as the module arrives."
           >
-            <Sig>{`interface Destination {
+            <Sig>{`interface Query {
+  text?: string;
+  terms?: string[];              // the terms the backgrounds found in the text
+  signal: AbortSignal;
+}
+
+interface Destination {
   label: string;                 // where the next message lands
   path?: string;                 // this plugin's page for it; the bar offers a jump there
   options?: { key: string; label: string }[];   // other places it could land
   select?: (key: string) => void;               // the user picked one
 }
 
-function definePrompt(p: {
+interface Prompt {
   handle: (q: Query, ctx: { host: PluginHost; attachments: readonly CartItem[] }) => Promise<void>;
   newConversation: (ctx: { host: PluginHost }) => void | Promise<void>;   // New, in the destination menu
-  destination?: {
-    current: () => Destination | null;
-    subscribe: (onChange: () => void) => () => void;   // call onChange when current() changes; returns an unsubscribe
-  };
-}): Prompt;`}</Sig>
+  destination?: Subscribe<Destination | null>;
+}
+
+function definePrompt(p: Prompt): Prompt;`}</Sig>
             <p className={styles.para}>
               <Code>q.signal</Code> aborts when the user presses Stop or sends another message.
+              Choosing another assistant ends the <Code>destination</Code> subscription and drops
+              its value, so the previous one is never shown under the new assistant's name.
             </p>
           </Entry>
 
           <Entry
             id="r-intent"
             name="intent"
-            when="Loaded at startup. index is called once the module arrives; suggest on every keystroke that is not a slash command, and again when a plugin's offer lands later, when Settings names this plugin."
+            when="Fetched at startup, whether or not Settings names this plugin. index runs once when the module arrives; suggest on every keystroke that is not a slash command, again when a plugin's offer lands late, and again when the page or the cart moves under text already typed."
           >
-            <Sig>{`type DeclaredCommand = SlashCommand & { plugin: string; pluginTitle: string };
+            <Sig>{`type ContextTier = 'typed' | 'page' | 'cart';       // strongest first
+type TieredTerms = Record<ContextTier, string[]>;
+
+type DeclaredCommand = SlashCommand & { plugin: string; pluginTitle: string };
+
+interface DeclaredCall extends CommandCall {
+  // The manifest the call came from, whose mark the row wears — not the plugin
+  // that declares the command: a pane's call runs the workbench's.
+  plugin: string;
+  pluginTitle: string;
+  description?: string;          // the manifest's own, where the call stands for the whole plugin
+}
+
+interface IntentQuery {
+  text: string;
+  terms: TieredTerms;            // a term is listed under the first tier that holds it
+  offers: Offer[];               // each command qualified, each carrying its match
+  signal: AbortSignal;
+}
 
 interface Suggestion {
   call: CommandCall;             // command qualified as "plugin:name"
+  plugin?: string;               // whose mark the row wears, when that is not the command's plugin
   detail?: string;               // the row's caption, in place of the plugin's title
-  score: number;                 // higher is closer; rows keep the order returned
+  score: number;                 // higher is closer; rows are shown in the order returned
 }
 
-function defineIntent(i: {
-  index: (commands: DeclaredCommand[]) => void;
-  suggest: (q: Query) => Suggestion[] | Promise<Suggestion[]>;   // q.text, q.terms, q.offers, q.signal
-}): Intent;`}</Sig>
+interface Intent {
+  index: (commands: DeclaredCommand[], calls: DeclaredCall[]) => void;
+  suggest: (q: IntentQuery) => Suggestion[] | Promise<Suggestion[]>;
+}
+
+function defineIntent(i: Intent): Intent;`}</Sig>
+            <p className={styles.para}>
+              At most four rows are drawn, under the row that sends the text to the assistant. With
+              no answer there are no rows: the workbench has none of its own.
+            </p>
           </Entry>
 
           <Entry
@@ -630,27 +831,33 @@ function defineIntent(i: {
           >
             <Sig>{`interface PluginHost {
   openRoute: (path: string, options?: { duplicate?: boolean }) => void;   // this plugin's page
-  execute: (command: string, args?: Record<string, string | number>) => Promise<void>;
+  execute: (command: string, args?: Record<string, string>) => Promise<void>;
   hasCommand: (command: string) => boolean;
   notify: (text: string) => void;
   cart: Cart;
 }
 
+interface Crumb {
+  label: string;
+  path?: string;                 // a link that moves the panel there; a crumb naming a level omits it
+  icon?: string;                 // a name from the workbench's icon table
+}
+
 interface PanelHandle {
-  id: string;
+  id: string;                    // opaque; stable while the panel lives, whatever its path becomes
   plugin: string;
   kind: 'route' | 'pane';
-  path: string;                  // '' for a pane
+  path: string;                  // everything under /p/<plugin>, query string included; '' for a pane
   focused: boolean;
   navigate: (path: string, options?: { replace?: boolean }) => void;
   setTitle: (title: string) => void;
-  setCrumbs: (crumbs: { label: string; path?: string; icon?: string }[]) => void;
+  setCrumbs: (crumbs: Crumb[]) => void;
   setTerms: (terms: string[]) => void;
   subscribe: (listener: () => void) => Cleanup;   // path or focus changed
 }
 
 interface Cart {
-  add: (item: CartItem) => void; // same id replaces
+  add: (item: Omit<CartItem, 'plugin'>) => void;   // same id replaces; the workbench stamps the plugin
   remove: (id: string) => void;  // this plugin's items only
   items: () => readonly CartItem[]; // this plugin's items only
   has: (id: string) => boolean;  // this plugin's items only
@@ -658,18 +865,41 @@ interface Cart {
   subscribe: (listener: () => void) => Cleanup;
 }
 
+interface CartButtonProps {
+  item: CartItem;
+  labelled?: boolean;            // the pill with its words showing, for a prominent placement
+  className?: string;
+  disabled?: boolean;
+}
+
 // React
 function useHost(): PluginHost;
 function usePanel(): PanelHandle;         // re-renders on path and focus
 function useCart(): Cart;                 // re-renders on change
 function usePanelTitle(title: string): void;
-function usePanelBreadcrumbs(crumbs: { label: string; path?: string; icon?: string }[]): void;
+function usePanelBreadcrumbs(crumbs: Crumb[]): void;
 function usePanelTerms(terms: string[]): void;
-function CartButton(props: { item: CartItem; labelled?: boolean }): JSX.Element;   // the design system's, bound to the cart`}</Sig>
+function CartButton(props: CartButtonProps): JSX.Element;   // the design system's, bound to this plugin's cart`}</Sig>
             <p className={styles.para}>
               <Code>setCrumbs</Code> draws a trail above the panel; a crumb with a <Code>path</Code>{' '}
-              is a link that moves the panel there. A component that throws is replaced inside its
-              panel by the error and a Try again button.
+              is a link that moves the panel there. A plugin reads the cart slice it wrote and
+              nothing else: what the user has collected from elsewhere is their business and the
+              assistant's.
+            </p>
+            <p className={styles.para}>
+              Three things can go wrong inside a panel, and each has its own recovery, so read which
+              button the alert offers. A module that never arrived — an unreachable remote, a bad
+              bundle, a missing default export — is an alert naming the plugin and saying it could
+              not be loaded, and <strong>Try again</strong> fetches it again in place; nothing of
+              the plugin has run. A component that throws under the fence <Code>fromReact</Code>{' '}
+              puts around it reads "This panel crashed", and <strong>Try again</strong> draws the
+              component again inside the React root your <Code>mount</Code> already made, so the
+              mount and everything it holds outside the component survive. Anything that throws
+              outside that fence — a <Code>mount</Code> of your own, or a throw React could not
+              route to it — reaches the workbench's own boundary around the whole panel, which reads
+              the same and offers <strong>Restart panel</strong>: clearing it runs your{' '}
+              <Code>mount</Code> again on a fresh element, from the module already in memory. In all
+              three the thrown message sits behind the alert's Details rather than on its face.
             </p>
           </Entry>
         </Part>
@@ -704,11 +934,6 @@ function CartButton(props: { item: CartItem; labelled?: boolean }): JSX.Element;
               but invalid, in which case the console names the field. If it is in Settings but not
               on Browse, it has no <Code>launcher</Code>.
             </Symptom>
-            <Symptom name="Invalid hook call, or a context that is always null">
-              The bundle carried its own copy of React or the SDK. <Code>mf-manifest.json</Code> in
-              the build output lists what was shared; a package missing there was missing from{' '}
-              <Code>package.json</Code> when the build ran.
-            </Symptom>
             <Symptom name="usePanel() called outside a workbench panel">
               The component rendered outside the panel's tree, for example in a portal. The handle
               exists only inside that tree; a component rendered elsewhere receives it as a prop.
@@ -717,17 +942,22 @@ function CartButton(props: { item: CartItem; labelled?: boolean }): JSX.Element;
               The toast says why: <Code>vite.config.ts</Code> does not name <Code>commands</Code>,
               the module has no handler for that name, or the handler threw.
             </Symptom>
-            <Symptom name="A recommendation never appears">
-              In order of likelihood: <Code>background</Code> is named in{' '}
-              <Code>vite.config.ts</Code>; the console does not report it failing to load;{' '}
-              <Code>terms</Code> returns a term that <Code>recommend</Code> handles; the item is not
-              already in the cart. Commands are shown only for typed text, and a plugin is not asked
-              about its own page's terms.
+            <Symptom name="Nothing this plugin offers ever appears">
+              Check, in order of likelihood, that <Code>background</Code> is named in{' '}
+              <Code>vite.config.ts</Code>, that the console does not report it failing to load, and
+              that <Code>terms</Code> mints a term <Code>offer</Code> or <Code>relate</Code> reads
+              back — the pool carries every plugin's terms, so a prefix a neighbour minted is not
+              one you match unless you both chose the canonical one. Beyond that: an offer reaches
+              the bar only through the chosen intent, which draws four rows and may rank yours below
+              them; a plugin is never asked about its own front tab's terms; and a row dismissed in
+              Related stays gone for the rest of the session.
             </Symptom>
-            <Symptom name="This panel crashed">
-              Either the module failed to load, or the component threw while rendering. "exposed
-              nothing at ./route" means the file has no default export. A load failure is retried
-              when the tab is closed and reopened.
+            <Symptom name="The panel shows an alert instead of the plugin">
+              Which recovery it offers says what happened. "could not be loaded" with Try again is
+              the module never arriving: "exposed nothing at ./route" means the file has no default
+              export, and pressing the button fetches it again. "This panel crashed" is the plugin's
+              own code throwing while rendering; the message is behind Details. Try again there
+              redraws the component, and Restart panel runs <Code>mount</Code> again.
             </Symptom>
           </div>
         </Part>

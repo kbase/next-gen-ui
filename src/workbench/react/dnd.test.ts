@@ -21,15 +21,6 @@ describe('dropOperation', () => {
     });
   });
 
-  it('only panes may land in the sidebar', () => {
-    expect(dropOperation(doc, { type: 'sidebar' })).toBeNull();
-    expect(dropOperation(nav, { type: 'sidebar' })).toEqual({
-      type: 'move',
-      panel: nav.panel,
-      to: { zone: 'sidebar' },
-    });
-  });
-
   it('drops on a block insert at its pin slot, panes only', () => {
     expect(dropOperation(doc, { type: 'pin', index: 1 })).toBeNull();
     expect(dropOperation(nav, { type: 'pin', index: 1 })).toEqual({
@@ -46,10 +37,6 @@ describe('dropOperation', () => {
       type: 'pin',
       plugin: 'catalog',
       index: 2,
-    });
-    expect(dropOperation(preview, { type: 'sidebar' })).toEqual({
-      type: 'pin',
-      plugin: 'catalog',
     });
   });
 });

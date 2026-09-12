@@ -67,15 +67,11 @@ export function PromptBar() {
     [prompt],
   );
 
-  const ctx = () => ({
-    focusKind: layout.focus ? (layout.panels[layout.focus]?.kind ?? null) : null,
-  });
-
   const submit = async (text: string) => {
     setError(null);
     const parsed = parse(text);
     if (parsed.kind === 'command') {
-      const resolved = resolve(registry, text, ctx());
+      const resolved = resolve(registry, text);
       if (!resolved.ok) {
         setError(resolved.message);
         announcer.announce(resolved.message);
@@ -276,7 +272,7 @@ export function PromptBar() {
   useEffect(() => {
     let live = true;
     // complete() answers [] for anything that is not a slash command.
-    void complete(registry, value, ctx()).then((list) => {
+    void complete(registry, value).then((list) => {
       if (!live) return;
       // A command's icon is its plugin's; the workbench's own have none.
       const commands: BarSuggestion[] = list.map((s) => {
@@ -319,7 +315,7 @@ export function PromptBar() {
     return () => {
       live = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- ctx() reads the layout, which changes how commands filter but should not refetch on every layout change; queryVersion stands for the recommendations
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the row builders are rebuilt every render, so listing them would refetch on every render; queryVersion stands for the query answers they read
   }, [value, registry, queryVersion]);
 
   const parsed = parse(value);

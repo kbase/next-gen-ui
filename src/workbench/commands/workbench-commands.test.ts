@@ -8,6 +8,7 @@ import {
   placementOf,
 } from '../core';
 import { createCommandRegistry } from './registry';
+import { complete } from './slash';
 import { workbenchCommands } from './workbench-commands';
 
 const arc = makeRoute('koros', '/nitro', 'a');
@@ -90,14 +91,26 @@ describe('workbench commands', () => {
     expect(store.get().sidebar.folded).toEqual([]);
   });
 
-  it('move-to-main-area takes a block out of the sidebar and leaves a tab alone', async () => {
-    const { store, registry } = setup();
+  it('fold says why it cannot fold a panel that is not a sidebar block', async () => {
+    const { store, registry, announced } = setup();
+    const before = store.get();
+    await registry.run('fold', { panel: job.id });
+    expect(store.get()).toBe(before);
+    expect(announced.at(-1)).toBe(`${job.id} is not in the sidebar`);
+  });
+
+  it('move-to-main-area takes a block out of the sidebar and says why a tab stays', async () => {
+    const { store, registry, announced } = setup();
     const pane = paneId('koros');
     await registry.run('move-to-main-area', { panel: pane });
     expect(placementOf(store.get(), pane).zone).toBe('main');
     const after = store.get();
     await registry.run('move-to-main-area', { panel: job.id });
     expect(store.get()).toBe(after);
+    expect(announced.at(-1)).toBe(`${job.id} is not in the sidebar`);
+    // The pane it just moved out is no longer a block either, and says so.
+    await registry.run('move-to-main-area', { panel: pane });
+    expect(announced.at(-1)).toBe(`${pane} is not in the sidebar`);
   });
 
   it('pin rejects an unknown plugin and accepts a known one', async () => {
@@ -193,11 +206,27 @@ describe('workbench commands', () => {
     expect(await argOf('pin', 'index')?.complete?.('')).toEqual(['0', '1']);
   });
 
-  it('move-to-sidebar leaves a focused route where it is', async () => {
-    const { store, registry } = setup();
+  it('move-to-sidebar leaves a focused route where it is, and says why', async () => {
+    const { store, registry, announced } = setup();
     const before = store.get();
     await registry.run('move-to-sidebar', {});
     expect(store.get()).toBe(before);
+    expect(announced.at(-1)).toBe(
+      `${job.id} is a page, and only a plugin's pane goes in the sidebar`,
+    );
+  });
+
+  // A keybinding runs a command the prompt bar would have completed and the
+  // other way round: the registry offers every command whatever has focus,
+  // and the ones that cannot act on this layout answer when they are run.
+  it('offers the same commands however the layout is arranged', async () => {
+    const { store, registry } = setup();
+    const offered = async () => (await complete(registry, '/')).map((o) => o.value);
+    const withRouteFocused = await offered();
+    expect(withRouteFocused).toEqual(expect.arrayContaining(['/fold', '/move-to-sidebar']));
+
+    store.dispatch({ type: 'focus', panel: paneId('koros') });
+    expect(await offered()).toEqual(withRouteFocused);
   });
 
   it('lock-layout toggles the lock and undo speaks up when empty', async () => {

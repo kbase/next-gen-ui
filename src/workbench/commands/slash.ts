@@ -1,6 +1,6 @@
 import type { ArgError, ArgValues } from './args';
 import { completeArg, usage, validateArgs } from './args';
-import type { Command, CommandRegistry, WhenContext } from './registry';
+import type { Command, CommandRegistry } from './registry';
 import { qualifiedName } from './registry';
 
 // Text typed into the prompt bar is either a slash command or a prompt for
@@ -39,12 +39,12 @@ export type Resolved =
       message: string;
     };
 
-export function resolve(registry: CommandRegistry, input: string, ctx?: WhenContext): Resolved {
+export function resolve(registry: CommandRegistry, input: string): Resolved {
   const parsed = parse(input);
   if (parsed.kind !== 'command') {
     return { ok: false, code: 'unknown-command', message: 'not a slash command' };
   }
-  const found = registry.find(parsed.name, ctx);
+  const found = registry.find(parsed.name);
   if (!found.ok) {
     if (found.reason === 'ambiguous') {
       return {
@@ -78,11 +78,10 @@ export function displayName(registry: CommandRegistry, command: Command): string
 }
 
 // Completions for the token under the caret, which is always the last one.
-export async function complete(
-  registry: CommandRegistry,
-  input: string,
-  ctx?: WhenContext,
-): Promise<Suggestion[]> {
+// Every registered command is offered: whether one can act on the layout as
+// it stands is answered by running it, which is also the only moment a
+// keybinding passes through.
+export async function complete(registry: CommandRegistry, input: string): Promise<Suggestion[]> {
   const parsed = parse(input);
   if (parsed.kind !== 'command') return [];
 
@@ -91,7 +90,7 @@ export async function complete(
     // A prefix of the bare name reaches a contested command too, shown in
     // the qualified form the user will have to type.
     return registry
-      .list(ctx)
+      .list()
       .map((c) => ({ c, shown: displayName(registry, c) }))
       .filter(
         ({ c, shown }) =>
@@ -111,7 +110,7 @@ export async function complete(
       }));
   }
 
-  const found = registry.find(parsed.name, ctx);
+  const found = registry.find(parsed.name);
   if (!found.ok) return [];
   const specs = found.command.args ?? [];
   const index = parsed.trailingSpace ? parsed.tokens.length : parsed.tokens.length - 1;

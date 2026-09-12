@@ -10,6 +10,10 @@ const BARS = ['prompt', 'status'] as const satisfies readonly BarName[];
 // Said once, because every `panel` argument means it.
 const FOCUSED = 'The focused panel, unless another is named';
 
+// What folding and moving out both refuse, and for the same reason: the
+// panel named is open, and is somewhere these commands do not reach.
+const notInSidebar = (panel: PanelId) => `${panel} is not in the sidebar`;
+
 function isBar(name: string): name is BarName {
   return (BARS as readonly string[]).includes(name);
 }
@@ -186,11 +190,17 @@ export function workbenchCommands({
       name: 'move-to-sidebar',
       title: 'Move a panel to the sidebar',
       description: FOCUSED,
-      when: (ctx) => ctx.focusKind === 'pane',
       args: [panelArg(movablePanes)],
       run: ({ panel }) => {
         const target = panelFor(panel);
-        if (target) dispatch({ type: 'move', panel: target, to: { zone: 'sidebar' } });
+        if (!target) return;
+        // The sidebar holds plugins' panes; the store would drop a `move`
+        // naming a page, so say so instead of letting it fall silent.
+        if (store.get().panels[target]?.kind !== 'pane') {
+          announce(`${target} is a page, and only a plugin's pane goes in the sidebar`);
+          return;
+        }
+        dispatch({ type: 'move', panel: target, to: { zone: 'sidebar' } });
       },
     },
     {
@@ -198,7 +208,6 @@ export function workbenchCommands({
       name: 'move-to-main-area',
       title: 'Move a panel out of the sidebar',
       description: FOCUSED,
-      when: (ctx) => ctx.focusKind === 'pane',
       args: [panelArg(sidebarPanes)],
       run: ({ panel }) => {
         const target = panelFor(panel);
@@ -206,7 +215,10 @@ export function workbenchCommands({
         const layout = store.get();
         // Only out of the sidebar: a tab given to this command would be
         // dragged across the main area's groups, which is not what it says.
-        if (placementOf(layout, target).zone !== 'sidebar') return;
+        if (placementOf(layout, target).zone !== 'sidebar') {
+          announce(notInSidebar(target));
+          return;
+        }
         const group = groups(layout.main)[0];
         if (group) dispatch({ type: 'move', panel: target, to: { group: group.id } });
       },
@@ -216,13 +228,15 @@ export function workbenchCommands({
       name: 'fold',
       title: 'Fold or unfold a sidebar panel',
       description: FOCUSED,
-      when: (ctx) => ctx.focusKind === 'pane',
       args: [panelArg(sidebarPanes)],
       run: ({ panel }) => {
         const target = panelFor(panel);
         if (!target) return;
         const placement = placementOf(store.get(), target);
-        if (placement.zone !== 'sidebar') return;
+        if (placement.zone !== 'sidebar') {
+          announce(notInSidebar(target));
+          return;
+        }
         dispatch({ type: 'fold', panel: target, folded: !placement.folded });
       },
     },

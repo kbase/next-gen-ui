@@ -1,11 +1,5 @@
-import type { PanelKind, PluginId } from '../core';
+import type { PluginId } from '../core';
 import type { ArgSpec, ArgValues } from './args';
-
-// What a command may ask about before deciding it applies. Kept tiny on
-// purpose; a `when` is a function, not a grammar.
-export interface WhenContext {
-  focusKind: PanelKind | null;
-}
 
 // Who ran the command: the plugin whose code called `execute`, or 'user'
 // for the prompt bar, a keybinding and every button.
@@ -18,12 +12,15 @@ export interface CommandSpec {
   title: string;
   description?: string;
   args?: ArgSpec[];
-  when?: (ctx: WhenContext) => boolean;
   // 'workbench' or the plugin that declared it.
   source: 'workbench' | PluginId;
 }
 
 export interface Command extends CommandSpec {
+  // Every registered command is findable and runnable at any moment; a
+  // command the layout leaves nothing to do announces why rather than
+  // returning silently. Nothing hides a command from the prompt bar that
+  // would still run from its keybinding.
   run: (values: ArgValues, caller: Caller) => void | Promise<void>;
 }
 
@@ -39,8 +36,8 @@ export interface CommandRegistry {
   // By qualified name only.
   get(name: string): Command | undefined;
   // By qualified name, or by a bare name that exactly one command carries.
-  find(name: string, ctx?: WhenContext): Found;
-  list(ctx?: WhenContext): Command[];
+  find(name: string): Found;
+  list(): Command[];
   run(name: string, values: ArgValues, caller?: Caller): Promise<void>;
   subscribe(listener: () => void): () => void;
 }
@@ -57,18 +54,14 @@ export function createCommandRegistry(): CommandRegistry {
   const listeners = new Set<() => void>();
   const notify = () => listeners.forEach((l) => l());
 
-  const list = (ctx?: WhenContext) => {
-    const all = [...commands.values()].sort((a, b) =>
-      qualifiedName(a).localeCompare(qualifiedName(b)),
-    );
-    return ctx ? all.filter((c) => !c.when || c.when(ctx)) : all;
-  };
+  const list = () =>
+    [...commands.values()].sort((a, b) => qualifiedName(a).localeCompare(qualifiedName(b)));
 
-  const find = (name: string, ctx?: WhenContext): Found => {
+  const find = (name: string): Found => {
     const exact = commands.get(name);
-    if (exact && (!ctx || !exact.when || exact.when(ctx))) return { ok: true, command: exact };
+    if (exact) return { ok: true, command: exact };
     if (name.includes(':')) return { ok: false, reason: 'unknown', candidates: [] };
-    const candidates = list(ctx).filter((c) => c.name === name);
+    const candidates = list().filter((c) => c.name === name);
     if (candidates.length === 1) return { ok: true, command: candidates[0] };
     return { ok: false, reason: candidates.length ? 'ambiguous' : 'unknown', candidates };
   };

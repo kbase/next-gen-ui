@@ -12,13 +12,7 @@ function registry() {
     args: [{ name: 'id', required: true, complete: () => ['12', '13', '20'] }],
     run: () => {},
   });
-  r.register({
-    name: 'customize',
-    title: 'Customize',
-    source: 'workbench',
-    when: (ctx) => ctx.focusKind !== 'pane',
-    run: () => {},
-  });
+  r.register({ name: 'customize', title: 'Customize', source: 'workbench', run: () => {} });
   return r;
 }
 
@@ -82,10 +76,6 @@ describe('resolve', () => {
     expect(resolve(contested(), '/fj:open').ok).toBe(true);
   });
 
-  it('hides a command whose when-clause is false', () => {
-    const result = resolve(registry(), '/customize', { focusKind: 'pane' });
-    expect(!result.ok && result.code).toBe('unknown-command');
-  });
 });
 
 describe('complete', () => {

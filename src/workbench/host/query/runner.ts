@@ -45,6 +45,10 @@ export interface QueryInput {
 
 export interface QueryRunner {
   set: (source: QuerySource, input: QueryInput) => void;
+  // Renames the heading over the answers already in hand. The label is what
+  // the question is called, not part of it, so a tab that titles itself after
+  // reporting its terms reaches the pane without restarting the round.
+  label: (source: QuerySource, label: string) => void;
   stop: () => void;
 }
 
@@ -244,7 +248,6 @@ export function createQueryRunner(
     const controller = new AbortController();
     inflight.set(source, controller);
     const query: Query = { text: input.text, terms, signal: controller.signal };
-    const label = input.label ?? input.text ?? '';
     const plugins = index
       .backgrounds()
       .filter(({ plugin, background }) => background.recommend && plugin !== input.owner);
@@ -261,7 +264,9 @@ export function createQueryRunner(
     const publish = () => {
       if (controller.signal.aborted) return;
       store.set(source, {
-        label,
+        // Whatever the source is called now: `set` wrote a label before the
+        // settle, and `label` may have replaced it while this round waited.
+        label: store.get(source).label,
         pool: fullPool,
         answers: [...answers.values()].sort((a, b) => order.get(a.plugin)! - order.get(b.plugin)!),
         pending: [...pending],
@@ -348,6 +353,11 @@ export function createQueryRunner(
         source,
         window.setTimeout(() => void ask(source, input, question, terms, grow), SETTLE_MS),
       );
+    },
+    label(source, label) {
+      const state = store.get(source);
+      if (state.label === label) return;
+      store.set(source, { ...state, label });
     },
     stop() {
       for (const timer of timers.values()) window.clearTimeout(timer);

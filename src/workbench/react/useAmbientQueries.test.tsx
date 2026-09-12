@@ -1,0 +1,154 @@
+import type { ReactNode } from 'react';
+import { act, renderHook } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { Background, CommandCall, Query } from '../../plugins/sdk';
+import {
+  createCartStore,
+  createQueryStore,
+  createTermStore,
+  createWorkbenchStore,
+  defaultLayout,
+  makeRoute,
+} from '../core';
+import type { HostIndex } from '../host/installed';
+import { SETTLE_MS, createQueryRunner } from '../host/query/runner';
+import { ServicesContext } from './context';
+import type { WorkbenchServices } from './services';
+import { createTitleStore } from './titles';
+import { useAmbientQueries } from './useAmbientQueries';
+
+const page = makeRoute('fj', '/protein/P0AEX9', 'a');
+
+// Only the services the hook and `useLayout` read.
+function harness(background: Background) {
+  const store = createWorkbenchStore({ initial: defaultLayout() });
+  store.dispatch({ type: 'open', panel: page });
+  const services = {
+    store,
+    query: createQueryStore(),
+    terms: createTermStore(),
+    titles: createTitleStore(),
+    cart: createCartStore(),
+  } as unknown as WorkbenchServices;
+  const index = {
+    backgrounds: () => [{ plugin: 'gk', title: 'gk', background }],
+  } as unknown as HostIndex;
+  const full: WorkbenchServices = {
+    ...services,
+    queryRunner: createQueryRunner(index, services.query),
+  };
+  const wrapper = ({ children }: { children: ReactNode }) => (
+    <ServicesContext.Provider value={full}>{children}</ServicesContext.Provider>
+  );
+  renderHook(() => useAmbientQueries(), { wrapper });
+  return full;
+}
+
+beforeEach(() => vi.useFakeTimers());
+afterEach(() => vi.useRealTimers());
+
+describe('the ambient page query', () => {
+  it('asks once for terms, and a later title renames the heading without asking again', async () => {
+    const commands = vi.fn<(q: Query) => CommandCall[]>(({ terms = [] }) =>
+      terms.map((t) => ({ label: `open ${t}`, command: 'x' })),
+    );
+    const { terms, titles, query } = harness({ recommend: { commands } });
+
+    // The panel reports what it is about; its title comes later, when the
+    // fetch that named the protein lands.
+    await act(async () => {
+      terms.set(page.id, ['uniprot:P0AEX9']);
+      await vi.advanceTimersByTimeAsync(SETTLE_MS);
+    });
+    expect(commands).toHaveBeenCalledTimes(1);
+    expect(query.get('page').label).toBe(page.path);
+
+    await act(async () => {
+      titles.set(page.id, 'P0AEX9 · Structure');
+      await vi.advanceTimersByTimeAsync(SETTLE_MS);
+    });
+    expect(commands).toHaveBeenCalledTimes(1);
+    expect(query.get('page').label).toBe('P0AEX9 · Structure');
+    expect(query.get('page').answers[0].stale).toBeUndefined();
+    expect(query.get('page').answers[0].commands.map((c) => c.label)).toEqual([
+      'open uniprot:P0AEX9',
+    ]);
+  });
+
+  it('renames the heading of a round still waiting for the settle', async () => {
+    const commands = vi.fn<(q: Query) => CommandCall[]>(() => []);
+    const { terms, titles, query } = harness({ recommend: { commands } });
+    await act(async () => {
+      terms.set(page.id, ['uniprot:P0AEX9']);
+    });
+    await act(async () => {
+      titles.set(page.id, 'P0AEX9 · Structure');
+      await vi.advanceTimersByTimeAsync(SETTLE_MS);
+    });
+    // The settle's publish carries the title, not the path `set` was given.
+    expect(commands).toHaveBeenCalledTimes(1);
+    expect(query.get('page').label).toBe('P0AEX9 · Structure');
+  });
+
+  it('asks again when the panel reports different terms', async () => {
+    const commands = vi.fn<(q: Query) => CommandCall[]>(() => []);
+    const { terms, query } = harness({ recommend: { commands } });
+    await act(async () => {
+      terms.set(page.id, ['uniprot:P0AEX9']);
+      await vi.advanceTimersByTimeAsync(SETTLE_MS);
+    });
+    await act(async () => {
+      terms.set(page.id, ['uniprot:P0AEX9', 'taxon:83333']);
+      await vi.advanceTimersByTimeAsync(SETTLE_MS);
+    });
+    expect(commands).toHaveBeenCalledTimes(2);
+    expect(query.get('page').pool).toEqual(['uniprot:P0AEX9', 'taxon:83333']);
+  });
+});
+
+const item = (id: string, terms?: string[]) => ({
+  id,
+  name: id,
+  terms,
+  source: { path: `/${id}` },
+});
+
+describe('the ambient cart query', () => {
+  it('a count that changes without the terms changing renames, and asks nobody', async () => {
+    const commands = vi.fn<(q: Query) => CommandCall[]>(() => [{ label: 'row', command: 'x' }]);
+    const { cart, query } = harness({ recommend: { commands } });
+    await act(async () => {
+      cart.add(item('fj:P0AEX9', ['uniprot:P0AEX9']));
+      await vi.advanceTimersByTimeAsync(SETTLE_MS);
+    });
+    expect(commands).toHaveBeenCalledTimes(1);
+    expect(query.get('cart').label).toBe('1 item');
+
+    // An item that carries nothing the plugins have not been asked about:
+    // the cart is a longer list, not a different question.
+    await act(async () => {
+      cart.add(item('fj:note'));
+      await vi.advanceTimersByTimeAsync(SETTLE_MS);
+    });
+    expect(commands).toHaveBeenCalledTimes(1);
+    expect(query.get('cart').label).toBe('2 items');
+    expect(query.get('cart').answers[0].stale).toBeUndefined();
+    expect(query.get('cart').pool).toEqual(['uniprot:P0AEX9']);
+  });
+
+  it('asks again when an item brings a term with it', async () => {
+    const commands = vi.fn<(q: Query) => CommandCall[]>(() => []);
+    const { cart, query } = harness({ recommend: { commands } });
+    await act(async () => {
+      cart.add(item('fj:P0AEX9', ['uniprot:P0AEX9']));
+      await vi.advanceTimersByTimeAsync(SETTLE_MS);
+    });
+    await act(async () => {
+      cart.add(item('fj:83333', ['taxon:83333']));
+      await vi.advanceTimersByTimeAsync(SETTLE_MS);
+    });
+    expect(commands).toHaveBeenCalledTimes(2);
+    expect(commands.mock.calls[1][0].terms).toEqual(['taxon:83333']);
+    expect(query.get('cart').label).toBe('2 items');
+  });
+});

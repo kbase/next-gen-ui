@@ -193,6 +193,21 @@ describe('the query runner', () => {
     expect(store.get('page').pool).toEqual(['uniprot:P0AEX9', 'taxon:83333']);
   });
 
+  it('a new label renames the heading and asks nobody, during the settle and after it', async () => {
+    const commands = vi.fn<(q: Query) => CommandCall[]>(() => [{ label: 'row', command: 'x' }]);
+    const store = createQueryStore();
+    const runner = createQueryRunner(index({ p: { recommend: { commands } } }), store);
+    runner.set('page', { terms: ['uniprot:P0AEX9'], label: '/protein/P0AEX9' });
+    runner.label('page', 'P0AEX9');
+    await vi.advanceTimersByTimeAsync(SETTLE_MS);
+    // The settle publishes the name the source has now, not the one `set` held.
+    expect(store.get('page').label).toBe('P0AEX9');
+    runner.label('page', 'P0AEX9 · Structure');
+    expect(store.get('page').label).toBe('P0AEX9 · Structure');
+    expect(commands).toHaveBeenCalledTimes(1);
+    expect(store.get('page').answers[0].stale).toBeUndefined();
+  });
+
   it('a terms() or recommend() that throws costs that plugin its answer, not the round', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     const broken: Background = {

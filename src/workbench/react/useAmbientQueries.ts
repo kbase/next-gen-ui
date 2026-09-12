@@ -24,17 +24,32 @@ export function useAmbientQueries() {
   );
   const cartLabel = `${items.length} item${items.length === 1 ? '' : 's'}`;
 
-  const pageKey = `${front?.id ?? ''}|${pageTerms.join(',')}|${pageLabel}`;
+  // The question is the panel and what it says it is about; the title is not
+  // part of it.
+  const pageKey = `${front?.id ?? ''}|${pageTerms.join(',')}`;
   useEffect(() => {
     queryRunner.set('page', { terms: pageTerms, owner: front?.plugin, label: pageLabel });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- pageKey stands for the values
   }, [queryRunner, pageKey]);
 
-  const cartKey = `${cartTerms.join(',')}|${cartLabel}`;
+  // A panel titles itself after it reports its terms, and again whenever what
+  // it shows changes; the heading follows without restarting the round.
+  useEffect(() => {
+    queryRunner.label('page', pageLabel);
+  }, [queryRunner, pageLabel]);
+
+  // Likewise the cart: the question is the terms its items carry, and the
+  // count is what the heading calls them. An item that carries no term other
+  // plugins have not been asked about already changes the count alone.
+  const cartKey = cartTerms.join(',');
   useEffect(() => {
     queryRunner.set('cart', { terms: cartTerms, label: cartLabel });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- cartKey stands for the values
   }, [queryRunner, cartKey]);
+
+  useEffect(() => {
+    queryRunner.label('cart', cartLabel);
+  }, [queryRunner, cartLabel]);
 
   useEffect(() => () => queryRunner.stop(), [queryRunner]);
 }

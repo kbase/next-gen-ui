@@ -17,8 +17,11 @@ import { focusPanelElement } from './useFocusSync';
 import styles from './Workbench.module.css';
 
 // A suggestion that acts directly, for offers whose params no command
-// string could carry, and that says whose it is.
-type BarSuggestion = Suggestion & {
+// string could carry, and that says whose it is. Only a completion carries
+// the command it completes (`Suggestion.command`); a row the bar builds
+// itself — a recommendation, a shortcut, an app or panel launch — has none,
+// so this shares just the fields both kinds of row render.
+type BarSuggestion = Pick<Suggestion, 'value' | 'label' | 'detail'> & {
   run?: () => void;
   icon?: ComponentType<IconProps>;
   // A command name is code and set in the mono face; an offer is a

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useId, useRef, useState, useSyncExternalStore } from 'react';
 import type { ComponentType, KeyboardEvent } from 'react';
 import { ArrowUpRight, CaretRight, CaretUpDown, Check } from '@phosphor-icons/react';
 import type { IconProps } from '@phosphor-icons/react';
@@ -31,7 +31,7 @@ type BarSuggestion = Pick<Suggestion, 'value' | 'label' | 'detail'> & {
 
 // The bottom bar. A leading slash makes it a command, completed from the
 // registry before any plugin code loads; anything else goes to the
-// assistant the user chose in the catalog.
+// assistant the user chose in Settings.
 export function PromptBar() {
   const [value, setValue] = useState('');
   const [suggestions, setSuggestions] = useState<BarSuggestion[]>([]);
@@ -93,7 +93,7 @@ export function PromptBar() {
       return;
     }
     if (!assistant) {
-      const message = 'No assistant is set. Pick one in the catalog.';
+      const message = 'No assistant is set. Pick one in Settings.';
       setError(message);
       announcer.announce(message);
       return;
@@ -452,7 +452,7 @@ function PromptDestination() {
   if (!assistant) {
     return (
       <p className={styles.promptContext}>
-        Free text needs an assistant — pick one in the catalog.
+        Free text needs an assistant — pick one in Settings.
       </p>
     );
   }
@@ -537,26 +537,18 @@ function AssistantContext({ assistant, prompt }: { assistant: string; prompt: Pr
   );
 }
 
-// `current()` is read once per change the plugin reports, and the value is
-// held until the next: a plugin builds the object afresh on every call,
-// which React's store hook would otherwise take for an endless change.
+// The plugin pushes: `destination(set)` hands over where the next message
+// goes before it returns and hands over a new one whenever it moves, so
+// what the bar shows is the last value handed over. A plugin with no
+// destination module, or one that pushes nothing, leaves it null.
 function useDestination(destination: Prompt['destination']): Destination | null {
-  const cache = useRef<{ of: typeof destination; value: Destination | null } | null>(null);
-  const read = useCallback(() => {
-    if (!cache.current || cache.current.of !== destination) {
-      cache.current = { of: destination, value: destination?.current() ?? null };
+  const [value, setValue] = useState<Destination | null>(null);
+  useEffect(() => {
+    if (!destination) {
+      setValue(null);
+      return;
     }
-    return cache.current.value;
+    return destination(setValue);
   }, [destination]);
-  const subscribe = useCallback(
-    (onChange: () => void) =>
-      destination
-        ? destination.subscribe(() => {
-            cache.current = { of: destination, value: destination.current() };
-            onChange();
-          })
-        : () => {},
-    [destination],
-  );
-  return useSyncExternalStore(subscribe, read, read);
+  return value;
 }

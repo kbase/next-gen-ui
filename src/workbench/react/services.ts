@@ -74,7 +74,7 @@ export interface WorkbenchServices {
   queryRunner: QueryRunner;
   // What each open panel says it is about.
   terms: TermStore;
-  // What each plugin's status() last said.
+  // What each plugin last pushed for the status bar.
   status: StatusStore;
   registry: CommandRegistry;
   // Which commands are in flight, so the control that ran one shows busy.

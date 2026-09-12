@@ -122,12 +122,6 @@ export function createWorkbench({
   registry.register(openCommand(services));
   source.registerCommands(registry, (plugin) => pluginHostFor(services, plugin));
 
-  // status() is asked at startup — once each background module arrives —
-  // and after every command; the answer shows until the next ask.
-  source.subscribe(() => status.refresh());
-  registry.onRun(() => status.refresh());
-  status.refresh();
-
   store.subscribe(() => save('layout', store.get()));
   // Saved as its own document: a cart outlives an arrangement, and a corrupt
   // layout should not take the user's collected work with it. Settings are

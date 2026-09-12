@@ -46,6 +46,7 @@ export type {
   Modules,
   Mount,
   Cleanup,
+  Subscribe,
   Query,
   TypedText,
   TypedQuery,

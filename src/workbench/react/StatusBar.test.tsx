@@ -1,15 +1,18 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import type { StatusItem } from '../../plugins/sdk';
+import { defineBackground } from '../../plugins/sdk';
 import { localPlugins } from '../../plugins/local';
-import { createWorkbench, noPersistence } from '../host';
+import type { InstalledPlugin } from '../host';
+import { createWorkbench, localPlugin, noPersistence } from '../host';
 import { DEFAULT_ASSISTANT, DEFAULT_INTENT, DEFAULT_PINNED } from '../../workbenchDefaults';
 import { WorkbenchProvider } from './WorkbenchProvider';
 import { StatusBar } from './StatusBar';
 
-function mount() {
+function mount(installed: InstalledPlugin[] = localPlugins) {
   const services = createWorkbench({
-    installed: localPlugins,
+    installed,
     persistence: noPersistence,
     defaultPinned: [...DEFAULT_PINNED],
     defaultAssistant: DEFAULT_ASSISTANT,
@@ -21,6 +24,30 @@ function mount() {
     </WorkbenchProvider>,
   );
   return services;
+}
+
+// A plugin that keeps the `set` it was handed and pushes when its own
+// answer lands, which is what a line fetched from a server does.
+function waitingPlugin() {
+  let push: ((items: StatusItem[]) => void) | null = null;
+  return {
+    installed: localPlugin({
+      config: { id: 'atlas', title: 'Atlas' },
+      background: () =>
+        Promise.resolve(
+          defineBackground({
+            status: (set) => {
+              push = set;
+              return () => {
+                push = null;
+              };
+            },
+          }),
+        ),
+    }),
+    push: (items: StatusItem[]) => push?.(items),
+    stopped: () => push === null,
+  };
 }
 
 describe('the status bar', () => {
@@ -50,5 +77,32 @@ describe('the status bar', () => {
     expect(announced.at(-1)).toBe('Sidebar collapsed');
     await user.click(screen.getByRole('button', { name: 'Expand sidebar' }));
     expect(services.store.get().sidebar.collapsed).toBe(false);
+  });
+
+  it('shows a line the plugin pushes, with nothing run to ask for it', async () => {
+    const atlas = waitingPlugin();
+    const services = mount([atlas.installed]);
+    const run = vi.spyOn(services.registry, 'run');
+    // The background module arrives on a microtask; the store subscribes to
+    // it as it does.
+    await act(async () => {});
+    expect(screen.queryByText('Lakehouse warm')).not.toBeInTheDocument();
+
+    act(() => atlas.push([{ text: 'Lakehouse warm' }]));
+
+    expect(screen.getByText('Lakehouse warm')).toBeInTheDocument();
+    expect(run).not.toHaveBeenCalled();
+  });
+
+  it('drops the line and stops the plugin when the store stops', async () => {
+    const atlas = waitingPlugin();
+    const services = mount([atlas.installed]);
+    await act(async () => {});
+    act(() => atlas.push([{ text: 'Lakehouse warm' }]));
+
+    act(() => services.status.stop());
+
+    expect(screen.queryByText('Lakehouse warm')).not.toBeInTheDocument();
+    expect(atlas.stopped()).toBe(true);
   });
 });

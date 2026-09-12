@@ -30,8 +30,18 @@ export default defineBackground({
         ? [{ label: `${job.name} — ${job.status}`, command: 'open', args: { id: job.id } }]
         : [];
     }),
-  status: () => {
-    const n = jobStore.running();
-    return n > 0 ? [{ text: `${n} running` }] : [];
+  // The store notifies once a second while anything runs, but the line only
+  // moves when the count does, so the count is what is compared: a push is
+  // a change as far as the host is concerned.
+  status: (set) => {
+    let shown = -1;
+    const push = () => {
+      const n = jobStore.running();
+      if (n === shown) return;
+      shown = n;
+      set(n > 0 ? [{ text: `${n} running` }] : []);
+    };
+    push();
+    return jobStore.subscribe(push);
   },
 });

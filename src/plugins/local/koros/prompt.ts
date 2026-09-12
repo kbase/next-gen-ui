@@ -27,5 +27,12 @@ export default definePrompt({
     const arc = koros.newArc();
     host.openRoute(`/${arc.slug}`);
   },
-  destination: { current: () => koros.destination(), subscribe: koros.subscribe },
+  // The bar is told where a message would land now, and told again whenever
+  // the current arc changes or an arc is added or renamed — every one of
+  // which is a store notification.
+  destination: (set) => {
+    const push = () => set(koros.destination());
+    push();
+    return koros.subscribe(push);
+  },
 });

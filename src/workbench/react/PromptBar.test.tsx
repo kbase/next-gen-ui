@@ -2,6 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { localPlugins } from '../../plugins/local';
+import { koros } from '../../plugins/local/koros/store';
 import { createWorkbench, noPersistence } from '../host';
 import { WorkbenchProvider } from './WorkbenchProvider';
 import { PromptBar } from './PromptBar';
@@ -62,5 +63,25 @@ describe('sending a prompt', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('the assistant choked');
     expect(field()).toHaveValue('hello');
     expect(services.cart.items()).toMatchObject([{ id: 'a' }]);
+  });
+});
+
+describe('the destination row', () => {
+  // Moving the arc is the whole of it: the plugin pushes the new
+  // destination, and the row redraws without the bar being re-rendered or a
+  // command being run.
+  it('follows the arc the plugin pushes', async () => {
+    mount();
+    const shown = () => screen.getByRole('button', { name: /^Prompt destination:/ }).textContent;
+    expect(
+      await screen.findByRole('button', { name: /^Prompt destination: Nitrogenase in isolate 12/ }),
+    ).toBeVisible();
+
+    act(() => koros.setCurrent('methanol-dh'));
+
+    expect(shown()).toContain('Methanol dehydrogenase variants');
+
+    act(() => koros.setCurrent('nitro'));
+    expect(shown()).toContain('Nitrogenase in isolate 12');
   });
 });

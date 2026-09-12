@@ -10,6 +10,14 @@ import type { PanelHandle } from './panel';
 
 export type Cleanup = () => void;
 
+// A value the plugin pushes to the host. `subscribe(set)` calls `set` with
+// the value as it stands before it returns, and calls it again on every
+// change; what the host shows is the last value it was handed, so the
+// plugin's own call is the change detection and the host never asks. The
+// returned function stops whatever produces the pushes — a timer, a
+// listener, an open request — and no `set` after it runs is read.
+export type Subscribe<T> = (set: (value: T) => void) => Cleanup;
+
 // A panel's body. Called once, when the panel is first shown, with the
 // element to draw into; the return is called when the panel goes away.
 // `fromReact` builds one from a component.
@@ -90,8 +98,10 @@ export interface Background {
   // 250 ms after they change; never for typed text. May fetch. The items are
   // shown in Related, where the user opens one or adds it to the cart.
   relate?: (q: TermsQuery) => CartItem[] | Promise<CartItem[]>;
-  // At startup and after every command; shown until the next call.
-  status?: () => StatusItem[];
+  // The plugin's lines for the status bar: `set` them when the host
+  // subscribes, and again whenever they change. A line that waits on a
+  // server is pushed when it lands, not on a clock of the host's.
+  status?: Subscribe<StatusItem[]>;
 }
 
 // What a command handler runs against. `caller` is the plugin that called
@@ -126,13 +136,10 @@ export interface Prompt {
   // prompt bar offers it itself, ahead of the destinations the plugin lists.
   // Opens the plugin's page for it, and the next message lands there.
   newConversation: (ctx: { host: PluginHost }) => void | Promise<void>;
-  destination?: {
-    // What the bar shows; read whenever it redraws.
-    current: () => Destination | null;
-    // Call `onChange` when `current()` would differ; the function returned
-    // stops the calls.
-    subscribe: (onChange: () => void) => () => void;
-  };
+  // Where the bar says the next message goes: `set` it when the bar
+  // subscribes, and again whenever it moves. `null` is no destination, and
+  // the bar shows New conversation.
+  destination?: Subscribe<Destination | null>;
 }
 
 // A command as its manifest declares it, with the plugin that declares it.

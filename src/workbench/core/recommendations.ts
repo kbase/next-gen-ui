@@ -29,7 +29,7 @@ export function mergeRecommendations(
   const offered = new Map<string, Recommendation>();
   for (const { source, state } of sources) {
     for (const answer of state.answers) {
-      for (const item of answer.cartItems) {
+      for (const item of answer.items) {
         const row = offered.get(item.id) ?? { id: item.id, item, offeredBy: [] };
         if (!row.offeredBy.some((o) => o.plugin === answer.plugin && o.source === source)) {
           row.offeredBy.push({ plugin: answer.plugin, source });

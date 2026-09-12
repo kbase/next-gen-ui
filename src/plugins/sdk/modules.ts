@@ -43,12 +43,24 @@ export interface Query {
   signal: AbortSignal;
 }
 
-export interface Recommendation {
-  // What this plugin would do with the terms: called on every keystroke for
-  // typed text, so answer from the terms alone, without I/O. A lookup
-  // belongs in `cartItems`, which is asked once the text settles.
-  commands?: (q: Query) => CommandCall[] | Promise<CommandCall[]>;
-  cartItems?: (q: Query) => CartItem[] | Promise<CartItem[]>;
+// The text as it stands in the prompt bar. `terms` reads it and nothing
+// else, so there is no signal: the answer is due before the next keystroke.
+export interface TypedText {
+  text: string;
+}
+
+// The text and every term the backgrounds found in it. The signal aborts on
+// the next keystroke.
+export interface TypedQuery extends TypedText {
+  terms: string[];
+  signal: AbortSignal;
+}
+
+// The terms an open page or the cart carries. The signal aborts when they
+// change again.
+export interface TermsQuery {
+  terms: string[];
+  signal: AbortSignal;
 }
 
 export interface StatusItem {
@@ -57,12 +69,27 @@ export interface StatusItem {
   action?: CommandCall;
 }
 
+// The two questions a background answers are asked on different clocks and
+// answered with different things, so each is its own member.
+//
+// `offer` answers "what do I do with this?" — the user is typing, the answer
+// is an action, and it lives as long as the text does. `relate` answers
+// "what else is there about this?" — a page is open or the cart has
+// something in it, and the answer is a thing: identifiable, describable,
+// carrying terms of its own that the other plugins are then asked about.
 export interface Background {
-  // Every keystroke, and whenever a panel changes its terms. Synchronous,
-  // no I/O: recognise the shape of the text and nothing more.
-  terms?: (q: Query) => string[];
-  // When a query settles. May fetch.
-  recommend?: Recommendation;
+  // Every keystroke, with the text as typed. Synchronous, no I/O: recognise
+  // the shape of the text and nothing more.
+  terms?: (q: TypedText) => string[];
+  // What this plugin would do with the text, on every keystroke: answer from
+  // the terms alone, without I/O. The prompt bar shows these, and the chosen
+  // intent orders them with its own candidates. A lookup belongs in
+  // `relate`.
+  offer?: (q: TypedQuery) => CommandCall[] | Promise<CommandCall[]>;
+  // What this plugin has about the terms an open page or the cart carries,
+  // 250 ms after they change; never for typed text. May fetch. The items are
+  // shown in Related, where the user opens one or adds it to the cart.
+  relate?: (q: TermsQuery) => CartItem[] | Promise<CartItem[]>;
   // At startup and after every command; shown until the next call.
   status?: () => StatusItem[];
 }

@@ -10,9 +10,9 @@ import { useRun, useServices } from '../../react/context';
 import styles from '../../react/Workbench.module.css';
 
 // What the rest of the workbench has about what is on screen and what is in
-// the cart: every plugin's `recommend.cartItems`, with the recommendation as
-// the unit. What is being typed is not here: its answers are the prompt
-// bar's offers.
+// the cart: every plugin's `relate`, with the recommendation as the unit.
+// What is being typed is not here: it is answered with offers, which the
+// prompt bar shows.
 //
 // Two sections in a fixed order, one per source, each headed by what it was
 // answered for: the open page's label, the cart. A section stands for a
@@ -33,7 +33,7 @@ import styles from '../../react/Workbench.module.css';
 
 // The sources this pane reads, in section order.
 const SOURCES = ['page', 'cart'] as const satisfies readonly QuerySource[];
-type RelatedSource = (typeof SOURCES)[number];
+type RelatedSource = QuerySource;
 
 const FROM: Record<RelatedSource, (label: string) => string> = {
   page: (label) => `the open page (${label})`,
@@ -159,7 +159,7 @@ function RelatedRow({ row }: { row: Recommendation }) {
   const provenance = row.offeredBy
     .map(
       (o) =>
-        `${index.manifest(o.plugin)?.title ?? o.plugin} from ${FROM[o.source as RelatedSource](query.get(o.source).label)}`,
+        `${index.manifest(o.plugin)?.title ?? o.plugin} from ${FROM[o.source](query.get(o.source).label)}`,
     )
     .join('; ');
   const label = (

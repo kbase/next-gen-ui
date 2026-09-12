@@ -68,7 +68,8 @@ export interface WorkbenchServices {
   // Things the user has set aside. Host-owned: items come from plugins and are
   // consumed by assistants, and neither can hold state the other reaches.
   cart: CartStore;
-  // What every plugin's recommend() said about each source of terms.
+  // What every plugin offered for the text, and what each said about the
+  // page's and the cart's terms.
   query: QueryStore;
   queryRunner: QueryRunner;
   // What each open panel says it is about.

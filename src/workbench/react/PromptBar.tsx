@@ -54,10 +54,10 @@ export function PromptBar() {
   const inCart = cart.items().length;
   const queryVersion = useSyncExternalStore(query.subscribe, query.version, query.version);
 
-  // The typing query: every plugin's terms on each keystroke, every
-  // recommend once it settles. A slash command is not a query.
+  // The typing query: every plugin's terms and every plugin's offer on each
+  // keystroke. A slash command is not a query.
   useEffect(() => {
-    queryRunner.set('typing', { text: parse(value).kind === 'prompt' ? value.trim() : '' });
+    queryRunner.typed(parse(value).kind === 'prompt' ? value.trim() : '');
   }, [queryRunner, value]);
 
   // Fetched when Settings names the plugin, so the destination row can be
@@ -118,7 +118,7 @@ export function PromptBar() {
     try {
       const handler = await source.module(assistant, 'prompt');
       await handler.handle(
-        { text, terms: query.get('typing').pool, signal: controller.signal },
+        { text, terms: query.typing().pool, signal: controller.signal },
         { host: pluginHostFor(services, assistant), attachments },
       );
     } catch (err) {
@@ -144,11 +144,11 @@ export function PromptBar() {
   // whose description happens to share a word. Each row is a command
   // call the plugin filled in; pressing it does what typing it would.
   const offered = () =>
-    query.get('typing').answers.flatMap((answer) =>
-      answer.commands.map((call) => ({
+    query.typing().offers.flatMap((offer) =>
+      offer.calls.map((call) => ({
         call,
-        plugin: answer.plugin,
-        command: qualifyCommand(call.command, answer.plugin),
+        plugin: offer.plugin,
+        command: qualifyCommand(call.command, offer.plugin),
       })),
     );
   const recommended = (text: string): BarSuggestion[] =>
@@ -171,8 +171,9 @@ export function PromptBar() {
   // identifiers the text carries, and the plugins' own offers in the order
   // the intent gave them. "dossier for P0AEX9" reaches Function Junction's
   // open with q filled whether or not that plugin recognised the text.
-  const suggested = (text: string): BarSuggestion[] =>
-    (query.get('typing').suggestions ?? []).slice(0, 4).map(({ call, detail }) => {
+  const suggested = (text: string): BarSuggestion[] => {
+    const top = query.typing().suggestions.slice(0, 4);
+    return top.map(({ call, detail }) => {
       const manifest = source.manifest(call.command.split(':')[0]);
       return {
         value: text,
@@ -182,6 +183,7 @@ export function PromptBar() {
         run: () => void run(call.command, call.args),
       };
     });
+  };
 
   // Row zero is what Enter will do. Nothing is guessed: the assistant
   // stays the default and the alternatives sit under it, visible before

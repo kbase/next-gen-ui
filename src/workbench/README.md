@@ -118,19 +118,21 @@ its `destination` above the field: the label, a menu over `options` calling `sel
 to `path`.
 
 What the bar suggests comes from the **background** modules, fetched from every plugin at
-startup. Each keystroke goes to every `terms(q)`; the strings that come back are pooled, expanded
-once, and after a 250 ms settle handed to every `recommend`. Each plugin's answer replaces its
-own section as it arrives, the previous one staying dimmed until then; after 2 s the pane stops
-saying it is asking, and a later answer still lands. A pool that only grew is asked about the
-new terms alone and the answers merge. The `commands` it returns are the
-rows under the field — each a `CommandCall` the plugin filled in — and the `cartItems` are rows
-in the Related pane, one list with the recommendation as the unit: a row keeps its place until
-nothing offers it, provenance sits on the row, and what is still being asked is a line under the
-rows. Three sources are asked on their own clocks (`host/query/runner.ts`): the
-typed text, the front tab's terms (never sent to the plugin that owns the tab), and the cart's.
-Under the recommendations the host adds what it can see for itself: shortcut buttons by name,
+startup. Each keystroke goes to every `terms(q)` with the text; the strings that come back are
+pooled and handed straight to every `offer`, whose `CommandCall`s are the rows under the field.
+Nothing waits there: a slow plugin's offer lands when it lands, and the next keystroke is a new
+question. Under the offers the host adds what it can see for itself: shortcut buttons by name,
 apps with a `launcher` by name or description, and panes — a pinned one focused where it lives,
 an unpinned one previewed. Row zero is what Enter will do.
+
+The front tab's terms (never sent to the plugin that owns the tab) and the cart's are the other
+question, asked on their own clocks after a 250 ms settle (`host/query/runner.ts`): every
+`relate` is called with the terms and answers with items, and those are the rows in the Related
+pane, one list with the recommendation as the unit — a row keeps its place until nothing offers
+it, provenance sits on the row, and what is still being asked is a line under the rows. Each
+plugin's answer replaces its own section as it arrives, the previous one staying dimmed until
+then; after 2 s the pane stops saying it is asking, and a later answer still lands. A pool that
+only grew is asked about the new terms alone and the answers merge.
 
 Home (`host/home/`) is that same search as a page: the apps (manifests with a `launcher`) and
 panes installed, searched over the same names and descriptions.

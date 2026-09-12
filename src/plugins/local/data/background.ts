@@ -10,12 +10,12 @@ import { dataset, datasets } from './data';
 // which is the expected case of two plugins answering one string.
 const UPA = /^\d+\/\d+(?:\/\d+)?$/;
 
-const refsIn = (terms: string[] = []) =>
+const refsIn = (terms: string[]) =>
   terms.flatMap((t) => t.match(/^(?:dataset|upa):(.+)$/)?.[1] ?? []);
 
 export default defineBackground({
   terms: ({ text }) => {
-    const q = text?.trim() ?? '';
+    const q = text.trim();
     if (!q) return [];
     const ref = datasets.find((d) => d.ref.toLowerCase() === q.toLowerCase())?.ref;
     if (ref) return [`dataset:${ref}`];
@@ -31,15 +31,13 @@ export default defineBackground({
       .slice(0, 3)
       .map((d) => `dataset:${d.ref}`);
   },
-  recommend: {
-    commands: ({ terms }) =>
-      refsIn(terms).map((ref) => {
-        const known = dataset(ref);
-        return {
-          label: known ? `${known.name} (${known.type})` : `KBase 1.0 object ${ref}`,
-          command: 'open',
-          args: { ref },
-        };
-      }),
-  },
+  offer: ({ terms }) =>
+    refsIn(terms).map((ref) => {
+      const known = dataset(ref);
+      return {
+        label: known ? `${known.name} (${known.type})` : `KBase 1.0 object ${ref}`,
+        command: 'open',
+        args: { ref },
+      };
+    }),
 });

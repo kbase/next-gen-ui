@@ -1,20 +1,21 @@
 import type { CartItem, CommandCall, Suggestion } from '../../plugins/sdk';
 
-// What every plugin's `recommend` said about each source of terms.
+// What every plugin's `relate` said about each source of terms, and what
+// they offered for the text.
 //
-// Three sources, asked separately because they change at different rates:
-// the text being typed, the front tab's terms, and the cart's. The host
-// carries terms and never reads one; its jobs are to ask each question
-// once per settle, to drop answers to a question no longer being asked,
-// and to remember what the user turned down.
+// The two term sources are asked separately because they change at different
+// rates: the front tab's terms and the cart's. The host carries terms and
+// never reads one; its jobs are to ask each question once per settle, to drop
+// answers to a question no longer being asked, and to remember what the user
+// turned down. The text is not a source in that sense — nothing about it
+// outlives a keystroke — so its offers are held apart, in `TypingState`.
 
-export type QuerySource = 'typing' | 'page' | 'cart';
-export const QUERY_SOURCES: readonly QuerySource[] = ['typing', 'page', 'cart'];
+export type QuerySource = 'page' | 'cart';
+export const QUERY_SOURCES: readonly QuerySource[] = ['page', 'cart'];
 
 export interface Answer {
   plugin: string;
-  commands: CommandCall[];
-  cartItems: CartItem[];
+  items: CartItem[];
   // Given for an earlier question; shown dimmed until this plugin answers the
   // current one.
   stale?: boolean;
@@ -30,9 +31,28 @@ export interface SourceState {
   pending: string[];
   // Still within the budget with answers outstanding.
   loading: boolean;
-  // What the chosen intent suggested for the text; the typing source only.
-  // The previous answer stays until the next lands.
-  suggestions?: Suggestion[];
+}
+
+// One plugin's offers for the text, as it made them: the prompt bar
+// qualifies each `command` with the plugin before running it.
+export interface PluginOffers {
+  plugin: string;
+  calls: CommandCall[];
+  // Made for the previous text; shown until this plugin answers for the
+  // current one.
+  stale?: boolean;
+}
+
+// What is in hand for the text being typed. No question here outlives a
+// keystroke, so there is nothing to wait on and nothing to name.
+export interface TypingState {
+  // The terms every background found in the text.
+  pool: string[];
+  // In the registry's plugin order.
+  offers: PluginOffers[];
+  // What the chosen intent suggested for the text. The previous answer stays
+  // until the next lands.
+  suggestions: Suggestion[];
 }
 
 export const EMPTY_SOURCE: SourceState = {
@@ -41,8 +61,9 @@ export const EMPTY_SOURCE: SourceState = {
   answers: [],
   pending: [],
   loading: false,
-  suggestions: [],
 };
+
+export const EMPTY_TYPING: TypingState = { pool: [], offers: [], suggestions: [] };
 
 // A dismissed recommendation stays gone whoever offers it next: the key is
 // the item's own id.
@@ -50,6 +71,8 @@ export const EMPTY_SOURCE: SourceState = {
 export interface QueryStore {
   get: (source: QuerySource) => SourceState;
   set: (source: QuerySource, state: SourceState) => void;
+  typing: () => TypingState;
+  setTyping: (state: TypingState) => void;
   dismiss: (key: string) => void;
   dismissed: (key: string) => boolean;
   subscribe: (listener: () => void) => () => void;
@@ -58,6 +81,7 @@ export interface QueryStore {
 
 export function createQueryStore(): QueryStore {
   const states = new Map<QuerySource, SourceState>();
+  let typing = EMPTY_TYPING;
   const gone = new Set<string>();
   const listeners = new Set<() => void>();
   let version = 0;
@@ -69,6 +93,11 @@ export function createQueryStore(): QueryStore {
     get: (source) => states.get(source) ?? EMPTY_SOURCE,
     set(source, state) {
       states.set(source, state);
+      changed();
+    },
+    typing: () => typing,
+    setTyping(state) {
+      typing = state;
       changed();
     },
     dismiss(key) {

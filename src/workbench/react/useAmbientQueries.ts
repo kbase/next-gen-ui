@@ -2,10 +2,10 @@ import { useEffect, useSyncExternalStore } from 'react';
 import { frontPanel } from '../core';
 import { useLayout, useServices } from './context';
 
-// Keeps the page and cart queries current. The front tab's terms and the
-// cart's are the two sources the user does not type; the prompt bar drives
-// the third. Values are compared, not the arrays holding them, so a render
-// that changes nothing asks nothing.
+// Keeps the page and cart queries current: the two sources of terms the user
+// does not type. What is typed is the prompt bar's own question, and asks a
+// different thing of the plugins. Values are compared, not the arrays holding
+// them, so a render that changes nothing asks nothing.
 export function useAmbientQueries() {
   const { queryRunner, terms: termStore, cart, titles } = useServices();
   const layout = useLayout();

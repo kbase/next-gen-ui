@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { act, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Background, CartItem, PanelHandle, Query } from '../../../plugins/sdk';
+import type { Background, CartItem, PanelHandle, TermsQuery } from '../../../plugins/sdk';
 import { HostContext, PanelContext, definePluginManifest } from '../../../plugins/sdk';
 import { makeRoute } from '../../core';
 import { ServicesContext } from '../../react/context';
@@ -45,8 +45,8 @@ function Ambient() {
 // the interval between a question and its answer is what these tests are about.
 function plugin() {
   const waiting = new Map<string, (items: CartItem[]) => void>();
-  const cartItems = (q: Query) =>
-    new Promise<CartItem[]>((resolve) => waiting.set((q.terms ?? []).join(','), resolve));
+  const relate = (q: TermsQuery) =>
+    new Promise<CartItem[]>((resolve) => waiting.set(q.terms.join(','), resolve));
   const answer = async (terms: string, items: CartItem[]) => {
     const resolve = waiting.get(terms);
     if (!resolve) throw new Error(`nobody was asked about ${terms}`);
@@ -55,10 +55,10 @@ function plugin() {
       await vi.advanceTimersByTimeAsync(0);
     });
   };
-  return { cartItems, answer };
+  return { relate, answer };
 }
 
-async function mount(cartItems: (q: Query) => Promise<CartItem[]>) {
+async function mount(relate: (q: TermsQuery) => Promise<CartItem[]>) {
   const services = createWorkbench({
     installed: [
       localPlugin({
@@ -68,7 +68,7 @@ async function mount(cartItems: (q: Query) => Promise<CartItem[]>) {
           description: 'A plugin that answers about proteins.',
           icon: 'Code',
         }),
-        background: () => Promise.resolve({ recommend: { cartItems } } satisfies Background),
+        background: () => Promise.resolve({ relate } satisfies Background),
       }),
     ],
     persistence: noPersistence,
@@ -109,7 +109,7 @@ describe('the Related pane before it has answers', () => {
   // outcome for a question nobody has been asked.
   it('gives no outcome for a page that has not reported its terms yet', async () => {
     const gk = plugin();
-    const services = await mount(gk.cartItems);
+    const services = await mount(gk.relate);
     await act(async () => {
       services.store.dispatch({ type: 'open', panel: page });
     });
@@ -137,7 +137,7 @@ describe('the Related pane before it has answers', () => {
 
   it('waits under the heading, without skeleton rows, while the plugins answer', async () => {
     const gk = plugin();
-    const services = await mount(gk.cartItems);
+    const services = await mount(gk.relate);
     await act(async () => {
       services.store.dispatch({ type: 'open', panel: page });
       services.terms.set(page.id, ['uniprot:P0AEX9']);
@@ -153,7 +153,7 @@ describe('the Related pane before it has answers', () => {
 
   it('says once, quietly, that a settled question offered nothing', async () => {
     const gk = plugin();
-    const services = await mount(gk.cartItems);
+    const services = await mount(gk.relate);
     await act(async () => {
       services.store.dispatch({ type: 'open', panel: page });
       services.terms.set(page.id, ['uniprot:P0AEX9']);
@@ -170,7 +170,7 @@ describe('the Related pane before it has answers', () => {
 
   it('reports the pane empty only while neither source has terms', async () => {
     const gk = plugin();
-    const services = await mount(gk.cartItems);
+    const services = await mount(gk.relate);
     expect(paneEmpty()).toBeInTheDocument();
 
     await act(async () => {
@@ -188,7 +188,7 @@ describe('the Related pane while answers land', () => {
   // same element afterwards.
   it('holds every section in place from its question to its answer', async () => {
     const gk = plugin();
-    const services = await mount(gk.cartItems);
+    const services = await mount(gk.relate);
     await act(async () => {
       services.store.dispatch({ type: 'open', panel: page });
       services.terms.set(page.id, ['uniprot:P0AEX9']);

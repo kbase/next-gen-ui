@@ -10,7 +10,7 @@ const state = (
 ): SourceState => ({
   label: '',
   pool: [],
-  answers: answers.map((a) => ({ plugin: a.plugin, commands: [], cartItems: a.items.map(item) })),
+  answers: answers.map((a) => ({ plugin: a.plugin, items: a.items.map(item) })),
   pending,
   loading: pending.length > 0,
 });

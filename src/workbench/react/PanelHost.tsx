@@ -8,7 +8,8 @@ import {
   useSyncExternalStore,
 } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
-import { Button, EmptyState, Loader } from '@kbase/design-system';
+import { ArrowCounterClockwise, Plug } from '@phosphor-icons/react';
+import { Alert, Button, EmptyState, Loader } from '@kbase/design-system';
 import type { Crumb, Mount, PanelHandle, PluginHost } from '../../plugins/sdk';
 import type { Panel } from '../core';
 import { useServices } from './context';
@@ -163,33 +164,38 @@ function LoadFailed({
   onRetry: () => void;
 }) {
   return (
-    <div className={styles.panelMessage} role="alert">
-      <p className="body">{title} could not be loaded.</p>
-      <p className={`caption ${styles.errorText}`}>{error.message}</p>
-      <Button size="sm" variant="outline" onClick={onRetry}>
-        Try again
-      </Button>
-    </div>
+    <Alert
+      className={styles.panelAlert}
+      color="red"
+      trace={error.message}
+      actions={
+        <Button variant="link" size="sm" onClick={onRetry}>
+          <ArrowCounterClockwise size={12} /> Try again
+        </Button>
+      }
+    >
+      <strong>{title} could not be loaded.</strong>
+    </Alert>
   );
 }
 
 // A panel whose plugin is no longer installed, or no longer has this kind of
-// panel. The layout keeps the slot so reinstalling brings it back where it was.
+// panel. Nothing failed, so this is a nothing-here rather than an error: the
+// slot names something that is not there. The layout keeps the slot so
+// reinstalling brings it back where it was, which is what closing gives up.
 function GhostPanel({ panel }: { panel: Panel }) {
   const { dispatch } = useServices();
   return (
-    <div className={styles.panelMessage} role="group" aria-label="Unavailable panel">
-      <p className="body">
-        The plugin <strong>{panel.plugin}</strong> is not installed, so this panel cannot be shown.
-      </p>
-      <Button
-        size="sm"
-        variant="outline"
-        onClick={() => dispatch({ type: 'close', panel: panel.id })}
-      >
-        Close
-      </Button>
-    </div>
+    <EmptyState
+      icon={<Plug size={32} />}
+      title={`${panel.plugin} is not installed`}
+      description="Reinstalling it brings this panel back. Closing gives up its place in the layout."
+      action={
+        <Button variant="outline" onClick={() => dispatch({ type: 'close', panel: panel.id })}>
+          Close
+        </Button>
+      }
+    />
   );
 }
 
@@ -208,16 +214,24 @@ export class PanelBoundary extends Component<{ children: ReactNode }, BoundarySt
     if (import.meta.env.DEV) console.error('panel crashed', error, info.componentStack);
   }
 
+  // Clearing the error remounts the children, so the plugin's `mount` runs
+  // again on a fresh element: the panel starts over from the module already
+  // in memory, which is why the action is a restart and not a fetch.
   render() {
     if (!this.state.error) return this.props.children;
     return (
-      <div className={styles.panelMessage} role="alert">
-        <p className="body">This panel crashed.</p>
-        <p className={`caption ${styles.errorText}`}>{this.state.error.message}</p>
-        <Button size="sm" variant="outline" onClick={() => this.setState({ error: null })}>
-          Try again
-        </Button>
-      </div>
+      <Alert
+        className={styles.panelAlert}
+        color="red"
+        trace={this.state.error.message}
+        actions={
+          <Button variant="link" size="sm" onClick={() => this.setState({ error: null })}>
+            <ArrowCounterClockwise size={12} /> Restart panel
+          </Button>
+        }
+      >
+        <strong>This panel crashed.</strong>
+      </Alert>
     );
   }
 }

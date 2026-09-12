@@ -562,9 +562,11 @@
   padding: var(--s-5);
 }
 
-.errorText {
-  color: var(--c-red);
-  font-family: var(--f-mono);
+/* An alert inside a panel body, which has no padding of its own: the same
+   gutter .panelMessage sets, so a failed panel sits where a message does. The
+   alert draws everything else. */
+.panelAlert {
+  margin: var(--s-5);
 }
 
 /* Bars */
@@ -1280,13 +1282,6 @@
   padding-block-end: var(--s-2);
 }
 
-/* The pane's line for when neither source has terms, set as Shortcuts sets
-   its own. */
-.relatedEmpty {
-  margin: 0;
-  padding: var(--s-3) var(--s-4);
-}
-
 /* What the list was computed from, and nothing else: the block's own header
    says what the relation is. Both sections take the same weight — the
    difference between them is order, not rank. */
@@ -1399,22 +1394,15 @@
   padding-inline: var(--s-1);
 }
 
-/* That a section is still being answered, in a line under its rows rather
-   than a row: a skeleton would put shapes where rows may never arrive. */
-.relatedActivity {
+/* A section's own line under its rows — still being answered, or settled with
+   nothing to show — rather than a row: a skeleton would put shapes where rows
+   may never arrive. One rule for both, so the section does not shift when one
+   takes over from the other. Type comes from `.note`; this is the pane's
+   gutter and the room for an inline loader. */
+.relatedLine {
   display: flex;
   align-items: center;
   gap: var(--s-2);
-  padding: var(--s-2) var(--s-4);
-  font-size: var(--fs-2);
-  color: var(--c-ink3);
-}
-
-/* A section whose question settled with nothing to show. Set like the asking
-   line it takes over from, so the section does not shift when it does. */
-.relatedNone {
   margin: 0;
   padding: var(--s-2) var(--s-4);
-  font-size: var(--fs-2);
-  color: var(--c-ink3);
 }

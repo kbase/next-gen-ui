@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { X } from '@phosphor-icons/react';
-import { Loader, Tooltip } from '@kbase/design-system';
+import { MagnifyingGlass, X } from '@phosphor-icons/react';
+import { EmptyState, Loader, Tooltip } from '@kbase/design-system';
 import { CartButton, qualifyCommand, usePanelTitle } from '../../../plugins/sdk';
 import type { QuerySource, Recommendation } from '../../core';
 import { mergeRecommendations } from '../../core';
@@ -100,7 +100,11 @@ export function RelatedNavigator() {
   // and either way no plugin has been asked anything.
   if (sections.length === 0) {
     return (
-      <p className={`caption ${styles.relatedEmpty}`}>No terms from the open page or the cart.</p>
+      <EmptyState
+        icon={<MagnifyingGlass size={32} />}
+        title="Nothing to ask about"
+        description="No terms from the open page or the cart."
+      />
     );
   }
 
@@ -119,13 +123,15 @@ export function RelatedNavigator() {
           {s.asking ? (
             // The line carries the announcement; the loader beside it is
             // decoration, and a label on it would say the same words twice.
-            <p className={styles.relatedActivity} role="status">
+            <p className={`note ${styles.relatedLine}`} role="status">
               <Loader size={14} />
               <span>Asking the other plugins…</span>
             </p>
           ) : (
             s.rows.length === 0 && (
-              <p className={styles.relatedNone}>{`Nothing offered for ${ASKED[s.source]}.`}</p>
+              <p
+                className={`note ${styles.relatedLine}`}
+              >{`Nothing offered for ${ASKED[s.source]}.`}</p>
             )
           )}
         </div>

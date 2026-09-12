@@ -1,6 +1,14 @@
-import type { Layout, PanelId, Side, WorkbenchStore } from '../core';
+import type { BarName, Layout, PanelId, Side, WorkbenchStore } from '../core';
 import { groupOf, groups, placementOf } from '../core';
 import type { Command } from './registry';
+
+// Command arguments arrive as strings, so a typed bar name is checked
+// against the layout's set before it reaches the store.
+const BARS = ['prompt', 'status'] as const satisfies readonly BarName[];
+
+function isBar(name: string): name is BarName {
+  return (BARS as readonly string[]).includes(name);
+}
 
 // The workbench's own commands. They speak to the store like any plugin
 // command would and announce through the same live region.
@@ -124,6 +132,16 @@ export function workbenchCommands({
     },
     {
       ...base,
+      name: 'move-to-sidebar',
+      title: 'Move the focused panel to the sidebar',
+      when: (ctx) => ctx.focusKind === 'pane',
+      run: () => {
+        const focus = focusedPanel(store.get());
+        if (focus) dispatch({ type: 'move', panel: focus, to: { zone: 'sidebar' } });
+      },
+    },
+    {
+      ...base,
       name: 'fold',
       title: 'Fold or unfold the focused sidebar panel',
       when: (ctx) => ctx.focusKind === 'pane',
@@ -141,6 +159,26 @@ export function workbenchCommands({
       name: 'sidebar',
       title: 'Collapse or expand the sidebar',
       run: () => dispatch({ type: 'sidebar', collapsed: !store.get().sidebar.collapsed }),
+    },
+    {
+      ...base,
+      name: 'toggle-bar',
+      title: 'Show or hide the prompt or status bar',
+      args: [
+        {
+          name: 'bar',
+          required: true,
+          complete: (p) => BARS.filter((b) => b.startsWith(p)),
+        },
+      ],
+      run: ({ bar }) => {
+        const name = String(bar);
+        if (!isBar(name)) {
+          announce(`No bar named ${name}`);
+          return;
+        }
+        dispatch({ type: 'bar', bar: name, visible: !store.get().bars[name] });
+      },
     },
     {
       ...base,

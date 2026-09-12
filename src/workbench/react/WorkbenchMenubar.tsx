@@ -1,7 +1,7 @@
 import { KBaseSymbol, Menu, Menubar } from '@kbase/design-system';
 import type { Side } from '../core';
 import { groupOf } from '../core';
-import { useDispatch, useLayout, useRun, useServices } from './context';
+import { useLayout, useRun, useServices } from './context';
 import styles from './Workbench.module.css';
 
 // Menus are another surface over the same commands the keyboard and the
@@ -9,7 +9,6 @@ import styles from './Workbench.module.css';
 export function WorkbenchMenubar() {
   const layout = useLayout();
   const run = useRun();
-  const dispatch = useDispatch();
   const { source, store } = useServices();
   const focused = layout.focus ? layout.panels[layout.focus] : undefined;
   const group = layout.focus ? groupOf(layout.main, layout.focus) : undefined;
@@ -45,19 +44,19 @@ export function WorkbenchMenubar() {
             <Menu.Separator />
             <Menu.CheckboxItem
               checked={!layout.sidebar.collapsed}
-              onCheckedChange={(v) => dispatch({ type: 'sidebar', collapsed: !v })}
+              onCheckedChange={() => run('workbench:sidebar')}
             >
               Sidebar
             </Menu.CheckboxItem>
             <Menu.CheckboxItem
               checked={layout.bars.prompt}
-              onCheckedChange={(v) => dispatch({ type: 'bar', bar: 'prompt', visible: v })}
+              onCheckedChange={() => run('workbench:toggle-bar', { bar: 'prompt' })}
             >
               Prompt bar
             </Menu.CheckboxItem>
             <Menu.CheckboxItem
               checked={layout.bars.status}
-              onCheckedChange={(v) => dispatch({ type: 'bar', bar: 'status', visible: v })}
+              onCheckedChange={() => run('workbench:toggle-bar', { bar: 'status' })}
             >
               Status bar
             </Menu.CheckboxItem>
@@ -95,11 +94,7 @@ export function WorkbenchMenubar() {
             {focused?.kind === 'pane' && group && (
               <>
                 <Menu.Separator />
-                <Menu.Item
-                  onClick={() =>
-                    dispatch({ type: 'move', panel: focused.id, to: { zone: 'sidebar' } })
-                  }
-                >
+                <Menu.Item onClick={() => run('workbench:move-to-sidebar')}>
                   Move to sidebar
                 </Menu.Item>
               </>
@@ -119,7 +114,7 @@ export function WorkbenchMenubar() {
                     key={p.id}
                     checked={pinned}
                     onCheckedChange={(v) =>
-                      dispatch(v ? { type: 'pin', plugin: p.id } : { type: 'unpin', plugin: p.id })
+                      run(v ? 'workbench:pin' : 'workbench:unpin', { plugin: p.id })
                     }
                   >
                     {p.title}

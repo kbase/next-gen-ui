@@ -3,12 +3,12 @@ import { LockSimple, SidebarSimple } from '@phosphor-icons/react';
 import { Button } from '@kbase/design-system';
 import type { StatusItem } from '../../plugins/sdk';
 import { qualifyCommand } from '../../plugins/sdk';
-import { useBusy, useDispatch, useLayout, useRun, useServices, useTitle } from './context';
+import { useBusy, useLayout, useRun, useServices, useTitle } from './context';
 import styles from './Workbench.module.css';
 
 export function StatusBar() {
   const layout = useLayout();
-  const dispatch = useDispatch();
+  const run = useRun();
   const { status } = useServices();
   useSyncExternalStore(status.subscribe, status.version, status.version);
   const focused = layout.focus ? layout.panels[layout.focus] : undefined;
@@ -22,7 +22,7 @@ export function StatusBar() {
         variant="ghost"
         aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         aria-expanded={!collapsed}
-        onClick={() => dispatch({ type: 'sidebar', collapsed: !collapsed })}
+        onClick={() => void run('workbench:sidebar')}
       >
         <SidebarSimple size={14} aria-hidden="true" />
       </Button>

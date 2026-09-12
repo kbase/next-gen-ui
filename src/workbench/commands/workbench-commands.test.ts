@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createWorkbenchStore, defaultLayout, groups, makeRoute } from '../core';
+import { createWorkbenchStore, defaultLayout, groups, makeRoute, paneId, placementOf } from '../core';
 import { createCommandRegistry } from './registry';
 import { workbenchCommands } from './workbench-commands';
 
@@ -52,6 +52,40 @@ describe('workbench commands', () => {
     expect(announced.at(-1)).toBe('No plugin named nope');
     await registry.run('pin', { plugin: 'jobs' });
     expect(store.get().sidebar.pinned).toEqual(['koros', 'jobs']);
+  });
+
+  it('toggle-bar hides and shows the named bar', async () => {
+    const { store, registry, announced } = setup();
+    await registry.run('toggle-bar', { bar: 'prompt' });
+    expect(store.get().bars).toEqual({ prompt: false, status: true });
+    expect(announced.at(-1)).toBe('Prompt bar hidden');
+    await registry.run('toggle-bar', { bar: 'prompt' });
+    expect(store.get().bars.prompt).toBe(true);
+    expect(announced.at(-1)).toBe('Prompt bar shown');
+  });
+
+  it('toggle-bar refuses a bar the layout does not have', async () => {
+    const { store, registry, announced } = setup();
+    await registry.run('toggle-bar', { bar: 'menu' });
+    expect(store.get().bars).toEqual({ prompt: true, status: true });
+    expect(announced.at(-1)).toBe('No bar named menu');
+  });
+
+  it('move-to-sidebar returns the focused pane to the sidebar', async () => {
+    const { store, registry, announced } = setup();
+    const pane = paneId('koros');
+    store.dispatch({ type: 'move', panel: pane, to: { group: 'root' } });
+    expect(placementOf(store.get(), pane).zone).toBe('main');
+    await registry.run('move-to-sidebar', {});
+    expect(placementOf(store.get(), pane).zone).toBe('sidebar');
+    expect(announced.at(-1)).toBe(`Moved ${pane} to the sidebar`);
+  });
+
+  it('move-to-sidebar leaves a focused route where it is', async () => {
+    const { store, registry } = setup();
+    const before = store.get();
+    await registry.run('move-to-sidebar', {});
+    expect(store.get()).toBe(before);
   });
 
   it('lock-layout toggles the lock and undo speaks up when empty', async () => {

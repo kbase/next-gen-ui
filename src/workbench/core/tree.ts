@@ -1,4 +1,4 @@
-import type { GroupId, Group, Node, PanelId, Split, SplitDir, SplitId } from './layout';
+import type { GroupId, Group, Node, PanelId, SplitDir, SplitId } from './layout';
 import { emptyGroup } from './layout';
 
 // Pure helpers over the main-area tree. Every mutator returns a new tree and
@@ -24,16 +24,6 @@ export function findNode(node: Node, id: string): Node | undefined {
 
 export function groupOf(node: Node, panel: PanelId): Group | undefined {
   return groups(node).find((g) => g.tabs.includes(panel));
-}
-
-export function parentOf(root: Node, id: string): Split | undefined {
-  if (root.kind !== 'split') return undefined;
-  if (root.children.some((c) => c.id === id)) return root;
-  for (const child of root.children) {
-    const found = parentOf(child, id);
-    if (found) return found;
-  }
-  return undefined;
 }
 
 export function replaceNode(root: Node, id: string, replacement: (node: Node) => Node): Node {

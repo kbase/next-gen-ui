@@ -16,10 +16,18 @@ const job = makeRoute('jobs', '/12', 'b');
 function setup() {
   const store = createWorkbenchStore({ initial: defaultLayout({ pinned: ['koros'] }) });
   const announced: string[] = [];
+  const announce = (t: string) => void announced.push(t);
   const registry = createCommandRegistry();
   workbenchCommands({
     store,
-    announce: (t) => announced.push(t),
+    // What `createWorkbench` supplies, so an announcement a command causes
+    // and one it speaks itself land in `announced` in the order heard.
+    dispatch: (op) => {
+      const result = store.dispatch(op);
+      if (result.changed) announce(result.announcement);
+      return result.changed;
+    },
+    announce,
     plugins: () => ['koros', 'data', 'jobs'],
     focusPrompt: () => announced.push('<prompt>'),
   }).forEach((c) => registry.register(c));

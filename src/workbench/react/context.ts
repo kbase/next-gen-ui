@@ -18,16 +18,10 @@ export function useLayout(): Layout {
   return useSyncExternalStore(store.subscribe, store.get, store.get);
 }
 
+// The one dispatch that announces what it changed, reached without a
+// component naming `services` for it.
 export function useDispatch(): (op: Operation) => boolean {
-  const { store, announcer } = useServices();
-  return useCallback(
-    (op: Operation) => {
-      const result = store.dispatch(op);
-      if (result.changed) announcer.announce(result.announcement);
-      return result.changed;
-    },
-    [store, announcer],
-  );
+  return useServices().dispatch;
 }
 
 // Runs a command on the user's behalf. The invoking control can watch

@@ -113,6 +113,7 @@ export function createWorkbench({
 
   workbenchCommands({
     store,
+    dispatch,
     announce: announcer.announce,
     plugins: () => source.plugins().map((p) => p.id),
     // An explicit ask for the prompt bar outranks the focus that follows a

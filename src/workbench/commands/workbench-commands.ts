@@ -1,4 +1,4 @@
-import type { BarName, Layout, PanelId, Side, WorkbenchStore } from '../core';
+import type { BarName, Layout, Operation, PanelId, Side, WorkbenchStore } from '../core';
 import { groupOf, groups, placementOf, sidebarPanels } from '../core';
 import type { ArgSpec } from './args';
 import type { Command } from './registry';
@@ -19,6 +19,9 @@ function isBar(name: string): name is BarName {
 
 export interface WorkbenchCommandDeps {
   store: WorkbenchStore;
+  // Applies an operation and announces what it changed; `announce` is for
+  // what these commands say when they change nothing.
+  dispatch: (op: Operation) => boolean;
   announce: (text: string) => void;
   // Ids of installed plugins, for `/pin` and `/unpin` completion.
   plugins: () => string[];
@@ -50,15 +53,11 @@ function groupNeighbour(layout: Layout, offset: 1 | -1): PanelId | null {
 
 export function workbenchCommands({
   store,
+  dispatch,
   announce,
   plugins,
   focusPrompt,
 }: WorkbenchCommandDeps): Command[] {
-  const dispatch = (op: Parameters<WorkbenchStore['dispatch']>[0]) => {
-    const result = store.dispatch(op);
-    if (result.changed) announce(result.announcement);
-    return result.changed;
-  };
   const focusTo = (target: PanelId | null) => {
     if (target) dispatch({ type: 'focus', panel: target });
   };

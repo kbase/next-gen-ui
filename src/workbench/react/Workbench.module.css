@@ -1280,12 +1280,11 @@
   padding-block-end: var(--s-2);
 }
 
-/* The pane's empty line, set as Shortcuts sets its own. It keeps a line's
-   height while empty, so the words land without moving the blocks below. */
+/* The pane's line for when neither source has terms, set as Shortcuts sets
+   its own. */
 .relatedEmpty {
   margin: 0;
   padding: var(--s-3) var(--s-4);
-  min-block-size: 1lh;
 }
 
 /* What the list was computed from, and nothing else: the block's own header
@@ -1400,31 +1399,8 @@
   padding-inline: var(--s-1);
 }
 
-/* Faint rows where the first answers are about to land. Only for an empty
-   list: a skeleton over content that was already there is a regression. */
-.relatedSkeleton {
-  display: grid;
-  gap: var(--s-2);
-  padding: var(--s-2) var(--s-4);
-}
-
-.relatedSkeleton > span {
-  display: block;
-  block-size: 0.9rem;
-  border-radius: var(--r-sm);
-  background: var(--c-raised);
-  opacity: 0.8;
-}
-
-.relatedSkeleton > span:nth-child(2) {
-  inline-size: 70%;
-}
-
-.relatedSkeleton > span:nth-child(3) {
-  inline-size: 85%;
-}
-
-/* What is still being asked, in a line under the rows rather than a row. */
+/* That a section is still being answered, in a line under its rows rather
+   than a row: a skeleton would put shapes where rows may never arrive. */
 .relatedActivity {
   display: flex;
   align-items: center;
@@ -1434,4 +1410,11 @@
   color: var(--c-ink3);
 }
 
-/* Nothing related, said quietly: a line, not an event. */
+/* A section whose question settled with nothing to show. Set like the asking
+   line it takes over from, so the section does not shift when it does. */
+.relatedNone {
+  margin: 0;
+  padding: var(--s-2) var(--s-4);
+  font-size: var(--fs-2);
+  color: var(--c-ink3);
+}

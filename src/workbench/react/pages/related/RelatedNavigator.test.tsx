@@ -110,7 +110,7 @@ async function mount(relate: (q: TermsQuery) => Promise<CartItem[]>) {
 const wait = (ms: number) => act(async () => void (await vi.advanceTimersByTimeAsync(ms)));
 
 const asking = () => screen.queryAllByText('Asking the other plugins…');
-const paneEmpty = () => screen.queryByText('No terms from the open page or the cart.');
+const paneEmpty = () => screen.queryByText('Nothing to show');
 
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());
@@ -128,19 +128,17 @@ describe('the Related pane before it has answers', () => {
 
     // Longer than any quiet period the pane ever kept.
     await wait(SETTLE_MS + BUDGET_MS);
-    expect(screen.queryByText(/Nothing offered/)).toBeNull();
-    expect(screen.queryByText(/offers anything/)).toBeNull();
     expect(screen.queryByText(page.path)).toBeNull();
     expect(paneEmpty()).toBeInTheDocument();
 
-    // The terms arrive, and the section is up before the settle has run.
+    // The terms arrive. The section goes up when the plugins are asked, which
+    // is the first moment it has anything under it to head.
     await act(async () => {
       services.terms.set(page.id, ['uniprot:P0AEX9']);
     });
+    await wait(SETTLE_MS);
     expect(screen.getByText(page.path)).toBeInTheDocument();
     expect(paneEmpty()).toBeNull();
-
-    await wait(SETTLE_MS);
     expect(asking()).toHaveLength(1);
     await gk.answer('uniprot:P0AEX9', [item('gk:P0AEX9')]);
     expect(screen.getByText('gk:P0AEX9')).toBeInTheDocument();
@@ -163,7 +161,10 @@ describe('the Related pane before it has answers', () => {
     expect(screen.queryByLabelText('Asking the other plugins')).toBeNull();
   });
 
-  it('says once, quietly, that a settled question offered nothing', async () => {
+  // Nobody opened this pane to put a question, so a settled question with no
+  // answers is not an outcome owed back to anyone: the section comes down
+  // rather than standing as a heading over a line saying nothing is there.
+  it('takes a section down when its question settles with nothing', async () => {
     const gk = plugin();
     const services = await mount(gk.relate);
     await act(async () => {
@@ -171,16 +172,16 @@ describe('the Related pane before it has answers', () => {
       services.terms.set(page.id, ['uniprot:P0AEX9']);
     });
     await wait(SETTLE_MS);
-    await gk.answer('uniprot:P0AEX9', []);
-
     expect(screen.getByText(page.path)).toBeInTheDocument();
-    expect(screen.getByText('Nothing offered for the open page.')).toBeInTheDocument();
+
+    await gk.answer('uniprot:P0AEX9', []);
+    expect(screen.queryByText(page.path)).toBeNull();
     expect(asking()).toHaveLength(0);
-    // The outcome belongs to the section; the pane says nothing over it.
-    expect(paneEmpty()).toBeNull();
+    // The pane has a header the reader can see, so it cannot go blank.
+    expect(paneEmpty()).toBeInTheDocument();
   });
 
-  it('reports the pane empty only while neither source has terms', async () => {
+  it('reports the pane empty until a section has something to draw', async () => {
     const gk = plugin();
     const services = await mount(gk.relate);
     expect(paneEmpty()).toBeInTheDocument();
@@ -243,9 +244,10 @@ describe('what a Related row says it answers', () => {
     const services = await mount(gk.relate);
     await act(async () => {
       services.cart.add(carted('fj:P11558', 'P11558', 'uniprot:P11558'));
+      services.cart.add(carted('gk:562', 'Escherichia coli', 'ncbitaxon:562'));
     });
     await wait(SETTLE_MS);
-    await gk.answer('uniprot:P11558', [answered('gk:562', 'uniprot:P11558')]);
+    await gk.answer('uniprot:P11558,ncbitaxon:562', [answered('gk:x', 'uniprot:P11558')]);
 
     expect(screen.getByText('genKnown, because your cart has P11558')).toBeInTheDocument();
   });
@@ -297,10 +299,10 @@ describe('what a Related row says it answers', () => {
     const services = await mount(gk.relate);
     await act(async () => {
       services.store.dispatch({ type: 'open', panel: page });
-      services.terms.set(page.id, ['biome:soil']);
+      services.terms.set(page.id, ['biome:soil', 'uniprot:P0AEX9']);
     });
     await wait(SETTLE_MS);
-    await gk.answer('biome:soil', [
+    await gk.answer('biome:soil,uniprot:P0AEX9', [
       { ...item('gk:soil'), answers: [{ term: 'biome:soil', kind: 'name' }] },
     ]);
 
@@ -314,10 +316,10 @@ describe('what a Related row says it answers', () => {
     const services = await mount(gk.relate);
     await act(async () => {
       services.store.dispatch({ type: 'open', panel: page });
-      services.terms.set(page.id, ['uniprot:P0AEX9']);
+      services.terms.set(page.id, ['uniprot:P0AEX9', 'biome:soil']);
     });
     await wait(SETTLE_MS);
-    await gk.answer('uniprot:P0AEX9', [item('gk:P0AEX9')]);
+    await gk.answer('uniprot:P0AEX9,biome:soil', [item('gk:P0AEX9')]);
 
     expect(screen.getByText('genKnown, from the open page')).toBeInTheDocument();
   });
@@ -339,8 +341,9 @@ describe('what a Related row says it answers', () => {
         void fireEvent.click(screen.getByRole('button', { name: 'Add gk:P0AEX9 to the cart' })),
     );
     expect(services.cart.items()).toEqual([{ ...item('gk:P0AEX9'), plugin: 'gk' }]);
-    // …and the row still says why it is there.
-    expect(screen.getByText('genKnown, because this page is about P0AEX9')).toBeInTheDocument();
+    // …and the row does not spend a line repeating the heading it sits under:
+    // the section is already named for the page, and P0AEX9 is in its title.
+    expect(screen.queryByText(/because this page is about P0AEX9/)).toBeNull();
   });
 });
 
@@ -368,11 +371,12 @@ describe('the Related pane while answers land', () => {
     expect(screen.getByText('gk:P0AEX9')).toBeInTheDocument();
     expect(asking()).toHaveLength(1);
 
-    // The cart answers with nothing: its section stays and says so.
+    // The cart answers with nothing: its section goes, and the page's section
+    // — the one with rows — is the element it always was.
     await gk.answer('taxon:83333', []);
-    expect(headings()).toEqual(first);
+    expect(screen.queryByText('Cart')).toBeNull();
+    expect(screen.getByText(page.path)).toBe(first[0]);
     expect(screen.getByText('gk:P0AEX9')).toBeInTheDocument();
-    expect(screen.getByText('Nothing offered for the cart.')).toBeInTheDocument();
     expect(asking()).toHaveLength(0);
   });
 });

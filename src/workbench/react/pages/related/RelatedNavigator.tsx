@@ -16,11 +16,11 @@ import styles from '../../Workbench.module.css';
 // prompt bar shows.
 //
 // Two sections in a fixed order, one per source, each headed by what it was
-// answered for: the open page's label, the cart. A section stands for a
-// question rather than for its answers, so it appears when the question is
-// put and stays until the source withdraws it; a page that reports its terms
-// a second after its tab opens has no section until then, and never loses
-// one because an answer came back empty. Inside a section the rows hold
+// answered for: the open page's label, the cart. A section is drawn only when
+// it has rows or is still waiting for them; nobody opened this pane to put a
+// question, so a section with nothing under it is not an answer owed back and
+// comes down instead. The pane has a header the reader can see, so when no
+// section is drawn the pane says so once. Inside a section the rows hold
 // still: a row keeps its place from the moment it appears until nothing
 // offers it any more; a new answer adds rows at the end and takes rows away,
 // and never re-sorts. The plugin is the mark on the row. What is still being
@@ -53,8 +53,8 @@ const BECAUSE: Record<RelatedSource, { has: string; mentions: string }> = {
   cart: { has: 'your cart has', mentions: 'your cart mentions' },
 };
 
-// A source as the line under its heading names it, and as a row names it when
-// the plugin that offered it said nothing about why.
+// A source as a row names it when the plugin that offered it said nothing
+// about why.
 const ASKED: Record<RelatedSource, string> = {
   page: 'the open page',
   cart: 'the cart',
@@ -104,49 +104,44 @@ export function RelatedNavigator() {
       source,
       asked: state.pool.length > 0,
       label: HEADING[source](state.label),
+      // Whether anything is in question about which term a row answers. One
+      // term in the pool and the heading already names the only candidate.
+      manyAsked: state.pool.length > 1,
       rows: shown.filter((r) => r.offeredBy[0].source === source),
       asking: state.loading,
     };
   }).filter((s) => s.asked);
 
-  // Neither source has terms. Said as the fact it is: the pane cannot tell an
-  // open page with nothing to ask about from one that has not reported yet,
-  // and either way no plugin has been asked anything.
-  if (sections.length === 0) {
-    return (
-      <EmptyState
-        icon={<MagnifyingGlass size={32} />}
-        title="Nothing to ask about"
-        description="No terms from the open page or the cart."
-      />
-    );
+  // A section with nothing under it is not drawn at all, and when that is
+  // every section the pane says so once. Nothing here was asked for: no one
+  // opened this pane to put a question, so absence is not an answer owed back
+  // — it is a shelf with nothing on it, and shelves with nothing on them come
+  // down. The distinction that matters is the pane itself, which has a header
+  // the reader can see and so cannot be blank.
+  const drawn = sections.filter((s) => s.rows.length > 0 || s.asking);
+  if (drawn.length === 0) {
+    return <EmptyState icon={<MagnifyingGlass size={32} />} title="Nothing to show" />;
   }
 
   return (
     <div className={styles.related}>
-      {sections.map((s) => (
+      {drawn.map((s) => (
         <div key={s.source}>
           <p className={styles.relatedFrom}>{s.label}</p>
           {s.rows.length > 0 && (
             <ul className={styles.relatedList}>
               {s.rows.map((row) => (
-                <RelatedRow key={row.id} row={row} />
+                <RelatedRow key={row.id} row={row} manyAsked={s.manyAsked} />
               ))}
             </ul>
           )}
-          {s.asking ? (
+          {s.asking && (
             // The line carries the announcement; the loader beside it is
             // decoration, and a label on it would say the same words twice.
             <p className={`note ${styles.relatedLine}`} role="status">
               <Loader size={14} />
               <span>Asking the other plugins…</span>
             </p>
-          ) : (
-            s.rows.length === 0 && (
-              <p
-                className={`note ${styles.relatedLine}`}
-              >{`Nothing offered for ${ASKED[s.source]}.`}</p>
-            )
           )}
         </div>
       ))}
@@ -195,7 +190,7 @@ function withoutEvidence(item: CartItem): CartItem {
   return thing;
 }
 
-function RelatedRow({ row }: { row: Recommendation }) {
+function RelatedRow({ row, manyAsked }: { row: Recommendation; manyAsked: boolean }) {
   const services = useServices();
   const { query, source: index } = services;
   const { item } = row;
@@ -216,14 +211,20 @@ function RelatedRow({ row }: { row: Recommendation }) {
   // Read from the whole cart, not this plugin's slice: the term a row answers
   // was put in view by whichever item carries it.
   const carried = services.cart.items();
-  const why = row.offeredBy
-    .map((o) => clause(o, index.manifest(o.plugin)?.title ?? o.plugin, carried))
-    .join('; ');
+  const reasons = row.offeredBy.map((o) =>
+    clause(o, index.manifest(o.plugin)?.title ?? o.plugin, carried),
+  );
+  // The reason names which term the row answers and which plugin answered. It
+  // earns its line only when one of those is in question: more than one term
+  // was asked about, or more than one plugin offered the row. A section asked
+  // about a single term, answered by the one plugin whose mark is already on
+  // the row, would spend a third line saying what two lines above it say.
+  const why = manyAsked || reasons.length > 1 ? reasons.join('; ') : '';
   const label = (
     <span className={styles.relatedLabel}>
       <span className={styles.relatedName}>{item.subject ?? item.name}</span>
       {item.summary && <span className={styles.relatedDetail}>{item.summary}</span>}
-      <span className={styles.relatedWhy}>{why}</span>
+      {why && <span className={styles.relatedWhy}>{why}</span>}
     </span>
   );
   const mark = (

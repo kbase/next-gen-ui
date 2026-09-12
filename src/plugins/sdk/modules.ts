@@ -67,8 +67,6 @@ export interface Background {
   status?: () => StatusItem[];
 }
 
-export type CommandValues = Record<string, string | number>;
-
 // What a command handler runs against. `caller` is the plugin that called
 // `execute`, or 'user' for the prompt bar and every button.
 export interface CommandContext {
@@ -76,7 +74,10 @@ export interface CommandContext {
   caller: string;
 }
 
-export type CommandHandler = (args: CommandValues, ctx: CommandContext) => void | Promise<void>;
+export type CommandHandler = (
+  args: Record<string, string>,
+  ctx: CommandContext,
+) => void | Promise<void>;
 
 export type Commands = Record<string, CommandHandler>;
 

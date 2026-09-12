@@ -37,7 +37,7 @@ export interface RankedCall {
   title: string;
   // The plugin's own wording, when the row is its offer.
   label?: string;
-  args: Record<string, string | number>;
+  args: Record<string, string>;
   score: number;
 }
 

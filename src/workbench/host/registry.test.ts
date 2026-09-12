@@ -34,6 +34,21 @@ describe('fetchRegistry', () => {
     expect(list.map((m) => m.id)).toEqual(['commons']);
   });
 
+  it('names the plugin, its SDK and the rule when the version is the reason', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    warn.mockClear();
+    const list = await fetchRegistry(
+      '/plugin-registry',
+      ok([{ ...remote, id: 'function-junction', sdkVersion: '0.1.0' }]),
+    );
+    expect(list).toEqual([]);
+    const message = warn.mock.calls[0].join(' ');
+    expect(message).toContain('function-junction');
+    expect(message).toContain('0.1.0');
+    expect(message).toContain(SDK_VERSION);
+    warn.mockRestore();
+  });
+
   it('rejects a failing or non-list answer', async () => {
     const failing = vi.fn(async () => new Response('', { status: 502 })) as unknown as typeof fetch;
     await expect(fetchRegistry('/plugin-registry', failing)).rejects.toThrow(/502/);

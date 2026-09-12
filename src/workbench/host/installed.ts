@@ -10,8 +10,7 @@ import type {
   PluginHost,
 } from '../../plugins/sdk';
 import type { PluginId } from '../core';
-import type { ArgSpec, Command, CommandRegistry } from '../commands';
-import type { ArgDecl } from '../../plugins/sdk';
+import type { Command, CommandRegistry } from '../commands';
 import { iconFor } from './icons';
 
 // The host's index of installed plugins: manifests now, modules on demand.
@@ -165,7 +164,7 @@ export function createHostIndex(installed: InstalledPlugin[]): HostIndex {
             title: decl.title,
             description: decl.description,
             source: manifest.id,
-            args: (decl.args ?? []).map(toArgSpec),
+            args: decl.args ?? [],
             run: async (values, caller) => {
               const commands = await module(manifest.id, 'commands');
               const fn = commands[decl.name];
@@ -181,16 +180,5 @@ export function createHostIndex(installed: InstalledPlugin[]): HostIndex {
         }
       }
     },
-  };
-}
-
-// A manifest argument is typed by the handler once it runs; the bar only
-// needs to know how many there are and which are required.
-function toArgSpec(decl: ArgDecl): ArgSpec {
-  return {
-    name: decl.name,
-    description: decl.description,
-    required: decl.required,
-    type: 'string',
   };
 }

@@ -43,7 +43,7 @@ import { useHost } from './host';
 // arguments that produce the item. A bare command name is the plugin's own.
 export type CartSource =
   | { path: string }
-  | { command: string; args?: Record<string, string | number> };
+  | { command: string; args?: Record<string, string> };
 
 export interface CartItem {
   id: string;

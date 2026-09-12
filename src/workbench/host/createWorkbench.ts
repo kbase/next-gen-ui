@@ -171,14 +171,13 @@ function openCommand(services: WorkbenchServices): Command {
     args: [
       {
         name: 'plugin',
-        type: 'string',
         required: true,
         complete: (prefix) =>
           openable()
             .map((m) => m.id)
             .filter((id) => id.startsWith(prefix)),
       },
-      { name: 'path', type: 'string', description: "the plugin's own path" },
+      { name: 'path', description: "the plugin's own path" },
     ],
     run: async ({ plugin, path }) => {
       const id = String(plugin);

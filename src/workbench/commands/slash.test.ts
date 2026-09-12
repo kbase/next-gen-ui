@@ -9,7 +9,7 @@ function registry() {
     name: 'cancel',
     title: 'Cancel a job',
     source: 'jobs',
-    args: [{ name: 'id', type: 'string', required: true, complete: () => ['12', '13', '20'] }],
+    args: [{ name: 'id', required: true, complete: () => ['12', '13', '20'] }],
     run: () => {},
   });
   r.register({

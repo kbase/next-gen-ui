@@ -41,7 +41,7 @@ export const CartItemSchema = z.object({
       z.object({ path: z.string() }),
       z.object({
         command: z.string(),
-        args: z.record(z.string(), z.union([z.string(), z.number()])).optional(),
+        args: z.record(z.string(), z.string()).optional(),
       }),
     ])
     .optional(),

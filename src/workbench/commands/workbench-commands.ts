@@ -149,7 +149,6 @@ export function workbenchCommands({
       args: [
         {
           name: 'plugin',
-          type: 'string',
           required: true,
           complete: (p) => plugins().filter((id) => id.startsWith(p)),
         },
@@ -169,7 +168,6 @@ export function workbenchCommands({
       args: [
         {
           name: 'plugin',
-          type: 'string',
           required: true,
           complete: (p) => store.get().sidebar.pinned.filter((id) => id.startsWith(p)),
         },

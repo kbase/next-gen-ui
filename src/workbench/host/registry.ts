@@ -31,8 +31,26 @@ export async function fetchRegistry(
   const manifests: Manifest[] = [];
   for (const item of raw) {
     const parsed = ManifestSchema.safeParse(item);
-    if (parsed.success) manifests.push(parsed.data);
-    else console.warn('plugin registry: skipping an invalid manifest', item, parsed.error.issues);
+    if (parsed.success) {
+      manifests.push(parsed.data);
+      continue;
+    }
+    // A manifest that is sound apart from the SDK it names is a plugin whose
+    // author has to rebuild it, so that one gets a sentence naming the
+    // plugin, the SDK it declared and the rule, in place of a pile of issues.
+    const entry = item as { id?: unknown; sdkVersion?: unknown };
+    const issues = parsed.error.issues;
+    if (
+      issues.length === 1 &&
+      issues[0].path[0] === 'sdkVersion' &&
+      typeof entry.sdkVersion === 'string'
+    ) {
+      console.warn(
+        `plugin registry: not loading ${String(entry.id)}, built against SDK ${entry.sdkVersion}: ${issues[0].message}`,
+      );
+    } else {
+      console.warn('plugin registry: skipping an invalid manifest', item, issues);
+    }
   }
   return manifests;
 }

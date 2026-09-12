@@ -1,23 +1,16 @@
 // Typed command arguments. Specs are data so the prompt bar can complete
 // and validate a slash command before the code that runs it has loaded.
 
+import type { ArgDecl } from '../../plugins/sdk';
+
 export type Completer = (prefix: string) => string[] | Promise<string[]>;
 
-interface ArgBase {
-  name: string;
-  description?: string;
-  required?: boolean;
-}
+export type ArgSpec = ArgDecl & { complete?: Completer };
 
-export type ArgSpec =
-  | (ArgBase & { type: 'string'; complete?: Completer })
-  | (ArgBase & { type: 'number' })
-  | (ArgBase & { type: 'choice'; choices: string[] | (() => string[]) });
-
-export type ArgValue = string | number;
+export type ArgValue = string;
 export type ArgValues = Record<string, ArgValue>;
 
-export type ArgErrorCode = 'missing' | 'not-a-number' | 'not-a-choice' | 'too-many';
+export type ArgErrorCode = 'missing' | 'too-many';
 
 export interface ArgError {
   code: ArgErrorCode;
@@ -26,11 +19,6 @@ export interface ArgError {
 }
 
 export type ArgResult = { ok: true; values: ArgValues } | { ok: false; error: ArgError };
-
-export function choicesOf(spec: ArgSpec): string[] {
-  if (spec.type !== 'choice') return [];
-  return typeof spec.choices === 'function' ? spec.choices() : spec.choices;
-}
 
 export function validateArgs(specs: ArgSpec[], tokens: string[]): ArgResult {
   if (tokens.length > specs.length) {
@@ -44,31 +32,7 @@ export function validateArgs(specs: ArgSpec[], tokens: string[]): ArgResult {
       if (spec.required) return fail('missing', spec.name, `${spec.name} is required`);
       continue;
     }
-    switch (spec.type) {
-      case 'string':
-        values[spec.name] = token;
-        break;
-      case 'number': {
-        const n = Number(token);
-        if (!Number.isFinite(n)) {
-          return fail('not-a-number', spec.name, `${spec.name} must be a number`);
-        }
-        values[spec.name] = n;
-        break;
-      }
-      case 'choice': {
-        const choices = choicesOf(spec);
-        if (!choices.includes(token)) {
-          return fail(
-            'not-a-choice',
-            spec.name,
-            `${spec.name} must be one of ${choices.join(', ')}`,
-          );
-        }
-        values[spec.name] = token;
-        break;
-      }
-    }
+    values[spec.name] = token;
   }
   return { ok: true, values };
 }
@@ -78,12 +42,7 @@ function fail(code: ArgErrorCode, arg: string | undefined, message: string): Arg
 }
 
 export async function completeArg(spec: ArgSpec, prefix: string): Promise<string[]> {
-  const pool =
-    spec.type === 'choice'
-      ? choicesOf(spec)
-      : spec.type === 'string' && spec.complete
-        ? await spec.complete(prefix)
-        : [];
+  const pool = spec.complete ? await spec.complete(prefix) : [];
   return pool.filter((c) => c.startsWith(prefix));
 }
 

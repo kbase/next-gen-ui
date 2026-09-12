@@ -5,13 +5,31 @@ import { version as SDK_VERSION } from './package.json';
 // its code. The author writes `plugin.config.ts`; the build adds
 // `sdkVersion` and `modules` and serves the result as manifest.json.
 
-// The SDK versions whose plugins this host loads. A manifest built with
-// another is skipped at registry time, so a contract change ships as a new
-// SDK version and the host lists the ones it still understands.
 export { SDK_VERSION };
-// 0.1.0 predates the intent module; a plugin built with it lists nothing the
-// host cannot load.
-export const ACCEPTED_SDK_VERSIONS: readonly string[] = [SDK_VERSION, '0.1.0'];
+
+// `sdkVersion` is the SDK the plugin was built against. Federation's shared
+// scope hands the plugin the workbench's copy at runtime, so a plugin built
+// against a later SDK can import a name that copy does not have; a plugin
+// built against an earlier one imports a subset. Additions bump the minor
+// and removals the major, so a lower minor loads and a higher one does not —
+// except under 0.x, where semver gives a minor the weight of a major and
+// only the workbench's own minor loads. The patch never moves the contract.
+const SEMVER = /^(\d+)\.(\d+)\.(\d+)$/;
+
+export function acceptsSdkVersion(declared: string, host: string = SDK_VERSION): boolean {
+  const built = SEMVER.exec(declared);
+  const mine = SEMVER.exec(host);
+  if (!built || !mine) return false;
+  const [builtMajor, builtMinor] = [Number(built[1]), Number(built[2])];
+  const [hostMajor, hostMinor] = [Number(mine[1]), Number(mine[2])];
+  if (builtMajor !== hostMajor) return false;
+  return hostMajor === 0 ? builtMinor === hostMinor : builtMinor <= hostMinor;
+}
+
+// The rule in the words a plugin author needs to act on.
+const ACCEPTED_RANGE = SDK_VERSION.startsWith('0.')
+  ? `${SDK_VERSION.split('.').slice(0, 2).join('.')}.x`
+  : `${SDK_VERSION.split('.')[0]}.0.0 through ${SDK_VERSION}`;
 
 const NAME = /^[a-z][a-z0-9-]*$/;
 
@@ -54,7 +72,7 @@ export const CommandCallSchema = z.object({
   label: z.string().min(1),
   // "plugin:name"; a bare "name" is the declaring plugin's own.
   command: z.string().regex(/^(?:[a-z][a-z0-9-]*:)?[a-z][a-z0-9-]*$/),
-  args: z.record(z.string(), z.union([z.string(), z.number()])).optional(),
+  args: z.record(z.string(), z.string()).optional(),
 });
 export type CommandCall = z.infer<typeof CommandCallSchema>;
 
@@ -87,8 +105,8 @@ export type PluginConfig = z.infer<typeof PluginConfigSchema>;
 
 // What the host reads: the config plus what the build knows.
 export const ManifestSchema = PluginConfigSchema.extend({
-  sdkVersion: z.string().refine((v) => ACCEPTED_SDK_VERSIONS.includes(v), {
-    message: `sdkVersion must be one of ${ACCEPTED_SDK_VERSIONS.join(', ')}`,
+  sdkVersion: z.string().refine((v) => acceptsSdkVersion(v), {
+    message: `sdkVersion must be ${ACCEPTED_RANGE}; this workbench serves SDK ${SDK_VERSION}, and a plugin runs against the copy it serves`,
   }),
   // Which modules the bundle exposes — exactly the files vite.config.ts
   // named. The host fetches nothing the list omits and offers only what a

@@ -4,7 +4,7 @@ export { HostContext, useHost } from './host';
 export type { PluginHost } from './host';
 export {
   SDK_VERSION,
-  ACCEPTED_SDK_VERSIONS,
+  acceptsSdkVersion,
   MODULES,
   manifestFor,
   ManifestSchema,
@@ -50,7 +50,6 @@ export type {
   Recommendation,
   StatusItem,
   Destination,
-  CommandValues,
   CommandContext,
   CommandHandler,
 } from './modules';

@@ -11,7 +11,7 @@ export interface PluginHost {
   openRoute: (path: string, options?: { duplicate?: boolean }) => void;
   // Resolves when the handler resolves, with nothing: data between plugins
   // travels as terms and cart items, not as return values.
-  execute: (command: string, args?: Record<string, string | number>) => Promise<void>;
+  execute: (command: string, args?: Record<string, string>) => Promise<void>;
   hasCommand: (command: string) => boolean;
   // A toast. For the outcome only the plugin can see: a command that ran and
   // changed nothing visible, a neighbour that is not installed.

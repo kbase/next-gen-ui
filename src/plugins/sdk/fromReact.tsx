@@ -17,10 +17,11 @@ export function fromReact(Component: ComponentType): { mount: Mount } {
       const root = createRoot(el);
       const draw = () =>
         root.render(
-          // A snapshot rather than the live handle: context consumers compare
-          // the value by identity, and a fresh object is what makes a path
-          // change reach them.
-          <PanelContext value={{ ...panel, path: panel.path, focused: panel.focused }}>
+          // A snapshot rather than the live handle: the spread reads the
+          // handle's `path` and `focused` getters, and context consumers
+          // compare the value by identity, so a fresh object per draw is what
+          // makes a path change reach them.
+          <PanelContext value={{ ...panel }}>
             <HostContext value={host}>
               <Fence>
                 <Component />

@@ -1,6 +1,5 @@
 import type { ComponentType } from 'react';
-import { createRoot } from 'react-dom/client';
-import { HostContext, PanelContext, definePluginManifest } from '../../plugins/sdk';
+import { definePluginManifest, fromReact } from '../../plugins/sdk';
 import type { Mount, Pane, Route } from '../../plugins/sdk';
 import { ServicesContext } from '../react/context';
 import type { WorkbenchServices } from '../react/services';
@@ -110,30 +109,20 @@ export function hostPlugins(services: () => WorkbenchServices): InstalledPlugin[
   ];
 }
 
-// `fromReact` with the host's services in the tree.
-function hostReact(services: () => WorkbenchServices, Component: ComponentType): { mount: Mount } {
-  return {
-    mount(el, { panel, host }) {
-      const root = createRoot(el);
-      const draw = () =>
-        root.render(
-          <ServicesContext value={services()}>
-            <PanelContext value={{ ...panel, path: panel.path, focused: panel.focused }}>
-              <HostContext value={host}>
-                <Component />
-              </HostContext>
-            </PanelContext>
-          </ServicesContext>,
-        );
-      draw();
-      const stop = panel.subscribe(draw);
-      return () => {
-        stop();
-        // The host tears panels down from its own commit phase, and a root
-        // cannot be unmounted while another is mid-render; the next tick is
-        // after that commit.
-        setTimeout(() => root.unmount(), 0);
-      };
-    },
-  };
+// `fromReact` with the host's services in the tree, so a host page mounts,
+// redraws and crashes the way a plugin page does — the SDK's error fence
+// included, which is the only boundary a page in its own React root has.
+export function hostReact(
+  services: () => WorkbenchServices,
+  Component: ComponentType,
+): { mount: Mount } {
+  // One wrapper per page rather than one per draw: a component type built
+  // during a draw would be a different type each time, and React would
+  // remount the page instead of re-rendering it. `services()` runs on every
+  // render, so a page sees the services object of the current draw.
+  return fromReact(() => (
+    <ServicesContext value={services()}>
+      <Component />
+    </ServicesContext>
+  ));
 }

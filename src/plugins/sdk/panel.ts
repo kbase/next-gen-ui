@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useSyncExternalStore } from 'react';
+import { createContext, useContext, useEffect } from 'react';
 
 // What a panel can learn about itself and ask of its own tab. The host
 // provides this context; a plugin reads it with `usePanel`. Types here
@@ -72,10 +72,4 @@ export function usePanelBreadcrumbs(crumbs: Crumb[]): void {
   // identity changes on every pass while its content rarely does.
   const key = JSON.stringify(crumbs);
   useEffect(() => setCrumbs(JSON.parse(key) as Crumb[]), [setCrumbs, key]);
-}
-
-// The panel's path as React state: re-renders the caller when it changes.
-export function usePanelPath(): string {
-  const handle = usePanel();
-  return useSyncExternalStore(handle.subscribe, () => handle.path);
 }

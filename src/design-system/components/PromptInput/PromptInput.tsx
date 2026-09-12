@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 import { PaperPlaneRight, Stop } from '@phosphor-icons/react';
 import * as Field from '../Field';
 import { Frame } from '../Frame';
@@ -62,7 +62,13 @@ export interface PromptInputProps {
    * Spread onto the field, for a completion popup's combobox wiring
    * (`role`, `aria-*`) and its key handling. The component's own props win.
    */
-  fieldProps?: Omit<TextareaProps, 'value' | 'onValueChange' | 'onSubmit'>;
+  fieldProps?: Omit<TextareaProps, 'value' | 'onValueChange' | 'onSubmit' | 'ref'>;
+  /**
+   * The textarea, for a caller that has to reach it — focusing the composer
+   * from a keyboard shortcut, or when a turn finishes. The component's root is
+   * the labelled wrapper, so a ref on it would not be the field.
+   */
+  fieldRef?: Ref<HTMLTextAreaElement>;
 }
 
 export function PromptInput({
@@ -86,6 +92,7 @@ export function PromptInput({
   autoFocus,
   className,
   fieldProps,
+  fieldRef,
 }: PromptInputProps) {
   const empty = !value.trim();
   const mode = useSubmitMode(submitOn);
@@ -115,6 +122,7 @@ export function PromptInput({
         {attachments && <div className={styles.attachments}>{attachments}</div>}
         <Textarea
           {...fieldProps}
+          ref={fieldRef}
           rows={1}
           autoGrow
           maxRows={maxRows}

@@ -146,7 +146,7 @@ export interface Prompt {
 export type DeclaredCommand = SlashCommand & { plugin: string; pluginTitle: string };
 
 // A call a manifest has already filled in — a plugin's launcher, one of its
-// shortcut buttons, or the workbench's own `open` for a plugin that has a
+// shortcut buttons, or the workbench's own `show` for a plugin that has a
 // sidebar pane. It runs as written, so nothing the user types fills anything
 // in it; what the text decides is whether it is worth showing. The command it
 // names is declared somewhere, by this plugin, another, or the workbench.
@@ -166,7 +166,7 @@ export interface Suggestion {
   // the one that declared it.
   call: CommandCall;
   // Whose row it is, when that is not the plugin the command belongs to: a
-  // pane row runs `workbench:open` and belongs to the plugin it shows. The
+  // pane row runs `workbench:show` and belongs to the plugin it shows. The
   // host draws the row with this plugin's icon and colour.
   plugin?: string;
   // The row's caption, in place of the plugin's title: what the row does,

@@ -65,6 +65,9 @@ export interface Suggestion {
   value: string;
   label: string;
   detail?: string;
+  // The command this suggestion completes, for a caller that needs more
+  // than the label — its icon, say — without re-parsing `value`.
+  command: Command;
 }
 
 // The shortest name that reaches a command: bare when no other command
@@ -100,6 +103,7 @@ export async function complete(
         value: `/${shown}${c.args?.length ? ' ' : ''}`,
         label: usage(shown, c.args ?? []),
         detail: c.title,
+        command: c,
       }));
   }
 
@@ -116,6 +120,7 @@ export async function complete(
     value: ['/' + parsed.name, ...done.map(quote), quote(option)].join(' '),
     label: option,
     detail: spec.description ?? spec.name,
+    command: found.command,
   }));
 }
 

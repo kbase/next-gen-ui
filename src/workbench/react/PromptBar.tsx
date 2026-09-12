@@ -275,8 +275,7 @@ export function PromptBar() {
       if (!live) return;
       // A command's icon is its plugin's; the workbench's own have none.
       const commands: BarSuggestion[] = list.map((s) => {
-        const found = registry.find(s.value.trim().replace(/^\//, '').split(/\s+/)[0]);
-        const manifest = found.ok ? source.manifest(found.command.source) : undefined;
+        const manifest = source.manifest(s.command.source);
         return {
           ...s,
           mono: true,

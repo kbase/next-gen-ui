@@ -160,12 +160,12 @@ describe('Workbench', () => {
     await user.keyboard('{Tab}');
     expect(box).toHaveValue('/workbench:open ');
     // Not pinned, so nothing of it has loaded yet.
-    expect(services.source.anyLoaded('catalog')).toBe(false);
-    await user.type(box, 'catalog{Enter}');
+    expect(services.source.anyLoaded('settings')).toBe(false);
+    await user.type(box, 'settings{Enter}');
     expect(await screen.findByRole('tab', { name: /settings/i })).toBeInTheDocument();
     // Its own content, not just a tab: the panel loaded and rendered.
     expect(await screen.findByRole('heading', { name: 'Installed' })).toBeInTheDocument();
-    expect(services.source.anyLoaded('catalog')).toBe(true);
+    expect(services.source.anyLoaded('settings')).toBe(true);
   });
 
   it('sends free text to the assistant and lands it in an arc', async () => {
@@ -202,8 +202,8 @@ describe('Workbench', () => {
     expect((await screen.findAllByText('Layout locked')).length).toBeGreaterThan(0);
 
     // Structural: refused.
-    services.dispatch({ type: 'pin', plugin: 'catalog' });
-    expect(services.store.get().sidebar.pinned).not.toContain('catalog');
+    services.dispatch({ type: 'pin', plugin: 'settings' });
+    expect(services.store.get().sidebar.pinned).not.toContain('settings');
 
     // Usage: still free.
     await user.type(screen.getByRole('combobox', { name: 'Prompt' }), '/close{Enter}');
@@ -211,8 +211,8 @@ describe('Workbench', () => {
 
     await user.type(screen.getByRole('combobox', { name: 'Prompt' }), '/lock-layout{Enter}');
     expect(services.store.get().locked).toBe(false);
-    services.dispatch({ type: 'pin', plugin: 'catalog' });
-    expect(services.store.get().sidebar.pinned).toContain('catalog');
+    services.dispatch({ type: 'pin', plugin: 'settings' });
+    expect(services.store.get().sidebar.pinned).toContain('settings');
   });
 
   it('shows a status item from a background module fetched at startup', async () => {

@@ -28,20 +28,17 @@ export function hostPlugins(services: () => WorkbenchServices): InstalledPlugin[
 
   return [
     localPlugin({
-      // The plugin id stays `catalog`: it is in saved layouts and in the URL
-      // of any panel a user has open. The title, icon and command label are
-      // what a reader sees, and those say Settings.
       config: definePluginManifest({
-        id: 'catalog',
+        id: 'settings',
         title: 'Settings',
         description:
           'Installed plugins, what is pinned, the assistant and the suggestions setting.',
         icon: 'Gear',
-        commands: [{ name: 'catalog', title: 'Open settings', icon: 'Gear' }],
-        shortcuts: [{ label: 'Settings', command: 'catalog' }],
+        commands: [{ name: 'settings', title: 'Open settings', icon: 'Gear' }],
+        shortcuts: [{ label: 'Settings', command: 'settings' }],
       }),
-      route: page(() => import('./catalog/Catalog').then((m) => m.CatalogDocument)),
-      commands: () => import('./catalog/commands').then((m) => m.commands),
+      route: page(() => import('./settings/Settings').then((m) => m.SettingsDocument)),
+      commands: () => import('./settings/commands').then((m) => m.commands),
     }),
     localPlugin({
       config: definePluginManifest({

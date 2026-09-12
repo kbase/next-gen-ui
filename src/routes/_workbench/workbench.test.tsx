@@ -94,9 +94,9 @@ describe('workbench deep links', () => {
   });
 
   it('links to a page at the plugin root', async () => {
-    const { router } = mountAt('/p/catalog');
+    const { router } = mountAt('/p/settings');
     expect(await screen.findByRole('tab', { name: /settings/i })).toBeInTheDocument();
-    expect(pathname(router)).toBe('/p/catalog');
+    expect(pathname(router)).toBe('/p/settings');
   });
 
   it('a link to a plugin without pages announces why and lands on the workbench', async () => {

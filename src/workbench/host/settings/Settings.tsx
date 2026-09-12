@@ -3,26 +3,26 @@ import { Chip, Radio, Switch } from '@kbase/design-system';
 import { usePanelTitle } from '../../../plugins/sdk';
 import { useDispatch, useLayout, useServices } from '../../react/context';
 import { iconFor } from '../icons';
-import styles from './Catalog.module.css';
+import styles from './Settings.module.css';
 
 // The host's own page: what is installed, what is pinned, which plugin
 // answers the prompt bar and which suggests commands for it. Reaches host services directly, which no plugin
 // over the SDK can.
-export function CatalogDocument() {
+export function SettingsDocument() {
   usePanelTitle('Settings');
   const { source, settings } = useServices();
   const layout = useLayout();
   const dispatch = useDispatch();
   useSyncExternalStore(source.subscribe, source.version, source.version);
   const current = useSyncExternalStore(settings.subscribe, settings.get, settings.get);
-  const manifests = source.manifests().filter((m) => m.id !== 'catalog');
+  const manifests = source.manifests().filter((m) => m.id !== 'settings');
   const assistants = manifests.filter((m) => m.modules.includes('prompt'));
   const intents = manifests.filter((m) => m.modules.includes('intent'));
 
   return (
     <div className={styles.root}>
-      <section aria-labelledby="catalog-installed" className={styles.section}>
-        <h2 id="catalog-installed" className="h4">
+      <section aria-labelledby="settings-installed" className={styles.section}>
+        <h2 id="settings-installed" className="h4">
           Installed
         </h2>
         <ul className={styles.list}>
@@ -60,13 +60,13 @@ export function CatalogDocument() {
         </ul>
       </section>
 
-      <section aria-labelledby="catalog-assistant" className={styles.section}>
-        <h2 id="catalog-assistant" className="h4">
+      <section aria-labelledby="settings-assistant" className={styles.section}>
+        <h2 id="settings-assistant" className="h4">
           Assistant
         </h2>
         <p className="caption">Which plugin answers free text typed in the prompt bar.</p>
         <Radio.Group
-          aria-labelledby="catalog-assistant"
+          aria-labelledby="settings-assistant"
           value={current.assistant ?? 'none'}
           onValueChange={(value) =>
             settings.set({ assistant: value === 'none' ? null : String(value) })
@@ -86,13 +86,13 @@ export function CatalogDocument() {
         </Radio.Group>
       </section>
 
-      <section aria-labelledby="catalog-intent" className={styles.section}>
-        <h2 id="catalog-intent" className="h4">
+      <section aria-labelledby="settings-intent" className={styles.section}>
+        <h2 id="settings-intent" className="h4">
           Suggestions
         </h2>
         <p className="caption">Which plugin suggests commands for text typed in the prompt bar.</p>
         <Radio.Group
-          aria-labelledby="catalog-intent"
+          aria-labelledby="settings-intent"
           value={current.intent ?? 'none'}
           onValueChange={(value) =>
             settings.set({ intent: value === 'none' ? null : String(value) })

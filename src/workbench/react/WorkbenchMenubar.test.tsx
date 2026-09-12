@@ -18,7 +18,7 @@ const ACTIONS: Array<[menu: string, item: string, command: string, args: object]
   ['Workbench', 'Sidebar', 'workbench:sidebar', {}],
   ['Workbench', 'Prompt bar', 'workbench:toggle-bar', { bar: 'prompt' }],
   ['Workbench', 'Status bar', 'workbench:toggle-bar', { bar: 'status' }],
-  ['Workbench', 'Settings', 'catalog:catalog', {}],
+  ['Workbench', 'Settings', 'settings:settings', {}],
   ['Panel', 'Close', 'workbench:close', {}],
   ['Panel', 'Split left', 'workbench:move-left', {}],
   ['Panel', 'Split right', 'workbench:move-right', {}],

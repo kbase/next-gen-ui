@@ -37,13 +37,13 @@ export function HomeDocument() {
   // Settings is installed like anything else, but it is not listed here: it is
   // the host's own page rather than something a user chose to install, and a
   // reader looking for it is looking for a link, not a search result.
-  const openSettings = () => void openRoute(services, 'catalog', '/');
+  const openSettings = () => void openRoute(services, 'settings', '/');
   // Beside Settings for the same reason: the host's own pages, reached by a
   // link rather than found in a search over what is installed.
   const openDocs = () => void openRoute(services, 'docs', '/');
   // Show where it lives, never pin: a pinned plugin's pane is focused in
   // its sidebar block, an unpinned one is previewed the way the sidebar's
-  // More menu previews it. Pinning is the catalog's job.
+  // More menu previews it. Pinning is the Settings page's job.
   const showPanel = (m: Manifest) => {
     if (layout.sidebar.pinned.includes(m.id)) openPane(services, m.id);
     else preview.set(m.id);

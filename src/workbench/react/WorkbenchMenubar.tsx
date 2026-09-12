@@ -63,7 +63,7 @@ export function WorkbenchMenubar() {
             <Menu.Separator />
             {/* The host's own page, reached from the menu that governs the
                 workbench rather than from the list of things installed in it. */}
-            <Menu.Item onClick={() => run('catalog:catalog')}>Settings</Menu.Item>
+            <Menu.Item onClick={() => run('settings:settings')}>Settings</Menu.Item>
           </Menu.Popup>
         </Menu.Root>
         <Menu.Root>

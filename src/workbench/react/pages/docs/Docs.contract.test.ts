@@ -28,7 +28,7 @@ import { describe, expect, it } from 'vitest';
 // jsdom's URL resolves a relative base against the document, so the paths are
 // built with `path` from this file's own location.
 const HERE = dirname(fileURLToPath(import.meta.url));
-const ROOT = resolve(HERE, '../../../..');
+const ROOT = resolve(HERE, '../../../../..');
 const SDK = join(ROOT, 'src/plugins/sdk');
 const SDK_ENTRIES = [join(SDK, 'index.ts'), join(SDK, 'pluginFederation.ts')];
 

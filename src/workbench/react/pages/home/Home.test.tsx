@@ -1,10 +1,10 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { PanelContext } from '../../../plugins/sdk';
-import type { PanelHandle } from '../../../plugins/sdk';
-import { testWorkbench } from '../../../test/workbench';
-import { WorkbenchProvider } from '../../react/WorkbenchProvider';
+import { PanelContext } from '../../../../plugins/sdk';
+import type { PanelHandle } from '../../../../plugins/sdk';
+import { testWorkbench } from '../../../../test/workbench';
+import { WorkbenchProvider } from '../../WorkbenchProvider';
 import { HomeDocument } from './Home';
 
 // The page is a panel, so it needs a handle to set its title on; nothing

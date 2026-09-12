@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Operation, PluginId, WorkbenchStore } from '../core';
 import { createWorkbenchStore, defaultLayout, makeRoute, paneId, placementOf } from '../core';
-import type { WorkbenchServices } from '../react/services';
+import type { WorkbenchServices } from './services';
 import { openPane } from './open';
 
 const arc = makeRoute('koros', '/nitro', 'a');

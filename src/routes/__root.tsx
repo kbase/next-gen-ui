@@ -9,7 +9,7 @@ import {
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import type { QueryClient } from '@tanstack/react-query';
-import type { WorkbenchServices } from '../workbench/react';
+import type { WorkbenchServices } from '../workbench/host';
 import { Alert, Avatar, Button, Frame, Loader, NavIcon, Tooltip } from '@kbase/design-system';
 import { MapTrifold } from '@phosphor-icons/react';
 

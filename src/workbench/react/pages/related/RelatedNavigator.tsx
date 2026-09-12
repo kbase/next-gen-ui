@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { MagnifyingGlass, X } from '@phosphor-icons/react';
 import { CartButton, EmptyState, Loader, Tooltip } from '@kbase/design-system';
-import type { CartItem } from '../../../plugins/sdk';
-import { qualifyCommand, usePanelTitle } from '../../../plugins/sdk';
-import type { QuerySource, Recommendation } from '../../core';
-import { mergeRecommendations } from '../../core';
-import { pluginHostFor } from '../createWorkbench';
-import { PluginMark } from '../PluginMark';
-import { useRun, useServices } from '../../react/context';
-import styles from '../../react/Workbench.module.css';
+import type { CartItem } from '../../../../plugins/sdk';
+import { qualifyCommand, usePanelTitle } from '../../../../plugins/sdk';
+import type { QuerySource, Recommendation } from '../../../core';
+import { mergeRecommendations } from '../../../core';
+import { pluginHostFor } from '../../../host/pluginHost';
+import { PluginMark } from '../../PluginMark';
+import { useRun, useServices } from '../../context';
+import styles from '../../Workbench.module.css';
 
 // What the rest of the workbench has about what is on screen and what is in
 // the cart: every plugin's `relate`, with the recommendation as the unit.

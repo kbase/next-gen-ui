@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { ServicesContext } from './context';
-import type { WorkbenchServices } from './services';
+import type { WorkbenchServices } from '../host/services';
 
 export function WorkbenchProvider({
   services,

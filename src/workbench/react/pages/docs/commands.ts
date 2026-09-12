@@ -1,4 +1,4 @@
-import type { CommandHandler } from '../../../plugins/sdk';
+import type { CommandHandler } from '../../../../plugins/sdk';
 
 // `/plugin-docs`. Its own file because a component module may only export
 // components.

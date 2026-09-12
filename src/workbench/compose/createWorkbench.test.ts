@@ -1,9 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { DeclaredCall } from '../../plugins/sdk';
 import { definePluginManifest, qualifyCommand } from '../../plugins/sdk';
-import { createWorkbench, pluginHostFor } from './createWorkbench';
-import { localPlugin } from './local';
-import { noPersistence } from './persistence';
+import { createWorkbench } from './createWorkbench';
+import { pluginHostFor } from '../host/pluginHost';
+import { localPlugin } from '../host/local';
+import { noPersistence } from '../host/persistence';
 
 // genKnown owns a command and adds items; KOROS owns neither and is handed one
 // of those items, which is the case a cart item exists for.

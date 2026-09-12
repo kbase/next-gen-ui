@@ -4,8 +4,9 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { localPlugins } from '../../plugins/local';
 import { koros } from '../../plugins/local/koros/store';
-import { createWorkbench, noPersistence } from '../host';
-import type { WorkbenchServices } from './services';
+import { noPersistence } from '../host';
+import { createWorkbench } from '../compose';
+import type { WorkbenchServices } from '../host/services';
 import { WorkbenchProvider } from './WorkbenchProvider';
 import { PromptBar } from './PromptBar';
 

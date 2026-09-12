@@ -9,7 +9,7 @@ import { createKeyedStore } from '../core/subscribable';
 export interface CrumbStore {
   get: (id: PanelId) => Crumb[];
   set: (id: PanelId, crumbs: Crumb[]) => void;
-  // A panel that has closed. Called through `forgetPanel` (react/services.ts),
+  // A panel that has closed. Called through `forgetPanel` (host/services.ts),
   // which drops a panel's title, trail and terms in one go.
   forget: (id: PanelId) => void;
   version: () => number;

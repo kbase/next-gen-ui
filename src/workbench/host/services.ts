@@ -2,6 +2,7 @@ import type { ToastManager } from '@kbase/design-system';
 import type {
   CartStore,
   Operation,
+  Panel,
   PanelId,
   PluginId,
   QueryStore,
@@ -10,14 +11,14 @@ import type {
 } from '../core';
 import { createStore } from '../core/subscribable';
 import type { CommandRegistry, RunStore } from '../commands';
-import type { DestinationStore } from '../host/destination';
-import type { HostIndex } from '../host/installed';
-import type { QueryRunner } from '../host/query/runner';
-import type { SettingsStore } from '../host/settings';
-import type { StatusStore } from '../host/status';
 import type { Announcer } from './announcer';
-import type { TitleStore } from './titles';
 import type { CrumbStore } from './crumbs';
+import type { DestinationStore } from './destination';
+import type { HostIndex } from './installed';
+import type { QueryRunner } from './query/runner';
+import type { SettingsStore } from './settings';
+import type { StatusStore } from './status';
+import type { TitleStore } from './titles';
 
 export interface PromptHandle {
   register: (focus: () => void) => () => void;
@@ -103,4 +104,13 @@ export function forgetPanel(services: WorkbenchServices, id: PanelId): void {
   services.titles.forget(id);
   services.crumbs.forget(id);
   services.terms.forget(id);
+}
+
+// The placeholder shown before a panel supplies its own title: the plugin's
+// title, then the path when there is one worth showing.
+export function fallbackTitle(services: WorkbenchServices, panel: Panel | undefined, id: PanelId) {
+  if (!panel) return id;
+  const plugin = services.source.plugins().find((p) => p.id === panel.plugin);
+  const base = plugin?.title ?? panel.plugin;
+  return panel.path && panel.path !== '/' ? `${base}: ${panel.path}` : base;
 }

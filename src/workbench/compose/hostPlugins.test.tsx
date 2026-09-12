@@ -5,8 +5,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { fromReact } from '../../plugins/sdk';
 import type { Mount, PanelHandle, PluginHost } from '../../plugins/sdk';
 import { useServices } from '../react/context';
-import type { WorkbenchServices } from '../react/services';
-import { hostReact } from './pages';
+import type { WorkbenchServices } from '../host/services';
+import { hostReact } from './hostPlugins';
 
 // A panel's own React root has no boundary above it in the host's tree, so
 // what these assert is that the SDK's fence is in every root the host mounts.

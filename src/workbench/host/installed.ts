@@ -1,5 +1,3 @@
-import type { ComponentType } from 'react';
-import type { IconProps } from '@phosphor-icons/react';
 import type {
   Background,
   CommandCall,
@@ -15,7 +13,6 @@ import { qualifyCommand } from '../../plugins/sdk';
 import type { PluginId } from '../core';
 import { createNotifier } from '../core/subscribable';
 import type { Command, CommandRegistry } from '../commands';
-import { iconFor } from './icons';
 
 // What a pane row runs: `show`, which focuses the pane of a pinned plugin
 // and previews an unpinned one, and in neither case moves anything. A row
@@ -38,10 +35,14 @@ export interface InstalledPlugin {
   modules: ModuleLoaders;
 }
 
+// What the chrome needs about an installed plugin without asking for its
+// manifest: `icon` and `color` are the names the manifest gives, resolved to
+// a glyph by the React layer (`react/icons.ts`).
 export interface PluginInfo {
   id: PluginId;
   title: string;
-  icon: ComponentType<IconProps>;
+  icon: string | undefined;
+  color: string | undefined;
 }
 
 export interface HostIndex {
@@ -182,7 +183,8 @@ export function createHostIndex(installed: InstalledPlugin[]): HostIndex {
       installed.map(({ manifest }) => ({
         id: manifest.id,
         title: manifest.title,
-        icon: iconFor(manifest.icon, manifest.color),
+        icon: manifest.icon,
+        color: manifest.color,
       })),
     manifest: (id) => byId.get(id)?.manifest,
     manifests: () => installed.map((p) => p.manifest),

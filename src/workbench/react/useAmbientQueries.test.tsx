@@ -14,8 +14,8 @@ import {
 import type { HostIndex } from '../host/installed';
 import { SETTLE_MS, createQueryRunner } from '../host/query/runner';
 import { ServicesContext } from './context';
-import type { WorkbenchServices } from './services';
-import { createTitleStore } from './titles';
+import type { WorkbenchServices } from '../host/services';
+import { createTitleStore } from '../host/titles';
 import { useAmbientQueries } from './useAmbientQueries';
 
 const page = makeRoute('fj', '/protein/P0AEX9', 'a');

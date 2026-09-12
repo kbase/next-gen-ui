@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import type { CSSProperties } from 'react';
 import { CaretRight } from '@phosphor-icons/react';
-import { hueFor, iconFor } from '../host/icons';
+import { hueFor, iconFor } from './icons';
 import type { PanelId } from '../core';
 import { useDispatch, useLayout, useServices } from './context';
 import styles from './Workbench.module.css';

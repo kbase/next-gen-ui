@@ -2,10 +2,10 @@ import { useSyncExternalStore } from 'react';
 import type { ComponentType } from 'react';
 import type { IconProps } from '@phosphor-icons/react';
 import { Tooltip, Button, Toolbar } from '@kbase/design-system';
-import { qualifyCommand, usePanelTitle } from '../../../plugins/sdk';
-import type { CommandCall } from '../../../plugins/sdk';
-import { useBusy, useRun, useServices } from '../../react/context';
-import { iconFor } from '../icons';
+import { qualifyCommand, usePanelTitle } from '../../../../plugins/sdk';
+import type { CommandCall } from '../../../../plugins/sdk';
+import { useBusy, useRun, useServices } from '../../context';
+import { iconFor } from '../../icons';
 import styles from './Shortcuts.module.css';
 
 // The host's shortcut panel: every installed plugin's manifest `shortcuts`,

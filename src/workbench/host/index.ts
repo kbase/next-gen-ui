@@ -1,5 +1,3 @@
-export { createWorkbench } from './createWorkbench';
-export type { CreateWorkbenchOptions } from './createWorkbench';
 export { loadWorkbench, noPersistence, LAYOUT_STORAGE_KEY } from './persistence';
 export type { LoadedDocs, SaveWorkbench, WorkbenchDocs, WorkbenchPersistence } from './persistence';
 export { createHostIndex } from './installed';
@@ -17,4 +15,12 @@ export {
 } from './registry';
 export { createSettingsStore, SETTINGS_STORAGE_KEY } from './settings';
 export type { Settings, SettingsStore } from './settings';
-export { iconFor, ICONS } from './icons';
+export { createAnnouncer } from './announcer';
+export type { Announcer } from './announcer';
+export { createTitleStore } from './titles';
+export type { TitleStore } from './titles';
+export { createCrumbStore } from './crumbs';
+export type { CrumbStore } from './crumbs';
+export { forgetPanel, fallbackTitle } from './services';
+export type { WorkbenchServices } from './services';
+export { pluginHostFor } from './pluginHost';

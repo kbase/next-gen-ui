@@ -10,7 +10,8 @@ import {
 } from '@tanstack/react-router';
 import type { PanelHandle } from '../../plugins/sdk';
 import { defineRoute } from '../../plugins/sdk';
-import { createWorkbench, noPersistence, openRoute } from '../host';
+import { noPersistence, openRoute } from '../host';
+import { createWorkbench } from '../compose';
 import { localPlugin } from '../host/local';
 import { WORKBENCH_PATH } from './useUrlSync';
 import { WorkbenchPage } from './WorkbenchPage';

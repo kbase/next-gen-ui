@@ -13,8 +13,8 @@ import { Alert, Button, EmptyState, Loader } from '@kbase/design-system';
 import type { Crumb, Mount, PanelHandle, PluginHost } from '../../plugins/sdk';
 import type { Panel } from '../core';
 import { useServices } from './context';
-import { forgetPanel } from './services';
-import { pluginHostFor } from '../host/createWorkbench';
+import { forgetPanel } from '../host/services';
+import { pluginHostFor } from '../host/pluginHost';
 import styles from './Workbench.module.css';
 
 // Renders one panel: fetches its module through the host's index, hands the

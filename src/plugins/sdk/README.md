@@ -2,7 +2,7 @@
 
 What a next-gen-ui workbench plugin imports. The reference is the workbench's own
 **Plugin developer documentation** page (`/plugin-docs` in a running workbench;
-`src/workbench/host/docs/Docs.tsx` in this repo). This file says what the package is and how it
+`src/workbench/react/pages/docs/Docs.tsx` in this repo). This file says what the package is and how it
 is built.
 
 ## Shape

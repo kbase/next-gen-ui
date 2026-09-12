@@ -6,14 +6,31 @@ go and remembers it. (`workspace` is the KBase data service and is not used here
 
 ## Directories
 
-| path                | contents                                                                                                                                                              | may import                                                |
-| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| `core/`             | `Layout` schema, operations, `reduce`, `describe`, snapshot undo store, serialization                                                                                 | zod only (ESLint fences React and the design system out)  |
-| `commands/`         | command registry, slash parser and completion, keybinding chords, the workbench's own commands                                                                        | `core`                                                    |
-| `host/`             | index of installed plugins, module loading, `openRoute`, the query runner, status polling, icons, settings, registry fetch, the host's own pages, `createWorkbench()` | everything                                                |
-| `react/`            | the components, DnD, URL sync, panel layer, live region                                                                                                               | everything                                                |
-| `../plugins/sdk/`   | what a plugin imports: the manifest contract, the five `define*` helpers, `fromReact`, the hooks, the federation preset                                               | React, zod, the design system; nothing from the workbench |
-| `../plugins/local/` | the bundled plugins: koros, data, jobs                                                                                                                                | the SDK                                                   |
+Imports run one way down this table. Each row may import the rows above it and nothing below,
+and `eslint.config.js` fails the build on an edge that goes the other way.
+
+| path                | contents                                                                                                                                                                                              | may import                                                |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| `core/`             | `Layout` schema, operations, `reduce`, `describe`, snapshot undo store, serialization, the subscribable-store primitives                                                                              | zod; SDK types, not SDK code                              |
+| `commands/`         | command registry, slash parser and completion, keybinding chords, the workbench's own commands                                                                                                        | `core`; SDK types, not SDK code                           |
+| `host/`             | index of installed plugins, module loading, `openRoute`, the query runner, status polling, settings, registry fetch, the panel titles, trails and announcements, `WorkbenchServices`, `pluginHostFor` | `core`, `commands`, the SDK; no React                     |
+| `react/`            | every component and hook: the shell, DnD, URL sync, panel layer, live region, the icon table, and the host's own plugins under `react/pages/`                                                         | `core`, `commands`, `host`, the SDK, the design system    |
+| `compose/`          | `createWorkbench()` and `hostPlugins()` — the one module that builds a workbench out of all four                                                                                                      | everything                                                |
+| `../plugins/sdk/`   | what a plugin imports: the manifest contract, the five `define*` helpers, `fromReact`, the hooks, the federation preset                                                                               | React, zod, the design system; nothing from the workbench |
+| `../plugins/local/` | the bundled plugins: koros, data, jobs                                                                                                                                                                | the SDK                                                   |
+
+Two rules in that table are not obvious. **SDK types, not SDK code**: `core` writes the layout
+model in the plugin contract's vocabulary (`CartItem`, `Offer`, `Match`), and a type import is
+erased, so it costs nothing; a value import would pull React in behind it. **`host` has no
+React**: the host builds and holds what a workbench is made of and draws none of it, which is
+why a plugin's `icon` and `color` reach `PluginInfo` as the names its manifest gave and become
+glyphs only in `react/icons.ts`.
+
+`compose/` exists because the host's own pages are React components that have to be registered
+into the host's plugin index. Something must touch both; if that something lived in `host/`,
+`host` and `react` would import each other again. A component takes its workbench from
+`useServices()`, never by calling `createWorkbench` — that is the arrow the fence over `react/`
+is there to stop.
 
 Routes: `src/routes/_workbench.tsx` draws the shell once; `_workbench/workbench.tsx` is the bare
 workbench and `_workbench/p.$pluginId.$.tsx` resolves a deep link through `openRoute`. Both
@@ -134,8 +151,8 @@ plugin's answer replaces its own section as it arrives, the previous one staying
 then; after 2 s the pane stops saying it is asking, and a later answer still lands. A pool that
 only grew is asked about the new terms alone and the answers merge.
 
-Home (`host/home/`) is that same search as a page: the apps (manifests with a `launcher`) and
-panes installed, searched over the same names and descriptions.
+Home (`react/pages/home/`) is that same search as a page: the apps (manifests with a
+`launcher`) and panes installed, searched over the same names and descriptions.
 
 `status()` on each background module is called once its module arrives and after every command;
 the status bar shows the last answer. Default keybindings live in `commands/keys.ts` and avoid
@@ -192,14 +209,14 @@ it, any more than it proxies the registry.
 Schema: `src/plugins/sdk/contract.ts` (`ManifestSchema`). Invalid entries are skipped
 individually with a console warning; one bad manifest does not take the list down.
 
-| field                                   | use                                                                                                                                        |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `id`                                    | plugin id; federation remote name; URL segment; service mount                                                                              |
-| `title`, `description`, `icon`, `color` | catalog, sidebar icon (both are names from `host/icons.ts`; an unknown icon falls back to a pin, an unknown colour to the surrounding ink) |
+| field                                   | use                                                                                                                                         |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`                                    | plugin id; federation remote name; URL segment; service mount                                                                               |
+| `title`, `description`, `icon`, `color` | catalog, sidebar icon (both are names from `react/icons.ts`; an unknown icon falls back to a pin, an unknown colour to the surrounding ink) |
 | `sdkVersion`                            | must be one of `ACCEPTED_SDK_VERSIONS`; written by the build from the SDK package version it ran with                                       |
-| `modules`                               | which of `background`, `route`, `pane`, `commands`, `prompt` the bundle exposes; written by the build from what `vite.config.ts` named     |
-| `commands[]`                            | `{ name, title, description?, args[], icon? }`; registered as `<id>:<name>` before code loads                                              |
-| `shortcuts[]`, `launcher`               | `CommandCall`s: buttons on the Shortcuts block and on Browse                                                                               |
+| `modules`                               | which of `background`, `route`, `pane`, `commands`, `prompt` the bundle exposes; written by the build from what `vite.config.ts` named      |
+| `commands[]`                            | `{ name, title, description?, args[], icon? }`; registered as `<id>:<name>` before code loads                                               |
+| `shortcuts[]`, `launcher`               | `CommandCall`s: buttons on the Shortcuts block and on Browse                                                                                |
 
 ### Id rules
 

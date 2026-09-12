@@ -3,7 +3,8 @@ import type { Crumb } from '../../plugins/sdk';
 import type { Layout, Operation, Panel, PanelId, Snapshot } from '../core';
 import type { ArgValues } from '../commands';
 import { qualifiedName } from '../commands';
-import type { WorkbenchServices } from './services';
+import { fallbackTitle } from '../host/services';
+import type { WorkbenchServices } from '../host/services';
 
 export const ServicesContext = createContext<WorkbenchServices | null>(null);
 
@@ -66,15 +67,6 @@ export function useBusy(name: string): boolean {
   useSyncExternalStore(runs.subscribe, runs.version, runs.version);
   const found = registry.find(name);
   return runs.running(found.ok ? qualifiedName(found.command) : name);
-}
-
-// The placeholder shown before a panel supplies its own title: the plugin's
-// title, then the path when there is one worth showing.
-export function fallbackTitle(services: WorkbenchServices, panel: Panel | undefined, id: PanelId) {
-  if (!panel) return id;
-  const plugin = services.source.plugins().find((p) => p.id === panel.plugin);
-  const base = plugin?.title ?? panel.plugin;
-  return panel.path && panel.path !== '/' ? `${base}: ${panel.path}` : base;
 }
 
 export function useCrumbs(id: PanelId): Crumb[] {

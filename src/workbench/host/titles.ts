@@ -6,7 +6,7 @@ import { createKeyedStore } from '../core/subscribable';
 export interface TitleStore {
   get: (id: PanelId) => string | undefined;
   set: (id: PanelId, title: string) => void;
-  // A panel that has closed. Called through `forgetPanel` (react/services.ts),
+  // A panel that has closed. Called through `forgetPanel` (host/services.ts),
   // which drops a panel's title, trail and terms in one go.
   forget: (id: PanelId) => void;
   version: () => number;

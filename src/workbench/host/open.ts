@@ -1,6 +1,6 @@
 import type { MainTarget, PanelId, PluginId } from '../core';
 import { makePane, makeRoute, placementOf } from '../core';
-import type { WorkbenchServices } from '../react/services';
+import type { WorkbenchServices } from './services';
 
 // Opening a plugin's page. The one place the host compares paths, and it
 // does so with the plugin's own `normalize`: a panel already showing the

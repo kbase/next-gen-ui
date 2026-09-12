@@ -1,8 +1,8 @@
 import { useState, useSyncExternalStore } from 'react';
 import type { KeyboardEvent } from 'react';
 import { Button, Chip, Radio, Switch } from '@kbase/design-system';
-import { usePanelTitle } from '../../../plugins/sdk';
-import type { Command } from '../../commands';
+import { usePanelTitle } from '../../../../plugins/sdk';
+import type { Command } from '../../../commands';
 import {
   DEFAULT_KEYBINDINGS,
   boundCommand,
@@ -13,9 +13,9 @@ import {
   parseChord,
   qualifiedName,
   setKeybinding,
-} from '../../commands';
-import { useLayout, useRun, useServices } from '../../react/context';
-import { iconFor } from '../icons';
+} from '../../../commands';
+import { useLayout, useRun, useServices } from '../../context';
+import { iconFor } from '../../icons';
 import styles from './Settings.module.css';
 
 // The host's own page: what is installed, what is pinned, which plugin

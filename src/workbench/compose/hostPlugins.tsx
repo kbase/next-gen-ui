@@ -2,9 +2,9 @@ import type { ComponentType } from 'react';
 import { definePluginManifest, fromReact } from '../../plugins/sdk';
 import type { Mount, Pane, Route } from '../../plugins/sdk';
 import { ServicesContext } from '../react/context';
-import type { WorkbenchServices } from '../react/services';
-import type { InstalledPlugin } from './installed';
-import { localPlugin } from './local';
+import type { WorkbenchServices } from '../host/services';
+import type { InstalledPlugin } from '../host/installed';
+import { localPlugin } from '../host/local';
 
 // The host's own pages and blocks, installed over the same index as every
 // plugin so they pin, fold, drag, complete and link like one. They reach
@@ -37,8 +37,8 @@ export function hostPlugins(services: () => WorkbenchServices): InstalledPlugin[
         commands: [{ name: 'settings', title: 'Open settings', icon: 'Gear' }],
         shortcuts: [{ label: 'Settings', command: 'settings' }],
       }),
-      route: page(() => import('./settings/Settings').then((m) => m.SettingsDocument)),
-      commands: () => import('./settings/commands').then((m) => m.commands),
+      route: page(() => import('../react/pages/settings/Settings').then((m) => m.SettingsDocument)),
+      commands: () => import('../react/pages/settings/commands').then((m) => m.commands),
     }),
     localPlugin({
       config: definePluginManifest({
@@ -50,8 +50,8 @@ export function hostPlugins(services: () => WorkbenchServices): InstalledPlugin[
           { name: 'plugin-docs', title: 'Open the plugin developer documentation', icon: 'Code' },
         ],
       }),
-      route: page(() => import('./docs/Docs').then((m) => m.DocsDocument)),
-      commands: () => import('./docs/commands').then((m) => m.commands),
+      route: page(() => import('../react/pages/docs/Docs').then((m) => m.DocsDocument)),
+      commands: () => import('../react/pages/docs/commands').then((m) => m.commands),
     }),
     localPlugin({
       config: definePluginManifest({
@@ -61,7 +61,7 @@ export function hostPlugins(services: () => WorkbenchServices): InstalledPlugin[
         icon: 'Lightning',
       }),
       pane: block(
-        () => import('./shortcuts/Shortcuts').then((m) => m.ShortcutsNavigator),
+        () => import('../react/pages/shortcuts/Shortcuts').then((m) => m.ShortcutsNavigator),
         'content',
       ),
     }),
@@ -76,7 +76,9 @@ export function hostPlugins(services: () => WorkbenchServices): InstalledPlugin[
         icon: 'LinkSimple',
         color: 'blue',
       }),
-      pane: block(() => import('./related/RelatedNavigator').then((m) => m.RelatedNavigator)),
+      pane: block(() =>
+        import('../react/pages/related/RelatedNavigator').then((m) => m.RelatedNavigator),
+      ),
     }),
     localPlugin({
       // A page, not a block: the launcher is reached like any other page
@@ -100,8 +102,8 @@ export function hostPlugins(services: () => WorkbenchServices): InstalledPlugin[
         ],
         shortcuts: [{ label: 'Browse', command: 'browse' }],
       }),
-      route: page(() => import('./home/Home').then((m) => m.HomeDocument)),
-      commands: () => import('./home/commands').then((m) => m.commands),
+      route: page(() => import('../react/pages/home/Home').then((m) => m.HomeDocument)),
+      commands: () => import('../react/pages/home/commands').then((m) => m.commands),
     }),
   ];
 }

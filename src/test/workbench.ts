@@ -2,9 +2,10 @@ import { waitFor } from '@testing-library/react';
 import { localPlugins } from '../plugins/local';
 import type { PanelId } from '../workbench/core';
 import { panelDomId } from '../workbench/react/domIds';
-import { createWorkbench, noPersistence } from '../workbench/host';
-import type { CreateWorkbenchOptions } from '../workbench/host/createWorkbench';
-import type { WorkbenchServices } from '../workbench/react';
+import { noPersistence } from '../workbench/host';
+import { createWorkbench } from '../workbench/compose';
+import type { CreateWorkbenchOptions } from '../workbench/compose/createWorkbench';
+import type { WorkbenchServices } from '../workbench/host';
 import { DEFAULT_ASSISTANT, DEFAULT_INTENT, DEFAULT_PINNED } from '../workbenchDefaults';
 
 // Router context for tests: the bundled plugins, no persistence, and the

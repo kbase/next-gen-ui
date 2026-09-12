@@ -1,15 +1,16 @@
 import type { ReactNode } from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Background, CartItem, PanelHandle, TermsQuery } from '../../../plugins/sdk';
-import { HostContext, PanelContext, definePluginManifest } from '../../../plugins/sdk';
-import { makeRoute } from '../../core';
-import { ServicesContext } from '../../react/context';
-import { useAmbientQueries } from '../../react/useAmbientQueries';
-import { createWorkbench, pluginHostFor } from '../createWorkbench';
-import { noPersistence } from '../persistence';
-import { localPlugin } from '../local';
-import { BUDGET_MS, SETTLE_MS } from '../query/runner';
+import type { Background, CartItem, PanelHandle, TermsQuery } from '../../../../plugins/sdk';
+import { HostContext, PanelContext, definePluginManifest } from '../../../../plugins/sdk';
+import { makeRoute } from '../../../core';
+import { ServicesContext } from '../../context';
+import { useAmbientQueries } from '../../useAmbientQueries';
+import { createWorkbench } from '../../../compose/createWorkbench';
+import { pluginHostFor } from '../../../host/pluginHost';
+import { noPersistence } from '../../../host/persistence';
+import { localPlugin } from '../../../host/local';
+import { BUDGET_MS, SETTLE_MS } from '../../../host/query/runner';
 import { RelatedNavigator } from './RelatedNavigator';
 
 // What the pane says before it has answers: nothing has been asked, a section

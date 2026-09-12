@@ -1,8 +1,9 @@
 import { useRef, useSyncExternalStore } from 'react';
-import type { ReactElement, RefObject } from 'react';
-// Chrome glyphs come straight from Phosphor, never from the host's icon
-// table — the table is the plugins' namespace (host/icons.ts).
+import type { ReactElement, ReactNode, RefObject } from 'react';
+// Chrome glyphs come straight from Phosphor, never from the plugins' icon
+// table — the table is the plugins' namespace (react/icons.ts).
 import { CaretDown, DotsThree, PushPin, X } from '@phosphor-icons/react';
+import type { IconProps } from '@phosphor-icons/react';
 import { Popover as BasePopover } from '@base-ui/react/popover';
 import {
   Button,
@@ -18,11 +19,22 @@ import type { Panel, PluginId } from '../core';
 import { makePane, sidebarPanels } from '../core';
 import type { PluginInfo } from '../host/installed';
 import { useDispatch, useLayout, useRun, useServices, useTitle } from './context';
+import { PluginMark } from './PluginMark';
 import { panelDomId } from './domIds';
 import { usePanelSlot } from './panelSlots';
 import { SplitView } from './SplitView';
 import { useDragPanel, useDragging, useDropTarget } from './useDnd';
 import styles from './Workbench.module.css';
+
+// A plugin's glyph from its index entry. The pin is for a panel whose plugin
+// is not installed: there is no entry, so there is no name to resolve.
+function Mark({ info, ...props }: { info: PluginInfo | undefined } & Omit<IconProps, 'ref'>) {
+  return info ? (
+    <PluginMark icon={info.icon} color={info.color} {...props} />
+  ) : (
+    <PushPin {...props} />
+  );
+}
 
 // The sidebar: the pinned plugins' navigators stacked as blocks, each
 // carrying its own icon in its header. Collapsed, the same list becomes an
@@ -80,7 +92,6 @@ export function Sidebar() {
         {sidebar.pinned.map((plugin) => {
           const info = infoOf(plugin);
           const label = info?.title ?? plugin;
-          const Icon = info?.icon ?? PushPin;
           return (
             <PanePopout
               key={plugin}
@@ -92,7 +103,7 @@ export function Sidebar() {
                 <Toolbar.Button
                   render={
                     <NavIcon aria-label={label}>
-                      <Icon size={18} aria-hidden="true" />
+                      <Mark info={info} size={18} aria-hidden="true" />
                     </NavIcon>
                   }
                 />
@@ -115,7 +126,7 @@ export function Sidebar() {
           panel={makePane(previewing)}
           label={infoOf(previewing)?.title ?? previewing}
           name={`${infoOf(previewing)?.title ?? previewing} preview`}
-          icon={infoOf(previewing)?.icon ?? PushPin}
+          icon={<Mark info={infoOf(previewing)} size={14} />}
           anchor={moreAnchorRef}
           open
           onPin={() => {
@@ -194,7 +205,6 @@ function Block({ panel, info }: { panel: Panel; info: PluginInfo | undefined }) 
   const run = useRun();
   const { source } = useServices();
   const title = useTitle(panel);
-  const Icon = info?.icon ?? PushPin;
   const folded = layout.sidebar.folded.includes(panel.id);
   const collapsed = layout.sidebar.collapsed;
   // Collapsed, the blocks are cropped away and the pane is drawn in the
@@ -256,7 +266,7 @@ function Block({ panel, info }: { panel: Panel; info: PluginInfo | undefined }) 
                 right. The icon repeats the rail's glyph, tying the block
                 to its icon-column entry. */}
             <span className={styles.blockIcon} aria-hidden="true">
-              <Icon size={14} />
+              <Mark info={info} size={14} />
             </span>
             <span className={styles.blockLabel}>{info?.title ?? title}</span>
             <CaretDown size={12} className={styles.blockChevron} aria-hidden="true" />
@@ -328,8 +338,7 @@ export function MoreMenu({
               More
               <span className={styles.moreIcons} aria-hidden="true">
                 {plugins.slice(0, 5).map((p) => {
-                  const Icon = p.icon;
-                  return <Icon key={p.id} size={14} />;
+                  return <Mark key={p.id} info={p} size={14} />;
                 })}
                 {plugins.length > 5 && <span>+{plugins.length - 5}</span>}
               </span>
@@ -348,10 +357,9 @@ export function MoreMenu({
       />
       <Menu.Popup>
         {plugins.map((p) => {
-          const Icon = p.icon;
           return (
             <Menu.Item key={p.id} onClick={() => onPreview(p.id)}>
-              <Icon size={14} aria-hidden="true" />
+              <Mark info={p} size={14} aria-hidden="true" />
               {p.title}
             </Menu.Item>
           );
@@ -379,7 +387,6 @@ function PreviewBlock({
   const { source } = useServices();
   const panel = makePane(plugin);
   const title = info?.title ?? plugin;
-  const Icon = info?.icon ?? PushPin;
   const { dragRef, dragHandlers, isDragging } = useDragPanel({
     panel: panel.id,
     kind: 'pane',
@@ -402,7 +409,7 @@ function PreviewBlock({
             stay clickable beside it. */}
         <span className={styles.previewGrip} ref={dragRef} {...dragHandlers}>
           <span className={styles.blockIcon} aria-hidden="true">
-            <Icon size={14} />
+            <Mark info={info} size={14} />
           </span>
           <span className={styles.previewTitle}>{title}</span>
         </span>
@@ -440,7 +447,7 @@ function PanePopout({
   panel,
   label,
   name = label,
-  icon: Icon,
+  icon,
   trigger,
   anchor,
   open,
@@ -451,7 +458,7 @@ function PanePopout({
   label: string;
   // The flyout's accessible name, when it differs from the header's words.
   name?: string;
-  icon?: PluginInfo['icon'];
+  icon?: ReactNode;
   trigger?: ReactElement;
   anchor?: RefObject<HTMLElement | null>;
   open?: boolean;
@@ -501,9 +508,9 @@ function PanePopout({
           >
             <Frame padding={0} className={styles.popoutBody}>
               <div className={styles.popoutHeader}>
-                {Icon && (
+                {icon && (
                   <span className={styles.blockIcon} aria-hidden="true">
-                    <Icon size={14} />
+                    {icon}
                   </span>
                 )}
                 <span className={styles.popoutTitle}>{label}</span>

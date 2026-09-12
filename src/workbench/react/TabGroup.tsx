@@ -3,6 +3,7 @@ import { House, X } from '@phosphor-icons/react';
 import { Button, ContextMenu, EmptyState, Tabs } from '@kbase/design-system';
 import type { Group, Panel, PanelId } from '../core';
 import { openRoute } from '../host/open';
+import { PluginMark } from './PluginMark';
 import { useDispatch, useLayout, useRun, useServices, useTitle } from './context';
 import { Breadcrumbs } from './Breadcrumbs';
 import { useGroupLabels } from './useGroupLabels';
@@ -168,7 +169,7 @@ function Tab({
   // it everywhere one tab is described on its own.
   const own = useTitle(panel, id);
   const title = label ?? own;
-  const Icon = panel ? source.plugins().find((p) => p.id === panel.plugin)?.icon : undefined;
+  const info = panel ? source.plugins().find((p) => p.id === panel.plugin) : undefined;
   const { dragRef, dragHandlers, isDragging } = useDragPanel({
     panel: id,
     kind: panel?.kind ?? 'route',
@@ -209,9 +210,9 @@ function Tab({
           />
         }
       >
-        {Icon && (
+        {info && (
           <span className={styles.tabIcon} aria-hidden="true">
-            <Icon size={13} />
+            <PluginMark icon={info.icon} color={info.color} size={13} />
           </span>
         )}
         <span>{title}</span>

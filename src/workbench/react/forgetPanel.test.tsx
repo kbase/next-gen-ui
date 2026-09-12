@@ -2,9 +2,10 @@ import { act, configure, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it } from 'vitest';
 import { defineRoute } from '../../plugins/sdk';
 import { makeRoute } from '../core';
-import { createWorkbench, noPersistence } from '../host';
+import { noPersistence } from '../host';
+import { createWorkbench } from '../compose';
 import { localPlugin } from '../host/local';
-import type { WorkbenchServices } from './services';
+import type { WorkbenchServices } from '../host/services';
 import { WorkbenchProvider } from './WorkbenchProvider';
 import { Workbench } from './Workbench';
 

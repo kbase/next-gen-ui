@@ -10,7 +10,7 @@ import { ShoppingCartSimple, X } from '@phosphor-icons/react';
 import { AlertDialog, Button, CodeBlock, Dialog, Tooltip } from '@kbase/design-system';
 import { qualifyCommand } from '../../plugins/sdk';
 import type { StoredCartItem } from '../core';
-import { iconFor } from '../host/icons';
+import { iconFor } from './icons';
 import { useRun, useServices } from './context';
 import styles from './Workbench.module.css';
 

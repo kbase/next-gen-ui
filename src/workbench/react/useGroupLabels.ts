@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import type { PanelId } from '../core';
-import { fallbackTitle, useLayout, useServices } from './context';
+import { fallbackTitle } from '../host/services';
+import { useLayout, useServices } from './context';
 import { negotiateLabels } from './labels';
 
 // What every tab in one group is called, settled together: a label depends

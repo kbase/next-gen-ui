@@ -18,7 +18,8 @@ import {
   installCrossTabAuthSync,
 } from './api/auth';
 import { localPlugins } from './plugins/local';
-import { createWorkbench, loadInstalled, loadWorkbench } from './workbench/host';
+import { loadInstalled, loadWorkbench } from './workbench/host';
+import { createWorkbench } from './workbench/compose';
 import { DEFAULT_ASSISTANT, DEFAULT_INTENT, DEFAULT_PINNED } from './workbenchDefaults';
 import './styles.css';
 

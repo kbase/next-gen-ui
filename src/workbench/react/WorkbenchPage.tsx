@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { WorkbenchServices } from './services';
+import type { WorkbenchServices } from '../host/services';
 import { useUrlSync } from './useUrlSync';
 import { Workbench } from './Workbench';
 import { WorkbenchProvider } from './WorkbenchProvider';

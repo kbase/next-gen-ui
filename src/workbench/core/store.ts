@@ -15,8 +15,6 @@ export interface WorkbenchStore {
   get(): Layout;
   subscribe(listener: () => void): () => void;
   dispatch(op: Operation): DispatchResult;
-  // Restore from storage or a deep link; not undoable.
-  replace(layout: Layout): void;
   undo(): boolean;
   redo(): boolean;
   canUndo(): boolean;
@@ -69,9 +67,6 @@ export function createWorkbenchStore({
       const announcement = describe(op, before, after, title);
       set(after);
       return { changed: true, announcement };
-    },
-    replace(next) {
-      set(next);
     },
     undo() {
       const previous = past.pop();

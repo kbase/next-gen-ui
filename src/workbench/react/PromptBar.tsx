@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import type { ComponentType, KeyboardEvent } from 'react';
 import { ArrowUpRight, CaretRight, CaretUpDown, Check } from '@phosphor-icons/react';
 import type { IconProps } from '@phosphor-icons/react';
@@ -538,17 +538,25 @@ function AssistantContext({ assistant, prompt }: { assistant: string; prompt: Pr
 }
 
 // The plugin pushes: `destination(set)` hands over where the next message
-// goes before it returns and hands over a new one whenever it moves, so
-// what the bar shows is the last value handed over. A plugin with no
-// destination module, or one that pushes nothing, leaves it null.
+// goes before it returns and hands over a new one whenever it moves. The
+// box holds the last value handed over and the store hook reads it there,
+// so the first push — which the contract makes mandatory — is a changed
+// snapshot, repaired on the sync lane before the work loop yields. Kept in
+// state instead, that push is a setState from the subscribing effect: the
+// same second render, on the default lane the browser may paint before.
+// A plugin with no destination module, or one that pushes nothing, leaves
+// it null.
 function useDestination(destination: Prompt['destination']): Destination | null {
-  const [value, setValue] = useState<Destination | null>(null);
-  useEffect(() => {
-    if (!destination) {
-      setValue(null);
-      return;
-    }
-    return destination(setValue);
+  const box = useMemo(() => {
+    let value: Destination | null = null;
+    return {
+      subscribe: (onChange: () => void) =>
+        destination?.((pushed) => {
+          value = pushed;
+          onChange();
+        }) ?? (() => {}),
+      snapshot: () => value,
+    };
   }, [destination]);
-  return value;
+  return useSyncExternalStore(box.subscribe, box.snapshot, box.snapshot);
 }

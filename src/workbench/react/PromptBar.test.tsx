@@ -28,7 +28,7 @@ describe('sending a prompt', () => {
   it('empties the box and the cart once the assistant has the message', async () => {
     const user = userEvent.setup();
     const services = mount();
-    act(() => services.cart.add({ id: 'a', plugin: 'data', name: 'one', addedAt: 1 }));
+    act(() => services.cart.add({ id: 'a', plugin: 'data', name: 'one' }));
 
     await user.type(field(), 'hello{Enter}');
 
@@ -39,7 +39,7 @@ describe('sending a prompt', () => {
   it('keeps the message and its attachments when the assistant module fails to load', async () => {
     const user = userEvent.setup();
     const services = mount();
-    act(() => services.cart.add({ id: 'a', plugin: 'data', name: 'one', addedAt: 1 }));
+    act(() => services.cart.add({ id: 'a', plugin: 'data', name: 'one' }));
     services.source.module = vi.fn().mockRejectedValue(new Error('offline'));
 
     await user.type(field(), 'hello{Enter}');
@@ -52,7 +52,7 @@ describe('sending a prompt', () => {
   it('keeps the message and its attachments when the assistant rejects the message', async () => {
     const user = userEvent.setup();
     const services = mount();
-    act(() => services.cart.add({ id: 'a', plugin: 'data', name: 'one', addedAt: 1 }));
+    act(() => services.cart.add({ id: 'a', plugin: 'data', name: 'one' }));
     services.source.module = vi.fn().mockResolvedValue({
       handle: vi.fn().mockRejectedValue(new Error('the assistant choked')),
       newConversation: vi.fn(),

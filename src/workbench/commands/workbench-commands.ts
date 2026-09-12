@@ -328,7 +328,9 @@ export function workbenchCommands({
         {
           name: 'plugin',
           required: true,
-          complete: (p) => plugins().filter((id) => id.startsWith(p)),
+          // A block draws a pane, so a plugin without one can only ever be
+          // pinned to a ghost. Settings' own toggle is gated the same way.
+          complete: (p) => panes().filter((id) => id.startsWith(p)),
         },
         {
           name: 'index',
@@ -338,6 +340,10 @@ export function workbenchCommands({
       run: ({ plugin, index }) => {
         if (!plugins().includes(String(plugin))) {
           announce(`No plugin named ${String(plugin)}`);
+          return;
+        }
+        if (!panes().includes(String(plugin))) {
+          announce(`${String(plugin)} has no pane`);
           return;
         }
         let at: number | undefined;

@@ -125,8 +125,17 @@ describe('workbench commands', () => {
     await registry.run('pin', { plugin: 'nope' });
     expect(store.get().sidebar.pinned).toEqual(['koros']);
     expect(announced.at(-1)).toBe('No plugin named nope');
+    await registry.run('pin', { plugin: 'data' });
+    expect(store.get().sidebar.pinned).toEqual(['koros', 'data']);
+  });
+
+  // A block draws a pane, so pinning a plugin without one could only ever
+  // produce the ghost that says so.
+  it('pin refuses a plugin that has no pane', async () => {
+    const { store, registry, announced } = setup();
     await registry.run('pin', { plugin: 'jobs' });
-    expect(store.get().sidebar.pinned).toEqual(['koros', 'jobs']);
+    expect(store.get().sidebar.pinned).toEqual(['koros']);
+    expect(announced.at(-1)).toBe('jobs has no pane');
   });
 
   it('toggle-bar hides and shows the named bar', async () => {
@@ -204,19 +213,19 @@ describe('workbench commands', () => {
 
   it('pin puts a plugin at the position it is given', async () => {
     const { store, registry } = setup();
-    await registry.run('pin', { plugin: 'jobs', index: '0' });
-    expect(store.get().sidebar.pinned).toEqual(['jobs', 'koros']);
-    await registry.run('pin', { plugin: 'jobs', index: '1' });
-    expect(store.get().sidebar.pinned).toEqual(['koros', 'jobs']);
+    await registry.run('pin', { plugin: 'data', index: '0' });
+    expect(store.get().sidebar.pinned).toEqual(['data', 'koros']);
+    await registry.run('pin', { plugin: 'data', index: '1' });
+    expect(store.get().sidebar.pinned).toEqual(['koros', 'data']);
   });
 
   it('pin refuses a position past the last pin, and one that is not a number', async () => {
     const { store, registry, announced } = setup();
     // One plugin is pinned, so 0 and 1 are the positions; 2 is past the end.
-    await registry.run('pin', { plugin: 'jobs', index: '2' });
+    await registry.run('pin', { plugin: 'data', index: '2' });
     expect(store.get().sidebar.pinned).toEqual(['koros']);
     expect(announced.at(-1)).toBe('No pin position 2');
-    await registry.run('pin', { plugin: 'jobs', index: 'last' });
+    await registry.run('pin', { plugin: 'data', index: 'last' });
     expect(store.get().sidebar.pinned).toEqual(['koros']);
     expect(announced.at(-1)).toBe('No pin position last');
   });
@@ -239,6 +248,8 @@ describe('workbench commands', () => {
     expect(await argOf('move-to-sidebar', 'panel')?.complete?.('')).toEqual([pane]);
     expect(await argOf('fold', 'panel')?.complete?.('')).toEqual([]);
     expect(await argOf('pin', 'index')?.complete?.('')).toEqual(['0', '1']);
+    // A block draws a pane, so pinning offers only the plugins that have one.
+    expect(await argOf('pin', 'plugin')?.complete?.('')).toEqual(['koros', 'data']);
 
     // `show` acts on plugins rather than panels, and only on the ones that
     // have a pane for it to show.

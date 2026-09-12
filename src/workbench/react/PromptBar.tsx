@@ -1,9 +1,9 @@
-import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useId, useRef, useState, useSyncExternalStore } from 'react';
 import type { ComponentType, KeyboardEvent } from 'react';
 import { ArrowUpRight, CaretRight, CaretUpDown, Check } from '@phosphor-icons/react';
 import type { IconProps } from '@phosphor-icons/react';
 import { Menu, PromptInput, cx } from '@kbase/design-system';
-import type { Destination, Manifest, Prompt } from '../../plugins/sdk';
+import type { Manifest, Prompt } from '../../plugins/sdk';
 import { qualifyCommand } from '../../plugins/sdk';
 import type { Suggestion } from '../commands';
 import { complete, parse, qualifiedName, resolve, usage } from '../commands';
@@ -60,13 +60,6 @@ export function PromptBar() {
     queryRunner.typed(parse(value).kind === 'prompt' ? value.trim() : '');
   }, [queryRunner, value]);
 
-  // Fetched when Settings names the plugin, so the destination row can be
-  // drawn before the first message is sent.
-  useEffect(() => {
-    if (assistant && source.has(assistant, 'prompt')) {
-      source.module(assistant, 'prompt').catch(() => undefined);
-    }
-  }, [assistant, source]);
   const assistantTitle = assistant ? source.manifest(assistant)?.title : undefined;
 
   useEffect(
@@ -479,11 +472,12 @@ const NewIcon = iconFor('ChatCirclePlus');
 
 // The destination control: a menu with New, which every assistant has,
 // then the targets the plugin offers; and a jump to the destination's page.
-// Read from the prompt module's own store; it re-reads each time the plugin
-// says it changed.
+// What it shows is whatever the host last took from the plugin's push.
 function AssistantContext({ assistant, prompt }: { assistant: string; prompt: Prompt }) {
-  const context = useDestination(prompt.destination);
   const services = useServices();
+  const { destination } = services;
+  useSyncExternalStore(destination.subscribe, destination.version, destination.version);
+  const context = destination.get();
   const label = context?.label ?? 'New conversation';
   const path = context?.path;
   const options = context?.options ?? [];
@@ -535,28 +529,4 @@ function AssistantContext({ assistant, prompt }: { assistant: string; prompt: Pr
       )}
     </>
   );
-}
-
-// The plugin pushes: `destination(set)` hands over where the next message
-// goes before it returns and hands over a new one whenever it moves. The
-// box holds the last value handed over and the store hook reads it there,
-// so the first push — which the contract makes mandatory — is a changed
-// snapshot, repaired on the sync lane before the work loop yields. Kept in
-// state instead, that push is a setState from the subscribing effect: the
-// same second render, on the default lane the browser may paint before.
-// A plugin with no destination module, or one that pushes nothing, leaves
-// it null.
-function useDestination(destination: Prompt['destination']): Destination | null {
-  const box = useMemo(() => {
-    let value: Destination | null = null;
-    return {
-      subscribe: (onChange: () => void) =>
-        destination?.((pushed) => {
-          value = pushed;
-          onChange();
-        }) ?? (() => {}),
-      snapshot: () => value,
-    };
-  }, [destination]);
-  return useSyncExternalStore(box.subscribe, box.snapshot, box.snapshot);
 }

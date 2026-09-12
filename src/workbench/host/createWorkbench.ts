@@ -15,6 +15,7 @@ import { createAnnouncer, createCrumbStore, createTitleStore } from '../react';
 import type { WorkbenchServices } from '../react';
 import { fallbackTitle } from '../react/context';
 import { createPreviewHandle, createPromptHandle } from '../react/services';
+import { createDestinationStore } from './destination';
 import type { InstalledPlugin } from './installed';
 import { createHostIndex } from './installed';
 import { openPane, openRoute } from './open';
@@ -80,6 +81,7 @@ export function createWorkbench({
   const query = createQueryStore();
   const terms = createTermStore();
   const status = createStatusStore(source);
+  const destination = createDestinationStore(source, settings);
   const services: WorkbenchServices = {
     store,
     cart,
@@ -93,6 +95,7 @@ export function createWorkbench({
     }),
     terms,
     status,
+    destination,
     registry,
     runs,
     toasts,

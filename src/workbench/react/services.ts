@@ -8,6 +8,7 @@ import type {
   WorkbenchStore,
 } from '../core';
 import type { CommandRegistry, RunStore } from '../commands';
+import type { DestinationStore } from '../host/destination';
 import type { HostIndex } from '../host/installed';
 import type { QueryRunner } from '../host/query/runner';
 import type { SettingsStore } from '../host/settings';
@@ -76,6 +77,9 @@ export interface WorkbenchServices {
   terms: TermStore;
   // What each plugin last pushed for the status bar.
   status: StatusStore;
+  // What the chosen assistant last pushed as the place the next message
+  // lands, shown above the prompt bar.
+  destination: DestinationStore;
   registry: CommandRegistry;
   // Which commands are in flight, so the control that ran one shows busy.
   runs: RunStore;

@@ -1,24 +1,31 @@
 import { act, render, screen } from '@testing-library/react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { localPlugins } from '../../plugins/local';
 import { koros } from '../../plugins/local/koros/store';
 import { createWorkbench, noPersistence } from '../host';
+import type { WorkbenchServices } from './services';
 import { WorkbenchProvider } from './WorkbenchProvider';
 import { PromptBar } from './PromptBar';
 
-function mount() {
-  const services = createWorkbench({
+const workbench = () =>
+  createWorkbench({
     installed: localPlugins,
     persistence: noPersistence,
     defaultPinned: ['koros', 'data', 'jobs'],
     defaultAssistant: 'koros',
   });
-  render(
-    <WorkbenchProvider services={services}>
-      <PromptBar />
-    </WorkbenchProvider>,
-  );
+
+const bar = (services: WorkbenchServices) => (
+  <WorkbenchProvider services={services}>
+    <PromptBar />
+  </WorkbenchProvider>
+);
+
+function mount() {
+  const services = workbench();
+  render(bar(services));
   return services;
 }
 
@@ -83,5 +90,49 @@ describe('the destination row', () => {
 
     act(() => koros.setCurrent('nitro'));
     expect(shown()).toContain('Nitrogenase in isolate 12');
+  });
+
+  // The point of holding the value in the host: the plugin is subscribed to
+  // when its module arrives, before anything renders, so the row is drawn
+  // from a value the bar already has. A single server pass runs no effects,
+  // so nothing can repair what it produces — the label is in the markup or
+  // the first render did not have it.
+  it('is drawn on the first render, from a value the host already holds', async () => {
+    const services = workbench();
+    // Control: the same render, before the plugin's module has arrived, has
+    // no row to draw — so what the second pass shows came from the store.
+    expect(renderToStaticMarkup(bar(services))).not.toContain('Prompt destination:');
+
+    await vi.waitFor(() =>
+      expect(services.destination.get()?.label).toBe('Nitrogenase in isolate 12'),
+    );
+
+    expect(renderToStaticMarkup(bar(services))).toContain(
+      'aria-label="Prompt destination: Nitrogenase in isolate 12. Change destination"',
+    );
+  });
+
+  it('drops the destination when the assistant changes', async () => {
+    const services = workbench();
+    await vi.waitFor(() => expect(services.destination.get()).not.toBeNull());
+
+    // Jobs has no prompt module, so nothing replaces what KOROS pushed —
+    // and what KOROS pushed is not shown under another assistant's name.
+    services.settings.set({ assistant: 'jobs' });
+
+    expect(services.destination.get()).toBeNull();
+  });
+
+  it('stops the plugin and drops the value when the store stops', async () => {
+    const services = workbench();
+    await vi.waitFor(() => expect(services.destination.get()).not.toBeNull());
+
+    services.destination.stop();
+
+    expect(services.destination.get()).toBeNull();
+    // The plugin's push no longer reaches the store.
+    koros.setCurrent('methanol-dh');
+    expect(services.destination.get()).toBeNull();
+    koros.setCurrent('nitro');
   });
 });

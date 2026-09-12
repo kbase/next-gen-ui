@@ -119,6 +119,10 @@ export function Sidebar() {
                   sidebar.folded.includes(b.id) ||
                   source.loaded(b.plugin, 'pane')?.fit === 'content',
               )}
+              // Slot identity travels with the block, not its position, so
+              // a reorder keeps each Block's (and its plugin's) mounted
+              // state instead of remounting everything after the move.
+              ids={blocks.map((b) => b.id)}
               onSizes={(sizes) =>
                 dispatch({
                   type: 'sidebar',

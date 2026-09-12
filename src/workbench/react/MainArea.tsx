@@ -21,6 +21,7 @@ function NodeView({ node }: { node: Node }) {
       dir={node.dir}
       sizes={node.sizes}
       onSizes={(sizes) => dispatch({ type: 'resize', split: node.id, sizes })}
+      ids={node.children.map((c) => c.id)}
       label="panels"
     >
       {node.children.map((child) => (

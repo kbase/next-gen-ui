@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import type { KeyboardEvent, PointerEvent, ReactNode } from 'react';
+import type { Key, KeyboardEvent, PointerEvent, ReactNode } from 'react';
 import type { SplitDir } from '../core';
 import { normalizeSizes } from '../core';
 import styles from './Workbench.module.css';
@@ -11,6 +11,13 @@ export interface SplitViewProps {
   children: ReactNode[];
   // Children that keep their natural size and take no share (folded blocks).
   fixed?: boolean[];
+  // Stable identity per slot, parallel to `children`. A reorder (move
+  // up/down, pin by drop, unpin from the middle) swaps entries in `children`
+  // and `ids` together, so the same id still labels the same subtree and
+  // React keeps its mounted state instead of remounting everything after the
+  // change point. Required, not optional: an index fallback would leave the
+  // remount-on-reorder defect in place, silently, wherever a caller forgot it.
+  ids: Key[];
   label?: string;
   className?: string;
 }
@@ -27,6 +34,7 @@ export function SplitView({
   onSizes,
   children,
   fixed = [],
+  ids,
   label,
   className,
 }: SplitViewProps) {
@@ -84,7 +92,7 @@ export function SplitView({
     >
       {children.map((child, i) => (
         <div
-          key={i}
+          key={ids[i]}
           className={styles.splitChild}
           style={fixed[i] ? { flex: '0 0 auto' } : { flex: `${shares[i]} 1 0px` }}
         >

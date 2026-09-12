@@ -5,8 +5,9 @@ import { tagText } from './tag';
 
 // The bundled intent: every declared command ranked against the text by
 // character n-grams over its declaration, arguments filled from the
-// identifiers the text carries. The catalog is indexed once; a keystroke
-// costs one short vector and a dot product per command.
+// identifiers the text carries and from the ones the open page and the cart
+// carry. The catalog is indexed once; a keystroke costs one short vector and
+// a dot product per command.
 let index: CommandIndex | null = null;
 
 export default defineIntent({
@@ -19,7 +20,7 @@ export default defineIntent({
     // leads with what it acts on and says what it does in the caption: the
     // identifier is what the reader is looking for, and a title written for
     // the command list is long.
-    return rankCommands(index, text, tagText(text), terms ?? [], offers ?? []).map((r) => {
+    return rankCommands(index, text, tagText(text), terms, offers).map((r) => {
       const filled = Object.values(r.args).map(String);
       if (r.label !== undefined) {
         return { call: { label: r.label, command: r.command, args: r.args }, score: r.score };

@@ -6,6 +6,10 @@ import { useLayout, useServices } from './context';
 // does not type. What is typed is the prompt bar's own question, and asks a
 // different thing of the plugins. Values are compared, not the arrays holding
 // them, so a render that changes nothing asks nothing.
+//
+// These two pools are also the two tiers of context the intent is given while
+// the user types (host/query/runner.ts). No plugin is asked about them on a
+// keystroke; the ranker weighs them, under what was typed.
 export function useAmbientQueries() {
   const { queryRunner, terms: termStore, cart, titles } = useServices();
   const layout = useLayout();
@@ -19,6 +23,8 @@ export function useAmbientQueries() {
   const items = cart.items();
   // Newest first, so the thing just added leads what the cart is asked
   // about; the page's own terms are left out, since the page already asked.
+  // That exclusion also settles which tier a term in both places is weighed
+  // under: the page's, which is the stronger of the two.
   const cartTerms = [...new Set([...items].reverse().flatMap((i) => i.terms ?? []))].filter(
     (t) => !pageTerms.includes(t),
   );

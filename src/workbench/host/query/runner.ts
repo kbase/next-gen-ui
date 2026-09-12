@@ -1,4 +1,11 @@
-import type { CartItem, CommandCall, Intent, Suggestion, TermsQuery } from '../../../plugins/sdk';
+import type {
+  CartItem,
+  Intent,
+  Offer,
+  Suggestion,
+  TermsQuery,
+  TieredTerms,
+} from '../../../plugins/sdk';
 import { qualifyCommand } from '../../../plugins/sdk';
 import type { Answer, PluginOffers, QuerySource, QueryStore } from '../../core';
 import { EMPTY_TYPING } from '../../core';
@@ -16,6 +23,12 @@ import type { HostIndex } from '../installed';
 // slower plugin's offer lands. Nothing here waits: there is no settle and no
 // budget, because there is nothing a reader would wait for. The answers are
 // the prompt bar's offer rows.
+//
+// The intent is also given what the page and the cart are being asked about,
+// under their own tiers, and is asked again when either moves under text
+// already typed. No plugin is asked about those terms on a keystroke: that
+// would put a bigger question to every background on every letter, and the
+// intent ranks the same catalog the plugins declare their commands in.
 //
 // Page and cart: the terms a panel or the cart reports are asked about after
 // a settle, and every `relate` is called with them; a source set again before
@@ -117,11 +130,26 @@ export function createQueryRunner(
     return [...found];
   };
 
+  // The question the intent is being asked, kept so that a page or cart that
+  // moves under typed text is a new question without a keystroke. Cleared
+  // when the text goes.
+  let typing: { text: string; terms: string[]; offers: () => Offer[] } | null = null;
+
+  // The terms in play, under the tier each came from. `page` and `cart` are
+  // the pools those sources are being asked about; the store holds them from
+  // the moment `set` accepts them, so the intent reads the same terms the
+  // Related pane is waiting on rather than the ones it has answers for.
+  const tiers = (typed: string[]): TieredTerms => ({
+    typed,
+    page: store.get('page').pool,
+    cart: store.get('cart').pool,
+  });
+
   // The chosen intent's suggestions for the text, on the keystroke: a sync
-  // answer lands at once, an async one when it arrives unless the text has
+  // answer lands at once, an async one when it arrives unless the question has
   // moved on. Until it lands the previous suggestions stay. A `suggest` that
   // throws or rejects is that plugin's problem.
-  const suggest = (text: string, terms: string[], offers: CommandCall[]) => {
+  const suggest = (text: string, terms: string[], offers: Offer[]) => {
     suggesting?.abort();
     const intent = options.intent?.();
     if (!intent) {
@@ -139,7 +167,12 @@ export function createQueryRunner(
         console.warn('the intent plugin: its suggest() threw; ignoring it', err);
     };
     try {
-      const result = intent.suggest({ text, terms, offers, signal: controller.signal });
+      const result = intent.suggest({
+        text,
+        terms: tiers(terms),
+        offers,
+        signal: controller.signal,
+      });
       if (result instanceof Promise) result.then(land, fail);
       else land(result);
     } catch (err) {
@@ -173,18 +206,19 @@ export function createQueryRunner(
       });
     };
     // The offers in hand for this text: a stale one is for the last text.
-    const current = (): CommandCall[] =>
+    const current = (): Offer[] =>
       [...offers.values()]
         .filter((o) => !o.stale)
         .flatMap((o) =>
           o.calls.map((c) => ({ ...c, command: qualifyCommand(c.command, o.plugin) })),
         );
-    const land = (plugin: string, calls: CommandCall[]) => {
+    typing = { text, terms, offers: current };
+    const land = (plugin: string, calls: Offer[]) => {
       if (calls.length) offers.set(plugin, { plugin, calls });
       else offers.delete(plugin);
     };
     for (const { plugin, background } of plugins) {
-      let result: CommandCall[] | Promise<CommandCall[]>;
+      let result: Offer[] | Promise<Offer[]>;
       try {
         result = background.offer!(query);
       } catch (err) {
@@ -286,6 +320,13 @@ export function createQueryRunner(
     publish();
   };
 
+  // The intent's question again, for text that is still in the bar: what the
+  // user has in view is part of it, so a tab or a cart that moved changes the
+  // answer. No plugin is asked anything here.
+  const resuggest = () => {
+    if (typing) suggest(typing.text, typing.terms, typing.offers());
+  };
+
   // The heading over the answers already in hand.
   const relabel = (source: QuerySource, label: string) => {
     const state = store.get(source);
@@ -298,6 +339,7 @@ export function createQueryRunner(
       if (!text) {
         offering?.abort();
         suggesting?.abort();
+        typing = null;
         store.setTyping(EMPTY_TYPING);
         return;
       }
@@ -320,6 +362,7 @@ export function createQueryRunner(
         inflight.get(source)?.abort();
         asked.delete(source);
         store.set(source, { label, pool: [], answers: [], pending: [], loading: false });
+        resuggest();
         return;
       }
       // A pool that only grew — a page whose terms arrive as it loads, a cart
@@ -346,6 +389,9 @@ export function createQueryRunner(
         source,
         window.setTimeout(() => void ask(source, input, question, terms, grow), SETTLE_MS),
       );
+      // The intent weighs these terms without waiting for the settle: nobody
+      // is being asked anything, and the rows are for text already typed.
+      resuggest();
     },
     label(source, label) {
       relabel(source, label);
@@ -355,6 +401,7 @@ export function createQueryRunner(
       for (const controller of inflight.values()) controller.abort();
       offering?.abort();
       suggesting?.abort();
+      typing = null;
     },
   };
 }

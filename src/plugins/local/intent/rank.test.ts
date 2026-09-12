@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { DeclaredCommand } from '@kbase/plugin-sdk';
-import { buildCommandIndex, rankCommands } from './rank';
+import type { DeclaredCommand, Offer, TieredTerms } from '@kbase/plugin-sdk';
+import { MATCH_WEIGHT, TIER_WEIGHT, buildCommandIndex, rankCommands } from './rank';
 import { tagText } from './tag';
 
 const fj = { plugin: 'function-junction', pluginTitle: 'Function Junction' };
@@ -50,8 +50,13 @@ const commands: DeclaredCommand[] = [
 ];
 
 const index = buildCommandIndex(commands);
-const rank = (text: string, terms: string[] = []) =>
-  rankCommands(index, text, tagText(text), terms);
+const NOTHING: TieredTerms = { typed: [], page: [], cart: [] };
+// What the backgrounds found in the text, and nothing in view.
+const rank = (text: string, typed: string[] = []) =>
+  rankCommands(index, text, tagText(text), { ...NOTHING, typed });
+// The same text with something on the page or in the cart.
+const inView = (text: string, view: Partial<TieredTerms>) =>
+  rankCommands(index, text, tagText(text), { ...NOTHING, ...view });
 
 describe('ranking commands against typed text', () => {
   it('reads an accession as what it is and fills the argument', () => {
@@ -74,12 +79,13 @@ describe('ranking commands against typed text', () => {
   // A row runs when pressed, so a command with a required argument the text
   // does not fill is not a row.
   it('keeps a plugin offer whose letters say nothing, ranked by the letters', () => {
-    const offer = {
+    const offer: Offer = {
       label: 'Dossier for P0AEX9',
       command: 'function-junction:open',
       args: { q: 'P0AEX9' },
+      match: { term: 'uniprot:P0AEX9', kind: 'identifier' },
     };
-    const rows = rankCommands(index, 'zzzz', tagText('zzzz'), [], [offer]);
+    const rows = rankCommands(index, 'zzzz', tagText('zzzz'), NOTHING, [offer]);
     expect(rows.map((r) => r.command)).toEqual(['function-junction:open']);
   });
 
@@ -123,14 +129,53 @@ describe('ranking commands against typed text', () => {
   });
 });
 
+describe('what the user has in view', () => {
+  // The punchlist case: the accession is in the cart, "dossier" is typed, and
+  // nobody was asked about the cart. The command is reachable only because
+  // the ranker binds the argument from the tier the cart put the term in.
+  it('fills an argument from a cart term the text does not carry', () => {
+    const fjOpen = (rows: ReturnType<typeof rank>) =>
+      rows.find((r) => r.command === 'function-junction:open');
+    // The word reaches the command either way; on its own it opens nothing.
+    expect(fjOpen(rank('dossier'))?.args).toEqual({});
+    const row = fjOpen(inView('dossier', { cart: ['uniprot:P0AEX9'] }));
+    expect(row?.args).toEqual({ q: 'P0AEX9' });
+    expect(row?.evidence).toEqual({ term: 'uniprot:P0AEX9', kind: 'name', tier: 'cart' });
+  });
+
+  // A required argument is the sharpest form of it: the same text answers
+  // nothing on its own and answers a command once the page carries the id.
+  it('reaches a command the text alone cannot fill', () => {
+    expect(rank('cancel this job')).toEqual([]);
+    const [top] = inView('cancel this job', { page: ['job:12'] });
+    expect(top.command).toBe('jobs:cancel');
+    expect(top.args).toEqual({ id: '12' });
+  });
+
+  it('gives the argument to the typed term, not the one in the cart', () => {
+    const [top] = inView('dossier for P0AEX9', { cart: ['uniprot:Q9XYZ1'] });
+    expect(top.args).toEqual({ q: 'P0AEX9' });
+    expect(top.evidence?.tier).toBe('typed');
+  });
+
+  it('weighs a typed term above the same term in the cart', () => {
+    const typed = rank('cancel this job', ['job:12'])[0];
+    const carted = inView('cancel this job', { cart: ['job:12'] })[0];
+    expect(carted.command).toBe(typed.command);
+    expect(carted.args).toEqual(typed.args);
+    expect(typed.score).toBeGreaterThan(carted.score);
+  });
+});
+
 describe('what plugins offered', () => {
-  const offer = {
+  const offer: Offer = {
     label: 'Dossier for P0AEX9',
     command: 'function-junction:open',
     args: { q: 'P0AEX9' },
+    match: { term: 'uniprot:P0AEX9', kind: 'identifier' },
   };
   const withOffers = (text: string, offers = [offer]) =>
-    rankCommands(index, text, tagText(text), [], offers);
+    rankCommands(index, text, tagText(text), NOTHING, offers);
 
   it("is a row in the plugin's own words, lifted for the term it recognised", () => {
     const [top] = withOffers('P0AEX9');
@@ -141,16 +186,48 @@ describe('what plugins offered', () => {
   });
 
   it('is ordered by the sentence, not by being an offer', () => {
-    const taxon = { label: 'Taxon 562', command: 'genknown:open', args: { q: '562' } };
+    const taxon: Offer = {
+      label: 'Taxon 562',
+      command: 'genknown:open',
+      args: { q: '562' },
+      match: { term: 'ncbitaxon:562', kind: 'identifier' },
+    };
     const [top, second] = withOffers('compare taxon:562 with taxon:1423', [taxon]);
     expect(top.command).toBe('genknown:compare');
     expect(second.command).toBe('genknown:open');
     expect(second.label).toBe('Taxon 562');
   });
 
-  // The scorer reads letters, not context: an identifier that happens to
-  // match a shape still lifts its command. Dropping it needs a scorer that
-  // reads the sentence.
+  // What the plugin claims is what separates them: the same command, the
+  // same letters, read out of an inventory rather than off a shape.
+  it('ranks a record above an identifier', () => {
+    const held: Offer = { ...offer, match: { ...offer.match, kind: 'record' } };
+    expect(withOffers('P0AEX9', [held])[0].score).toBeGreaterThan(withOffers('P0AEX9')[0].score);
+  });
+
+  // A claim is checked against the query it answers: the tier comes from
+  // where the workbench put the term, so an offer for a term nothing carried
+  // is a row at the letters it scores and no more.
+  it('weighs nothing for a term the query did not carry', () => {
+    const elsewhere: Offer = { ...offer, match: { term: 'uniprot:Q9XYZ1', kind: 'record' } };
+    const [row] = withOffers('P0AEX9', [elsewhere]);
+    expect(row.evidence).toBeUndefined();
+    expect(row.score).toBeCloseTo(
+      withOffers('P0AEX9')[0].score - MATCH_WEIGHT.identifier * TIER_WEIGHT.typed,
+      10,
+    );
+  });
+
+  // The ranker reaches the same command by reading the argument's
+  // description, which is a weaker thing to know than that the plugin serves
+  // the namespace.
+  it('ranks a plugin offer above the row the ranker would have built itself', () => {
+    expect(withOffers('P0AEX9')[0].score).toBeGreaterThan(rank('P0AEX9')[0].score);
+  });
+
+  // An identifier claim is the plugin saying it recognised a shape, not that
+  // it looked anything up, so the row survives a sentence the accession has
+  // nothing to do with — ranked under anything the plugin holds.
   it('cannot tell a coincidence from a match', () => {
     const rows = withOffers('who is P0AEX9 in the chess database');
     expect(rows.map((r) => r.command)).toContain('function-junction:open');

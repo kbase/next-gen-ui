@@ -1,5 +1,5 @@
 import type { CartItem } from './cart';
-import type { CommandCall, SlashCommand } from './contract';
+import type { CommandCall, Offer, SlashCommand, TieredTerms } from './contract';
 import type { PluginHost } from './host';
 import type { PanelHandle } from './panel';
 
@@ -40,14 +40,12 @@ export interface Pane {
   fit?: 'content';
 }
 
-// What the host asks about: typed text, or a pool of terms from panels and
-// the cart. The signal aborts when the question changes.
+// What the assistant is asked to answer: the message, and the terms the
+// backgrounds found in it. The signal aborts when the user sends another
+// message or presses Stop.
 export interface Query {
   text?: string;
   terms?: string[];
-  // For an intent: what plugins offered for the terms so far, each
-  // `command` qualified. The intent orders these with its own candidates.
-  offers?: CommandCall[];
   signal: AbortSignal;
 }
 
@@ -91,9 +89,10 @@ export interface Background {
   terms?: (q: TypedText) => string[];
   // What this plugin would do with the text, on every keystroke: answer from
   // the terms alone, without I/O. The prompt bar shows these, and the chosen
-  // intent orders them with its own candidates. A lookup belongs in
-  // `relate`.
-  offer?: (q: TypedQuery) => CommandCall[] | Promise<CommandCall[]>;
+  // intent orders them with its own candidates. Each offer names the term it
+  // answers and how it matched it, which is what the intent cannot work out
+  // for itself. A lookup belongs in `relate`.
+  offer?: (q: TypedQuery) => Offer[] | Promise<Offer[]>;
   // What this plugin has about the terms an open page or the cart carries,
   // 250 ms after they change; never for typed text. May fetch. The items are
   // shown in Related, where the user opens one or adds it to the cart.
@@ -156,6 +155,23 @@ export interface Suggestion {
   score: number;
 }
 
+// What an intent is asked on the keystroke. Beside the text it carries
+// everything the workbench has in view, tiered by where it came from: the
+// terms the backgrounds found in the text, the front tab's terms, and the
+// cart's. No plugin is asked about `page` or `cart` on a keystroke — the
+// intent is the one module that sees them while the user types, and it
+// already ranks every command any manifest declares, so it can reach a
+// command for a term the user merely has around without five plugins being
+// asked a bigger question on every keystroke.
+export interface IntentQuery {
+  text: string;
+  terms: TieredTerms;
+  // What the plugins offered for the typed text, each `command` qualified
+  // and each carrying the term it answers.
+  offers: Offer[];
+  signal: AbortSignal;
+}
+
 // What turns typed text into command suggestions. One plugin's intent
 // module is chosen in Settings, the way the assistant is; the workbench
 // itself reads no text.
@@ -163,13 +179,13 @@ export interface Intent {
   // Once when the module arrives, with every installed plugin's commands,
   // so that no keystroke has to see the catalog.
   index: (commands: DeclaredCommand[]) => void;
-  // Every keystroke, with the text, the terms every background found in it,
-  // and the commands plugins offered for those terms. The answer is the
-  // whole list, offers included in whatever order and number the intent
-  // judges; the host shows the offers as they are only when there is no
-  // answer. Sync or async; what arrives is shown, and an answer to text that
-  // has since changed is dropped by the signal.
-  suggest: (q: Query) => Suggestion[] | Promise<Suggestion[]>;
+  // Every keystroke, and again when a slow plugin's offer lands or the page
+  // or cart changes under text already typed. The answer is the whole list,
+  // offers included in whatever order and number the intent judges; the host
+  // shows the offers as they are only when there is no answer. Sync or
+  // async; what arrives is shown, and an answer to a question that has since
+  // changed is dropped by the signal.
+  suggest: (q: IntentQuery) => Suggestion[] | Promise<Suggestion[]>;
 }
 
 export interface Modules {

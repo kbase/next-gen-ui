@@ -22,12 +22,21 @@ export default defineBackground({
       .map((j) => `job:${j.id}`);
   },
   // Status is part of the label because which run you meant is usually
-  // decided by whether it is still going.
+  // decided by whether it is still going. The match is a `record` whenever
+  // there is a row to offer: a term reaches here only for a job the store
+  // holds, and the label reads that job's own name and status.
   offer: ({ terms }) =>
     idsIn(terms).flatMap((id) => {
       const job = jobStore.get(id);
       return job
-        ? [{ label: `${job.name} — ${job.status}`, command: 'open', args: { id: job.id } }]
+        ? [
+            {
+              label: `${job.name} — ${job.status}`,
+              command: 'open',
+              args: { id: job.id },
+              match: { term: `job:${job.id}`, kind: 'record' as const },
+            },
+          ]
         : [];
     }),
   // The store notifies once a second while anything runs, but the line only

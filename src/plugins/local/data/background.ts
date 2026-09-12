@@ -11,7 +11,10 @@ import { dataset, datasets } from './data';
 const UPA = /^\d+\/\d+(?:\/\d+)?$/;
 
 const refsIn = (terms: string[]) =>
-  terms.flatMap((t) => t.match(/^(?:dataset|upa):(.+)$/)?.[1] ?? []);
+  terms.flatMap((term) => {
+    const ref = term.match(/^(?:dataset|upa):(.+)$/)?.[1];
+    return ref ? [{ term, ref }] : [];
+  });
 
 export default defineBackground({
   terms: ({ text }) => {
@@ -31,13 +34,18 @@ export default defineBackground({
       .slice(0, 3)
       .map((d) => `dataset:${d.ref}`);
   },
+  // The two cases claim different things: a dataset in the inventory is a
+  // `record` — it is there, and the label is its own name and type — while a
+  // UPA the fixtures do not hold is an `identifier` in a namespace this
+  // plugin serves, which the bridge may or may not resolve.
   offer: ({ terms }) =>
-    refsIn(terms).map((ref) => {
+    refsIn(terms).map(({ term, ref }) => {
       const known = dataset(ref);
       return {
         label: known ? `${known.name} (${known.type})` : `KBase 1.0 object ${ref}`,
         command: 'open',
         args: { ref },
+        match: { term, kind: known ? ('record' as const) : ('identifier' as const) },
       };
     }),
 });

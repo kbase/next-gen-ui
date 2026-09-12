@@ -2,8 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type {
   Background,
   CartItem,
-  CommandCall,
-  Query,
+  IntentQuery,
+  Offer,
   Suggestion,
   TermsQuery,
   TypedQuery,
@@ -34,6 +34,7 @@ const fj: Background = {
       label: `Dossier for ${id}`,
       command: 'open',
       args: { q: id },
+      match: { term: `uniprot:${id}`, kind: 'identifier' as const },
     })),
   relate: async ({ terms }) =>
     accessions(terms).map((id) => ({
@@ -75,8 +76,8 @@ describe('the typing loop', () => {
   // Typed text waits for nothing: each keystroke asks, and the signal drops
   // an answer for text that has moved on.
   it('asks on every keystroke and drops an answer for older text', async () => {
-    let release: ((c: CommandCall[]) => void) | undefined;
-    const offer = vi.fn<(q: TypedQuery) => Promise<CommandCall[]>>(
+    let release: ((c: Offer[]) => void) | undefined;
+    const offer = vi.fn<(q: TypedQuery) => Promise<Offer[]>>(
       () => new Promise((resolve) => (release = resolve)),
     );
     const store = createQueryStore();
@@ -85,10 +86,11 @@ describe('the typing loop', () => {
     const first = release!;
     runner.typed('ab');
     expect(offer).toHaveBeenCalledTimes(2);
-    first([{ label: 'for a', command: 'x' }]);
+    const match = { term: 'a:1', kind: 'identifier' as const };
+    first([{ label: 'for a', command: 'x', match }]);
     await vi.advanceTimersByTimeAsync(0);
     expect(store.typing().offers).toEqual([]);
-    release!([{ label: 'for ab', command: 'x' }]);
+    release!([{ label: 'for ab', command: 'x', match }]);
     await vi.advanceTimersByTimeAsync(0);
     expect(store.typing().offers[0].calls[0].label).toBe('for ab');
   });
@@ -97,12 +99,18 @@ describe('the typing loop', () => {
     let release: (() => void) | undefined;
     let calls = 0;
     const p: Background = {
-      offer: ({ text }) =>
-        new Promise<CommandCall[]>((resolve) => {
+      offer: ({ text }) => {
+        const call = {
+          label: `for ${text}`,
+          command: 'x',
+          match: { term: 'a:1', kind: 'name' as const },
+        };
+        return new Promise<Offer[]>((resolve) => {
           calls += 1;
-          if (calls === 1) resolve([{ label: `for ${text}`, command: 'x' }]);
-          else release = () => resolve([{ label: `for ${text}`, command: 'x' }]);
-        }),
+          if (calls === 1) resolve([call]);
+          else release = () => resolve([call]);
+        });
+      },
     };
     const store = createQueryStore();
     const runner = createQueryRunner(index({ p }), store);
@@ -124,8 +132,9 @@ describe('the typing loop', () => {
     let release: (() => void) | undefined;
     const slow: Background = {
       offer: () =>
-        new Promise<CommandCall[]>((resolve) => {
-          release = () => resolve([{ label: 'late', command: 'x' }]);
+        new Promise<Offer[]>((resolve) => {
+          release = () =>
+            resolve([{ label: 'late', command: 'x', match: { term: 'a:1', kind: 'name' } }]);
         }),
     };
     const store = createQueryStore();
@@ -185,7 +194,7 @@ describe('the page and cart loop', () => {
   // thing that exists. Whatever a plugin would do with typed text is not
   // asked for here, because nothing shows it.
   it("never asks a plugin what it would do with a page's or the cart's terms", async () => {
-    const offer = vi.fn<(q: TypedQuery) => CommandCall[]>(() => []);
+    const offer = vi.fn<(q: TypedQuery) => Offer[]>(() => []);
     const store = createQueryStore();
     const runner = createQueryRunner(index({ p: { offer, relate: () => [] } }), store);
     runner.set('page', { terms: ['uniprot:P0AEX9'] });
@@ -408,7 +417,11 @@ describe('the chosen intent', () => {
     runner.typed('cancel job 12');
     expect(intent.suggest).toHaveBeenCalledTimes(1);
     expect(intent.suggest).toHaveBeenCalledWith(
-      expect.objectContaining({ text: 'cancel job 12', terms: [], offers: [] }),
+      expect.objectContaining({
+        text: 'cancel job 12',
+        terms: { typed: [], page: [], cart: [] },
+        offers: [],
+      }),
     );
     expect(store.typing().suggestions.map((s) => s.call.label)).toEqual(['Cancel a job: 12']);
   });
@@ -453,17 +466,30 @@ describe('the chosen intent', () => {
     let release: (() => void) | undefined;
     const slow: Background = {
       offer: () =>
-        new Promise<CommandCall[]>((resolve) => {
-          release = () => resolve([{ label: 'late', command: 'x', args: { q: 'P0AEX9' } }]);
+        new Promise<Offer[]>((resolve) => {
+          release = () =>
+            resolve([
+              {
+                label: 'late',
+                command: 'x',
+                args: { q: 'P0AEX9' },
+                match: { term: 'uniprot:P0AEX9', kind: 'identifier' },
+              },
+            ]);
         }),
     };
     const store = createQueryStore();
-    const intent = { index: vi.fn(), suggest: vi.fn<(q: Query) => Suggestion[]>(() => []) };
+    const intent = { index: vi.fn(), suggest: vi.fn<(q: IntentQuery) => Suggestion[]>(() => []) };
     const runner = createQueryRunner(index({ fj, slow }), store, { intent: () => intent });
     runner.typed('P0AEX9');
     expect(intent.suggest).toHaveBeenCalledTimes(1);
     expect(intent.suggest.mock.calls[0][0].offers).toEqual([
-      { label: 'Dossier for P0AEX9', command: 'fj:open', args: { q: 'P0AEX9' } },
+      {
+        label: 'Dossier for P0AEX9',
+        command: 'fj:open',
+        args: { q: 'P0AEX9' },
+        match: { term: 'uniprot:P0AEX9', kind: 'identifier' },
+      },
     ]);
     release?.();
     await vi.advanceTimersByTimeAsync(0);
@@ -481,5 +507,50 @@ describe('the chosen intent', () => {
     runner.typed('cancel');
     runner.typed('');
     expect(store.typing().suggestions).toEqual([]);
+  });
+
+  // T1: the intent is the one module asked about what the user has in view.
+  it('is given the page and the cart under their own tiers', () => {
+    const store = createQueryStore();
+    const intent = { index: vi.fn(), suggest: vi.fn<(q: IntentQuery) => Suggestion[]>(() => []) };
+    const runner = createQueryRunner(index({ fj }), store, { intent: () => intent });
+    runner.set('page', { terms: ['ncbitaxon:562'] });
+    runner.set('cart', { terms: ['uniprot:P0AEX9'] });
+    runner.typed('dossier');
+    expect(intent.suggest.mock.calls.at(-1)![0].terms).toEqual({
+      typed: [],
+      page: ['ncbitaxon:562'],
+      cart: ['uniprot:P0AEX9'],
+    });
+  });
+
+  // The cart moves under text already in the bar, and no keystroke follows:
+  // the rows are stale until the intent is asked again, and asking costs
+  // nothing, since no plugin is in this round.
+  it('is asked again when the cart moves under typed text', () => {
+    const store = createQueryStore();
+    const offer = vi.fn<(q: TypedQuery) => Offer[]>(() => []);
+    const intent = { index: vi.fn(), suggest: vi.fn<(q: IntentQuery) => Suggestion[]>(() => []) };
+    const runner = createQueryRunner(index({ p: { offer } }), store, { intent: () => intent });
+    runner.typed('dossier');
+    expect(intent.suggest).toHaveBeenCalledTimes(1);
+    runner.set('cart', { terms: ['uniprot:P0AEX9'] });
+    expect(intent.suggest).toHaveBeenCalledTimes(2);
+    expect(intent.suggest.mock.calls[1][0]).toMatchObject({
+      text: 'dossier',
+      terms: { typed: [], page: [], cart: ['uniprot:P0AEX9'] },
+    });
+    expect(offer).toHaveBeenCalledTimes(1);
+  });
+
+  it('is not asked about a cart that moves with nothing typed', () => {
+    const store = createQueryStore();
+    const intent = { index: vi.fn(), suggest: vi.fn<(q: IntentQuery) => Suggestion[]>(() => []) };
+    const runner = createQueryRunner(index({ fj }), store, { intent: () => intent });
+    runner.set('cart', { terms: ['uniprot:P0AEX9'] });
+    runner.typed('dossier');
+    runner.typed('');
+    runner.set('cart', { terms: [] });
+    expect(intent.suggest).toHaveBeenCalledTimes(1);
   });
 });

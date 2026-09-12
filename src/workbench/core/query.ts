@@ -1,4 +1,4 @@
-import type { CartItem, CommandCall, Suggestion } from '../../plugins/sdk';
+import type { CartItem, Offer, Suggestion } from '../../plugins/sdk';
 
 // What every plugin's `relate` said about each source of terms, and what
 // they offered for the text.
@@ -37,7 +37,7 @@ export interface SourceState {
 // qualifies each `command` with the plugin before running it.
 export interface PluginOffers {
   plugin: string;
-  calls: CommandCall[];
+  calls: Offer[];
   // Made for the previous text; shown until this plugin answers for the
   // current one.
   stale?: boolean;

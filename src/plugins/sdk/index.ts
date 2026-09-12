@@ -17,6 +17,7 @@ export {
   parseManifest,
   definePluginManifest,
   qualifyCommand,
+  CONTEXT_TIERS,
 } from './contract';
 export type {
   Manifest,
@@ -25,6 +26,11 @@ export type {
   CommandCall,
   ArgDecl,
   Module,
+  ContextTier,
+  TieredTerms,
+  MatchKind,
+  Match,
+  Offer,
 } from './contract';
 export {
   defineBackground,
@@ -48,6 +54,7 @@ export type {
   Cleanup,
   Subscribe,
   Query,
+  IntentQuery,
   TypedText,
   TypedQuery,
   TermsQuery,

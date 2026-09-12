@@ -76,6 +76,44 @@ export const CommandCallSchema = z.object({
 });
 export type CommandCall = z.infer<typeof CommandCallSchema>;
 
+// Where a term reached the workbench from, strongest first: typed into the
+// prompt bar, carried by the front tab, carried by an item in the cart. A
+// term can arrive by more than one road; the first tier that holds it is the
+// one it is weighed under. The set is closed because an intent weighs the
+// tiers against each other, and a tier it has never heard of it cannot weigh.
+export const CONTEXT_TIERS = ['typed', 'page', 'cart'] as const;
+export type ContextTier = (typeof CONTEXT_TIERS)[number];
+export type TieredTerms = Record<ContextTier, string[]>;
+
+// How a plugin came to offer a command for a term:
+// `record` — it holds the thing the term names and read this offer out of
+//   its own inventory, so the thing exists and the command will find it;
+// `identifier` — the term is an id in a namespace this plugin serves,
+//   recognised by shape and not looked up, so it may name nothing;
+// `name` — words matched words: a label the plugin knows, or a description
+//   that says it takes this kind of thing. The weakest of the three, since
+//   ordinary sentences are made of words.
+export type MatchKind = 'record' | 'identifier' | 'name';
+
+// Why a command is offered. No score: one plugin's 0.8 says nothing beside
+// another's, and ordering is the intent's job — what the intent cannot work
+// out for itself is what the plugin matched and how.
+//
+// The tier is not here. `offer` is asked about typed text and nothing else,
+// so a plugin could only ever write `typed`; the intent takes the tier from
+// the query it sent, which also makes a term the query never carried
+// evidence of nothing.
+export interface Match {
+  // The term this offer answers, as it appeared in the query.
+  term: string;
+  kind: MatchKind;
+}
+
+// A command a plugin volunteered for what was typed, with what it matched.
+export interface Offer extends CommandCall {
+  match: Match;
+}
+
 // Plugin ids are URL-visible (`/p/<id>/...`), so they are restricted to what
 // reads well there and never change once published.
 export const PluginIdSchema = z.string().regex(/^[a-z][a-z0-9-]{1,40}$/);

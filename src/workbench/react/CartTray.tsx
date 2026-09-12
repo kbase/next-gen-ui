@@ -1,4 +1,11 @@
 import { useState, useSyncExternalStore } from 'react';
+// CodeBlock bundles the grammars the docs pages need; Prism's registry is
+// shared, so a page showing a language of its own registers it. The preview's
+// context is the one JSON the workbench renders, and its keys are what a
+// reader scans for. Core first: a grammar file assigns to the global `Prism`
+// the core installs.
+import 'prismjs';
+import 'prismjs/components/prism-json.js';
 import { ShoppingCartSimple, X } from '@phosphor-icons/react';
 import { AlertDialog, Button, CodeBlock, Dialog, Tooltip } from '@kbase/design-system';
 import { qualifyCommand } from '../../plugins/sdk';
@@ -166,10 +173,8 @@ function Preview({ item, plugin }: { item: CartItem; plugin?: string }) {
   const source = item.source;
   return (
     <>
-      <Dialog.Title className={styles.cartPreviewTitle}>{item.name}</Dialog.Title>
-      <Dialog.Description className={styles.cartPreviewMeta}>
-        {[item.subject, plugin].filter(Boolean).join(' · ')}
-      </Dialog.Description>
+      <Dialog.Title>{item.name}</Dialog.Title>
+      <Dialog.Description>{[item.subject, plugin].filter(Boolean).join(' · ')}</Dialog.Description>
       {item.summary && <p className={styles.cartPreviewSummary}>{item.summary}</p>}
 
       {item.context != null && (
@@ -184,13 +189,10 @@ function Preview({ item, plugin }: { item: CartItem; plugin?: string }) {
         </section>
       )}
 
-      {source && 'path' in source && (
+      {source && (
         <p className={styles.cartPreviewSource}>
-          Reopens at <code className={styles.cartPreviewParam}>{source.path}</code>
-        </p>
-      )}
-      {source && 'command' in source && (
-        <p className={styles.cartPreviewSource}>
+          {/* The item's own plugin qualifies the command, so this opens an
+              item the tray did not add and could not have named a path for. */}
           <Button
             variant="outline"
             size="xs"

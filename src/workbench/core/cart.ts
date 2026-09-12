@@ -18,8 +18,10 @@ export const CartItemSchema = z.object({
   // rather than a second copy. A plugin builds it from what the item *is* —
   // `function-junction:protein:P0AEX9` — not from a counter or a timestamp.
   id: z.string().min(1),
-  // The plugin that added it. Its manifest supplies the icon and colour if the
-  // item names none, so items from one tool look like each other.
+  // The plugin that added it, stamped by the host on the way in. Its manifest
+  // supplies the icon and colour if the item names none, so items from one
+  // tool look like each other; and it is what qualifies `source.command`, so
+  // an item from one plugin can be followed by another.
   plugin: z.string().min(1),
   // What a person calls it.
   name: z.string().min(1),
@@ -34,16 +36,16 @@ export const CartItemSchema = z.object({
   // workbench asks with them; it never interprets them.
   terms: z.array(z.string()).optional(),
 
-  // How to get back to it: a path on the plugin's route, or one of its
-  // commands with the arguments that produce the item again.
+  // How to get back to it: one of the adding plugin's commands, named bare,
+  // with the arguments that produce the item again. A command and not a path,
+  // because anyone holding the item can run `plugin:command` through the host
+  // — a path can be opened only by the plugin whose route it is, which left
+  // every consumer but the adding plugin with nothing to press.
   source: z
-    .union([
-      z.object({ path: z.string() }),
-      z.object({
-        command: z.string(),
-        args: z.record(z.string(), z.string()).optional(),
-      }),
-    ])
+    .object({
+      command: z.string(),
+      args: z.record(z.string(), z.string()).optional(),
+    })
     .optional(),
 
   // What an assistant reads about the item and could not infer: units, the
@@ -52,17 +54,9 @@ export const CartItemSchema = z.object({
   // item carries no data: a consumer fetches what the terms and the source
   // name from where it lives.
   context: z.record(z.string(), z.unknown()).optional(),
-
-  addedAt: z.number(),
 });
 
 export type CartItem = z.infer<typeof CartItemSchema>;
-
-// What a plugin passes to the SDK's adder. The host fills in the rest.
-export type CartAddition = Omit<CartItem, 'plugin' | 'addedAt'> & {
-  plugin?: string;
-  addedAt?: number;
-};
 
 export interface CartStore {
   items: () => readonly CartItem[];
@@ -76,7 +70,7 @@ export interface CartStore {
   subscribe: (listener: () => void) => () => void;
 }
 
-export const CART_STORAGE_KEY = 'kbase-workbench-cart.v3';
+export const CART_STORAGE_KEY = 'kbase-workbench-cart.v4';
 
 // A stored cart that does not match the schema is an empty cart, not a
 // crash: the key names the shape, so anything under it was written by a build

@@ -112,7 +112,6 @@ const item = (id: string, terms?: string[]): StoredItem => ({
   plugin: 'fj',
   name: id,
   terms,
-  addedAt: 0,
 });
 
 describe('the ambient cart query', () => {

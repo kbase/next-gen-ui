@@ -6,7 +6,6 @@ const item = (id: string, over: Partial<CartItem> = {}): CartItem => ({
   id,
   plugin: 'function-junction',
   name: id,
-  addedAt: 1,
   ...over,
 });
 
@@ -32,13 +31,14 @@ describe('the cart', () => {
   it('carries the context and the source through storage', () => {
     const full = item('P0AEX9', {
       context: { measuredOver: '8 phyla', reach: 'direct' },
-      source: { path: '/P0AEX9' },
+      source: { command: 'open', args: { q: 'P0AEX9' } },
     });
-    const made = item('fitness', { source: { command: 'fitness', args: { acc: 'P0AEX9' } } });
-    const back = readCart(JSON.stringify([full, made]));
+    const back = readCart(
+      JSON.stringify([full, item('fitness', { source: { command: 'fitness' } })]),
+    );
     expect(back[0].context).toEqual({ measuredOver: '8 phyla', reach: 'direct' });
-    expect(back[0].source).toEqual({ path: '/P0AEX9' });
-    expect(back[1].source).toEqual({ command: 'fitness', args: { acc: 'P0AEX9' } });
+    expect(back[0].source).toEqual({ command: 'open', args: { q: 'P0AEX9' } });
+    expect(back[1].source).toEqual({ command: 'fitness' });
   });
 
   it('treats unreadable storage as an empty cart', () => {
@@ -46,5 +46,16 @@ describe('the cart', () => {
     expect(readCart(null)).toEqual([]);
     expect(readCart('{"not":"an array"}')).toEqual([]);
     expect(readCart(JSON.stringify([item('good'), { id: 'bad' }]))).toEqual([]);
+  });
+
+  // The key carries the shape, so a document written by a build whose items
+  // pointed back with a path is never read under this one — but were the key
+  // to be reused, a path source is damage and the cart comes back empty
+  // rather than holding an item with no way back.
+  it('discards a cart whose items point back with a path', () => {
+    const stored = [
+      { id: 'P0AEX9', plugin: 'function-junction', name: 'SecA', source: { path: '/?q=P0AEX9' } },
+    ];
+    expect(readCart(JSON.stringify(stored))).toEqual([]);
   });
 });

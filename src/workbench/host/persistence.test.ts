@@ -28,7 +28,7 @@ function refusing(op: 'getItem' | 'setItem'): Storage {
   };
 }
 
-const item: CartItem = { id: 'gk:P0AEX9', plugin: 'gk', name: 'SecA', addedAt: 1 };
+const item: CartItem = { id: 'gk:P0AEX9', plugin: 'gk', name: 'SecA' };
 
 describe('loading a workbench from storage', () => {
   it('has nothing for a first visit', async () => {

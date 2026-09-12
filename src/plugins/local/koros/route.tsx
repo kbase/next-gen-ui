@@ -1,6 +1,13 @@
 import { useEffect, useSyncExternalStore } from 'react';
 import { Button, Chip } from '@kbase/design-system';
-import { defineRoute, fromReact, usePanel, usePanelTitle } from '@kbase/plugin-sdk';
+import {
+  defineRoute,
+  fromReact,
+  qualifyCommand,
+  usePanel,
+  usePanelTitle,
+  useHost,
+} from '@kbase/plugin-sdk';
 import { STAGES, isEmpty, koros, slugOf } from './store';
 import styles from './koros.module.css';
 
@@ -10,6 +17,7 @@ import styles from './koros.module.css';
 // prompt bar with its destination set to one.
 function ArcPage() {
   const { path, focused } = usePanel();
+  const host = useHost();
   useSyncExternalStore(koros.subscribe, koros.version, koros.version);
   const slugAsked = slugOf(path);
   const arc = koros.arc(slugAsked);
@@ -72,16 +80,32 @@ function ArcPage() {
             <p className={styles.by}>{turn.by === 'you' ? 'You' : 'KOROS'}</p>
             <p className="body">{turn.text}</p>
             {/* What was in the cart when this was sent, on the turn it was
-                sent with. Labels rather than links: an item's pointer names
-                another plugin's page, and the SDK's `openRoute` opens only
-                the calling plugin's own. */}
+                sent with. Each one goes back to the thing it names: the item
+                carries a command and the plugin that owns it, and `execute`
+                crosses plugins where `openRoute` does not. An item added
+                without a source is a label, since there is nothing to run. */}
             {turn.attached.length > 0 && (
               <ul className={styles.attached}>
-                {turn.attached.map((a) => (
-                  <li key={a.id}>
-                    <Chip color="neutral" label={a.subject ?? a.name} />
-                  </li>
-                ))}
+                {turn.attached.map((a) => {
+                  const from = a.source;
+                  return (
+                    <li key={a.id}>
+                      {from ? (
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onClick={() =>
+                            void host.execute(qualifyCommand(from.command, from.plugin), from.args)
+                          }
+                        >
+                          {a.subject ?? a.name}
+                        </Button>
+                      ) : (
+                        <Chip color="neutral" label={a.subject ?? a.name} />
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </li>

@@ -16,7 +16,10 @@ export default definePrompt({
         id: item.id,
         name: item.name,
         subject: item.subject,
-        path: item.source && 'path' in item.source ? item.source.path : undefined,
+        source:
+          item.plugin && item.source
+            ? { plugin: item.plugin, command: item.source.command, args: item.source.args }
+            : undefined,
       })),
     );
     host.openRoute(`/${slug}`);

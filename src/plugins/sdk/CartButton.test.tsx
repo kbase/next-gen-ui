@@ -56,12 +56,12 @@ describe('the SDK CartButton', () => {
     expect(button).toHaveAttribute('aria-pressed', 'false');
   });
 
-  it('defers to onAdd for an item built lazily, and reads the state by id', async () => {
+  it('says what it is carrying by the item’s subject, which is the identifier', async () => {
     const user = userEvent.setup();
     const h = host();
     render(
       <HostContext value={h}>
-        <CartButton id="q" subject="nifH" onAdd={() => h.cart.add({ id: 'q', name: 'nifH' })} />
+        <CartButton item={{ id: 'q', name: 'Nitrogenase iron protein', subject: 'nifH' }} />
       </HostContext>,
     );
     await user.click(screen.getByRole('button', { name: 'Add nifH to the cart' }));

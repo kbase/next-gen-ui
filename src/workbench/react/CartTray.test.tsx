@@ -1,8 +1,9 @@
 import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { localPlugins } from '../../plugins/local';
-import { createWorkbench, noPersistence } from '../host';
+import { definePluginManifest } from '../../plugins/sdk';
+import { createWorkbench, localPlugin, noPersistence } from '../host';
 import { WorkbenchProvider } from './WorkbenchProvider';
 import { PromptBar } from './PromptBar';
 import { CartTray } from './CartTray';
@@ -28,7 +29,7 @@ function mount(
     defaultAssistant: DEFAULT_ASSISTANT,
     defaultIntent: DEFAULT_INTENT,
   });
-  items.forEach((i, n) => services.cart.add({ ...i, addedAt: n }));
+  items.forEach((i) => services.cart.add(i));
   render(
     <WorkbenchProvider services={services}>
       <CartTray />
@@ -83,6 +84,45 @@ describe('the cart tray', () => {
     mount([{ id: 'a', plugin: 'data', name: 'one' }]);
     const row = screen.getByRole('list', { name: 'Cart, 1 items' });
     expect(getComputedStyle(row).flexWrap).not.toBe('wrap');
+  });
+
+  // The tray belongs to no plugin, so the only pointer it can follow is a
+  // command: it qualifies the item's own with the plugin stamped on the item.
+  it('runs an item’s command in the plugin that added it', async () => {
+    const user = userEvent.setup();
+    const ran = vi.fn();
+    const services = createWorkbench({
+      installed: [
+        localPlugin({
+          config: definePluginManifest({
+            id: 'gk',
+            title: 'genKnown',
+            description: 'A plugin with a command and no page of its own here.',
+            icon: 'Code',
+            commands: [{ name: 'open', title: 'Open a taxon' }],
+          }),
+          commands: () => Promise.resolve({ open: ran }),
+        }),
+      ],
+      persistence: noPersistence,
+    });
+    act(() =>
+      services.cart.add({
+        id: 'gk:83333',
+        plugin: 'gk',
+        name: 'Escherichia coli',
+        source: { command: 'open', args: { q: '83333' } },
+      }),
+    );
+    render(
+      <WorkbenchProvider services={services}>
+        <CartTray />
+      </WorkbenchProvider>,
+    );
+
+    await user.click(screen.getByRole('button', { name: /Open Escherichia coli/ }));
+    await user.click(await screen.findByRole('button', { name: 'Run /open' }));
+    expect(ran).toHaveBeenCalledWith({ q: '83333' }, expect.objectContaining({ caller: 'user' }));
   });
 
   it('opens the item, context and all, when its tile is pressed', async () => {
@@ -146,7 +186,7 @@ describe('the cart tray', () => {
     expect(screen.queryByRole('list', { name: /Cart/ })).toBeNull();
     expect(container.querySelector(`.${promptStyles.attachments}`)).toBeNull();
 
-    act(() => services.cart.add({ id: 'a', plugin: 'data', name: 'one', addedAt: 1 }));
+    act(() => services.cart.add({ id: 'a', plugin: 'data', name: 'one' }));
     expect(screen.queryByRole('list', { name: /Cart/ })).not.toBeNull();
     expect(container.querySelector(`.${promptStyles.attachments}`)).not.toBeNull();
   });

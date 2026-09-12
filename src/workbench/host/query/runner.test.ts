@@ -39,7 +39,7 @@ const fj: Background = {
     accessions(terms).map((id) => ({
       id: `fj:protein:${id}`,
       name: id,
-      source: { path: `/${id}` },
+      source: { command: 'open', args: { q: id } },
     })),
 };
 

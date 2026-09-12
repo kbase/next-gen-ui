@@ -4,13 +4,16 @@
 // by talking to it. Gates, drift and deliverables are left out of the mock.
 
 // What the user attached to a turn when they sent it, kept as it was at send
-// time. Enough of each item to show it; the payload stays in the cart item the
-// handler was given.
+// time. Enough of each item to show it and to go back to it; the payload stays
+// in the cart item the handler was given.
 export interface Attached {
   id: string;
   name: string;
   subject?: string;
-  path?: string;
+  // The command that reopens the thing and the plugin whose command it is.
+  // Both or neither: KOROS runs `plugin:command` through the host, and a bare
+  // command name would be one of KOROS's own.
+  source?: { plugin: string; command: string; args?: Record<string, string> };
 }
 
 export type Stage = 'FRAME' | 'INVESTIGATE' | 'DELIVER' | 'DONE';

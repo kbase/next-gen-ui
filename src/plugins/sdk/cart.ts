@@ -33,20 +33,31 @@ import { useHost } from './host';
 //            evidence was reached, the caveats you would print beside it.
 //            Small: it goes into a prompt.
 //
-//   source   How to get back to the thing: the path that reopens your route
-//            on it, or a command that produces it again.
+//   source   The command that produces the thing again, with its arguments.
+//            Give a command any plugin could be asked to run, not the one
+//            behind a button of yours: whoever holds the item — the tray, the
+//            Related pane, an assistant — runs it through the host, and a
+//            command is the only pointer they can follow.
 //
 // The item carries no data. What it names is fetched by whoever consumes it,
 // through the terms and the source, from where the data lives.
 
-// A path on the adding plugin's route, or one of its commands with the
-// arguments that produce the item. A bare command name is the plugin's own.
-export type CartSource =
-  | { path: string }
-  | { command: string; args?: Record<string, string> };
+// One of the adding plugin's commands, with the arguments that produce the
+// item. The name is bare: `plugin` says whose it is, and a consumer qualifies
+// it with `qualifyCommand` before running it.
+export interface CartSource {
+  command: string;
+  args?: Record<string, string>;
+}
 
 export interface CartItem {
   id: string;
+  // Who added it. The host stamps this when the item enters the cart and it
+  // cannot be set from a plugin — `Cart.add` does not take it, and what
+  // `pluginHostFor` writes overrides whatever the object carried. Absent on an
+  // item on its way in, including everything `relate` answers with, and
+  // present on every item the cart hands back.
+  readonly plugin?: string;
   name: string;
   subject?: string;
   summary?: string;
@@ -64,8 +75,9 @@ export interface CartItem {
 // plugins' items: what is in the cart is the user's business and the
 // assistant's, and a plugin that could read it could fingerprint the session.
 export interface Cart {
-  // Same id replaces.
-  add: (item: CartItem) => void;
+  // Same id replaces. The stamp is the host's: an item goes in without a
+  // `plugin` and comes back out of `items()` with this plugin's id on it.
+  add: (item: Omit<CartItem, 'plugin'>) => void;
   remove: (id: string) => void;
   // This plugin's items only: what it added, as the host holds them, so a
   // page can rebuild its own controls after a reload.

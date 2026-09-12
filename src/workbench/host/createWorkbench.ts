@@ -183,8 +183,14 @@ export function pluginHostFor(services: WorkbenchServices, plugin: PluginId): Pl
     // Scoped to the adding plugin: it stamps its own id on what it adds, and
     // `has` and `count` answer about its own items only. What else is in the
     // cart is the user's business and the assistant's.
+    //
+    // The stamp is this one line, and it is the whole of who-added-what: it is
+    // written after the item's own fields, so a `plugin` on the object is
+    // overwritten rather than believed. Everything that follows an item back —
+    // the tray, Related, an assistant — qualifies `source.command` with it, so
+    // a forged stamp would run another plugin's command.
     cart: {
-      add: (item) => services.cart.add({ ...item, plugin, addedAt: Date.now() }),
+      add: (item) => services.cart.add({ ...item, plugin }),
       remove: (id) => {
         const own = services.cart.items().find((i) => i.id === id && i.plugin === plugin);
         if (own) services.cart.remove(id);

@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { MagnifyingGlass, X } from '@phosphor-icons/react';
-import { EmptyState, Loader, Tooltip } from '@kbase/design-system';
-import { CartButton, qualifyCommand, usePanelTitle } from '../../../plugins/sdk';
+import { CartButton, EmptyState, Loader, Tooltip } from '@kbase/design-system';
+import { qualifyCommand, usePanelTitle } from '../../../plugins/sdk';
 import type { QuerySource, Recommendation } from '../../core';
 import { mergeRecommendations } from '../../core';
-import { openRoute } from '../open';
+import { pluginHostFor } from '../createWorkbench';
 import { PluginMark } from '../PluginMark';
 import { useRun, useServices } from '../../react/context';
 import styles from '../../react/Workbench.module.css';
@@ -27,9 +27,12 @@ import styles from '../../react/Workbench.module.css';
 // leave without animation: a view transition here snapshots the whole
 // document, and iPhone Safari drew a blank frame at each snapshot.
 //
-// A row is a link and an offer. Pressing it opens the item's `source` in the
-// answering plugin; the `+` puts the item in the cart. An item already in the
-// cart is not shown: the reader has it.
+// A row is a link and an offer. Pressing it runs the command the item's
+// `source` names, in the answering plugin; the `+` puts the item in that same
+// plugin's cart, which is where it would have landed had the reader added it
+// from the plugin's own page. A row whose item is already in the cart shows
+// its button pressed, so the press that added it is the press that takes it
+// back out.
 
 // The sources this pane reads, in section order.
 const SOURCES = ['page', 'cart'] as const satisfies readonly QuerySource[];
@@ -74,7 +77,7 @@ export function RelatedNavigator() {
     return query.subscribe(update);
   }, [query]);
 
-  const shown = rows.filter((r) => !cart.has(r.id) && !query.dismissed(r.id));
+  const shown = rows.filter((r) => !query.dismissed(r.id));
   // A row sits in the section of its first offer; the count on the row says
   // when others offer it too.
   //
@@ -142,20 +145,22 @@ export function RelatedNavigator() {
 
 function RelatedRow({ row }: { row: Recommendation }) {
   const services = useServices();
-  const { query, cart, source: index } = services;
+  const { query, source: index } = services;
   const { item } = row;
   const first = row.offeredBy[0];
   const manifest = index.manifest(first.plugin);
   const title = manifest?.title ?? first.plugin;
   const run = useRun();
   const from = item.source;
-  // Pressing the row goes to the thing: its path, or the command that makes it.
-  const open =
-    from && 'path' in from
-      ? () => void openRoute(services, first.plugin, from.path)
-      : from && 'command' in from
-        ? () => void run(qualifyCommand(from.command, first.plugin), from.args)
-        : undefined;
+  // Pressing the row runs the command that makes the thing, as the user: the
+  // row is a button of theirs, not the answering plugin acting for them.
+  const open = from
+    ? () => void run(qualifyCommand(from.command, first.plugin), from.args)
+    : undefined;
+  // The cart of the plugin that answered, not this pane's. An item added here
+  // is the item that plugin would have added: same stamp, same slice, so the
+  // button's pressed state is about the row it sits on.
+  const cart = pluginHostFor(services, first.plugin).cart;
   const provenance = row.offeredBy
     .map(
       (o) =>
@@ -209,13 +214,13 @@ function RelatedRow({ row }: { row: Recommendation }) {
         </span>
       )}
 
-      {/* The same control the plugins draw on their own pages. The item is
-          stamped with the first answering plugin, the same way that plugin's
-          own `cart.add` would stamp it. */}
+      {/* The design system's control rather than the SDK's, which reads the
+          cart of the plugin it is rendered in — here the pane's own, which is
+          not the cart this row adds to. */}
       <CartButton
-        id={item.id}
-        subject={item.subject ?? item.name}
-        onAdd={() => cart.add({ ...item, plugin: first.plugin, addedAt: Date.now() })}
+        pressed={cart.has(item.id)}
+        aria-label={`Add ${item.subject ?? item.name} to the cart`}
+        onPressedChange={(next) => (next ? cart.add(item) : cart.remove(item.id))}
       />
 
       <button

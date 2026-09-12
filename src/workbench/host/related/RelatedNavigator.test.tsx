@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Background, CartItem, PanelHandle, TermsQuery } from '../../../plugins/sdk';
 import { HostContext, PanelContext, definePluginManifest } from '../../../plugins/sdk';
@@ -19,7 +19,11 @@ import { RelatedNavigator } from './RelatedNavigator';
 
 const page = makeRoute('fj', '/protein/P0AEX9', 'a');
 
-const item = (id: string): CartItem => ({ id, name: id, source: { path: `/${id}` } });
+const item = (id: string): CartItem => ({
+  id,
+  name: id,
+  source: { command: 'open', args: { q: id } },
+});
 
 // Enough of a panel for `usePanelTitle`; the pane is a block, and the host
 // gives every block one of these.
@@ -174,11 +178,41 @@ describe('the Related pane before it has answers', () => {
     expect(paneEmpty()).toBeInTheDocument();
 
     await act(async () => {
-      services.cart.add({ ...item('gk:83333'), terms: ['taxon:83333'], plugin: 'gk', addedAt: 1 });
+      services.cart.add({ ...item('gk:83333'), terms: ['taxon:83333'], plugin: 'gk' });
     });
     await wait(SETTLE_MS);
     expect(paneEmpty()).toBeNull();
     expect(screen.getByText('Cart')).toBeInTheDocument();
+  });
+});
+
+describe('the Related pane’s add control', () => {
+  // The row's button and the row's cart are the same plugin's: the one that
+  // answered. Reading one cart and writing another left the button unpressed
+  // after a press, and a second press removing nothing.
+  it('adds and removes through the cart of the plugin that offered the row', async () => {
+    const gk = plugin();
+    const services = await mount(gk.relate);
+    await act(async () => {
+      services.store.dispatch({ type: 'open', panel: page });
+      services.terms.set(page.id, ['uniprot:P0AEX9']);
+    });
+    await wait(SETTLE_MS);
+    await gk.answer('uniprot:P0AEX9', [item('gk:P0AEX9')]);
+
+    const button = screen.getByRole('button', { name: 'Add gk:P0AEX9 to the cart' });
+    expect(button).toHaveAttribute('aria-pressed', 'false');
+
+    await act(async () => void fireEvent.click(button));
+    // Stamped `gk`, exactly as genKnown's own page would have added it.
+    expect(services.cart.items()).toEqual([{ ...item('gk:P0AEX9'), plugin: 'gk' }]);
+    expect(button).toHaveAttribute('aria-pressed', 'true');
+
+    // The row stays, so the press that added it is the press that undoes it.
+    await act(async () => void fireEvent.click(button));
+    expect(services.cart.items()).toEqual([]);
+    expect(button).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByText('gk:P0AEX9')).toBeInTheDocument();
   });
 });
 
@@ -192,7 +226,7 @@ describe('the Related pane while answers land', () => {
     await act(async () => {
       services.store.dispatch({ type: 'open', panel: page });
       services.terms.set(page.id, ['uniprot:P0AEX9']);
-      services.cart.add({ ...item('gk:83333'), terms: ['taxon:83333'], plugin: 'gk', addedAt: 1 });
+      services.cart.add({ ...item('gk:83333'), terms: ['taxon:83333'], plugin: 'gk' });
     });
     await wait(SETTLE_MS);
 

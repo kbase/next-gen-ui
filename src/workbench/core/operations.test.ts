@@ -43,7 +43,6 @@ const samples: { [T in OperationType]: Extract<Operation, { type: T }> } = {
   fold: { type: 'fold', panel: paneId('files'), folded: true },
   sidebar: { type: 'sidebar', collapsed: true },
   bar: { type: 'bar', bar: 'status', visible: false },
-  bind: { type: 'bind', key: 'mod+k', command: 'workbench:open' },
   lock: { type: 'lock', locked: false },
 };
 

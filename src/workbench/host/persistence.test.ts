@@ -42,13 +42,17 @@ describe('loading a workbench from storage', () => {
       memoryStorage({
         [LAYOUT_STORAGE_KEY]: serialize(layout),
         [CART_STORAGE_KEY]: JSON.stringify([item]),
-        [SETTINGS_STORAGE_KEY]: JSON.stringify({ assistant: 'koros', intent: null }),
+        [SETTINGS_STORAGE_KEY]: JSON.stringify({
+          assistant: 'koros',
+          intent: null,
+          keybindings: { 'Ctrl+Z': '' },
+        }),
       }),
     );
     expect(loaded).toEqual({
       layout,
       cart: [item],
-      settings: { assistant: 'koros', intent: null },
+      settings: { assistant: 'koros', intent: null, keybindings: { 'Ctrl+Z': '' } },
     });
   });
 
@@ -61,10 +65,13 @@ describe('loading a workbench from storage', () => {
     expect(loaded.layout).toBeNull();
   });
 
-  it('loads no settings from a stored copy that does not match the schema', async () => {
-    const { loaded } = await loadWorkbench(
-      memoryStorage({ [SETTINGS_STORAGE_KEY]: '{"assistant":5}' }),
-    );
+  it.each([
+    ['a field of the wrong type', '{"assistant":5}'],
+    // What the previous shape's document looks like, in case one is ever
+    // read under this key: settings are defaults again, not half-loaded.
+    ['a field the shape has since gained', '{"assistant":null,"intent":null}'],
+  ])('loads no settings from a stored copy with %s', async (_case, text) => {
+    const { loaded } = await loadWorkbench(memoryStorage({ [SETTINGS_STORAGE_KEY]: text }));
     expect(loaded.settings).toBeNull();
   });
 
@@ -81,13 +88,14 @@ describe('saving a workbench to storage', () => {
     const { save } = await loadWorkbench(storage);
     save('layout', layout);
     save('cart', [item]);
-    save('settings', { assistant: null, intent: 'intent' });
+    const settings = {
+      assistant: null,
+      intent: 'intent',
+      keybindings: { 'Ctrl+Y': 'workbench:redo', 'Ctrl+Shift+Z': '' },
+    };
+    save('settings', settings);
     const { loaded } = await loadWorkbench(storage);
-    expect(loaded).toEqual({
-      layout,
-      cart: [item],
-      settings: { assistant: null, intent: 'intent' },
-    });
+    expect(loaded).toEqual({ layout, cart: [item], settings });
   });
 
   it('is a no-op, not an error, when the browser refuses the write', async () => {

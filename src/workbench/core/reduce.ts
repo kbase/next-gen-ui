@@ -67,12 +67,6 @@ export function reduce(layout: Layout, op: Operation, ctx: ReduceContext = defau
       };
     case 'bar':
       return { ...layout, bars: { ...layout.bars, [op.bar]: op.visible } };
-    case 'bind': {
-      const keybindings = { ...layout.keybindings };
-      if (op.command === null) delete keybindings[op.key];
-      else keybindings[op.key] = op.command;
-      return { ...layout, keybindings };
-    }
     case 'lock':
       return op.locked === layout.locked ? layout : { ...layout, locked: op.locked };
   }

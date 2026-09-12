@@ -1,6 +1,19 @@
-import { useSyncExternalStore } from 'react';
-import { Chip, Radio, Switch } from '@kbase/design-system';
+import { useState, useSyncExternalStore } from 'react';
+import type { KeyboardEvent } from 'react';
+import { Button, Chip, Radio, Switch } from '@kbase/design-system';
 import { usePanelTitle } from '../../../plugins/sdk';
+import type { Command } from '../../commands';
+import {
+  DEFAULT_KEYBINDINGS,
+  boundCommand,
+  chordFor,
+  chordFromEvent,
+  chordToString,
+  keybindingTable,
+  parseChord,
+  qualifiedName,
+  setKeybinding,
+} from '../../commands';
 import { useLayout, useRun, useServices } from '../../react/context';
 import { iconFor } from '../icons';
 import styles from './Settings.module.css';
@@ -109,6 +122,154 @@ export function SettingsDocument() {
           </label>
         </Radio.Group>
       </section>
+
+      <Keyboard />
     </div>
+  );
+}
+
+// A command a keypress can run: one that needs no argument, because a
+// keystroke carries none.
+function bindable(command: Command): boolean {
+  return !(command.args ?? []).some((arg) => arg.required);
+}
+
+// Workbench commands first, then each plugin's, alphabetically within both,
+// so a reader looking for a command finds it beside its neighbours.
+function byOwner(a: Command, b: Command): number {
+  const host = (c: Command) => (c.source === 'workbench' ? 0 : 1);
+  return host(a) - host(b) || qualifiedName(a).localeCompare(qualifiedName(b));
+}
+
+// The keys. Every bindable command is a row showing the chord that runs it,
+// so the table the user edits and the table a keypress is matched against
+// are the same thing read two ways.
+function Keyboard() {
+  const { registry, settings } = useServices();
+  useSyncExternalStore(registry.subscribe, () => registry.list().length);
+  const current = useSyncExternalStore(settings.subscribe, settings.get, settings.get);
+  // Which row is listening for a chord, and what the last attempt collided
+  // with. One at a time: recording swallows every key, so two rows listening
+  // would be two claims on the same keypress.
+  const [recording, setRecording] = useState<string | null>(null);
+  const [taken, setTaken] = useState<{ row: string; holder: string } | null>(null);
+
+  const overrides = current.keybindings;
+  const table = keybindingTable({
+    overrides,
+    exists: (command) => registry.get(command) !== undefined,
+  });
+  const commands = registry.list().filter(bindable).sort(byOwner);
+
+  const write = (command: string, chord: string | null) => {
+    settings.set({ keybindings: setKeybinding(overrides, command, chord) });
+    setRecording(null);
+    setTaken(null);
+  };
+
+  // Every key reaches this while a row is recording, including the ones that
+  // are bound: stopPropagation keeps the press away from the window listener
+  // in useKeybindings, which would otherwise run the command being rebound.
+  const record = (event: KeyboardEvent, command: string) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.key === 'Escape') {
+      setRecording(null);
+      setTaken(null);
+      return;
+    }
+    // A modifier on its own is half a chord; wait for the key it modifies.
+    if (['Control', 'Shift', 'Alt', 'Meta'].includes(event.key)) return;
+    const chord = chordToString(chordFromEvent(event));
+    const holder = boundCommand(table, parseChord(chord));
+    if (holder && holder !== command) {
+      // Refused, and the row keeps listening: the user picks another chord
+      // rather than silently taking a key off the command that holds it.
+      setTaken({ row: command, holder });
+      return;
+    }
+    write(command, chord);
+  };
+
+  return (
+    <section aria-labelledby="settings-keyboard" className={styles.section}>
+      <h2 id="settings-keyboard" className="h4">
+        Keyboard
+      </h2>
+      <p className="caption">
+        Which keys run which command. A command that needs an argument is not here: a keypress
+        supplies none.
+      </p>
+      <ul className={styles.list}>
+        {commands.map((command) => {
+          const name = qualifiedName(command);
+          const chord = chordFor(table, name);
+          const fallback = chordFor(DEFAULT_KEYBINDINGS, name);
+          const held = taken?.row === name ? taken.holder : null;
+          return (
+            <li key={name} className={styles.keyRow}>
+              <span className={styles.keyTitle}>
+                <span className="body">{command.title}</span>
+                <span className={`caption ${styles.keyName}`}>/{name}</span>
+              </span>
+              {chord ? (
+                <kbd className={styles.chord}>{chord}</kbd>
+              ) : (
+                <span className={`caption ${styles.keyNone}`}>No key</span>
+              )}
+              <span className={styles.rowControls}>
+                <Button
+                  size="xs"
+                  variant={recording === name ? 'primary' : 'outline'}
+                  aria-label={`${chord ? 'Change' : 'Set'} the key for ${command.title}`}
+                  aria-describedby={held ? `${name}-taken` : undefined}
+                  onClick={() => {
+                    setRecording(recording === name ? null : name);
+                    setTaken(null);
+                  }}
+                  onKeyDown={(event) => {
+                    if (recording === name) record(event, name);
+                  }}
+                  onBlur={() => {
+                    if (recording === name) setRecording(null);
+                  }}
+                >
+                  {recording === name ? 'Press a key' : chord ? 'Change' : 'Set'}
+                </Button>
+                {chord && (
+                  <Button
+                    size="xs"
+                    variant="ghost"
+                    aria-label={`Remove the key for ${command.title}`}
+                    onClick={() => write(name, null)}
+                  >
+                    Remove
+                  </Button>
+                )}
+                {/* Only where there is a default to go back to: a command
+                    with none is reset by Remove. */}
+                {fallback !== null && chord !== fallback && (
+                  <Button
+                    size="xs"
+                    variant="ghost"
+                    aria-label={`Reset the key for ${command.title}`}
+                    onClick={() => write(name, fallback)}
+                  >
+                    Reset
+                  </Button>
+                )}
+              </span>
+              {recording === name && (
+                <p className={`caption ${styles.keyHint}`} id={`${name}-taken`} role="status">
+                  {held
+                    ? `That key runs ${registry.get(held)?.title ?? held}. Press another, or Escape to stop.`
+                    : 'Press the key to run this command, or Escape to stop.'}
+                </p>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }

@@ -6,7 +6,7 @@ import { SETTINGS_STORAGE_KEY, SettingsSchema } from './settings';
 // The key names the saved shape. A layout written against a different
 // `LayoutSchema` lives under a different key and is never read again; the
 // cart and the settings keys work the same way.
-export const LAYOUT_STORAGE_KEY = 'workbench.layout.v3';
+export const LAYOUT_STORAGE_KEY = 'workbench.layout.v4';
 
 // The documents a workbench keeps between sessions, one per kind. Each is
 // plain JSON, so a store needs no encoder of its own and nothing here has a

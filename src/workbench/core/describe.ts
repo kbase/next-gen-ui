@@ -57,8 +57,6 @@ export function describe(op: Operation, before: Layout, after: Layout, titleOf: 
       return 'Sidebar resized';
     case 'bar':
       return `${op.bar === 'status' ? 'Status bar' : 'Prompt bar'} ${op.visible ? 'shown' : 'hidden'}`;
-    case 'bind':
-      return op.command ? `${op.key} now runs ${op.command}` : `${op.key} unbound`;
     case 'lock':
       return op.locked ? 'Layout locked' : 'Layout unlocked';
   }

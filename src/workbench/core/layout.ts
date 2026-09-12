@@ -74,7 +74,6 @@ export const LayoutSchema = z.object({
   sidebar: SidebarSchema,
   bars: BarsSchema,
   focus: z.string().nullable(),
-  keybindings: z.record(z.string(), z.string()),
   // A locked layout keeps its arrangement: structural operations no-op.
   locked: z.boolean(),
 });
@@ -132,7 +131,6 @@ export function defaultLayout({
     },
     bars: { status: true, prompt: true },
     focus: null,
-    keybindings: {},
     locked: false,
   };
 }

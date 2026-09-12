@@ -49,10 +49,13 @@ function Ambient() {
 // the interval between a question and its answer is what these tests are about.
 function plugin() {
   const waiting = new Map<string, (items: CartItem[]) => void>();
+  // A question is a bag of terms (host/query/runner.ts), so a test names one
+  // by its terms in any order.
+  const key = (terms: readonly string[]) => [...terms].sort().join(',');
   const relate = (q: TermsQuery) =>
-    new Promise<CartItem[]>((resolve) => waiting.set(q.terms.join(','), resolve));
+    new Promise<CartItem[]>((resolve) => waiting.set(key(q.terms), resolve));
   const answer = async (terms: string, items: CartItem[]) => {
-    const resolve = waiting.get(terms);
+    const resolve = waiting.get(key(terms.split(',')));
     if (!resolve) throw new Error(`nobody was asked about ${terms}`);
     await act(async () => {
       resolve(items);
@@ -76,6 +79,10 @@ async function mount(relate: (q: TermsQuery) => Promise<CartItem[]>) {
       }),
     ],
     persistence: noPersistence,
+    // Required of every workbench, and inert here: the one plugin installed
+    // has neither module, and this pane asks nothing of either.
+    defaultAssistant: 'gk',
+    defaultIntent: 'gk',
   });
   // The background module arrives on a microtask; a question asked before it
   // does is asked of nobody.
@@ -213,6 +220,126 @@ describe('the Related pane’s add control', () => {
     expect(services.cart.items()).toEqual([]);
     expect(button).toHaveAttribute('aria-pressed', 'false');
     expect(screen.getByText('gk:P0AEX9')).toBeInTheDocument();
+  });
+});
+
+describe('what a Related row says it answers', () => {
+  // The cart's tiles are where the reader last saw these terms, so the row
+  // names the term the way the tile does rather than as the plugins spell it.
+  const carted = (id: string, subject: string, ...terms: string[]) => ({
+    ...item(id),
+    subject,
+    terms,
+    plugin: 'gk',
+  });
+  const answered = (id: string, ...terms: string[]): CartItem => ({
+    ...item(id),
+    answers: terms.map((term) => ({ term, kind: 'record' as const })),
+  });
+
+  it('names the cart term a row answers, in the words on the tile', async () => {
+    const gk = plugin();
+    const services = await mount(gk.relate);
+    await act(async () => {
+      services.cart.add(carted('fj:P11558', 'P11558', 'uniprot:P11558'));
+    });
+    await wait(SETTLE_MS);
+    await gk.answer('uniprot:P11558', [answered('gk:562', 'uniprot:P11558')]);
+
+    expect(screen.getByText('genKnown, because your cart has P11558')).toBeInTheDocument();
+  });
+
+  // One node arrives under an id and a name at once, and the plugin answers
+  // with one item for both. Naming either alone would make the other look
+  // like it did nothing.
+  it('names both terms when one item answers two', async () => {
+    const gk = plugin();
+    const services = await mount(gk.relate);
+    await act(async () => {
+      services.cart.add(carted('fj:P11558', 'P11558', 'uniprot:P11558'));
+      services.cart.add(carted('gk:562', 'Escherichia coli', 'ncbitaxon:562'));
+    });
+    await wait(SETTLE_MS);
+    await gk.answer('uniprot:P11558,ncbitaxon:562', [
+      answered('dia:soil', 'uniprot:P11558', 'ncbitaxon:562'),
+    ]);
+
+    expect(
+      screen.getByText('genKnown, because your cart has P11558 and Escherichia coli'),
+    ).toBeInTheDocument();
+  });
+
+  // Past two the line would be a paragraph in a pane thirty characters wide;
+  // the count is the part that still reads.
+  it('names the first term and counts the rest past two', async () => {
+    const gk = plugin();
+    const services = await mount(gk.relate);
+    await act(async () => {
+      services.cart.add(carted('fj:P11558', 'P11558', 'uniprot:P11558'));
+      services.cart.add(carted('gk:562', 'Escherichia coli', 'ncbitaxon:562'));
+      services.cart.add(carted('dia:soil', 'soil', 'biome:soil'));
+    });
+    await wait(SETTLE_MS);
+    await gk.answer('uniprot:P11558,ncbitaxon:562,biome:soil', [
+      answered('gk:x', 'uniprot:P11558', 'ncbitaxon:562', 'biome:soil'),
+    ]);
+
+    expect(
+      screen.getByText('genKnown, because your cart has P11558 and 2 others'),
+    ).toBeInTheDocument();
+  });
+
+  // Words matching words is a weaker thing than a lookup, and the sentence
+  // says so rather than claiming the page is about the word.
+  it('says a plugin that matched words mentions them', async () => {
+    const gk = plugin();
+    const services = await mount(gk.relate);
+    await act(async () => {
+      services.store.dispatch({ type: 'open', panel: page });
+      services.terms.set(page.id, ['biome:soil']);
+    });
+    await wait(SETTLE_MS);
+    await gk.answer('biome:soil', [
+      { ...item('gk:soil'), answers: [{ term: 'biome:soil', kind: 'name' }] },
+    ]);
+
+    expect(screen.getByText('genKnown, because this page mentions soil')).toBeInTheDocument();
+  });
+
+  // A plugin built against an SDK with nowhere to put the term answers with
+  // an item and no evidence; the row still says where the question came from.
+  it('says where a plugin was asked when it gave no evidence', async () => {
+    const gk = plugin();
+    const services = await mount(gk.relate);
+    await act(async () => {
+      services.store.dispatch({ type: 'open', panel: page });
+      services.terms.set(page.id, ['uniprot:P0AEX9']);
+    });
+    await wait(SETTLE_MS);
+    await gk.answer('uniprot:P0AEX9', [item('gk:P0AEX9')]);
+
+    expect(screen.getByText('genKnown, from the open page')).toBeInTheDocument();
+  });
+
+  // The reason is why the item was offered for a question; the cart is not a
+  // question, and a tile that carried one would keep it until a reload.
+  it('adds the item to the cart without its evidence', async () => {
+    const gk = plugin();
+    const services = await mount(gk.relate);
+    await act(async () => {
+      services.store.dispatch({ type: 'open', panel: page });
+      services.terms.set(page.id, ['uniprot:P0AEX9']);
+    });
+    await wait(SETTLE_MS);
+    await gk.answer('uniprot:P0AEX9', [answered('gk:P0AEX9', 'uniprot:P0AEX9')]);
+
+    await act(
+      async () =>
+        void fireEvent.click(screen.getByRole('button', { name: 'Add gk:P0AEX9 to the cart' })),
+    );
+    expect(services.cart.items()).toEqual([{ ...item('gk:P0AEX9'), plugin: 'gk' }]);
+    // …and the row still says why it is there.
+    expect(screen.getByText('genKnown, because this page is about P0AEX9')).toBeInTheDocument();
   });
 });
 

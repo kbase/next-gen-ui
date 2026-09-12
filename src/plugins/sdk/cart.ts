@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import type { Match } from './contract';
 import { useHost } from './host';
 
 // Adding something to the cart, from inside a plugin.
@@ -32,6 +33,14 @@ import { useHost } from './host';
 //            units, the population a number was measured over, how the
 //            evidence was reached, the caveats you would print beside it.
 //            Small: it goes into a prompt.
+//
+//   answers  Answering `relate`: which of the terms you were asked about this
+//            item answers, and how — the same `{ term, kind }` an offer
+//            carries. Related reads it out on the row: "genKnown, because your
+//            cart has P11558". Name every term the item answers, not the first
+//            one you looked up: one node usually arrives under two spellings
+//            at once, an id and a name, and an item that keeps one of them
+//            explains itself only half the time.
 //
 //   source   The command that produces the thing again, with its arguments.
 //            Give a command any plugin could be asked to run, not the one
@@ -67,6 +76,16 @@ export interface CartItem {
   // what lets a second plugin say something about an item without knowing
   // anything about the plugin that added it.
   terms?: string[];
+  // What this item was given for, on an item `relate` answers with: the terms
+  // out of the query it answers, each with how the plugin came by it, in the
+  // shape an offer's evidence has (`Match`). `terms` is what the item carries
+  // onward and `answers` is what it was asked about, so an item may answer a
+  // term it does not carry and carry terms nobody asked for.
+  //
+  // Evidence about a question, not a property of the thing: the Related pane
+  // reads it off the answer, and what it adds to the cart is the item without
+  // it. An item already in the cart answers nothing.
+  answers?: Match[];
   source?: CartSource;
   context?: Record<string, unknown>;
 }

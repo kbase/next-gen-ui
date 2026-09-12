@@ -4,13 +4,22 @@ import type { SourceState } from './query';
 import { mergeRecommendations } from './recommendations';
 
 const item = (id: string): CartItem => ({ id, name: id });
+// The same item, said to answer these terms: what a plugin returns when it
+// looked the thing up rather than recognising a string.
+const answering = (id: string, ...terms: string[]): CartItem => ({
+  ...item(id),
+  answers: terms.map((term) => ({ term, kind: 'record' as const })),
+});
 const state = (
-  answers: { plugin: string; items: string[] }[],
+  answers: { plugin: string; items: (string | CartItem)[] }[],
   pending: string[] = [],
 ): SourceState => ({
   label: '',
   pool: [],
-  answers: answers.map((a) => ({ plugin: a.plugin, items: a.items.map(item) })),
+  answers: answers.map((a) => ({
+    plugin: a.plugin,
+    items: a.items.map((i) => (typeof i === 'string' ? item(i) : i)),
+  })),
   pending,
   loading: pending.length > 0,
 });
@@ -38,8 +47,57 @@ describe('mergeRecommendations', () => {
     );
     expect(rows).toHaveLength(1);
     expect(rows[0].offeredBy).toEqual([
-      { plugin: 'gk', source: 'page' },
-      { plugin: 'fj', source: 'cart' },
+      { plugin: 'gk', source: 'page', answers: [] },
+      { plugin: 'fj', source: 'cart', answers: [] },
+    ]);
+  });
+
+  // The row's sentence is built from these: one plugin's terms must not end
+  // up in another's clause, or the row says P11558 was genKnown's reason when
+  // it was Function Junction's.
+  it('keeps each offer’s own terms when two plugins answer with the same item', () => {
+    const rows = mergeRecommendations(
+      [],
+      [
+        {
+          source: 'cart',
+          state: state([
+            { plugin: 'gk', items: [answering('a', 'ncbitaxon:562')] },
+            { plugin: 'fj', items: [answering('a', 'uniprot:P11558')] },
+          ]),
+        },
+      ],
+    );
+    expect(rows[0].offeredBy).toEqual([
+      { plugin: 'gk', source: 'cart', answers: [{ term: 'ncbitaxon:562', kind: 'record' }] },
+      { plugin: 'fj', source: 'cart', answers: [{ term: 'uniprot:P11558', kind: 'record' }] },
+    ]);
+  });
+
+  it('unions the terms when one plugin answers one source twice with the same item', () => {
+    const rows = mergeRecommendations(
+      [],
+      [
+        {
+          source: 'cart',
+          state: state([
+            {
+              plugin: 'gk',
+              items: [answering('a', 'ncbitaxon:562'), answering('a', 'insdc.gcf:GCF_000005845.2')],
+            },
+          ]),
+        },
+      ],
+    );
+    expect(rows[0].offeredBy).toEqual([
+      {
+        plugin: 'gk',
+        source: 'cart',
+        answers: [
+          { term: 'ncbitaxon:562', kind: 'record' },
+          { term: 'insdc.gcf:GCF_000005845.2', kind: 'record' },
+        ],
+      },
     ]);
   });
 

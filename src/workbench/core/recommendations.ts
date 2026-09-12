@@ -1,4 +1,4 @@
-import type { CartItem } from '../../plugins/sdk';
+import type { CartItem, Match } from '../../plugins/sdk';
 import type { QuerySource, SourceState } from './query';
 
 // The Related pane's list, with the recommendation as the unit.
@@ -13,12 +13,18 @@ import type { QuerySource, SourceState } from './query';
 export interface Offer {
   plugin: string;
   source: QuerySource;
+  // The terms this plugin's item answered, as that plugin gave them. Held per
+  // offer rather than per row because two plugins answer the same id from
+  // different terms — Function Junction for the protein the page names,
+  // Diaspora for the taxon in the cart — and a row that kept one set would
+  // say one of them was the other's reason.
+  answers: Match[];
 }
 
 export interface Recommendation {
   id: string;
   item: CartItem;
-  // Who offers it and from which source, first offer first.
+  // Who offers it, from which source and for which terms, first offer first.
   offeredBy: Offer[];
 }
 
@@ -31,8 +37,17 @@ export function mergeRecommendations(
     for (const answer of state.answers) {
       for (const item of answer.items) {
         const row = offered.get(item.id) ?? { id: item.id, item, offeredBy: [] };
-        if (!row.offeredBy.some((o) => o.plugin === answer.plugin && o.source === source)) {
-          row.offeredBy.push({ plugin: answer.plugin, source });
+        const already = row.offeredBy.find(
+          (o) => o.plugin === answer.plugin && o.source === source,
+        );
+        const answers = item.answers ?? [];
+        // One plugin answering one source twice with the same id — two terms
+        // it resolved separately — is one offer for both terms.
+        if (already) {
+          for (const m of answers)
+            if (!already.answers.some((a) => a.term === m.term)) already.answers.push(m);
+        } else {
+          row.offeredBy.push({ plugin: answer.plugin, source, answers: [...answers] });
         }
         offered.set(item.id, row);
       }

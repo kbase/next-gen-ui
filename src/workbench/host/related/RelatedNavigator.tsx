@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { MagnifyingGlass, X } from '@phosphor-icons/react';
 import { CartButton, EmptyState, Loader, Tooltip } from '@kbase/design-system';
+import type { CartItem } from '../../../plugins/sdk';
 import { qualifyCommand, usePanelTitle } from '../../../plugins/sdk';
 import type { QuerySource, Recommendation } from '../../core';
 import { mergeRecommendations } from '../../core';
@@ -33,17 +34,27 @@ import styles from '../../react/Workbench.module.css';
 // from the plugin's own page. A row whose item is already in the cart shows
 // its button pressed, so the press that added it is the press that takes it
 // back out.
+//
+// Under the row's label is why it is there, in a sentence: which plugin, and
+// which of the terms in view it answered. It is the row's own line rather than
+// a heading over a group of rows, because grouping by term would give a narrow
+// pane one Cart heading per kept item.
 
 // The sources this pane reads, in section order.
 const SOURCES = ['page', 'cart'] as const satisfies readonly QuerySource[];
 type RelatedSource = QuerySource;
 
-const FROM: Record<RelatedSource, (label: string) => string> = {
-  page: (label) => `the open page (${label})`,
-  cart: (label) => `the cart (${label})`,
+// What a source holds, as a person would say it. `mentions` is for a plugin
+// whose whole evidence is that words matched words: the atlas knows "soil" as
+// a biome, and an ordinary sentence is made of words. The section heading
+// already names the page, so neither clause repeats its label.
+const BECAUSE: Record<RelatedSource, { has: string; mentions: string }> = {
+  page: { has: 'this page is about', mentions: 'this page mentions' },
+  cart: { has: 'your cart has', mentions: 'your cart mentions' },
 };
 
-// A source as the line under its heading names it.
+// A source as the line under its heading names it, and as a row names it when
+// the plugin that offered it said nothing about why.
 const ASKED: Record<RelatedSource, string> = {
   page: 'the open page',
   cart: 'the cart',
@@ -143,6 +154,47 @@ export function RelatedNavigator() {
   );
 }
 
+// A term in the reader's own words. A term the cart carries is named by the
+// item carrying it, so `uniprot:P11558` is the P11558 on the tile the reader
+// put there; anything else loses its namespace, which is the plugins'
+// spelling of a thing and not a reader's.
+function termLabel(term: string, carried: readonly CartItem[]): string {
+  const item = carried.find((i) => i.terms?.includes(term));
+  if (item) return item.subject ?? item.name;
+  const at = term.indexOf(':');
+  return at > 0 ? term.slice(at + 1) : term;
+}
+
+// The terms of one offer as a line thirty characters wide can hold them: past
+// two, the count is the part that still reads.
+function listTerms(labels: string[]): string {
+  return labels.length <= 2 ? labels.join(' and ') : `${labels[0]} and ${labels.length - 1} others`;
+}
+
+// One offer as a sentence: who answered, and which of the terms in view they
+// answered. A plugin that gave no evidence says where it was asked and no
+// more, which is everything the row knows about it.
+function clause(
+  offer: Recommendation['offeredBy'][number],
+  title: string,
+  carried: readonly CartItem[],
+): string {
+  const terms = [...new Set(offer.answers.map((a) => termLabel(a.term, carried)))];
+  if (terms.length === 0) return `${title}, from ${ASKED[offer.source]}`;
+  const say = offer.answers.every((a) => a.kind === 'name') ? 'mentions' : 'has';
+  return `${title}, because ${BECAUSE[offer.source][say]} ${listTerms(terms)}`;
+}
+
+// What the `+` adds: the item as the plugin gave it, without why it gave it.
+// `answers` is the reason it was offered for a question, and the cart is not
+// a question — left on, it would sit on the tile as a stale reason until the
+// reload that drops it, the stored shape having no such field (core/cart.ts).
+function withoutEvidence(item: CartItem): CartItem {
+  const thing = { ...item };
+  delete thing.answers;
+  return thing;
+}
+
 function RelatedRow({ row }: { row: Recommendation }) {
   const services = useServices();
   const { query, source: index } = services;
@@ -161,16 +213,17 @@ function RelatedRow({ row }: { row: Recommendation }) {
   // is the item that plugin would have added: same stamp, same slice, so the
   // button's pressed state is about the row it sits on.
   const cart = pluginHostFor(services, first.plugin).cart;
-  const provenance = row.offeredBy
-    .map(
-      (o) =>
-        `${index.manifest(o.plugin)?.title ?? o.plugin} from ${FROM[o.source](query.get(o.source).label)}`,
-    )
+  // Read from the whole cart, not this plugin's slice: the term a row answers
+  // was put in view by whichever item carries it.
+  const carried = services.cart.items();
+  const why = row.offeredBy
+    .map((o) => clause(o, index.manifest(o.plugin)?.title ?? o.plugin, carried))
     .join('; ');
   const label = (
     <span className={styles.relatedLabel}>
       <span className={styles.relatedName}>{item.subject ?? item.name}</span>
       {item.summary && <span className={styles.relatedDetail}>{item.summary}</span>}
+      <span className={styles.relatedWhy}>{why}</span>
     </span>
   );
   const mark = (
@@ -201,10 +254,11 @@ function RelatedRow({ row }: { row: Recommendation }) {
             )
           }
         />
+        {/* Why the row is there is on the row now, so the tooltip says what
+            the label had no room for: the item's full name, and what pressing
+            it does. */}
         <Tooltip.Popup side="right">
-          {open
-            ? `Open in ${title}. Offered by ${provenance}.`
-            : `${item.name}. Offered by ${provenance}.`}
+          {open ? `${item.name}. Open in ${title}.` : item.name}
         </Tooltip.Popup>
       </Tooltip.Root>
 
@@ -220,7 +274,7 @@ function RelatedRow({ row }: { row: Recommendation }) {
       <CartButton
         pressed={cart.has(item.id)}
         aria-label={`Add ${item.subject ?? item.name} to the cart`}
-        onPressedChange={(next) => (next ? cart.add(item) : cart.remove(item.id))}
+        onPressedChange={(next) => (next ? cart.add(withoutEvidence(item)) : cart.remove(item.id))}
       />
 
       <button

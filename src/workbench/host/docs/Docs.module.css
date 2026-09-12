@@ -79,14 +79,9 @@
   gap: var(--s-3);
 }
 
-.lede,
 .para {
   margin: 0;
   max-inline-size: 46rem;
-}
-
-.lede {
-  color: var(--c-ink2);
 }
 
 /* The friendly account of a section, at body size. */
@@ -167,12 +162,6 @@
   font-family: var(--font-mono);
   font-size: var(--fs-2);
   color: var(--c-ink3);
-}
-
-/* "The smallest plugin" under A plugin. */
-.subhead {
-  margin: var(--s-3) 0 0;
-  font-size: var(--fs-5);
 }
 
 .inline {

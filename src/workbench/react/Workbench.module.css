@@ -933,8 +933,7 @@
   flex: none;
 }
 
-.crumbLink,
-.crumbHere {
+.crumbLink {
   display: inline-flex;
   align-items: center;
   gap: var(--s-1);
@@ -987,6 +986,14 @@
 
 /* Where you are: the same size as its ancestors, in full-strength ink. */
 .crumbHere {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  padding: 2px var(--s-2);
+  border-radius: var(--r-sm);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: var(--c-ink);
   font-weight: var(--fw-bold);
 }
@@ -1236,25 +1243,6 @@
   color: var(--ct-red);
 }
 
-/* Dismiss and destroy pushed to opposite ends. Side by side they were a pair
-   of buttons a hand could slip between; they are not a pair — one closes a
-   reader's look at an item, the other throws the item away. */
-/* Close is where nearly every visit ends, so it is the filled button on the
-   right where a hand goes. Removing is rare and cannot be undone, so it is
-   quiet, at the other end, and out of that path — two buttons of equal weight
-   an inch apart still trade places under a quick hand. */
-.cartPreviewFoot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s-6);
-  margin-block-start: var(--s-2);
-}
-
-.cartPreviewRemove.cartPreviewRemove {
-  color: var(--ct-red);
-}
-
 /* In the corner, over the tile, the way a composer puts it. */
 .cartRemove {
   position: absolute;
@@ -1315,12 +1303,6 @@
   color: var(--c-ink4);
 }
 
-/* The cart is asking the same question as the page: one list, and a mark
-   saying both are behind it. */
-.relatedAlso {
-  color: var(--c-ink4);
-}
-
 .relatedList {
   margin: 0;
   padding: 0;
@@ -1336,22 +1318,6 @@
 
 .relatedRow:hover {
   background: var(--c-raised);
-}
-
-/* An answer to the previous question, kept until this plugin answers the
-   current one: readable, but visibly not yet confirmed. */
-.relatedStale {
-  opacity: 0.55;
-}
-
-/* A plugin still answering, holding its place in the list. */
-.relatedPending {
-  display: flex;
-  align-items: center;
-  gap: var(--s-2);
-  padding: var(--s-1) var(--s-4);
-  font-size: var(--fs-2);
-  color: var(--c-ink3);
 }
 
 /* The row is a link: pressing it opens the page the plugin named. */
@@ -1393,14 +1359,16 @@
 /* Two lines, because a sidebar row is about thirty characters wide and a
    proposal has two things to say: which thing it opens, and what that thing
    is. On one line the second was always the half that got cut. */
-.relatedName,
-.relatedDetail {
+.relatedName {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .relatedDetail {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: var(--c-ink4);
   font-size: var(--fs-2);
 }

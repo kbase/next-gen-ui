@@ -1,5 +1,6 @@
 import type { Cleanup, StatusItem } from '../../plugins/sdk';
 import type { PluginId } from '../core';
+import { createKeyedStore } from '../core/subscribable';
 import type { HostIndex } from './installed';
 
 // What each plugin last pushed for the status bar. Every background's
@@ -19,16 +20,9 @@ export interface StatusStore {
 }
 
 export function createStatusStore(source: HostIndex): StatusStore {
-  const current = new Map<PluginId, StatusItem[]>();
+  const current = createKeyedStore<PluginId, StatusItem[]>();
   const stops = new Map<PluginId, Cleanup>();
-  const listeners = new Set<() => void>();
-  let version = 0;
   let live = true;
-
-  const changed = () => {
-    version += 1;
-    listeners.forEach((l) => l());
-  };
 
   // Subscribes to each background that has arrived and is not subscribed to
   // yet. The plugin is entered in `stops` before `status` is called, because
@@ -45,8 +39,7 @@ export function createStatusStore(source: HostIndex): StatusStore {
           background.status((items) => {
             if (!live) return;
             if (items.length) current.set(plugin, items);
-            else current.delete(plugin);
-            changed();
+            else current.forget(plugin);
           }),
         );
       } catch (err) {
@@ -59,12 +52,9 @@ export function createStatusStore(source: HostIndex): StatusStore {
   attach();
 
   return {
-    all: () => [...current.entries()].map(([plugin, items]) => ({ plugin, items })),
-    subscribe(listener) {
-      listeners.add(listener);
-      return () => listeners.delete(listener);
-    },
-    version: () => version,
+    all: () => current.entries().map(([plugin, items]) => ({ plugin, items })),
+    subscribe: current.subscribe,
+    version: current.version,
     stop() {
       if (!live) return;
       live = false;
@@ -78,8 +68,6 @@ export function createStatusStore(source: HostIndex): StatusStore {
       }
       stops.clear();
       current.clear();
-      version += 1;
-      listeners.forEach((l) => l());
     },
   };
 }

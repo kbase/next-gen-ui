@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { createStore } from '../core/subscribable';
 
 // User settings that are not layout: which plugin answers the prompt bar,
 // which suggests commands for what is typed there, and which keys the user
@@ -25,8 +26,15 @@ export const SETTINGS_STORAGE_KEY = 'workbench.settings.v5';
 export interface SettingsStore {
   get: () => Settings;
   set: (patch: Partial<Settings>) => void;
+  version: () => number;
   subscribe: (listener: () => void) => () => void;
 }
+
+// A patch naming the value a field already holds is not a change: the
+// settings document is written to storage on every change, and a reader that
+// picks its current assistant out of a menu should not cost a write.
+const same = (a: Settings, b: Settings) =>
+  a.assistant === b.assistant && a.intent === b.intent && a.keybindings === b.keybindings;
 
 // The two plugin choices have to be named: which plugin answers the bar and
 // which ranks what is typed there is the app's decision, and there is no
@@ -35,17 +43,11 @@ export interface SettingsStore {
 export function createSettingsStore(
   initial: Pick<Settings, 'assistant' | 'intent'> & Partial<Settings>,
 ): SettingsStore {
-  let current: Settings = { keybindings: {}, ...initial };
-  const listeners = new Set<() => void>();
+  const settings = createStore<Settings>({ keybindings: {}, ...initial }, same);
   return {
-    get: () => current,
-    set(patch) {
-      current = { ...current, ...patch };
-      listeners.forEach((l) => l());
-    },
-    subscribe(listener) {
-      listeners.add(listener);
-      return () => listeners.delete(listener);
-    },
+    get: settings.get,
+    set: (patch) => settings.set({ ...settings.get(), ...patch }),
+    version: settings.version,
+    subscribe: settings.subscribe,
   };
 }

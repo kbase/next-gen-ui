@@ -2,11 +2,13 @@ import type { ToastManager } from '@kbase/design-system';
 import type {
   CartStore,
   Operation,
+  PanelId,
   PluginId,
   QueryStore,
   TermStore,
   WorkbenchStore,
 } from '../core';
+import { createStore } from '../core/subscribable';
 import type { CommandRegistry, RunStore } from '../commands';
 import type { DestinationStore } from '../host/destination';
 import type { HostIndex } from '../host/installed';
@@ -46,19 +48,11 @@ export interface PreviewHandle {
 }
 
 export function createPreviewHandle(): PreviewHandle {
-  let plugin: PluginId | null = null;
-  const listeners = new Set<() => void>();
+  const previewing = createStore<PluginId | null>(null);
   return {
-    get: () => plugin,
-    set(next) {
-      if (next === plugin) return;
-      plugin = next;
-      listeners.forEach((l) => l());
-    },
-    subscribe(listener) {
-      listeners.add(listener);
-      return () => listeners.delete(listener);
-    },
+    get: previewing.get,
+    set: previewing.set,
+    subscribe: previewing.subscribe,
   };
 }
 
@@ -97,4 +91,16 @@ export interface WorkbenchServices {
   prompt: PromptHandle;
   // The unpinned pane the sidebar is previewing, if any.
   preview: PreviewHandle;
+}
+
+// Everything held under a panel's id that is not in the layout. A panel id is
+// never reused, so what these three hold for a closed panel can only be read
+// by nothing: keeping any of it keeps it for the session. They are dropped
+// together because they are filled together, from the same panel's render
+// (PanelHost's `setTitle`, `setCrumbs`, `setTerms`), and PanelHost's unmount
+// is where this is called.
+export function forgetPanel(services: WorkbenchServices, id: PanelId): void {
+  services.titles.forget(id);
+  services.crumbs.forget(id);
+  services.terms.forget(id);
 }

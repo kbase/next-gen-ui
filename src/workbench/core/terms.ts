@@ -1,3 +1,5 @@
+import { createKeyedStore } from './subscribable';
+
 // What each open panel says it is about.
 //
 // Panels push; the host does not pull. A panel already holds whatever it took
@@ -7,34 +9,27 @@
 export interface TermStore {
   get: (panel: string) => string[];
   set: (panel: string, terms: string[]) => void;
+  // A panel that has closed. Called through `forgetPanel` (react/services.ts),
+  // which drops a panel's title, trail and terms in one go.
   forget: (panel: string) => void;
   subscribe: (listener: () => void) => () => void;
   version: () => number;
 }
 
+const NONE: string[] = [];
+
+const same = (a: string[], b: string[]) => a.length === b.length && a.every((t, i) => t === b[i]);
+
 export function createTermStore(): TermStore {
-  const byPanel = new Map<string, string[]>();
-  const listeners = new Set<() => void>();
-  let version = 0;
-  const changed = () => {
-    version += 1;
-    listeners.forEach((l) => l());
-  };
+  // A panel declares its terms from its render, so the same values arrive on
+  // every pass; comparing the terms rather than the array is what keeps a
+  // re-render from re-asking every plugin.
+  const byPanel = createKeyedStore<string, string[]>({ equal: same });
   return {
-    get: (panel) => byPanel.get(panel) ?? [],
-    set(panel, terms) {
-      const have = byPanel.get(panel);
-      if (have && have.length === terms.length && have.every((t, i) => t === terms[i])) return;
-      byPanel.set(panel, terms);
-      changed();
-    },
-    forget(panel) {
-      if (byPanel.delete(panel)) changed();
-    },
-    subscribe(listener) {
-      listeners.add(listener);
-      return () => listeners.delete(listener);
-    },
-    version: () => version,
+    get: (panel) => byPanel.get(panel) ?? NONE,
+    set: byPanel.set,
+    forget: byPanel.forget,
+    subscribe: byPanel.subscribe,
+    version: byPanel.version,
   };
 }

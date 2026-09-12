@@ -1,4 +1,5 @@
 import type { CartItem, Offer, Suggestion } from '../../plugins/sdk';
+import { createNotifier } from './subscribable';
 
 // What every plugin's `relate` said about each source of terms, and what
 // they offered for the text.
@@ -81,16 +82,14 @@ export interface QueryStore {
   version: () => number;
 }
 
+// The three things it holds move together as far as a reader is concerned —
+// the prompt bar draws from all of them — so they sit under one version
+// rather than in three stores.
 export function createQueryStore(): QueryStore {
   const states = new Map<QuerySource, SourceState>();
   let typing = EMPTY_TYPING;
   const gone = new Set<string>();
-  const listeners = new Set<() => void>();
-  let version = 0;
-  const changed = () => {
-    version += 1;
-    listeners.forEach((l) => l());
-  };
+  const { subscribe, version, changed } = createNotifier();
   return {
     get: (source) => states.get(source) ?? EMPTY_SOURCE,
     set(source, state) {
@@ -107,10 +106,7 @@ export function createQueryStore(): QueryStore {
       changed();
     },
     dismissed: (key) => gone.has(key),
-    subscribe(listener) {
-      listeners.add(listener);
-      return () => listeners.delete(listener);
-    },
-    version: () => version,
+    subscribe,
+    version,
   };
 }

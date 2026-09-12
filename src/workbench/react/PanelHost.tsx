@@ -13,6 +13,7 @@ import { Alert, Button, EmptyState, Loader } from '@kbase/design-system';
 import type { Crumb, Mount, PanelHandle, PluginHost } from '../../plugins/sdk';
 import type { Panel } from '../core';
 import { useServices } from './context';
+import { forgetPanel } from './services';
 import { pluginHostFor } from '../host/createWorkbench';
 import styles from './Workbench.module.css';
 
@@ -52,8 +53,11 @@ export function PanelHost({ panel }: { panel: Panel }) {
     };
   }, [source, panel.plugin, panel.kind, listed, module, load.attempt]);
 
-  // A closed panel's terms are not the workbench's business any more.
-  useEffect(() => () => services.terms.forget(panel.id), [services.terms, panel.id]);
+  // A closed panel's title, trail and terms are not the workbench's business
+  // any more. This host is mounted once per panel in the layout and unmounted
+  // when the panel leaves it, so this is the one place that knows a panel is
+  // gone for good — a hidden tab keeps its body mounted and keeps all three.
+  useEffect(() => () => forgetPanel(services, panel.id), [services, panel.id]);
 
   // Live: `path` and `focused` read the store when asked, so a mount that
   // keeps the handle sees the current values, and `subscribe` says when

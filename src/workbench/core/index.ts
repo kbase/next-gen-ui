@@ -9,6 +9,8 @@ export type { TitleOf } from './describe';
 export { serialize, deserialize, validate } from './serialize';
 export { createCartStore, readCart, CartItemSchema, CART_STORAGE_KEY } from './cart';
 export type { StoredCartItem, CartStore } from './cart';
+export { createNotifier, createStore, createKeyedStore } from './subscribable';
+export type { Notifier, Store, KeyedStore, KeyedOptions } from './subscribable';
 export { createWorkbenchStore } from './store';
 export type { WorkbenchStore, StoreOptions, DispatchResult, Cause, Snapshot } from './store';
 export * from './terms';

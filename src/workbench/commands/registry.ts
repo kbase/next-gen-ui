@@ -1,4 +1,5 @@
 import type { PluginId } from '../core';
+import { createKeyedStore } from '../core/subscribable';
 import type { ArgSpec, ArgValues } from './args';
 
 // Who ran the command: the plugin whose code called `execute`, or 'user'
@@ -39,6 +40,9 @@ export interface CommandRegistry {
   find(name: string): Found;
   list(): Command[];
   run(name: string, values: ArgValues, caller?: Caller): Promise<void>;
+  // Registrations and unregistrations so far. A React reader takes it as its
+  // snapshot; counting the list misses a command replaced by another.
+  version(): number;
   subscribe(listener: () => void): () => void;
 }
 
@@ -50,12 +54,13 @@ export class DuplicateCommandError extends Error {
 }
 
 export function createCommandRegistry(): CommandRegistry {
-  const commands = new Map<string, Command>();
-  const listeners = new Set<() => void>();
-  const notify = () => listeners.forEach((l) => l());
+  const commands = createKeyedStore<string, Command>();
 
   const list = () =>
-    [...commands.values()].sort((a, b) => qualifiedName(a).localeCompare(qualifiedName(b)));
+    commands
+      .entries()
+      .map(([, command]) => command)
+      .sort((a, b) => qualifiedName(a).localeCompare(qualifiedName(b)));
 
   const find = (name: string): Found => {
     const exact = commands.get(name);
@@ -71,15 +76,14 @@ export function createCommandRegistry(): CommandRegistry {
       const key = qualifiedName(command);
       if (commands.has(key)) throw new DuplicateCommandError(key);
       commands.set(key, command);
-      notify();
+      // Only its own registration: whoever registered next under this name
+      // did so after this one was taken back, and undoing theirs is not this
+      // caller's to do.
       return () => {
-        if (commands.get(key) === command) {
-          commands.delete(key);
-          notify();
-        }
+        if (commands.get(key) === command) commands.forget(key);
       };
     },
-    get: (name) => commands.get(name),
+    get: commands.get,
     find,
     list,
     async run(name, values, caller = 'user') {
@@ -93,9 +97,7 @@ export function createCommandRegistry(): CommandRegistry {
       }
       await found.command.run(values, caller);
     },
-    subscribe(listener) {
-      listeners.add(listener);
-      return () => listeners.delete(listener);
-    },
+    version: commands.version,
+    subscribe: commands.subscribe,
   };
 }

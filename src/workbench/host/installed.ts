@@ -13,6 +13,7 @@ import type {
 } from '../../plugins/sdk';
 import { qualifyCommand } from '../../plugins/sdk';
 import type { PluginId } from '../core';
+import { createNotifier } from '../core/subscribable';
 import type { Command, CommandRegistry } from '../commands';
 import { iconFor } from './icons';
 
@@ -75,13 +76,10 @@ export function createHostIndex(installed: InstalledPlugin[]): HostIndex {
   const byId = new Map(installed.map((p) => [p.manifest.id, p]));
   const loaded = new Map<string, unknown>();
   const loading = new Map<string, Promise<unknown>>();
-  const listeners = new Set<() => void>();
-  let version = 0;
-
-  const bump = () => {
-    version += 1;
-    listeners.forEach((l) => l());
-  };
+  // Nothing here is one value: what changes is which modules have arrived,
+  // and every reader asks the index about that its own way. The version is
+  // the whole of what they subscribe to.
+  const { subscribe, version, changed: bump } = createNotifier();
 
   const has = (id: PluginId, kind: Module) =>
     byId.get(id)?.manifest.modules.includes(kind) ?? false;
@@ -200,11 +198,8 @@ export function createHostIndex(installed: InstalledPlugin[]): HostIndex {
         const background = loaded.get(`${manifest.id}/background`) as Background | undefined;
         return background ? [{ plugin: manifest.id, title: manifest.title, background }] : [];
       }),
-    version: () => version,
-    subscribe(listener) {
-      listeners.add(listener);
-      return () => listeners.delete(listener);
-    },
+    version,
+    subscribe,
     registerCommands(registry, host) {
       for (const { manifest } of installed) {
         for (const decl of manifest.commands ?? []) {

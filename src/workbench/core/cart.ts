@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { CartItem } from '../../plugins/sdk';
+import { createKeyedStore } from './subscribable';
 
 // Things the user has set aside to work with.
 //
@@ -97,34 +98,16 @@ export function readCart(raw: string | null): StoredCartItem[] {
 }
 
 export function createCartStore(initial: StoredCartItem[] = []): CartStore {
-  const items = new Map<string, StoredCartItem>(initial.map((i) => [i.id, i]));
-  let version = 0;
-  const listeners = new Set<() => void>();
-  const changed = () => {
-    version += 1;
-    listeners.forEach((l) => l());
-  };
-
+  const items = createKeyedStore<string, StoredCartItem>({
+    initial: initial.map((i) => [i.id, i]),
+  });
   return {
-    items: () => [...items.values()],
-    add(item) {
-      items.set(item.id, item);
-      changed();
-    },
-    remove(id) {
-      if (!items.delete(id)) return;
-      changed();
-    },
-    clear() {
-      if (items.size === 0) return;
-      items.clear();
-      changed();
-    },
-    has: (id) => items.has(id),
-    version: () => version,
-    subscribe(listener) {
-      listeners.add(listener);
-      return () => listeners.delete(listener);
-    },
+    items: () => items.entries().map(([, item]) => item),
+    add: (item) => items.set(item.id, item),
+    remove: items.forget,
+    clear: items.clear,
+    has: items.has,
+    version: items.version,
+    subscribe: items.subscribe,
   };
 }

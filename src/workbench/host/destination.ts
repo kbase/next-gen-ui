@@ -1,5 +1,6 @@
 import type { Cleanup, Destination } from '../../plugins/sdk';
 import type { PluginId } from '../core';
+import { createStore } from '../core/subscribable';
 import type { HostIndex } from './installed';
 import type { SettingsStore } from './settings';
 
@@ -29,9 +30,7 @@ export function createDestinationStore(
   source: HostIndex,
   settings: SettingsStore,
 ): DestinationStore {
-  const listeners = new Set<() => void>();
-  let current: Destination | null = null;
-  let version = 0;
+  const current = createStore<Destination | null>(null);
   let live = true;
   // The assistant being followed, the call that ends its subscription, and
   // a count that makes every push from an earlier one stale — a module that
@@ -40,11 +39,6 @@ export function createDestinationStore(
   let followed: PluginId | null = null;
   let stopPlugin: Cleanup = () => {};
   let generation = 0;
-
-  const changed = () => {
-    version += 1;
-    listeners.forEach((l) => l());
-  };
 
   const release = () => {
     generation += 1;
@@ -56,9 +50,7 @@ export function createDestinationStore(
     } catch (err) {
       console.warn(`plugin ${was}: its destination cleanup threw`, err);
     }
-    if (current === null) return;
-    current = null;
-    changed();
+    current.set(null);
   };
 
   // The prompt module is fetched here, not by the bar: what the bar shows
@@ -78,8 +70,7 @@ export function createDestinationStore(
         if (mine !== generation || !prompt.destination) return;
         stopPlugin = prompt.destination((value) => {
           if (mine !== generation) return;
-          current = value;
-          changed();
+          current.set(value);
         });
       })
       .catch((err: unknown) => {
@@ -91,12 +82,9 @@ export function createDestinationStore(
   follow();
 
   return {
-    get: () => current,
-    subscribe(listener) {
-      listeners.add(listener);
-      return () => listeners.delete(listener);
-    },
-    version: () => version,
+    get: current.get,
+    subscribe: current.subscribe,
+    version: current.version,
     stop() {
       if (!live) return;
       live = false;

@@ -5,6 +5,7 @@ import type { Operation } from './operations';
 import { isUndoable } from './operations';
 import type { ReduceContext } from './reduce';
 import { defaultContext, reduce } from './reduce';
+import { createStore } from './subscribable';
 
 export interface DispatchResult {
   changed: boolean;
@@ -59,15 +60,9 @@ export function createWorkbenchStore({
   limit = 50,
 }: StoreOptions): WorkbenchStore {
   const noCause: Cause = { focus: null, path: null };
-  let current: Snapshot = { layout: initial, cause: noCause };
+  const state = createStore<Snapshot>({ layout: initial, cause: noCause });
   const past: Layout[] = [];
   const future: Layout[] = [];
-  const listeners = new Set<() => void>();
-
-  function set(next: Snapshot) {
-    current = next;
-    listeners.forEach((l) => l());
-  }
 
   function push(snapshot: Layout) {
     past.push(snapshot);
@@ -76,23 +71,20 @@ export function createWorkbenchStore({
   }
 
   return {
-    get: () => current.layout,
-    snapshot: () => current,
-    subscribe(listener) {
-      listeners.add(listener);
-      return () => listeners.delete(listener);
-    },
+    get: () => state.get().layout,
+    snapshot: state.get,
+    subscribe: state.subscribe,
     dispatch(op) {
-      const before = current.layout;
+      const before = state.get().layout;
       const after = reduce(before, op, ctx);
       if (after === before) return { changed: false, announcement: '' };
       if (isUndoable(op)) push(before);
       const announcement = describe(op, before, after, title);
-      set({
+      state.set({
         layout: after,
         cause: {
-          focus: after.focus === before.focus ? current.cause.focus : op,
-          path: op.type === 'setPath' ? op : current.cause.path,
+          focus: after.focus === before.focus ? state.get().cause.focus : op,
+          path: op.type === 'setPath' ? op : state.get().cause.path,
         },
       });
       return { changed: true, announcement };
@@ -103,15 +95,15 @@ export function createWorkbenchStore({
     undo() {
       const previous = past.pop();
       if (!previous) return false;
-      future.push(current.layout);
-      set({ layout: previous, cause: noCause });
+      future.push(state.get().layout);
+      state.set({ layout: previous, cause: noCause });
       return true;
     },
     redo() {
       const next = future.pop();
       if (!next) return false;
-      past.push(current.layout);
-      set({ layout: next, cause: noCause });
+      past.push(state.get().layout);
+      state.set({ layout: next, cause: noCause });
       return true;
     },
     canUndo: () => past.length > 0,

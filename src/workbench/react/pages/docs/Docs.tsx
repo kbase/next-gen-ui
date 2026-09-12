@@ -658,8 +658,13 @@ interface CartItem {
   summary?: string;              // one line
   terms?: string[];              // what other plugins are asked about once the item is in the cart
   answers?: Match[];             // which of the terms asked about this item answers, and how
-  source?: { command: string; args?: Record<string, string> };
+  source?: CartSource;           // how to produce it again; anyone holding the item can run it
   context?: Record<string, unknown>;           // what an assistant is told: units, population, caveats
+}
+
+interface CartSource {
+  command: string;               // bare, meaning this plugin's own: the host qualifies it
+  args?: Record<string, string>;
 }`}</Sig>
               <p className={styles.para}>
                 <Code>terms</Code> is what the item carries onward and <Code>answers</Code> is what

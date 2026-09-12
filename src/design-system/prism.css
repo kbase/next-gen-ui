@@ -11,7 +11,16 @@ code[class*='language-'] {
   color: var(--c-ink3);
   font-variant-numeric: tabular-nums slashed-zero;
   text-shadow: none;
-  white-space: pre;
+  /* No `white-space` declaration, deliberately. Whether a long line scrolls or
+     wraps depends on what the block holds — a program, whose lines are
+     statements and must not be broken, or a record, where a wrapped value
+     costs nothing — and only the caller knows which. Setting it here decided
+     for everyone at element+attribute specificity, which no class on the
+     `pre` can outrank, so callers doubled their class to get past it. Without
+     the declaration the UA's `pre { white-space: pre }` still scrolls by
+     default, and one ordinary class turns it into `pre-wrap`. Dropping it
+     from `code[class*='language-']` is what lets the inner element inherit
+     the choice instead of needing the same override again. */
   word-spacing: normal;
   word-break: normal;
   tab-size: 2;

@@ -28,9 +28,7 @@ export function HomeDocument() {
     m.title.toLowerCase().includes(q) ||
     m.id.includes(q) ||
     (m.description?.toLowerCase().includes(q) ?? false);
-  const listed = source
-    .manifests()
-    .filter((m) => m.id !== 'home' && m.id !== 'catalog' && m.id !== 'docs' && matches(m));
+  const listed = source.manifests().filter(matches);
   const apps = listed.filter(isApp);
   const panels = listed.filter((m) => source.has(m.id, 'pane'));
 

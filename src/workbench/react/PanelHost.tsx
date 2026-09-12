@@ -27,18 +27,29 @@ export function PanelHost({ panel }: { panel: Panel }) {
   // finishing anywhere re-renders this panel.
   useSyncExternalStore(source.subscribe, source.version, source.version);
   const module = listed ? source.loaded(panel.plugin, panel.kind) : undefined;
-  const [failure, setFailure] = useState<Error | null>(null);
+  // A failed import and the attempt it came from. Bumping `attempt` re-runs
+  // the effect below, and the index starts a fresh import: a rejected load
+  // leaves nothing in its caches (host/installed.ts:97-99), so the retry is
+  // a real second fetch rather than the first rejection replayed.
+  const [load, setLoad] = useState<{ attempt: number; error: Error | null }>({
+    attempt: 0,
+    error: null,
+  });
+  const retry = useCallback(() => setLoad((l) => ({ attempt: l.attempt + 1, error: null })), []);
 
   useEffect(() => {
     if (!listed || module) return;
     let live = true;
     source.module(panel.plugin, panel.kind).catch((err: unknown) => {
-      if (live) setFailure(err instanceof Error ? err : new Error(String(err)));
+      // `live` is false once a retry has superseded this attempt, so the
+      // rejection it was waiting for cannot re-raise the message.
+      if (live)
+        setLoad((l) => ({ ...l, error: err instanceof Error ? err : new Error(String(err)) }));
     });
     return () => {
       live = false;
     };
-  }, [source, panel.plugin, panel.kind, listed, module]);
+  }, [source, panel.plugin, panel.kind, listed, module, load.attempt]);
 
   // A closed panel's terms are not the workbench's business any more.
   useEffect(() => () => services.terms.forget(panel.id), [services.terms, panel.id]);
@@ -89,8 +100,8 @@ export function PanelHost({ panel }: { panel: Panel }) {
   const title = source.manifest(panel.plugin)?.title ?? panel.plugin;
   return (
     <PanelBoundary key={panel.id}>
-      {failure ? (
-        <Failed error={failure} />
+      {load.error ? (
+        <LoadFailed title={title} error={load.error} onRetry={retry} />
       ) : module ? (
         <Mounted mount={module.mount} handle={handle} host={host} />
       ) : (
@@ -138,9 +149,28 @@ function Loading({ title }: { title: string }) {
   );
 }
 
-// Thrown from render so the boundary below shows it the way a crash is shown.
-function Failed({ error }: { error: Error }): never {
-  throw error;
+// The module never arrived: an unreachable remote, a bad bundle, a missing
+// export. Nothing of the plugin has run, so pressing Try again fetches it
+// again in place. The boundary below is the other failure — the plugin's
+// own code threw while rendering — and cannot be retried by fetching.
+function LoadFailed({
+  title,
+  error,
+  onRetry,
+}: {
+  title: string;
+  error: Error;
+  onRetry: () => void;
+}) {
+  return (
+    <div className={styles.panelMessage} role="alert">
+      <p className="body">{title} could not be loaded.</p>
+      <p className={`caption ${styles.errorText}`}>{error.message}</p>
+      <Button size="sm" variant="outline" onClick={onRetry}>
+        Try again
+      </Button>
+    </div>
+  );
 }
 
 // A panel whose plugin is no longer installed, or no longer has this kind of

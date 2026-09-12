@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useSyncExternalStore } from 'react';
 import type { Crumb } from '../../plugins/sdk';
-import type { Layout, Operation, Panel, PanelId } from '../core';
+import type { Layout, Operation, Panel, PanelId, Snapshot } from '../core';
 import type { ArgValues } from '../commands';
 import { qualifiedName } from '../commands';
 import type { WorkbenchServices } from './services';
@@ -16,6 +16,15 @@ export function useServices(): WorkbenchServices {
 export function useLayout(): Layout {
   const { store } = useServices();
   return useSyncExternalStore(store.subscribe, store.get, store.get);
+}
+
+// For the two syncs, which have to know what caused the arrangement they
+// are reacting to. Anything that only draws the arrangement wants
+// `useLayout`: the snapshot is a new object on every operation, including
+// the ones that left the cause alone.
+export function useSnapshot(): Snapshot {
+  const { store } = useServices();
+  return useSyncExternalStore(store.subscribe, store.snapshot, store.snapshot);
 }
 
 // The one dispatch that announces what it changed, reached without a

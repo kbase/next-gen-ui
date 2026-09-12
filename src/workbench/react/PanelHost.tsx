@@ -22,7 +22,7 @@ import styles from './Workbench.module.css';
 // chrome keep working.
 export function PanelHost({ panel }: { panel: Panel }) {
   const services = useServices();
-  const { source, navIntentRef, dispatch } = services;
+  const { source, dispatch } = services;
   const listed = source.has(panel.plugin, panel.kind);
   // The module, once the index has it; the index is the store, so a load
   // finishing anywhere re-renders this panel.
@@ -75,8 +75,7 @@ export function PanelHost({ panel }: { panel: Panel }) {
         return services.store.get().focus === id;
       },
       navigate: (path, options) => {
-        navIntentRef.current = options?.replace ? 'replace' : 'push';
-        dispatch({ type: 'setPath', panel: id, path });
+        dispatch({ type: 'setPath', panel: id, path, replace: options?.replace });
       },
       setTitle: (title) => services.titles.set(id, title),
       setCrumbs: (crumbs: Crumb[]) => services.crumbs.set(id, crumbs),
@@ -91,7 +90,7 @@ export function PanelHost({ panel }: { panel: Panel }) {
         });
       },
     };
-  }, [services, navIntentRef, dispatch, panel.id, panel.plugin, panel.kind]);
+  }, [services, dispatch, panel.id, panel.plugin, panel.kind]);
   const host = useMemo<PluginHost>(
     () => pluginHostFor(services, panel.plugin),
     [services, panel.plugin],

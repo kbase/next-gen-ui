@@ -14,7 +14,12 @@ export type Target = MainTarget | { zone: 'sidebar'; index?: number };
 export type Operation =
   | { type: 'open'; panel: Panel; target?: MainTarget }
   | { type: 'close'; panel: PanelId }
-  | { type: 'focus'; panel: PanelId }
+  // `by` is for the DOM-focus sync, not for the layout: 'user' is a pointer
+  // or a focus event, whose caret is already where the user put it, and
+  // 'command' — which is what an absent `by` means — is everything else, so
+  // the caret follows the focus to the panel that gained it. Omitting it
+  // costs a caret jump, never a lost one.
+  | { type: 'focus'; panel: PanelId; by?: 'user' | 'command' }
   // A route panel showing a different path. `replace` is for the browser
   // history the URL sync writes, not for the layout.
   | { type: 'setPath'; panel: PanelId; path: string; replace?: boolean }

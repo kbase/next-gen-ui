@@ -107,6 +107,18 @@ describe('Workbench', () => {
     expect(screen.getByRole('tab', { name: /job 12/i })).toHaveFocus();
   });
 
+  it('a pointer gesture that moves no focus leaves the next command free to move the caret', async () => {
+    const user = userEvent.setup();
+    mount();
+    await openJob(user, /assemble reads/i);
+    await openJob(user, /annotate isolate/i);
+    await screen.findByRole('heading', { name: /annotate isolate/i });
+    // Folding a block is a click on sidebar chrome, and it changes no focus.
+    await user.click(screen.getByRole('button', { name: 'Jobs', expanded: true }));
+    await user.keyboard('{Alt>}{Shift>}{ArrowLeft}{/Shift}{/Alt}');
+    expect(screen.getByRole('tab', { name: /job 12/i })).toHaveFocus();
+  });
+
   it('restores the layout from storage on the next mount', async () => {
     const user = userEvent.setup();
     const storage = memoryStorage();

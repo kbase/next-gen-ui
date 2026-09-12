@@ -45,7 +45,7 @@ export async function openRoute(
       (p) => p.plugin === plugin && p.kind === 'route' && normalize(p.path) === wanted,
     );
     if (existing) {
-      dispatch({ type: 'focus', panel: existing.id });
+      dispatch({ type: 'focus', panel: existing.id, by: 'command' });
       return existing.id;
     }
   }
@@ -67,7 +67,7 @@ export function openPane(services: WorkbenchServices, plugin: PluginId): boolean
   }
   const panel = makePane(plugin);
   if (placementOf(services.store.get(), panel.id).zone !== 'none') {
-    return services.dispatch({ type: 'focus', panel: panel.id });
+    return services.dispatch({ type: 'focus', panel: panel.id, by: 'command' });
   }
   return services.dispatch({ type: 'open', panel });
 }

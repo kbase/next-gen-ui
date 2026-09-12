@@ -16,13 +16,10 @@ export const Route = createFileRoute('/_workbench/p/$pluginId/$')({
     const remembered = location.state.panel;
     const panel = remembered ? services.store.get().panels[remembered] : undefined;
     if (panel && panel.plugin === params.pluginId && panel.kind === 'route') {
-      // The entry already names this path; the URL sync must not write it
-      // again, so the intent is set only when the path actually moves.
-      if (panel.path !== path) {
-        services.navIntentRef.current = 'replace';
-        services.dispatch({ type: 'setPath', panel: panel.id, path });
-      }
-      services.dispatch({ type: 'focus', panel: panel.id });
+      // The entry already names this path, so the sync must not write a
+      // second one for it: the move replaces.
+      services.dispatch({ type: 'setPath', panel: panel.id, path, replace: true });
+      services.dispatch({ type: 'focus', panel: panel.id, by: 'command' });
       return;
     }
     const opened = await openRoute(services, params.pluginId, path);

@@ -20,7 +20,6 @@ export function TabGroup({ group }: { group: Group }) {
   const dispatch = useDispatch();
   const run = useRun();
   const services = useServices();
-  const { focusIntentRef } = services;
   const focused = layout.focus !== null && group.tabs.includes(layout.focus);
   // A tab's label depends on its neighbours, so it is settled for the
   // group rather than by each tab for itself.
@@ -44,7 +43,9 @@ export function TabGroup({ group }: { group: Group }) {
       return;
     } else return;
     event.preventDefault();
-    if (next) dispatch({ type: 'focus', panel: next });
+    // The caret follows the arrow keys along the strip, which is what the
+    // roving tab order is for, so this is not the user placing it.
+    if (next) dispatch({ type: 'focus', panel: next, by: 'command' });
   };
 
   if (group.tabs.length === 0) {
@@ -89,10 +90,7 @@ export function TabGroup({ group }: { group: Group }) {
             active={group.active === id}
             focused={layout.focus === id}
             label={labels[id]}
-            onSelect={() => {
-              focusIntentRef.current = 'user';
-              dispatch({ type: 'focus', panel: id });
-            }}
+            onSelect={() => dispatch({ type: 'focus', panel: id, by: 'user' })}
           />
         ))}
         <TabEnd group={group} />

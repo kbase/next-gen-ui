@@ -55,8 +55,6 @@ export function createWorkbench({
   const announcer = createAnnouncer();
   const prompt = createPromptHandle();
   const preview = createPreviewHandle();
-  const focusIntentRef: WorkbenchServices['focusIntentRef'] = { current: 'command' };
-  const navIntentRef: WorkbenchServices['navIntentRef'] = { current: 'push' };
   const source = createHostIndex([...installed, ...hostPlugins(() => services)]);
   const settings = createSettingsStore(
     loaded.settings ?? { assistant: defaultAssistant, intent: defaultIntent },
@@ -107,8 +105,6 @@ export function createWorkbench({
     announcer,
     prompt,
     preview,
-    focusIntentRef,
-    navIntentRef,
     dispatch,
   };
 
@@ -124,12 +120,7 @@ export function createWorkbench({
         .filter((id) => source.has(id, 'pane')),
     focusPane: (plugin) => void openPane(services, plugin),
     previewPane: (plugin) => preview.set(plugin),
-    // An explicit ask for the prompt bar outranks the focus that follows a
-    // command to the panel it opened, whichever lands first.
-    focusPrompt: () => {
-      focusIntentRef.current = 'user';
-      prompt.focus();
-    },
+    focusPrompt: () => prompt.focus(),
   }).forEach((c) => registry.register(c));
   registry.register(openCommand(services));
   source.registerCommands(registry, (plugin) => pluginHostFor(services, plugin));

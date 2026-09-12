@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useRouter } from '@tanstack/react-router';
 import type { Layout, Panel } from '../core';
-import { useLayout, useServices } from './context';
+import { useSnapshot } from './context';
 
 export const WORKBENCH_PATH = '/workbench';
 
@@ -28,8 +28,7 @@ export function pathForPanel(panel: Panel | undefined): string | null {
 // equal to the current location is skipped, which is also what stops the
 // URL→layout→URL loop: resolving a link focuses the same panel.
 export function useUrlSync() {
-  const layout = useLayout();
-  const { navIntentRef } = useServices();
+  const { layout, cause } = useSnapshot();
   const router = useRouter();
   const previous = useRef<Layout | null>(null);
 
@@ -40,7 +39,6 @@ export function useUrlSync() {
     const href = pathForPanel(panel);
     const current = router.state.location.pathname + router.state.location.searchStr;
     if (href && panel && href === current) {
-      navIntentRef.current = 'push';
       // An entry this sync did not write — the deep link the session started
       // on — is claimed for the panel it resolved to, so Back to it later
       // re-targets that panel instead of opening another.
@@ -53,11 +51,13 @@ export function useUrlSync() {
     if (before.focus === layout.focus && before.panels === layout.panels) return;
 
     if (href && panel) {
-      const intent = navIntentRef.current;
-      navIntentRef.current = 'push';
       const justOpened = !(panel.id in before.panels);
       const moved = before.panels[panel.id]?.path !== panel.path;
-      const push = justOpened || (moved && intent === 'push');
+      // The operation that put the panel on this path, not whatever was
+      // dispatched last: a `navigate` that moved nothing is not an
+      // operation, and a breadcrumb that moved this panel is not a replace.
+      const replacing = cause.path?.panel === panel.id && cause.path.replace === true;
+      const push = justOpened || (moved && !replacing);
       void router.navigate({ href, replace: !push, state: { panel: panel.id } });
     } else if (current.startsWith('/p/')) {
       // Focus went to something without an address (a pane, or nothing).
@@ -67,5 +67,5 @@ export function useUrlSync() {
       const stillOpen = Object.values(layout.panels).some((p) => pathForPanel(p) === current);
       if (!stillOpen) void router.navigate({ to: WORKBENCH_PATH, replace: true });
     }
-  }, [layout, navIntentRef, router]);
+  }, [layout, cause, router]);
 }

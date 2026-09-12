@@ -97,11 +97,4 @@ export interface WorkbenchServices {
   prompt: PromptHandle;
   // The unpinned pane the sidebar is previewing, if any.
   preview: PreviewHandle;
-  // Set to 'user' by pointer/focus handlers right before they dispatch a
-  // focus change, so the DOM-focus sync leaves the user's caret alone.
-  focusIntentRef: { current: 'command' | 'user' };
-  // Set right before a `setPath` dispatch, so the URL sync knows whether the
-  // panel asked for a new history entry or to replace the current one. Read
-  // once and reset to 'push'.
-  navIntentRef: { current: 'push' | 'replace' };
 }

@@ -52,6 +52,39 @@ describe('store in use mode', () => {
   });
 });
 
+describe('what caused the layout', () => {
+  it('an operation that moved no focus leaves the focus cause alone', () => {
+    const store = createWorkbenchStore({ initial: defaultLayout() });
+    store.dispatch({ type: 'open', panel: arc });
+    store.dispatch({ type: 'open', panel: job });
+    store.dispatch({ type: 'focus', panel: arc.id, by: 'user' });
+    store.dispatch({ type: 'bar', bar: 'status', visible: false });
+    expect(store.snapshot().cause.focus).toMatchObject({ type: 'focus', by: 'user' });
+  });
+
+  // Resolving a deep link into an open panel dispatches both at once, so
+  // neither reader may be left reading the other's operation.
+  it('a path move and a focus move keep one cause each', () => {
+    const store = createWorkbenchStore({ initial: defaultLayout() });
+    store.dispatch({ type: 'open', panel: arc });
+    store.dispatch({ type: 'open', panel: job });
+    store.dispatch({ type: 'setPath', panel: arc.id, path: '/soil', replace: true });
+    store.dispatch({ type: 'focus', panel: arc.id });
+    expect(store.snapshot().cause).toMatchObject({
+      focus: { type: 'focus', panel: arc.id },
+      path: { type: 'setPath', panel: arc.id, replace: true },
+    });
+  });
+
+  it('a restored snapshot names no cause', () => {
+    const store = createWorkbenchStore({ initial: defaultLayout() });
+    store.dispatch({ type: 'open', panel: arc });
+    store.dispatch({ type: 'setPath', panel: arc.id, path: '/soil', replace: true });
+    store.undo();
+    expect(store.snapshot().cause).toEqual({ focus: null, path: null });
+  });
+});
+
 describe('locked layout', () => {
   it('refuses structural operations and keeps usage free', () => {
     const store = createWorkbenchStore({ initial: defaultLayout() });

@@ -33,7 +33,7 @@ export function PanelLayer({ children }: { children: ReactNode }) {
 }
 
 function Body({ entry, layer }: { entry: Entry; layer: PanelLayerApi }) {
-  const { store, focusIntentRef } = useServices();
+  const { store } = useServices();
   const dispatch = useDispatch();
   const id = entry.panel.id;
   const hidden = entry.slot === null;
@@ -44,8 +44,7 @@ function Body({ entry, layer }: { entry: Entry; layer: PanelLayerApi }) {
   // focus at the moment of the click, and nothing here draws it.
   const activate = () => {
     if (!entry.spec.activates || store.get().focus === id) return;
-    focusIntentRef.current = 'user';
-    dispatch({ type: 'focus', panel: id });
+    dispatch({ type: 'focus', panel: id, by: 'user' });
   };
 
   return (

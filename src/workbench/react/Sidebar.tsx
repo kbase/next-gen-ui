@@ -190,7 +190,7 @@ function Block({ panel, info }: { panel: Panel; info: PluginInfo | undefined }) 
   const layout = useLayout();
   const dispatch = useDispatch();
   const run = useRun();
-  const { focusIntentRef, source } = useServices();
+  const { source } = useServices();
   const title = useTitle(panel);
   const Icon = info?.icon ?? PushPin;
   const folded = layout.sidebar.folded.includes(panel.id);
@@ -243,11 +243,10 @@ function Block({ panel, info }: { panel: Panel; info: PluginInfo | undefined }) 
             ref={dragRef}
             {...dragHandlers}
             onClick={() => {
-              focusIntentRef.current = 'user';
               // One operation per click: `focus` on a folded sidebar panel
               // already unfolds it, and dispatching it after `fold` would
               // undo the fold.
-              if (folded) dispatch({ type: 'focus', panel: panel.id });
+              if (folded) dispatch({ type: 'focus', panel: panel.id, by: 'user' });
               else dispatch({ type: 'fold', panel: panel.id, folded: true });
             }}
           >

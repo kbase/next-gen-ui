@@ -282,32 +282,33 @@
   overflow: auto;
 }
 
-/* The class is doubled to outrank Popover.Popup's own 320px max-width and
-   content padding: this popout holds a whole navigator panel, not a hint,
-   and the panel body pads itself like its sidebar twin. Width comes
-   inline from the layout's sidebar width, so the flyout is the sidebar's
-   own size. */
-.popout.popout {
+/* The flyout's size, and nothing else: the surface below it is a Frame, so
+   the fill, the border and the radius come from there. Width comes inline
+   from the layout's sidebar width, so the flyout is the sidebar's own size,
+   and a content-fit pane overrides the height inline. */
+.popout {
   display: flex;
-  background: var(--c-surface);
-  border: 1px solid var(--c-border);
-  border-radius: var(--r-lg);
-  max-width: none;
   height: 480px;
   max-height: 80vh;
-  padding: 0;
-  overflow: hidden;
-  /* Popover elevation (--e-4, per the token's own grading), not the menu's
-     --e-3 — aligned flush with the cards, the shadow is what says this
-     floats above them. */
-  box-shadow: var(--e-4);
 }
 
+/* Base UI focuses the popup when the flyout opens. The ring belongs on the
+   rail icon the reader is still looking at, not on the flyout that answered. */
+.popout:focus-visible {
+  outline: none;
+}
+
+/* The flyout's surface: a Frame, which is where the fill, the border, the
+   radius and the clipping come from. */
 .popoutBody {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-width: 0;
+  /* Popover elevation (--e-4, per the token's own grading), not the menu's
+     --e-3 — aligned flush with the cards, the shadow is what says this
+     floats above them. */
+  box-shadow: var(--e-4);
 }
 
 .popoutHeader {

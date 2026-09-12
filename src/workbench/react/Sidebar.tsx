@@ -3,10 +3,12 @@ import type { ReactElement, RefObject } from 'react';
 // Chrome glyphs come straight from Phosphor, never from the host's icon
 // table — the table is the plugins' namespace (host/icons.ts).
 import { CaretDown, DotsThree, PushPin, X } from '@phosphor-icons/react';
+import { Popover as BasePopover } from '@base-ui/react/popover';
 import {
   Button,
   ContextMenu,
   EmptyState,
+  Frame,
   Menu,
   NavIcon,
   Popover,
@@ -471,40 +473,54 @@ function PanePopout({
   return (
     <Popover.Root open={open} onOpenChange={(next) => !next && onDismiss?.()}>
       {trigger && <Popover.Trigger render={trigger} />}
-      {/* Beside the rail with its top at the icon: the default bottom-
-          centered placement would cover the icons under the clicked one. */}
-      <Popover.Popup
-        anchor={anchor}
-        side="right"
-        sideOffset={8}
-        align="start"
-        alignOffset={6}
-        className={styles.popout}
-        style={{ width, height: fit === 'content' ? 'auto' : undefined }}
-        aria-label={name}
-        // The pane's body is drawn over this flyout, not inside it.
-        aria-owns={panelDomId(panel.id)}
-      >
-        <div className={styles.popoutBody}>
-          <div className={styles.popoutHeader}>
-            {Icon && (
-              <span className={styles.blockIcon} aria-hidden="true">
-                <Icon size={14} />
-              </span>
-            )}
-            <span className={styles.popoutTitle}>{label}</span>
-            {onPin && (
-              <>
-                <div className={styles.spacer} />
-                <Button size="xs" variant="outline" onClick={onPin}>
-                  Pin
-                </Button>
-              </>
-            )}
-          </div>
-          <div ref={slot} className={styles.blockBody} data-panel-slot={panel.id} />
-        </div>
-      </Popover.Popup>
+      {/* Base UI's popover parts, not the design system's Popup. That one is
+          a popover — capped at 320px and padded for a Title and a Description
+          — and this is a floating piece of the workbench's own chrome holding
+          a whole navigator panel, which the design system builds from Frame
+          and the tokens. Root and Trigger still come from the design system:
+          those two it does not restyle. */}
+      <BasePopover.Portal>
+        {/* Beside the rail with its top at the icon: the default bottom-
+            centered placement would cover the icons under the clicked one.
+            The stacking tier goes here and not on the popup, per tokens.css.
+            The pane's body draws a tier above it, from the panel layer. */}
+        <BasePopover.Positioner
+          anchor={anchor}
+          side="right"
+          sideOffset={8}
+          align="start"
+          alignOffset={6}
+          style={{ zIndex: 'var(--z-anchored)' }}
+        >
+          <BasePopover.Popup
+            className={styles.popout}
+            style={{ width, height: fit === 'content' ? 'auto' : undefined }}
+            aria-label={name}
+            // The pane's body is drawn over this flyout, not inside it.
+            aria-owns={panelDomId(panel.id)}
+          >
+            <Frame padding={0} className={styles.popoutBody}>
+              <div className={styles.popoutHeader}>
+                {Icon && (
+                  <span className={styles.blockIcon} aria-hidden="true">
+                    <Icon size={14} />
+                  </span>
+                )}
+                <span className={styles.popoutTitle}>{label}</span>
+                {onPin && (
+                  <>
+                    <div className={styles.spacer} />
+                    <Button size="xs" variant="outline" onClick={onPin}>
+                      Pin
+                    </Button>
+                  </>
+                )}
+              </div>
+              <div ref={slot} className={styles.blockBody} data-panel-slot={panel.id} />
+            </Frame>
+          </BasePopover.Popup>
+        </BasePopover.Positioner>
+      </BasePopover.Portal>
     </Popover.Root>
   );
 }

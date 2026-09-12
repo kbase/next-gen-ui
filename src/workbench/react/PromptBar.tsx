@@ -104,17 +104,18 @@ export function PromptBar() {
       announcer.announce(message);
       return;
     }
+    // The cart as it stands at send time. Cleared with the box below, the
+    // attachments belong to the message the way a photo belongs to the roll
+    // it was taken from — but a message and its attachments must survive a
+    // failed send, so both are put back in `catch` if sending didn't happen.
+    const attachments = cart.items();
     setValue('');
+    cart.clear();
     abort.current?.abort();
     const controller = new AbortController();
     abort.current = controller;
     setBusy(true);
     try {
-      // The cart as it stands at send time, and then emptied: the attachments
-      // belong to the message, the way a photo does. Leaving them would attach
-      // them again to the next one.
-      const attachments = cart.items();
-      cart.clear();
       const handler = await source.module(assistant, 'prompt');
       await handler.handle(
         { text, terms: query.get('typing').pool, signal: controller.signal },
@@ -124,6 +125,12 @@ export function PromptBar() {
       const message = err instanceof Error ? err.message : 'The assistant failed.';
       setError(message);
       announcer.announce(message);
+      // Only when nothing has superseded this send: a newer message already
+      // owns the box and the cart, and this one's undo must not stomp it.
+      if (abort.current === controller) {
+        setValue(text);
+        attachments.forEach((item) => cart.add(item));
+      }
     } finally {
       if (abort.current === controller) {
         abort.current = null;

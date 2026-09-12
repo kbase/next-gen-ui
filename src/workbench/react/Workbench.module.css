@@ -697,35 +697,35 @@
   outline-offset: -2px;
 }
 
-.dropZone_left {
+.dropZoneLeft {
   top: 0;
   bottom: 0;
   left: 0;
   width: 25%;
 }
 
-.dropZone_right {
+.dropZoneRight {
   top: 0;
   bottom: 0;
   right: 0;
   width: 25%;
 }
 
-.dropZone_top {
+.dropZoneTop {
   left: 25%;
   right: 25%;
   top: 0;
   height: 25%;
 }
 
-.dropZone_bottom {
+.dropZoneBottom {
   left: 25%;
   right: 25%;
   bottom: 0;
   height: 25%;
 }
 
-.dropZone_centre {
+.dropZoneCentre {
   left: 25%;
   right: 25%;
   top: 25%;

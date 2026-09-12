@@ -207,7 +207,7 @@ function Tab({
             <Icon size={13} />
           </span>
         )}
-        <span className={styles.tabTitle}>{title}</span>
+        <span>{title}</span>
         <span className={styles.tabClose} aria-hidden="true" onClick={close}>
           <X size={12} weight="bold" />
         </span>

@@ -93,12 +93,22 @@ export function GroupDropZones({ group }: { group: string }) {
   );
 }
 
+// Vite exports these locals camelCased (css.modules.localsConvention in
+// vite.config.ts), so a key built from the Side value would have to be
+// recased. Spelling the four out instead makes a missing band a type error.
+const EDGE_CLASS: Record<Side, string> = {
+  left: styles.dropZoneLeft,
+  right: styles.dropZoneRight,
+  top: styles.dropZoneTop,
+  bottom: styles.dropZoneBottom,
+};
+
 function EdgeZone({ group, side }: { group: string; side: Side }) {
   const { dropRef, isOver } = useDropTarget({ type: 'edge', group, side });
   return (
     <div
       ref={dropRef}
-      className={`${styles.dropZone} ${styles[`dropZone_${side}`]}`}
+      className={`${styles.dropZone} ${EDGE_CLASS[side]}`}
       data-over={isOver || undefined}
     />
   );
@@ -109,7 +119,7 @@ function CentreZone({ group }: { group: string }) {
   return (
     <div
       ref={dropRef}
-      className={`${styles.dropZone} ${styles.dropZone_centre}`}
+      className={`${styles.dropZone} ${styles.dropZoneCentre}`}
       data-over={isOver || undefined}
     />
   );

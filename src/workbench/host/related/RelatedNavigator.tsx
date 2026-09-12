@@ -127,7 +127,7 @@ export function RelatedNavigator() {
   return (
     <div className={styles.related}>
       {groups.map((g) => (
-        <div key={g.source} className={styles.relatedSection}>
+        <div key={g.source}>
           <p className={styles.relatedFrom}>{g.label}</p>
           {g.rows.length > 0 ? (
             <ul className={styles.relatedList}>

@@ -29,8 +29,8 @@ The build exposes each named file as a federation module and writes `manifest.js
 `manifest.json` and everything in `dist/` under `/services/<id>/` and `/services/<id>/plugin/`.
 
 Each module default-exports one `define*` call: `defineBackground`, `defineRoute`, `definePane`,
-`defineCommands`, `definePrompt`. `fromReact(Component)` turns a component into the `mount` a
-route or pane needs; inside it, `usePanel`, `useHost`, `useCart`, `usePanelTitle`,
+`defineCommands`, `definePrompt`, `defineIntent`. `fromReact(Component)` turns a component into
+the `mount` a route or pane needs; inside it, `usePanel`, `useHost`, `useCart`, `usePanelTitle`,
 `usePanelBreadcrumbs`, `usePanelTerms` and `CartButton` read the handles the host provides.
 
 ## Three exports
@@ -45,8 +45,9 @@ route or pane needs; inside it, `usePanel`, `useHost`, `useCart`, `usePanelTitle
 
 ## Building it
 
-`npm run build:plugin-sdk` in this repo writes `dist-plugin-sdk/` with both entries as JavaScript,
-type declarations, and a `package.json`. A plugin in another checkout depends on that directory:
+`npm run build:plugin-sdk` in this repo writes `dist-plugin-sdk/` with all three entries as
+JavaScript, type declarations, and a `package.json`. A plugin in another checkout depends on that
+directory:
 
 ```json
 "@kbase/plugin-sdk": "file:../../next-gen-ui/dist-plugin-sdk"
@@ -54,5 +55,7 @@ type declarations, and a `package.json`. A plugin in another checkout depends on
 
 Built rather than consumed as source because `vite.config.ts` is loaded by Node, which cannot
 import the preset out of TypeScript. `react`, `react-dom`, `zod`, `@phosphor-icons/react` and
-`@kbase/design-system` are peers, external to the build, and shared singletons at runtime — the
-same list `SHARED_SINGLETONS` gives the federation preset.
+`@kbase/design-system` are peers, external to the build, and shared singletons at runtime.
+`SHARED_SINGLETONS` also names `@tanstack/react-router` and this SDK itself as runtime
+singletons; the federation preset shares each only with a plugin that declares it as a
+dependency.

@@ -73,7 +73,7 @@ describe('the plugin-scoped cart', () => {
 // intent, so everything the bar can offer has to be in what the intent is
 // handed. A declared command is one candidate; the calls a manifest already
 // filled in are the others, and a pane — which is a module and no command at
-// all — is reachable only through the workbench's own `open`.
+// all — is reachable only through the workbench's own `show`.
 describe('the catalog the intent is handed', () => {
   const calls = async (): Promise<DeclaredCall[]> => {
     const index = vi.fn();
@@ -123,7 +123,7 @@ describe('the catalog the intent is handed', () => {
       },
       {
         label: 'Show Function Junction',
-        command: 'workbench:open',
+        command: 'workbench:show',
         args: { plugin: 'fj' },
         plugin: 'fj',
         pluginTitle: 'Function Junction',
@@ -141,7 +141,7 @@ describe('the catalog the intent is handed', () => {
       installed: [],
       persistence: noPersistence,
     });
-    const pane = (await calls()).find((c) => c.command === 'workbench:open');
+    const pane = (await calls()).find((c) => c.command === 'workbench:show');
     expect(services.registry.get(pane!.command)).toBeDefined();
   });
 });

@@ -117,6 +117,13 @@ export function createWorkbench({
     dispatch,
     announce: announcer.announce,
     plugins: () => source.plugins().map((p) => p.id),
+    panes: () =>
+      source
+        .plugins()
+        .map((p) => p.id)
+        .filter((id) => source.has(id, 'pane')),
+    focusPane: (plugin) => void openPane(services, plugin),
+    previewPane: (plugin) => preview.set(plugin),
     // An explicit ask for the prompt bar outranks the focus that follows a
     // command to the panel it opened, whichever lands first.
     focusPrompt: () => {

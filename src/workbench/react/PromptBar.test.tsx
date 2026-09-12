@@ -84,15 +84,21 @@ describe('the rows under the box', () => {
   it('reaches a pane by the name of the plugin that has it', async () => {
     const user = userEvent.setup();
     const services = mount();
-    const run = vi.spyOn(services.registry, 'run').mockResolvedValue(undefined);
+    const run = vi.spyOn(services.registry, 'run');
 
     await user.type(field(), 'related');
     const row = await screen.findByRole('option', { name: /Show Related/ });
 
     // Under the Send row, which is always row zero.
     expect(options()[0]).toContain('Send to KOROS');
+    const before = services.store.get();
     await user.click(row);
-    expect(run).toHaveBeenCalledWith('workbench:open', { plugin: 'related' }, 'user');
+    expect(run).toHaveBeenCalledWith('workbench:show', { plugin: 'related' }, 'user');
+    // Related is not pinned here, so the row puts it in the preview slot and
+    // leaves the layout alone. A row nobody asked to open something with
+    // does not rearrange the workbench.
+    expect(services.preview.get()).toBe('related');
+    expect(services.store.get()).toBe(before);
   });
 
   // The shortcut button's own label, which the ranker sees because the host

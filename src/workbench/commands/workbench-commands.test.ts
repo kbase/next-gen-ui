@@ -18,6 +18,9 @@ function setup() {
   const store = createWorkbenchStore({ initial: defaultLayout({ pinned: ['koros'] }) });
   const announced: string[] = [];
   const announce = (t: string) => void announced.push(t);
+  // The two ways `show` can put a pane in front of the reader, recorded in
+  // one list so a test can say which of them ran.
+  const shown: string[] = [];
   const registry = createCommandRegistry();
   workbenchCommands({
     store,
@@ -30,11 +33,15 @@ function setup() {
     },
     announce,
     plugins: () => ['koros', 'data', 'jobs'],
+    // Jobs is installed and has no pane, so `show` has one of each to refuse.
+    panes: () => ['koros', 'data'],
+    focusPane: (plugin) => void shown.push(`focus ${plugin}`),
+    previewPane: (plugin) => void shown.push(`preview ${plugin}`),
     focusPrompt: () => announced.push('<prompt>'),
   }).forEach((c) => registry.register(c));
   store.dispatch({ type: 'open', panel: arc });
   store.dispatch({ type: 'open', panel: job });
-  return { store, registry, announced };
+  return { store, registry, announced, shown };
 }
 
 describe('workbench commands', () => {
@@ -167,6 +174,34 @@ describe('workbench commands', () => {
     expect(announced.at(-1)).toBe('No panel named ghost/pane');
   });
 
+  // The promise a ranked row makes by saying "Show": whichever branch it
+  // takes, the arrangement of the workbench is the same afterwards.
+  it('show focuses a pinned plugin where it already sits', async () => {
+    const { store, registry, shown } = setup();
+    const before = store.get();
+    await registry.run('show', { plugin: 'koros' });
+    expect(shown).toEqual(['focus koros']);
+    expect(store.get()).toBe(before);
+  });
+
+  it('show previews an unpinned plugin, and says so because no operation will', async () => {
+    const { store, registry, announced, shown } = setup();
+    const before = store.get();
+    await registry.run('show', { plugin: 'data' });
+    expect(shown).toEqual(['preview data']);
+    expect(announced.at(-1)).toBe('Previewing data in the sidebar');
+    expect(store.get()).toBe(before);
+  });
+
+  it('show refuses a plugin with no pane, and one that is not installed', async () => {
+    const { registry, announced, shown } = setup();
+    await registry.run('show', { plugin: 'jobs' });
+    expect(announced.at(-1)).toBe('jobs has no pane');
+    await registry.run('show', { plugin: 'ghost' });
+    expect(announced.at(-1)).toBe('No plugin named ghost');
+    expect(shown).toEqual([]);
+  });
+
   it('pin puts a plugin at the position it is given', async () => {
     const { store, registry } = setup();
     await registry.run('pin', { plugin: 'jobs', index: '0' });
@@ -204,6 +239,10 @@ describe('workbench commands', () => {
     expect(await argOf('move-to-sidebar', 'panel')?.complete?.('')).toEqual([pane]);
     expect(await argOf('fold', 'panel')?.complete?.('')).toEqual([]);
     expect(await argOf('pin', 'index')?.complete?.('')).toEqual(['0', '1']);
+
+    // `show` acts on plugins rather than panels, and only on the ones that
+    // have a pane for it to show.
+    expect(await argOf('show', 'plugin')?.complete?.('')).toEqual(['koros', 'data']);
   });
 
   it('move-to-sidebar leaves a focused route where it is, and says why', async () => {

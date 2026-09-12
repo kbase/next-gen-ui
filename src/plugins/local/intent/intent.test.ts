@@ -21,7 +21,7 @@ describe('the bundled intent', () => {
         plugin: 'related',
         pluginTitle: 'Related',
         label: 'Show Related',
-        command: 'workbench:open',
+        command: 'workbench:show',
         args: { plugin: 'related' },
         description: 'What other plugins have about the open panel and the cart.',
       },

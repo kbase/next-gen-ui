@@ -235,7 +235,7 @@ describe('what plugins offered', () => {
 });
 
 // What the host puts in the catalog beside the declarations: a plugin's
-// launcher, its shortcut buttons, and the workbench's `open` for a plugin
+// launcher, its shortcut buttons, and the workbench's `show` for a plugin
 // that has a sidebar pane. Each runs as its manifest wrote it.
 describe('the calls a manifest filled in', () => {
   const calls: DeclaredCall[] = [
@@ -243,7 +243,7 @@ describe('the calls a manifest filled in', () => {
       plugin: 'related',
       pluginTitle: 'Related',
       label: 'Show Related',
-      command: 'workbench:open',
+      command: 'workbench:show',
       args: { plugin: 'related' },
       description: 'What other plugins have about the open panel and the cart.',
     },
@@ -265,7 +265,7 @@ describe('the calls a manifest filled in', () => {
   // the ranker can reach one.
   it('reaches a pane by the name of the plugin that has it', () => {
     const [top] = rankAll('related');
-    expect(top.command).toBe('workbench:open');
+    expect(top.command).toBe('workbench:show');
     expect(top.args).toEqual({ plugin: 'related' });
     expect(top.label).toBe('Show Related');
     // Whose row it is, which is not the plugin whose command it runs.
@@ -273,7 +273,7 @@ describe('the calls a manifest filled in', () => {
   });
 
   it('reaches one by the words of the description rather than the label', () => {
-    expect(rankAll('what other plugins have').map((r) => r.command)).toContain('workbench:open');
+    expect(rankAll('what other plugins have').map((r) => r.command)).toContain('workbench:show');
   });
 
   // The command the button names takes an id; the button already names one,
@@ -289,9 +289,10 @@ describe('the calls a manifest filled in', () => {
     expect(rows.filter((r) => r.command === 'jobs:cancel')).toHaveLength(1);
   });
 
-  // Nothing the workbench does to the word "open" should put every pane on
-  // screen: the command a call names is not part of what it is matched on.
+  // A call is matched on its label, its description and its plugin's name.
+  // The command it runs belongs to whoever declared that command — here the
+  // workbench — and naming that plugin must not drag every pane onto screen.
   it('is not reached by the name of the command it runs', () => {
-    expect(rankAll('open').map((r) => r.command)).not.toContain('workbench:open');
+    expect(rankAll('workbench').map((r) => r.command)).not.toContain('workbench:show');
   });
 });

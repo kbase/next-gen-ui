@@ -16,11 +16,13 @@ import type { PluginId } from '../core';
 import type { Command, CommandRegistry } from '../commands';
 import { iconFor } from './icons';
 
-// What a pane row runs. Registered in createWorkbench.ts as the host's own
-// `open`, which focuses a plugin's pane where it already sits and opens it as
-// a tab otherwise. Named here because a pane is a module and not a command:
-// this is the command that shows one.
-const SHOW_PANE = 'workbench:open';
+// What a pane row runs: `show`, which focuses the pane of a pinned plugin
+// and previews an unpinned one, and in neither case moves anything. A row
+// the reader reached by typing a name is not a request to rearrange the
+// workbench; `open`, which makes a tab, is reached by asking for it. Named
+// here because a pane is a module and not a command: this is the command
+// that shows one.
+const SHOW_PANE = 'workbench:show';
 
 // The host's index of installed plugins: manifests now, modules on demand.
 // Each module is fetched the first time something needs it and kept for

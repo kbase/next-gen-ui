@@ -29,6 +29,15 @@ export interface WorkbenchCommandDeps {
   announce: (text: string) => void;
   // Ids of installed plugins, for `/pin` and `/unpin` completion.
   plugins: () => string[];
+  // Ids of the plugins that have a pane, which are what `/show` can act on.
+  panes: () => string[];
+  // Focuses a plugin's pane where the layout already holds it. `show` calls
+  // it only for a pinned plugin, whose pane always has a place.
+  focusPane: (plugin: string) => void;
+  // Hands a plugin's pane to the sidebar's preview slot. Not a layout
+  // operation: the slot holds one plugin, the user dismisses it from the
+  // preview's own header, and a reload forgets it.
+  previewPane: (plugin: string) => void;
   // The prompt bar is DOM; the command only asks for it.
   focusPrompt: () => void;
 }
@@ -60,6 +69,9 @@ export function workbenchCommands({
   dispatch,
   announce,
   plugins,
+  panes,
+  focusPane,
+  previewPane,
   focusPrompt,
 }: WorkbenchCommandDeps): Command[] {
   const focusTo = (target: PanelId | null) => {
@@ -266,6 +278,42 @@ export function workbenchCommands({
           return;
         }
         dispatch({ type: 'bar', bar: name, visible: !store.get().bars[name] });
+      },
+    },
+    {
+      ...base,
+      name: 'show',
+      title: "Show a plugin's pane",
+      description:
+        'Pinned, the pane is focused where it already sits; unpinned, the sidebar previews it until dismissed',
+      args: [
+        {
+          name: 'plugin',
+          required: true,
+          complete: (p) => panes().filter((id) => id.startsWith(p)),
+        },
+      ],
+      // Neither branch rearranges anything, which is the whole of what this
+      // command is for: a row the user did not ask to open something must not
+      // change where the panels are. `open` is how a pane becomes a tab, and
+      // the user asks for that by name.
+      run: ({ plugin }) => {
+        const id = String(plugin);
+        if (!plugins().includes(id)) {
+          announce(`No plugin named ${id}`);
+          return;
+        }
+        if (!panes().includes(id)) {
+          announce(`${id} has no pane`);
+          return;
+        }
+        if (store.get().sidebar.pinned.includes(id)) {
+          focusPane(id);
+          return;
+        }
+        previewPane(id);
+        // The preview is not an operation, so nothing else speaks for it.
+        announce(`Previewing ${id} in the sidebar`);
       },
     },
     {

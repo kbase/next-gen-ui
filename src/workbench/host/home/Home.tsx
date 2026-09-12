@@ -5,7 +5,7 @@ import type { Manifest } from '../../../plugins/sdk';
 import { qualifyCommand, usePanelTitle } from '../../../plugins/sdk';
 import { useLayout, useRun, useServices } from '../../react/context';
 import { iconFor } from '../icons';
-import { openPane, openRoute } from '../open';
+import { openRoute } from '../open';
 import { isApp } from './apps';
 import styles from './Home.module.css';
 
@@ -16,7 +16,7 @@ import styles from './Home.module.css';
 export function HomeDocument() {
   usePanelTitle('Home');
   const services = useServices();
-  const { source, preview, prompt: promptBar } = services;
+  const { source, prompt: promptBar } = services;
   const layout = useLayout();
   const run = useRun();
   const [query, setQuery] = useState('');
@@ -41,13 +41,8 @@ export function HomeDocument() {
   // Beside Settings for the same reason: the host's own pages, reached by a
   // link rather than found in a search over what is installed.
   const openDocs = () => void openRoute(services, 'docs', '/');
-  // Show where it lives, never pin: a pinned plugin's pane is focused in
-  // its sidebar block, an unpinned one is previewed the way the sidebar's
-  // More menu previews it. Pinning is the Settings page's job.
-  const showPanel = (m: Manifest) => {
-    if (layout.sidebar.pinned.includes(m.id)) openPane(services, m.id);
-    else preview.set(m.id);
-  };
+  // Show where it lives, never pin. Pinning is the Settings page's job.
+  const showPanel = (m: Manifest) => void run('workbench:show', { plugin: m.id });
 
   return (
     <div className={styles.root}>

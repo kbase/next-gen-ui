@@ -759,8 +759,8 @@ function defineCommands(handlers: Commands): Commands;`}</Sig>
             when="Fetched when Settings names this plugin as the assistant. handle runs when the user sends text that is not a slash command; destination is subscribed as the module arrives."
           >
             <Sig>{`interface Query {
-  text?: string;
-  terms?: string[];              // the terms the backgrounds found in the text
+  text: string;                  // never blank: the bar refuses an empty box
+  terms: string[];               // the terms the backgrounds found in the text
   signal: AbortSignal;
 }
 

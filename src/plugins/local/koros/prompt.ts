@@ -11,7 +11,7 @@ export default definePrompt({
     const slug = koros.current() ?? koros.newArc().slug;
     koros.steer(
       slug,
-      text ?? '',
+      text,
       attachments.map((item) => ({
         id: item.id,
         name: item.name,

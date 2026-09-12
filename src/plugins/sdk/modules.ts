@@ -43,9 +43,15 @@ export interface Pane {
 // What the assistant is asked to answer: the message, and the terms the
 // backgrounds found in it. The signal aborts when the user sends another
 // message or presses Stop.
+//
+// `text` holds something other than whitespace: the prompt bar's field and
+// its Send button both refuse a blank box, so a send never happens without
+// text and `handle` has no empty case to guard. `terms` is the term pool as
+// it stood at Enter, empty when no background found anything in the text or
+// when none had answered yet.
 export interface Query {
-  text?: string;
-  terms?: string[];
+  text: string;
+  terms: string[];
   signal: AbortSignal;
 }
 

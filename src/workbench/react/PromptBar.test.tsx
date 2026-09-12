@@ -45,6 +45,35 @@ describe('sending a prompt', () => {
     expect(services.cart.items()).toEqual([]);
   });
 
+  // The bar is the only place a Query is built, and both of its fields are
+  // required, so a handler reads them without a fallback.
+  it('hands the assistant the text and a term pool', async () => {
+    const user = userEvent.setup();
+    const services = mount();
+    const handle = vi.fn().mockResolvedValue(undefined);
+    services.source.module = vi.fn().mockResolvedValue({ handle, newConversation: vi.fn() });
+
+    await user.type(field(), 'hello{Enter}');
+
+    expect(handle).toHaveBeenCalledOnce();
+    expect(handle.mock.calls[0][0]).toMatchObject({ text: 'hello', terms: expect.any(Array) });
+  });
+
+  // What `text` being required rests on: neither way of sending fires on a box
+  // holding nothing but whitespace, so `handle` never sees an empty string.
+  it('sends nothing from a blank box', async () => {
+    const user = userEvent.setup();
+    const services = mount();
+    const handle = vi.fn().mockResolvedValue(undefined);
+    services.source.module = vi.fn().mockResolvedValue({ handle, newConversation: vi.fn() });
+
+    await user.type(field(), '   {Enter}');
+    await user.click(screen.getByRole('button', { name: 'Send' }));
+
+    expect(handle).not.toHaveBeenCalled();
+    expect(field()).toHaveValue('   ');
+  });
+
   it('keeps the message and its attachments when the assistant module fails to load', async () => {
     const user = userEvent.setup();
     const services = mount();

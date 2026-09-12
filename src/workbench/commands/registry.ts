@@ -43,8 +43,6 @@ export interface CommandRegistry {
   list(ctx?: WhenContext): Command[];
   run(name: string, values: ArgValues, caller?: Caller): Promise<void>;
   subscribe(listener: () => void): () => void;
-  // Called after every run settles, whoever ran it and however it ended.
-  onRun(listener: () => void): () => void;
 }
 
 export class DuplicateCommandError extends Error {
@@ -57,7 +55,6 @@ export class DuplicateCommandError extends Error {
 export function createCommandRegistry(): CommandRegistry {
   const commands = new Map<string, Command>();
   const listeners = new Set<() => void>();
-  const ran = new Set<() => void>();
   const notify = () => listeners.forEach((l) => l());
 
   const list = (ctx?: WhenContext) => {
@@ -101,19 +98,11 @@ export function createCommandRegistry(): CommandRegistry {
             : `unknown command /${name}`,
         );
       }
-      try {
-        await found.command.run(values, caller);
-      } finally {
-        ran.forEach((l) => l());
-      }
+      await found.command.run(values, caller);
     },
     subscribe(listener) {
       listeners.add(listener);
       return () => listeners.delete(listener);
-    },
-    onRun(listener) {
-      ran.add(listener);
-      return () => ran.delete(listener);
     },
   };
 }

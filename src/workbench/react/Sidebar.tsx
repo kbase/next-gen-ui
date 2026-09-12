@@ -15,7 +15,7 @@ import {
 import type { Panel, PluginId } from '../core';
 import { groups, makePane, sidebarPanels } from '../core';
 import type { PluginInfo } from '../host/installed';
-import { useDispatch, useLayout, useServices, useTitle } from './context';
+import { useDispatch, useLayout, useRun, useServices, useTitle } from './context';
 import { PanelHost } from './PanelHost';
 import { SplitView } from './SplitView';
 import { useDragPanel, useDragging, useDropTarget } from './useDnd';
@@ -166,6 +166,7 @@ export function Sidebar() {
 function Block({ panel, info }: { panel: Panel; info: PluginInfo | undefined }) {
   const layout = useLayout();
   const dispatch = useDispatch();
+  const run = useRun();
   const { focusIntentRef } = useServices();
   const title = useTitle(panel);
   const Icon = info?.icon ?? PushPin;
@@ -237,20 +238,23 @@ function Block({ panel, info }: { panel: Panel; info: PluginInfo | undefined }) 
             Move to main area
           </ContextMenu.Item>
           <ContextMenu.Separator />
+          {/* A pin position is read after this plugin has been lifted out
+              of the list, which is what makes its own index ± 1 the slot
+              on the far side of its neighbour. */}
           <ContextMenu.Item
             disabled={at <= 0}
-            onClick={() => dispatch({ type: 'pin', plugin: panel.plugin, index: at - 1 })}
+            onClick={() => run('workbench:pin', { plugin: panel.plugin, index: String(at - 1) })}
           >
             Move up
           </ContextMenu.Item>
           <ContextMenu.Item
             disabled={at >= layout.sidebar.pinned.length - 1}
-            onClick={() => dispatch({ type: 'pin', plugin: panel.plugin, index: at + 1 })}
+            onClick={() => run('workbench:pin', { plugin: panel.plugin, index: String(at + 1) })}
           >
             Move down
           </ContextMenu.Item>
           <ContextMenu.Separator />
-          <ContextMenu.Item onClick={() => dispatch({ type: 'unpin', plugin: panel.plugin })}>
+          <ContextMenu.Item onClick={() => run('workbench:unpin', { plugin: panel.plugin })}>
             Unpin
           </ContextMenu.Item>
         </ContextMenu.Popup>
@@ -360,7 +364,7 @@ function PreviewBlock({
   info: PluginInfo | undefined;
   onDismiss: () => void;
 }) {
-  const dispatch = useDispatch();
+  const run = useRun();
   const title = info?.title ?? plugin;
   const Icon = info?.icon ?? PushPin;
   const { dragRef, dragHandlers, isDragging } = useDragPanel({
@@ -389,7 +393,7 @@ function PreviewBlock({
           size="xs"
           variant="outline"
           onClick={() => {
-            dispatch({ type: 'pin', plugin });
+            void run('workbench:pin', { plugin });
             onDismiss();
           }}
         >
@@ -424,7 +428,7 @@ function PreviewPopout({
   anchor: RefObject<HTMLElement | null>;
   onDismiss: () => void;
 }) {
-  const dispatch = useDispatch();
+  const run = useRun();
   const width = useLayout().sidebar.width;
   const fit = useServices().source.loaded(plugin, 'pane')?.fit;
   const title = info?.title ?? plugin;
@@ -452,7 +456,7 @@ function PreviewPopout({
               size="xs"
               variant="outline"
               onClick={() => {
-                dispatch({ type: 'pin', plugin });
+                void run('workbench:pin', { plugin });
                 onDismiss();
               }}
             >

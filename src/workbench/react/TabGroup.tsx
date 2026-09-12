@@ -3,7 +3,7 @@ import { House, X } from '@phosphor-icons/react';
 import { Button, ContextMenu, EmptyState, Tabs } from '@kbase/design-system';
 import type { Group, Panel, PanelId, Side } from '../core';
 import { openRoute } from '../host/open';
-import { useDispatch, useLayout, useServices, useTitle } from './context';
+import { useDispatch, useLayout, useRun, useServices, useTitle } from './context';
 import { Breadcrumbs } from './Breadcrumbs';
 import { useGroupLabels } from './useGroupLabels';
 import { panelDomId, tabDomId } from './domIds';
@@ -158,6 +158,7 @@ function Tab({
   onSelect: () => void;
 }) {
   const dispatch = useDispatch();
+  const run = useRun();
   const { source } = useServices();
   // The negotiated label names the tab; the panel's own title still names
   // it everywhere one tab is described on its own.
@@ -227,9 +228,9 @@ function Tab({
         {panel?.kind === 'pane' && (
           <>
             <ContextMenu.Separator />
-            <ContextMenu.Item
-              onClick={() => dispatch({ type: 'move', panel: id, to: { zone: 'sidebar' } })}
-            >
+            {/* The tab the menu was opened over need not be the focused
+                panel, so the command is told which one to move. */}
+            <ContextMenu.Item onClick={() => run('workbench:move-to-sidebar', { panel: id })}>
               Move to sidebar
             </ContextMenu.Item>
           </>

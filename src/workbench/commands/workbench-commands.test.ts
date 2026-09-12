@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { createWorkbenchStore, defaultLayout, groups, makeRoute, paneId, placementOf } from '../core';
+import {
+  createWorkbenchStore,
+  defaultLayout,
+  groups,
+  makeRoute,
+  paneId,
+  placementOf,
+} from '../core';
 import { createCommandRegistry } from './registry';
 import { workbenchCommands } from './workbench-commands';
 
@@ -79,6 +86,53 @@ describe('workbench commands', () => {
     await registry.run('move-to-sidebar', {});
     expect(placementOf(store.get(), pane).zone).toBe('sidebar');
     expect(announced.at(-1)).toBe(`Moved ${pane} to the sidebar`);
+  });
+
+  it('move-to-sidebar moves the pane it is given, not the focused one', async () => {
+    const { store, registry, announced } = setup();
+    const pane = paneId('koros');
+    store.dispatch({ type: 'move', panel: pane, to: { group: 'root' } });
+    store.dispatch({ type: 'focus', panel: job.id });
+    await registry.run('move-to-sidebar', { panel: pane });
+    expect(placementOf(store.get(), pane).zone).toBe('sidebar');
+    expect(announced.at(-1)).toBe(`Moved ${pane} to the sidebar`);
+  });
+
+  it('move-to-sidebar refuses a panel that is not open', async () => {
+    const { store, registry, announced } = setup();
+    const before = store.get();
+    await registry.run('move-to-sidebar', { panel: 'ghost/pane' });
+    expect(store.get()).toBe(before);
+    expect(announced.at(-1)).toBe('No panel named ghost/pane');
+  });
+
+  it('pin puts a plugin at the position it is given', async () => {
+    const { store, registry } = setup();
+    await registry.run('pin', { plugin: 'jobs', index: '0' });
+    expect(store.get().sidebar.pinned).toEqual(['jobs', 'koros']);
+    await registry.run('pin', { plugin: 'jobs', index: '1' });
+    expect(store.get().sidebar.pinned).toEqual(['koros', 'jobs']);
+  });
+
+  it('pin refuses a position past the last pin, and one that is not a number', async () => {
+    const { store, registry, announced } = setup();
+    // One plugin is pinned, so 0 and 1 are the positions; 2 is past the end.
+    await registry.run('pin', { plugin: 'jobs', index: '2' });
+    expect(store.get().sidebar.pinned).toEqual(['koros']);
+    expect(announced.at(-1)).toBe('No pin position 2');
+    await registry.run('pin', { plugin: 'jobs', index: 'last' });
+    expect(store.get().sidebar.pinned).toEqual(['koros']);
+    expect(announced.at(-1)).toBe('No pin position last');
+  });
+
+  it('completes a panel to move and a position to pin at', async () => {
+    const { store, registry } = setup();
+    const pane = paneId('koros');
+    store.dispatch({ type: 'move', panel: pane, to: { group: 'root' } });
+    const argOf = (name: string, arg: string) =>
+      registry.get(`workbench:${name}`)?.args?.find((a) => a.name === arg);
+    expect(await argOf('move-to-sidebar', 'panel')?.complete?.('')).toEqual([pane]);
+    expect(await argOf('pin', 'index')?.complete?.('')).toEqual(['0', '1']);
   });
 
   it('move-to-sidebar leaves a focused route where it is', async () => {

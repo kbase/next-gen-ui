@@ -69,6 +69,21 @@ export function workbenchCommands({
     }
     dispatch({ type: 'move', panel: focus, to: { group: group.id, side } });
   };
+  // What `move-to-sidebar` can act on when it is given a panel: a pane in
+  // the main area. A pane already in the sidebar is where the command would
+  // put it, and a route cannot go there at all.
+  const movablePanes = (): PanelId[] => {
+    const layout = store.get();
+    return Object.values(layout.panels)
+      .filter((p) => p.kind === 'pane' && placementOf(layout, p.id).zone === 'main')
+      .map((p) => p.id);
+  };
+  // Pin positions count from 0; the one past the last pin is where an
+  // append lands, so it is offered too.
+  const pinPositions = (): string[] => {
+    const { pinned } = store.get().sidebar;
+    return [...pinned.map((_, i) => String(i)), String(pinned.length)];
+  };
   const base = { source: 'workbench' as const };
 
   return [
@@ -133,11 +148,23 @@ export function workbenchCommands({
     {
       ...base,
       name: 'move-to-sidebar',
-      title: 'Move the focused panel to the sidebar',
+      title: 'Move a panel to the sidebar',
+      description: 'The focused panel, unless another is named',
       when: (ctx) => ctx.focusKind === 'pane',
-      run: () => {
-        const focus = focusedPanel(store.get());
-        if (focus) dispatch({ type: 'move', panel: focus, to: { zone: 'sidebar' } });
+      args: [
+        {
+          name: 'panel',
+          complete: (p) => movablePanes().filter((id) => id.startsWith(p)),
+        },
+      ],
+      run: ({ panel }) => {
+        const target = panel === undefined ? focusedPanel(store.get()) : String(panel);
+        if (!target) return;
+        if (!store.get().panels[target]) {
+          announce(`No panel named ${target}`);
+          return;
+        }
+        dispatch({ type: 'move', panel: target, to: { zone: 'sidebar' } });
       },
     },
     {
@@ -158,7 +185,9 @@ export function workbenchCommands({
       ...base,
       name: 'sidebar',
       title: 'Collapse or expand the sidebar',
-      run: () => dispatch({ type: 'sidebar', collapsed: !store.get().sidebar.collapsed }),
+      run: () => {
+        dispatch({ type: 'sidebar', collapsed: !store.get().sidebar.collapsed });
+      },
     },
     {
       ...base,
@@ -184,19 +213,33 @@ export function workbenchCommands({
       ...base,
       name: 'pin',
       title: 'Pin a plugin to the sidebar',
+      description:
+        'An index is a pin position counting from 0; without one a new pin appends and a pinned plugin keeps its place',
       args: [
         {
           name: 'plugin',
           required: true,
           complete: (p) => plugins().filter((id) => id.startsWith(p)),
         },
+        {
+          name: 'index',
+          complete: (p) => pinPositions().filter((i) => i.startsWith(p)),
+        },
       ],
-      run: ({ plugin }) => {
+      run: ({ plugin, index }) => {
         if (!plugins().includes(String(plugin))) {
           announce(`No plugin named ${String(plugin)}`);
           return;
         }
-        dispatch({ type: 'pin', plugin: String(plugin) });
+        let at: number | undefined;
+        if (index !== undefined) {
+          if (!pinPositions().includes(String(index))) {
+            announce(`No pin position ${String(index)}`);
+            return;
+          }
+          at = Number(index);
+        }
+        dispatch({ type: 'pin', plugin: String(plugin), index: at });
       },
     },
     {
@@ -210,7 +253,9 @@ export function workbenchCommands({
           complete: (p) => store.get().sidebar.pinned.filter((id) => id.startsWith(p)),
         },
       ],
-      run: ({ plugin }) => dispatch({ type: 'unpin', plugin: String(plugin) }),
+      run: ({ plugin }) => {
+        dispatch({ type: 'unpin', plugin: String(plugin) });
+      },
     },
     {
       ...base,

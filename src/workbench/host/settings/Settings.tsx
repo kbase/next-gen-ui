@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { Chip, Radio, Switch } from '@kbase/design-system';
 import { usePanelTitle } from '../../../plugins/sdk';
-import { useDispatch, useLayout, useServices } from '../../react/context';
+import { useLayout, useRun, useServices } from '../../react/context';
 import { iconFor } from '../icons';
 import styles from './Settings.module.css';
 
@@ -12,7 +12,7 @@ export function SettingsDocument() {
   usePanelTitle('Settings');
   const { source, settings } = useServices();
   const layout = useLayout();
-  const dispatch = useDispatch();
+  const run = useRun();
   useSyncExternalStore(source.subscribe, source.version, source.version);
   const current = useSyncExternalStore(settings.subscribe, settings.get, settings.get);
   const manifests = source.manifests().filter((m) => m.id !== 'settings');
@@ -45,9 +45,7 @@ export function SettingsDocument() {
                     <Switch
                       checked={pinned}
                       onCheckedChange={(v) =>
-                        dispatch(
-                          v ? { type: 'pin', plugin: m.id } : { type: 'unpin', plugin: m.id },
-                        )
+                        run(v ? 'workbench:pin' : 'workbench:unpin', { plugin: m.id })
                       }
                       aria-label={`Pin ${m.title} to the sidebar`}
                     />

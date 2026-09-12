@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs';
 import { federation } from '@module-federation/vite';
 import type { Plugin } from 'vite';
 import type { Module, PluginConfig } from './contract';
@@ -26,7 +25,7 @@ export function pluginFederation({ config, ...paths }: PluginFederationOptions):
       filename: 'remoteEntry.js',
       manifest: true,
       exposes: Object.fromEntries(named.map((m) => [`./${m}`, paths[m]!])),
-      shared: sharedFor(declaredDependencies()),
+      shared: HOST_PROVIDED,
       dts: false,
     }),
     {
@@ -43,29 +42,23 @@ export function pluginFederation({ config, ...paths }: PluginFederationOptions):
   ];
 }
 
-// The host's singletons, as a plugin shares them: those the plugin depends
-// on. One it does not depend on — the router, for a plugin that draws no
-// routes — is left out; the plugin imports nothing from it, so there is
-// nothing to share, and listing it would make the build look for a copy
-// that is not there.
-function sharedFor(declared: ReadonlySet<string>) {
-  return Object.fromEntries(
-    Object.entries(SHARED_SINGLETONS).filter(([name]) => declared.has(name)),
-  );
-}
-
-function declaredDependencies(): Set<string> {
-  try {
-    const pkg = JSON.parse(readFileSync('package.json', 'utf8')) as Record<
-      'dependencies' | 'devDependencies' | 'peerDependencies',
-      Record<string, string> | undefined
-    >;
-    return new Set([
-      ...Object.keys(pkg.dependencies ?? {}),
-      ...Object.keys(pkg.devDependencies ?? {}),
-      ...Object.keys(pkg.peerDependencies ?? {}),
-    ]);
-  } catch {
-    return new Set();
-  }
-}
+// Every host singleton, taken from the host and never bundled. `import:
+// false` is the share without a local fallback: the module resolves through
+// the share scope the workbench initialized, and this build emits no copy of
+// its own. That is what these remotes want — they run only inside the
+// workbench, so a fallback copy is weight that never loads, and for react
+// and the design system a second copy that does load breaks hook and context
+// identity.
+//
+// A singleton the plugin has not installed is still shared. Not installing
+// it costs only the named exports the build would otherwise read from the
+// package to bind — and a plugin that imports from a package it has not
+// installed fails `tsc` before vite runs. That leaves one warning per
+// uninstalled singleton on a build that is working as intended, which
+// `suppressMissingImportWarning` turns off.
+const HOST_PROVIDED = Object.fromEntries(
+  Object.entries(SHARED_SINGLETONS).map(([name, config]) => [
+    name,
+    { ...config, import: false as const, suppressMissingImportWarning: true },
+  ]),
+);

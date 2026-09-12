@@ -1,4 +1,7 @@
+import { waitFor } from '@testing-library/react';
 import { localPlugins } from '../plugins/local';
+import type { PanelId } from '../workbench/core';
+import { panelDomId } from '../workbench/react/domIds';
 import { createWorkbench, noPersistence } from '../workbench/host';
 import type { CreateWorkbenchOptions } from '../workbench/host/createWorkbench';
 import type { WorkbenchServices } from '../workbench/react';
@@ -22,3 +25,15 @@ export function testWorkbench(
     ...overrides,
   });
 }
+
+// A panel's body is drawn in the panel layer, laid over the slot its place in
+// the layout measures out, so it is not inside the tab strip or the sidebar
+// block that places it. The chrome names it by id — `aria-controls` on a tab,
+// `aria-owns` on a block — which DOM queries do not follow, so a query about
+// what a panel is showing starts here.
+export const panelBody = (id: PanelId): Promise<HTMLElement> =>
+  waitFor(() => {
+    const el = document.getElementById(panelDomId(id));
+    if (!el) throw new Error(`no body is drawn for panel ${id}`);
+    return el;
+  });

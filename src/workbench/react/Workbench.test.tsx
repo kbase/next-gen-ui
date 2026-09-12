@@ -2,6 +2,8 @@ import { configure, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { localPlugins } from '../../plugins/local';
+import { panelBody } from '../../test/workbench';
+import { paneId } from '../core';
 import { createWorkbench, loadWorkbench, noPersistence } from '../host';
 import type { WorkbenchPersistence } from '../host';
 import { WorkbenchProvider } from './WorkbenchProvider';
@@ -35,6 +37,7 @@ function mount(persistence: WorkbenchPersistence = noPersistence) {
     persistence,
     defaultPinned: ['koros', 'data', 'jobs'],
     defaultAssistant: 'koros',
+    defaultIntent: 'intent',
   });
   render(
     <WorkbenchProvider services={services}>
@@ -46,8 +49,8 @@ function mount(persistence: WorkbenchPersistence = noPersistence) {
 
 const status = () => screen.getByRole('status', { name: 'Workbench announcements' });
 const openJob = async (user: ReturnType<typeof userEvent.setup>, name: RegExp) => {
-  const sidebar = screen.getByRole('region', { name: 'Sidebar' });
-  await user.click(await within(sidebar).findByRole('button', { name }));
+  const pane = await panelBody(paneId('jobs'));
+  await user.click(await within(pane).findByRole('button', { name }));
 };
 
 describe('Workbench', () => {
@@ -123,9 +126,8 @@ describe('Workbench', () => {
     const user = userEvent.setup();
     mount();
     await openJob(user, /assemble reads/i);
-    const sidebar = screen.getByRole('region', { name: 'Sidebar' });
     // The Tree's click handler sits on the row inside the treeitem.
-    await user.click(await within(sidebar).findByText('Crash test panel'));
+    await user.click(await within(await panelBody(paneId('data'))).findByText('Crash test panel'));
     expect(await screen.findByRole('alert')).toHaveTextContent('This panel crashed');
     await user.click(screen.getByRole('tab', { name: /job 12/i }));
     expect(screen.getByRole('heading', { name: /assemble reads/i })).toBeVisible();
@@ -179,12 +181,14 @@ describe('Workbench', () => {
     expect(await screen.findByText('Which isolates fix nitrogen?')).toBeInTheDocument();
   });
 
-  it('with no assistant, free text is refused and the setting re-targets the bar', async () => {
+  // Settings offers no "none", so the only assistant the bar can be left
+  // without is one that is named and not installed.
+  it('with an assistant that is not installed, free text is refused and the setting re-targets the bar', async () => {
     const user = userEvent.setup();
     const services = mount();
-    services.settings.set({ assistant: null });
+    services.settings.set({ assistant: 'uninstalled' });
     await user.type(screen.getByRole('combobox', { name: 'Prompt' }), 'hello?{Enter}');
-    expect(status()).toHaveTextContent('No assistant is set');
+    expect(status()).toHaveTextContent('uninstalled cannot answer prompts');
     expect(screen.queryByRole('tab')).not.toBeInTheDocument();
     services.settings.set({ assistant: 'koros' });
     await user.clear(screen.getByRole('combobox', { name: 'Prompt' }));

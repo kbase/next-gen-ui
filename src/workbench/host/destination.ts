@@ -69,7 +69,7 @@ export function createDestinationStore(
     const assistant = settings.get().assistant;
     if (assistant === followed) return;
     release();
-    if (!assistant || !source.has(assistant, 'prompt')) return;
+    if (!source.has(assistant, 'prompt')) return;
     followed = assistant;
     const mine = ++generation;
     source

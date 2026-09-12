@@ -92,6 +92,10 @@ describe('the cart tray', () => {
     const user = userEvent.setup();
     const ran = vi.fn();
     const services = createWorkbench({
+      // Named because a workbench is built with both chosen; this test types
+      // nothing into the prompt bar.
+      defaultAssistant: 'koros',
+      defaultIntent: 'intent',
       installed: [
         localPlugin({
           config: definePluginManifest({

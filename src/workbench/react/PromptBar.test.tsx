@@ -15,6 +15,7 @@ const workbench = () =>
     persistence: noPersistence,
     defaultPinned: ['koros', 'data', 'jobs'],
     defaultAssistant: 'koros',
+    defaultIntent: 'intent',
   });
 
 const bar = (services: WorkbenchServices) => (
@@ -70,6 +71,79 @@ describe('sending a prompt', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('the assistant choked');
     expect(field()).toHaveValue('hello');
     expect(services.cart.items()).toMatchObject([{ id: 'a' }]);
+  });
+});
+
+describe('the rows under the box', () => {
+  const options = () => screen.getAllByRole('option').map((o) => o.textContent);
+
+  // A pane is a module and not a command, and nothing in the Related
+  // plugin's manifest is one either. It is reachable because the host hands
+  // the intent the call that shows a pane alongside the declared commands —
+  // the bar itself no longer reads the text at all.
+  it('reaches a pane by the name of the plugin that has it', async () => {
+    const user = userEvent.setup();
+    const services = mount();
+    const run = vi.spyOn(services.registry, 'run').mockResolvedValue(undefined);
+
+    await user.type(field(), 'related');
+    const row = await screen.findByRole('option', { name: /Show Related/ });
+
+    // Under the Send row, which is always row zero.
+    expect(options()[0]).toContain('Send to KOROS');
+    await user.click(row);
+    expect(run).toHaveBeenCalledWith('workbench:open', { plugin: 'related' }, 'user');
+  });
+
+  // The shortcut button's own label, which the ranker sees because the host
+  // puts the call in the catalog; the command it runs is KOROS's own.
+  it('reaches a shortcut button by its label, once', async () => {
+    const user = userEvent.setup();
+    const services = mount();
+    const run = vi.spyOn(services.registry, 'run').mockResolvedValue(undefined);
+
+    await user.type(field(), 'new question');
+    const row = await screen.findByRole('option', { name: /New question/ });
+
+    // The command KOROS declares and the button that calls it are one row:
+    // pressing either would run the same thing with the same arguments.
+    expect(options().filter((t) => t?.includes('New question'))).toHaveLength(1);
+    await user.click(row);
+    expect(run).toHaveBeenCalledWith('koros:new-question', {}, 'user');
+  });
+
+  it('offers nothing of its own when the chosen intent is not installed', async () => {
+    const user = userEvent.setup();
+    const services = mount();
+    act(() => services.settings.set({ intent: 'uninstalled' }));
+
+    await user.type(field(), 'related');
+
+    expect(screen.queryByRole('option')).not.toBeInTheDocument();
+  });
+});
+
+describe('an assistant that is not installed', () => {
+  const missing = () => {
+    const services = mount();
+    act(() => services.settings.set({ assistant: 'uninstalled' }));
+    return services;
+  };
+
+  it('is named in the refusal rather than throwing', async () => {
+    const user = userEvent.setup();
+    missing();
+
+    await user.type(field(), 'hello{Enter}');
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'uninstalled cannot answer prompts.',
+    );
+  });
+
+  it('still names where the text would go', () => {
+    missing();
+    expect(screen.getByText('uninstalled')).toBeVisible();
   });
 });
 

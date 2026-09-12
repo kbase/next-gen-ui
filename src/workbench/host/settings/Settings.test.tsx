@@ -58,6 +58,24 @@ describe("the Settings page's pin switch", () => {
   });
 });
 
+// Both settings hold a plugin id and nothing else: with neither chosen the
+// prompt bar has nothing to do with what is typed into it.
+describe("the Settings page's plugin choices", () => {
+  it.each([
+    ['Assistant', 'KOROS', 'assistant', 'koros'],
+    ['Suggestions', 'Intent', 'intent', 'intent'],
+  ])('%s offers no None, and picking one writes its id', async (group, title, key, id) => {
+    const user = userEvent.setup();
+    const services = mount();
+    const section = within(screen.getByRole('radiogroup', { name: group }));
+
+    expect(section.queryByRole('radio', { name: 'None' })).not.toBeInTheDocument();
+
+    await user.click(section.getByRole('radio', { name: title }));
+    expect(services.settings.get()[key as 'assistant' | 'intent']).toBe(id);
+  });
+});
+
 const UNDO = 'Undo the last layout change';
 const REDO = 'Redo the last undone layout change';
 

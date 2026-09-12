@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { DeclaredCommand, Offer, TieredTerms } from '@kbase/plugin-sdk';
+import type { DeclaredCall, DeclaredCommand, Offer, TieredTerms } from '@kbase/plugin-sdk';
 import { MATCH_WEIGHT, TIER_WEIGHT, buildCommandIndex, rankCommands } from './rank';
 import { tagText } from './tag';
 
@@ -231,5 +231,67 @@ describe('what plugins offered', () => {
   it('cannot tell a coincidence from a match', () => {
     const rows = withOffers('who is P0AEX9 in the chess database');
     expect(rows.map((r) => r.command)).toContain('function-junction:open');
+  });
+});
+
+// What the host puts in the catalog beside the declarations: a plugin's
+// launcher, its shortcut buttons, and the workbench's `open` for a plugin
+// that has a sidebar pane. Each runs as its manifest wrote it.
+describe('the calls a manifest filled in', () => {
+  const calls: DeclaredCall[] = [
+    {
+      plugin: 'related',
+      pluginTitle: 'Related',
+      label: 'Show Related',
+      command: 'workbench:open',
+      args: { plugin: 'related' },
+      description: 'What other plugins have about the open panel and the cart.',
+    },
+    // A button for a command its own plugin declares, with the argument the
+    // author filled in.
+    {
+      plugin: 'jobs',
+      pluginTitle: 'Jobs',
+      label: 'Cancel job 12',
+      command: 'jobs:cancel',
+      args: { id: '12' },
+    },
+  ];
+  const catalog = buildCommandIndex(commands, calls);
+  const rankAll = (text: string, view: Partial<TieredTerms> = {}) =>
+    rankCommands(catalog, text, tagText(text), { ...NOTHING, ...view });
+
+  // The pane has no command of its own anywhere: this row is the only way
+  // the ranker can reach one.
+  it('reaches a pane by the name of the plugin that has it', () => {
+    const [top] = rankAll('related');
+    expect(top.command).toBe('workbench:open');
+    expect(top.args).toEqual({ plugin: 'related' });
+    expect(top.label).toBe('Show Related');
+    // Whose row it is, which is not the plugin whose command it runs.
+    expect(top.plugin).toBe('related');
+  });
+
+  it('reaches one by the words of the description rather than the label', () => {
+    expect(rankAll('what other plugins have').map((r) => r.command)).toContain('workbench:open');
+  });
+
+  // The command the button names takes an id; the button already names one,
+  // and the id in the text fills the declaration's row instead.
+  it('runs as written, whatever the text carries', () => {
+    const rows = rankAll('cancel job 12', { typed: ['job:99'] });
+    expect(rows.find((r) => r.label === 'Cancel job 12')?.args).toEqual({ id: '12' });
+    expect(rows.find((r) => r.label === undefined)?.args).toEqual({ id: '99' });
+  });
+
+  it('is one row with the command it repeats, when both would run the same thing', () => {
+    const rows = rankAll('cancel this job', { typed: ['job:12'] });
+    expect(rows.filter((r) => r.command === 'jobs:cancel')).toHaveLength(1);
+  });
+
+  // Nothing the workbench does to the word "open" should put every pane on
+  // screen: the command a call names is not part of what it is matched on.
+  it('is not reached by the name of the command it runs', () => {
+    expect(rankAll('open').map((r) => r.command)).not.toContain('workbench:open');
   });
 });

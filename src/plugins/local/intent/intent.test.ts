@@ -6,15 +6,27 @@ const signal = new AbortController().signal;
 const NOTHING: TieredTerms = { typed: [], page: [], cart: [] };
 
 describe('the bundled intent', () => {
-  intent.index([
-    {
-      plugin: 'function-junction',
-      pluginTitle: 'Function Junction',
-      name: 'open',
-      title: 'Open the evidence dossier for a protein',
-      args: [{ name: 'q', description: 'a UniProt or RefSeq id, a gene name, or a sequence' }],
-    },
-  ]);
+  intent.index(
+    [
+      {
+        plugin: 'function-junction',
+        pluginTitle: 'Function Junction',
+        name: 'open',
+        title: 'Open the evidence dossier for a protein',
+        args: [{ name: 'q', description: 'a UniProt or RefSeq id, a gene name, or a sequence' }],
+      },
+    ],
+    [
+      {
+        plugin: 'related',
+        pluginTitle: 'Related',
+        label: 'Show Related',
+        command: 'workbench:open',
+        args: { plugin: 'related' },
+        description: 'What other plugins have about the open panel and the cart.',
+      },
+    ],
+  );
 
   it('leads a row of its own with the identifier and captions it with the command', async () => {
     const [row] = await intent.suggest({

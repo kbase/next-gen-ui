@@ -1,6 +1,6 @@
 {
   "name": "@kbase/plugin-sdk",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "What a next-gen-ui workbench plugin imports: the manifest schema, the panel hooks and the federation preset.",
   "type": "module",
   "private": true

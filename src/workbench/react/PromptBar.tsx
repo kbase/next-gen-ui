@@ -3,12 +3,11 @@ import type { ComponentType, KeyboardEvent } from 'react';
 import { ArrowUpRight, CaretRight, CaretUpDown, Check } from '@phosphor-icons/react';
 import type { IconProps } from '@phosphor-icons/react';
 import { Menu, PromptInput, cx } from '@kbase/design-system';
-import type { Manifest, Prompt } from '../../plugins/sdk';
-import { qualifyCommand } from '../../plugins/sdk';
+import type { Prompt } from '../../plugins/sdk';
 import type { Suggestion } from '../commands';
 import { complete, parse, qualifiedName, resolve, usage } from '../commands';
 import { pluginHostFor } from '../host/createWorkbench';
-import { openPane, openRoute } from '../host/open';
+import { openRoute } from '../host/open';
 import { iconFor } from '../host/icons';
 import { PluginMark } from '../host/PluginMark';
 import { CartTray } from './CartTray';
@@ -16,11 +15,10 @@ import { useLayout, useRun, useServices } from './context';
 import { focusPanelElement } from './useFocusSync';
 import styles from './Workbench.module.css';
 
-// A suggestion that acts directly, for offers whose params no command
+// A suggestion that acts directly, for calls whose arguments no command
 // string could carry, and that says whose it is. Only a completion carries
-// the command it completes (`Suggestion.command`); a row the bar builds
-// itself — a recommendation, a shortcut, an app or panel launch — has none,
-// so this shares just the fields both kinds of row render.
+// the command it completes (`Suggestion.command`); a row the intent ranked
+// has none, so this shares just the fields both kinds of row render.
 type BarSuggestion = Pick<Suggestion, 'value' | 'label' | 'detail'> & {
   run?: () => void;
   icon?: ComponentType<IconProps>;
@@ -39,8 +37,7 @@ export function PromptBar() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const services = useServices();
-  const { registry, announcer, prompt, settings, source, preview, cart, query, queryRunner } =
-    services;
+  const { registry, announcer, prompt, settings, source, cart, query, queryRunner } = services;
   const layout = useLayout();
   const run = useRun();
   const wrapper = useRef<HTMLDivElement>(null);
@@ -79,12 +76,6 @@ export function PromptBar() {
       }
       setValue('');
       await run(qualifiedName(resolved.command), resolved.values);
-      return;
-    }
-    if (!assistant) {
-      const message = 'No assistant is set. Pick one in Settings.';
-      setError(message);
-      announcer.announce(message);
       return;
     }
     if (!source.has(assistant, 'prompt')) {
@@ -128,42 +119,20 @@ export function PromptBar() {
     }
   };
 
-  // What plugins recommended for this text, ahead of name matches: a
-  // plugin recognising its own data is a better answer than a plugin
-  // whose description happens to share a word. Each row is a command
-  // call the plugin filled in; pressing it does what typing it would.
-  const offered = () =>
-    query.typing().offers.flatMap((offer) =>
-      offer.calls.map((call) => ({
-        call,
-        plugin: offer.plugin,
-        command: qualifyCommand(call.command, offer.plugin),
-      })),
-    );
-  const recommended = (text: string): BarSuggestion[] =>
-    offered()
-      .map(({ call, plugin, command }) => {
-        const manifest = source.manifest(plugin);
-        return {
-          value: text,
-          // The call says where you land; the plugin is who takes you.
-          label: call.label,
-          detail: manifest?.title,
-          icon: iconFor(manifest?.icon, manifest?.color),
-          run: () => void run(command, call.args),
-        };
-      })
-      .slice(0, 4);
-
-  // What the chosen intent suggested for this text: every plugin's commands
-  // ranked by its declaration and by the sentence, arguments filled from the
-  // identifiers the text carries, and the plugins' own offers in the order
-  // the intent gave them. "dossier for P0AEX9" reaches Function Junction's
-  // open with q filled whether or not that plugin recognised the text.
+  // The rows for anything that is not a slash command, and the only place
+  // they come from. The chosen intent ranks every candidate there is — each
+  // plugin's declared commands, its launcher, its shortcut buttons, its pane,
+  // and the offers the plugins made for this text — and the bar draws what it
+  // returns in the order it returned. The workbench matches no text itself.
+  // "dossier for P0AEX9" reaches Function Junction's open with q filled
+  // whether or not that plugin recognised the text; "related" reaches the
+  // Related pane the same way, through a call the host put in the catalog.
   const suggested = (text: string): BarSuggestion[] => {
     const top = query.typing().suggestions.slice(0, 4);
-    return top.map(({ call, detail }) => {
-      const manifest = source.manifest(call.command.split(':')[0]);
+    return top.map(({ call, plugin, detail }) => {
+      // Whose row it is, which for a pane or a launcher is not the plugin
+      // whose command runs.
+      const manifest = source.manifest(plugin ?? call.command.split(':')[0]);
       return {
         value: text,
         label: call.label,
@@ -177,96 +146,17 @@ export function PromptBar() {
   // Row zero is what Enter will do. Nothing is guessed: the assistant
   // stays the default and the alternatives sit under it, visible before
   // the key is pressed rather than hidden behind knowing to press down.
-  const defaultSuggestion = (text: string): BarSuggestion[] =>
-    assistant
-      ? [
-          {
-            value: text,
-            // `Ask` only fits a question, and most of what is typed here is
-            // an accession or a name. Send is what the row does, and the word
-            // the composer's own button already uses.
-            label: `Send to ${assistantTitle ?? assistant}`,
-            icon: iconFor(source.manifest(assistant)?.icon, source.manifest(assistant)?.color),
-            run: () => void submit(text),
-          },
-        ]
-      : [];
-
-  // Every term must appear somewhere in a plugin's name, id or
-  // description; a name being typed outranks a description hit. Shared
-  // by the app and panel rows below.
-  const nameHits = (text: string, of: (m: Manifest) => boolean): Manifest[] => {
-    const query = text.trim().toLowerCase();
-    const terms = query.split(/\s+/).filter(Boolean);
-    if (query.length < 2) return [];
-    return source
-      .manifests()
-      .filter(of)
-      .flatMap((m) => {
-        const title = m.title.toLowerCase();
-        const haystack = `${title} ${m.id} ${m.description?.toLowerCase() ?? ''}`;
-        if (!terms.every((t) => haystack.includes(t))) return [];
-        return [{ m, rank: title.startsWith(terms[0]) || m.id.startsWith(terms[0]) ? 0 : 1 }];
-      })
-      .sort((a, b) => a.rank - b.rank || a.m.title.localeCompare(b.m.title))
-      .slice(0, 3)
-      .map(({ m }) => m);
-  };
-
-  // The omnibox path to page-like plugins: "protein evidence" reaches
-  // Function Junction without knowing it exists. A plugin is an app iff
-  // its manifest has a launcher, and the row runs that launcher.
-  const appSuggestions = (text: string): BarSuggestion[] =>
-    nameHits(text, (m) => Boolean(m.launcher)).map((m) => ({
+  const defaultSuggestion = (text: string): BarSuggestion[] => [
+    {
       value: text,
-      label: `Open ${m.title}`,
-      detail: m.description,
-      icon: iconFor(m.icon, m.color),
-      run: () => void run(qualifyCommand(m.launcher!.command, m.id), m.launcher!.args),
-    }));
-
-  // Panels are reached the way Home reaches them: a pinned navigator is
-  // focused where it already lives, an unpinned one is previewed. The
-  // bar never changes the layout to show you something.
-  const panelSuggestions = (text: string): BarSuggestion[] =>
-    nameHits(text, (m) => source.has(m.id, 'pane')).map((m) => {
-      const pinned = layout.sidebar.pinned.includes(m.id);
-      return {
-        value: text,
-        label: `Show ${m.title}`,
-        detail: pinned ? 'In the sidebar' : m.description,
-        icon: iconFor(m.icon, m.color),
-        run: () => (pinned ? void openPane(services, m.id) : preview.set(m.id)),
-      };
-    });
-
-  // The buttons plugins put on the Shortcuts block, reachable by name as
-  // well. A shortcut is a call with its arguments filled in, so the row
-  // always runs.
-  const shortcutSuggestions = (text: string): BarSuggestion[] => {
-    const query = text.trim().toLowerCase();
-    if (query.length < 2) return [];
-    return source
-      .manifests()
-      .flatMap((m) =>
-        (m.shortcuts ?? []).map((call) => {
-          const name = qualifyCommand(call.command, m.id);
-          const declared = registry.get(name);
-          return { m, call, name, declared };
-        }),
-      )
-      .filter(({ call, declared }) =>
-        `${call.label} ${declared?.title ?? ''} ${call.command}`.toLowerCase().includes(query),
-      )
-      .slice(0, 3)
-      .map(({ m, call, name, declared }) => ({
-        value: text,
-        label: call.label,
-        detail: declared?.title,
-        icon: iconFor(m.commands?.find((c) => c.name === declared?.name)?.icon ?? m.icon, m.color),
-        run: () => void run(name, call.args),
-      }));
-  };
+      // `Ask` only fits a question, and most of what is typed here is
+      // an accession or a name. Send is what the row does, and the word
+      // the composer's own button already uses.
+      label: `Send to ${assistantTitle ?? assistant}`,
+      icon: iconFor(source.manifest(assistant)?.icon, source.manifest(assistant)?.color),
+      run: () => void submit(text),
+    },
+  ];
 
   // Completion follows the text; a stale async result for older text is dropped.
   useEffect(() => {
@@ -283,29 +173,17 @@ export function PromptBar() {
           icon: manifest ? iconFor(manifest.icon, manifest.color) : undefined,
         };
       });
-      // Priority order, painted bottom-up: what the intent answered, which
-      // already holds the plugins' offers in the order it judged; without
-      // an intent, or with an empty answer, the offers as the plugins made
-      // them; and where there is neither, a shortcut's name, then a word
-      // shared with a description — the same search the Browse page runs,
-      // inline. An offer is a plugin saying it recognises this text and what
-      // it would do with it; the intent is what reads the rest of the
-      // sentence.
-      const suggestions = list.length ? [] : suggested(value);
-      const offers = list.length || suggestions.length ? [] : recommended(value);
-      const answers = suggestions.length ? suggestions : offers;
-      const guesses =
-        list.length || answers.length
-          ? []
-          : [...shortcutSuggestions(value), ...appSuggestions(value), ...panelSuggestions(value)];
-      const alternatives = [...answers, ...guesses];
-      // Nothing worth choosing between: no list, and Enter behaves as if
+      // A slash command is completed from the registry and nothing else is
+      // offered for it; anything else is the intent's answer under the Send
+      // row. There is no precedence left to apply: one producer answered.
+      // Nothing worth choosing between means no list, and Enter behaves as if
       // there were none. Browse is not appended as an escape: it is Home's
       // own command, ranked like any other when the text asks for it.
+      const answers = list.length ? [] : suggested(value);
       const found = list.length
         ? commands
-        : alternatives.length
-          ? [...defaultSuggestion(value), ...alternatives]
+        : answers.length
+          ? [...defaultSuggestion(value), ...answers]
           : [];
       setSuggestions(found);
       // Row zero is always the default action, so it is always selected;
@@ -438,13 +316,6 @@ function PromptDestination() {
   const { source, settings } = useServices();
   const assistant = useSyncExternalStore(settings.subscribe, settings.get, settings.get).assistant;
   useSyncExternalStore(source.subscribe, source.version, source.version);
-  if (!assistant) {
-    return (
-      <p className={styles.promptContext}>
-        Free text needs an assistant — pick one in Settings.
-      </p>
-    );
-  }
   const manifest = source.manifest(assistant);
   const title = manifest?.title ?? assistant;
   const prompt = source.loaded(assistant, 'prompt');

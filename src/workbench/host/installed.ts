@@ -2,6 +2,8 @@ import type { ComponentType } from 'react';
 import type { IconProps } from '@phosphor-icons/react';
 import type {
   Background,
+  CommandCall,
+  DeclaredCall,
   DeclaredCommand,
   Intent,
   Manifest,
@@ -9,9 +11,16 @@ import type {
   Modules,
   PluginHost,
 } from '../../plugins/sdk';
+import { qualifyCommand } from '../../plugins/sdk';
 import type { PluginId } from '../core';
 import type { Command, CommandRegistry } from '../commands';
 import { iconFor } from './icons';
+
+// What a pane row runs. Registered in createWorkbench.ts as the host's own
+// `open`, which focuses a plugin's pane where it already sits and opens it as
+// a tab otherwise. Named here because a pane is a module and not a command:
+// this is the command that shows one.
+const SHOW_PANE = 'workbench:open';
 
 // The host's index of installed plugins: manifests now, modules on demand.
 // Each module is fetched the first time something needs it and kept for
@@ -38,6 +47,9 @@ export interface HostIndex {
   manifests: () => Manifest[];
   // Every manifest's commands, each with the plugin that declares it.
   declaredCommands: () => DeclaredCommand[];
+  // Every call the manifests have already filled in: launchers, shortcut
+  // buttons, and one per plugin with a sidebar pane.
+  declaredCalls: () => DeclaredCall[];
   // Whether the manifest lists the module — what the host may offer before
   // fetching anything.
   has: (id: PluginId, kind: Module) => boolean;
@@ -110,6 +122,40 @@ export function createHostIndex(installed: InstalledPlugin[]): HostIndex {
       })),
     );
 
+  // The calls a manifest makes without being asked anything: the button on
+  // Browse, the buttons in the Shortcuts block, and — for a plugin with a
+  // pane — showing that pane. Each is a row the prompt bar could offer, so
+  // each goes to the intent beside the declared commands; a plugin is
+  // reachable by its own name and a button by the label its author wrote.
+  const declaredCalls = (): DeclaredCall[] =>
+    installed.flatMap(({ manifest }) => {
+      const whose = { plugin: manifest.id, pluginTitle: manifest.title };
+      const call = (c: CommandCall) => ({
+        ...c,
+        command: qualifyCommand(c.command, manifest.id),
+        ...whose,
+      });
+      return [
+        // A launcher and a pane stand for the whole plugin, so they carry its
+        // description; a shortcut stands for one command and carries none.
+        ...(manifest.launcher
+          ? [{ ...call(manifest.launcher), description: manifest.description }]
+          : []),
+        ...(manifest.shortcuts ?? []).map(call),
+        ...(manifest.modules.includes('pane')
+          ? [
+              {
+                label: `Show ${manifest.title}`,
+                command: SHOW_PANE,
+                args: { plugin: manifest.id },
+                ...whose,
+                description: manifest.description,
+              },
+            ]
+          : []),
+      ];
+    });
+
   // Fetched now, not on first use: the host calls `terms` and `suggest` on
   // every keystroke and `status` on its own schedule, so a module that has
   // not arrived simply says nothing until it does. An intent is handed the
@@ -120,7 +166,7 @@ export function createHostIndex(installed: InstalledPlugin[]): HostIndex {
       if (!manifest.modules.includes(kind)) continue;
       module(manifest.id, kind)
         .then((loaded) => {
-          if (kind === 'intent') (loaded as Intent).index(declaredCommands());
+          if (kind === 'intent') (loaded as Intent).index(declaredCommands(), declaredCalls());
         })
         .catch((err: unknown) => {
           console.warn(
@@ -141,6 +187,7 @@ export function createHostIndex(installed: InstalledPlugin[]): HostIndex {
     manifest: (id) => byId.get(id)?.manifest,
     manifests: () => installed.map((p) => p.manifest),
     declaredCommands,
+    declaredCalls,
     has,
     module,
     loaded: <K extends Module>(id: PluginId, kind: K) =>

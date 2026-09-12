@@ -33,8 +33,9 @@ export interface SourceState {
   loading: boolean;
 }
 
-// One plugin's offers for the text, as it made them: the prompt bar
-// qualifies each `command` with the plugin before running it.
+// One plugin's offers for the text, as it made them. They reach the prompt
+// bar only through the intent, which is handed them with each `command`
+// qualified and answers with the rows the bar draws.
 export interface PluginOffers {
   plugin: string;
   calls: Offer[];
@@ -50,8 +51,9 @@ export interface TypingState {
   pool: string[];
   // In the registry's plugin order.
   offers: PluginOffers[];
-  // What the chosen intent suggested for the text. The previous answer stays
-  // until the next lands.
+  // What the chosen intent answered for the text, and every row the prompt
+  // bar draws under free text. The previous answer stays until the next
+  // lands.
   suggestions: Suggestion[];
 }
 

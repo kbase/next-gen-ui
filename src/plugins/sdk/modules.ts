@@ -142,12 +142,33 @@ export interface Prompt {
 }
 
 // A command as its manifest declares it, with the plugin that declares it.
+// Its arguments are holes: what fills them is what the user typed.
 export type DeclaredCommand = SlashCommand & { plugin: string; pluginTitle: string };
+
+// A call a manifest has already filled in — a plugin's launcher, one of its
+// shortcut buttons, or the workbench's own `open` for a plugin that has a
+// sidebar pane. It runs as written, so nothing the user types fills anything
+// in it; what the text decides is whether it is worth showing. The command it
+// names is declared somewhere, by this plugin, another, or the workbench.
+export interface DeclaredCall extends CommandCall {
+  // The manifest the call came from, whose mark the row wears. Not the
+  // plugin that declares `command`: a pane's call runs the workbench's.
+  plugin: string;
+  pluginTitle: string;
+  // The manifest's own description, where the call stands for the whole
+  // plugin — a launcher or a pane. What a reader typing a plugin's name
+  // rather than a command's is matching against.
+  description?: string;
+}
 
 export interface Suggestion {
   // `command` qualified as "plugin:name": the plugin suggesting is seldom
   // the one that declared it.
   call: CommandCall;
+  // Whose row it is, when that is not the plugin the command belongs to: a
+  // pane row runs `workbench:open` and belongs to the plugin it shows. The
+  // host draws the row with this plugin's icon and colour.
+  plugin?: string;
   // The row's caption, in place of the plugin's title: what the row does,
   // when the label is what it does it to.
   detail?: string;
@@ -172,13 +193,15 @@ export interface IntentQuery {
   signal: AbortSignal;
 }
 
-// What turns typed text into command suggestions. One plugin's intent
-// module is chosen in Settings, the way the assistant is; the workbench
-// itself reads no text.
+// What turns typed text into the rows under the prompt bar. One plugin's
+// intent module is chosen in Settings, the way the assistant is; the
+// workbench itself reads no text, and every row it draws for free text comes
+// from here.
 export interface Intent {
-  // Once when the module arrives, with every installed plugin's commands,
-  // so that no keystroke has to see the catalog.
-  index: (commands: DeclaredCommand[]) => void;
+  // Once when the module arrives, with everything the workbench can be asked
+  // to do, so that no keystroke has to see the catalog: every plugin's
+  // declared commands, and every call the manifests already filled in.
+  index: (commands: DeclaredCommand[], calls: DeclaredCall[]) => void;
   // Every keystroke, and again when a slow plugin's offer lands or the page
   // or cart changes under text already typed. The answer is the whole list,
   // offers included in whatever order and number the intent judges; the host

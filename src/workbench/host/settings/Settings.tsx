@@ -78,10 +78,8 @@ export function SettingsDocument() {
         <p className="caption">Which plugin answers free text typed in the prompt bar.</p>
         <Radio.Group
           aria-labelledby="settings-assistant"
-          value={current.assistant ?? 'none'}
-          onValueChange={(value) =>
-            settings.set({ assistant: value === 'none' ? null : String(value) })
-          }
+          value={current.assistant}
+          onValueChange={(value) => settings.set({ assistant: String(value) })}
           style={{ display: 'grid', gap: 'var(--s-2)' }}
         >
           {assistants.map((m) => (
@@ -90,10 +88,6 @@ export function SettingsDocument() {
               <span className="body">{m.title}</span>
             </label>
           ))}
-          <label className={styles.assistantRow}>
-            <Radio.Radio value="none" />
-            <span className="body">None</span>
-          </label>
         </Radio.Group>
       </section>
 
@@ -101,13 +95,14 @@ export function SettingsDocument() {
         <h2 id="settings-intent" className="h4">
           Suggestions
         </h2>
-        <p className="caption">Which plugin suggests commands for text typed in the prompt bar.</p>
+        <p className="caption">
+          Which plugin ranks what is typed in the prompt bar. Every row under the box, apart from
+          sending the text to the assistant, comes from it.
+        </p>
         <Radio.Group
           aria-labelledby="settings-intent"
-          value={current.intent ?? 'none'}
-          onValueChange={(value) =>
-            settings.set({ intent: value === 'none' ? null : String(value) })
-          }
+          value={current.intent}
+          onValueChange={(value) => settings.set({ intent: String(value) })}
           style={{ display: 'grid', gap: 'var(--s-2)' }}
         >
           {intents.map((m) => (
@@ -116,10 +111,6 @@ export function SettingsDocument() {
               <span className="body">{m.title}</span>
             </label>
           ))}
-          <label className={styles.assistantRow}>
-            <Radio.Radio value="none" />
-            <span className="body">None</span>
-          </label>
         </Radio.Group>
       </section>
 

@@ -8,17 +8,19 @@ import { z } from 'zod';
 // this schema is dropped for the defaults; the key is bumped when the shape
 // moves.
 export const SettingsSchema = z.object({
-  assistant: z.string().nullable(),
-  intent: z.string().nullable(),
+  // Plugin ids, both of them: there is no "none" to choose, so nothing here
+  // is nullable and no reader has a null to handle. An id naming a plugin
+  // that is not installed is the one thing that can go wrong, and it is the
+  // same thing as a plugin the user uninstalled.
+  assistant: z.string(),
+  intent: z.string(),
   // Chord text to qualified command name, over commands/keys.ts's defaults.
   // '' takes a default away without putting anything in its place.
   keybindings: z.record(z.string(), z.string()),
 });
 export type Settings = z.infer<typeof SettingsSchema>;
 
-export const SETTINGS_STORAGE_KEY = 'workbench.settings.v4';
-
-export const DEFAULT_SETTINGS: Settings = { assistant: null, intent: null, keybindings: {} };
+export const SETTINGS_STORAGE_KEY = 'workbench.settings.v5';
 
 export interface SettingsStore {
   get: () => Settings;
@@ -26,10 +28,14 @@ export interface SettingsStore {
   subscribe: (listener: () => void) => () => void;
 }
 
-// A caller that names only some fields gets the defaults for the rest, so a
-// field added here does not have to be added at every construction site.
-export function createSettingsStore(initial: Partial<Settings> = {}): SettingsStore {
-  let current: Settings = { ...DEFAULT_SETTINGS, ...initial };
+// The two plugin choices have to be named: which plugin answers the bar and
+// which ranks what is typed there is the app's decision, and there is no
+// value for "neither". Everything else defaults here, so a field added later
+// does not have to be added at every construction site.
+export function createSettingsStore(
+  initial: Pick<Settings, 'assistant' | 'intent'> & Partial<Settings>,
+): SettingsStore {
+  let current: Settings = { keybindings: {}, ...initial };
   const listeners = new Set<() => void>();
   return {
     get: () => current,

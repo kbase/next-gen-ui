@@ -49,6 +49,7 @@ export type {
   Intent,
   Suggestion,
   DeclaredCommand,
+  DeclaredCall,
   Modules,
   Mount,
   Cleanup,
@@ -64,10 +65,6 @@ export type {
   CommandHandler,
 } from './modules';
 export { fromReact } from './fromReact';
-export { AppFrame } from './AppFrame';
-export type { AppFrameProps } from './AppFrame';
-export { FrameLayerContext, useFrameLayer } from './frames';
-export type { FrameLayer, FrameSpec } from './frames';
 export { useCart } from './cart';
 export type { Cart, CartItem } from './cart';
 export { CartButton } from './CartButton';

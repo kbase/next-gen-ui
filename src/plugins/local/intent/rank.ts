@@ -1,6 +1,7 @@
 import type {
   ArgDecl,
   ContextTier,
+  DeclaredCall,
   DeclaredCommand,
   Match,
   MatchKind,
@@ -11,8 +12,16 @@ import { CONTEXT_TIERS, qualifyCommand } from '@kbase/plugin-sdk';
 import type { Tag } from './tag';
 import { namespaceOf, shapeFor } from './tag';
 
-// Ranking every declared command against typed text, and filling their
-// arguments from the terms the text carries.
+// Ranking everything the workbench can be asked to do against typed text,
+// and filling arguments from the terms the text carries.
+//
+// Two kinds of candidate, which differ in one thing: whether the text fills
+// anything in. A declared command has argument holes, and the identifiers in
+// the text and in view are what fill them. A declared call — a launcher, a
+// shortcut button, a plugin's pane — was written with its arguments already
+// in it and runs as written, so the text only decides whether it is worth
+// showing, and it is matched on the words its author gave it: the plugin's
+// name and description, and the label on the button.
 //
 // A command is indexed by what its declaration says about it: the plugin,
 // the name, the title, the descriptions, the semantics section, the examples.
@@ -56,26 +65,40 @@ export interface Evidence extends Match {
 }
 
 export interface RankedCall {
+  // Whose row it is: the plugin that declared the command, or the one whose
+  // manifest wrote the call. A pane's call runs the workbench's `open` and
+  // belongs to the plugin it shows.
   plugin: string;
   pluginTitle: string;
   // Qualified: "plugin:name".
   command: string;
   title: string;
-  // The plugin's own wording, when the row is its offer.
+  // The author's wording, when the row is a plugin's offer or a call a
+  // manifest wrote.
   label?: string;
+  // The caption a call carries: the plugin's description, where the call
+  // stands for the whole plugin.
+  detail?: string;
   args: Record<string, string>;
   // What lifted this row above its text score. Absent when nothing did: a
-  // command matched by its description alone, with no term behind it.
+  // command matched by its description alone, with no term behind it, or a
+  // call, which nothing lifts.
   evidence?: Evidence;
   score: number;
 }
 
 interface Entry {
+  // `command`: an argument the text may fill. `call`: a row that runs as its
+  // manifest wrote it.
+  kind: 'command' | 'call';
   plugin: string;
   pluginTitle: string;
-  name: string;
   command: string;
   title: string;
+  label?: string;
+  detail?: string;
+  // What the manifest already filled in. A declared command fills nothing.
+  filled?: Record<string, string>;
   args: ArgDecl[];
   vector: Map<string, number>;
   // Each argument's description as a vector, for binding.
@@ -165,21 +188,53 @@ function cosine(a: Map<string, number>, b: Map<string, number>): number {
 
 const argText = (arg: ArgDecl) => `${arg.name} ${arg.description ?? ''}`;
 
-function docOf(decl: DeclaredCommand): string {
-  return [
-    decl.plugin,
-    decl.pluginTitle,
-    decl.name,
-    decl.title,
-    decl.description ?? '',
-    decl.semantics?.description ?? '',
-    ...(decl.semantics?.examples ?? []),
-    ...(decl.args ?? []).map(argText),
-  ].join(' ');
+type Doc = Omit<Entry, 'vector' | 'argVectors'> & { text: string };
+
+function commandDoc(decl: DeclaredCommand): Doc {
+  return {
+    kind: 'command',
+    plugin: decl.plugin,
+    pluginTitle: decl.pluginTitle,
+    command: qualifyCommand(decl.name, decl.plugin),
+    title: decl.title,
+    args: decl.args ?? [],
+    text: [
+      decl.plugin,
+      decl.pluginTitle,
+      decl.name,
+      decl.title,
+      decl.description ?? '',
+      decl.semantics?.description ?? '',
+      ...(decl.semantics?.examples ?? []),
+      ...(decl.args ?? []).map(argText),
+    ].join(' '),
+  };
 }
 
-export function buildCommandIndex(commands: DeclaredCommand[]): CommandIndex {
-  const docs = commands.map((decl) => ({ decl, text: docOf(decl) }));
+// The command a call names is left out of its text: a pane's call names the
+// workbench's `open`, and indexing that word would put every pane on screen
+// for anyone typing "open". What the author wrote is the plugin's name, its
+// description and the label on the button.
+function callDoc(call: DeclaredCall): Doc {
+  return {
+    kind: 'call',
+    plugin: call.plugin,
+    pluginTitle: call.pluginTitle,
+    command: call.command,
+    title: call.label,
+    label: call.label,
+    detail: call.description,
+    filled: call.args ?? {},
+    args: [],
+    text: [call.plugin, call.pluginTitle, call.label, call.description ?? ''].join(' '),
+  };
+}
+
+export function buildCommandIndex(
+  commands: DeclaredCommand[],
+  calls: DeclaredCall[] = [],
+): CommandIndex {
+  const docs = [...commands.map(commandDoc), ...calls.map(callDoc)];
   const df = new Map<string, number>();
   for (const { text } of docs) {
     for (const g of new Set(grams(text))) df.set(g, (df.get(g) ?? 0) + 1);
@@ -187,15 +242,10 @@ export function buildCommandIndex(commands: DeclaredCommand[]): CommandIndex {
   const n = docs.length;
   const idf = new Map([...df].map(([g, d]) => [g, Math.log((1 + n) / (1 + d)) + 1]));
   const unseen = Math.log((1 + n) / 1) + 1;
-  const entries = docs.map(({ decl, text }) => ({
-    plugin: decl.plugin,
-    pluginTitle: decl.pluginTitle,
-    name: decl.name,
-    command: qualifyCommand(decl.name, decl.plugin),
-    title: decl.title,
-    args: decl.args ?? [],
+  const entries = docs.map(({ text, ...doc }) => ({
+    ...doc,
     vector: vectorize(text, idf, unseen),
-    argVectors: (decl.args ?? []).map((a) => vectorize(argText(a), idf, unseen)),
+    argVectors: doc.args.map((a) => vectorize(argText(a), idf, unseen)),
   }));
   return { entries, idf };
 }
@@ -295,9 +345,29 @@ export function rankCommands(
     const tier = tierOf.get(offer.match.term);
     return tier ? { ...offer.match, tier } : undefined;
   };
+  // Two candidates that would run the same command with the same arguments
+  // are one row, whatever words each came with: a plugin's shortcut for a
+  // command it also declares, a launcher that opens the pane the plugin's own
+  // row opens. The better-scoring wording is the one kept.
+  const same = (command: string, args: Record<string, string>) =>
+    [command, ...Object.entries(args).sort()].join(' ');
+  const kept = new Set<string>();
   return (
     index.entries
       .map((entry) => {
+        // Nothing the text carries fills a call: it runs as its manifest
+        // wrote it, and nothing the plugins offered is about it.
+        if (entry.kind === 'call') {
+          const letters = cosine(query, entry.vector);
+          return {
+            entry,
+            offer: undefined,
+            evidence: undefined,
+            args: entry.filled ?? {},
+            letters,
+            score: letters,
+          };
+        }
         const offer = offered.get(entry.command);
         const bound = offer ? undefined : bind(entry, index, pool);
         const evidence = offer ? claimed(offer) : bound?.evidence;
@@ -321,13 +391,20 @@ export function rankCommands(
       // row for it would open an error, not a job.
       .filter(({ entry, args }) => entry.args.every((a) => !a.required || a.name in args))
       .sort((a, b) => b.score - a.score || a.entry.command.localeCompare(b.entry.command))
+      .filter(({ entry, args }) => {
+        const key = same(entry.command, args);
+        if (kept.has(key)) return false;
+        kept.add(key);
+        return true;
+      })
       .slice(0, limit)
       .map(({ entry, offer, evidence, score, args }) => ({
         plugin: entry.plugin,
         pluginTitle: entry.pluginTitle,
         command: entry.command,
         title: entry.title,
-        label: offer?.label,
+        label: offer?.label ?? entry.label,
+        detail: entry.detail,
         args,
         evidence,
         score,

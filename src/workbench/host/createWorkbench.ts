@@ -32,9 +32,12 @@ export interface CreateWorkbenchOptions {
   persistence: WorkbenchPersistence;
   defaultPinned?: PluginId[];
   // The plugin whose prompt module answers the bar until the user picks.
-  defaultAssistant?: PluginId | null;
+  defaultAssistant: PluginId;
   // The plugin whose intent module suggests commands until the user picks.
-  defaultIntent?: PluginId | null;
+  // Both are required because Settings offers no "none": a workbench is
+  // built with each one chosen, and naming a plugin that turns out not to be
+  // installed is the only way to have neither.
+  defaultIntent: PluginId;
 }
 
 // Builds the store, the command registry and their companions once, before
@@ -44,8 +47,8 @@ export function createWorkbench({
   installed,
   persistence: { loaded, save },
   defaultPinned = [],
-  defaultAssistant = null,
-  defaultIntent = null,
+  defaultAssistant,
+  defaultIntent,
 }: CreateWorkbenchOptions): WorkbenchServices {
   const titles = createTitleStore();
   const crumbs = createCrumbStore();
@@ -87,11 +90,9 @@ export function createWorkbench({
     cart,
     query,
     queryRunner: createQueryRunner(source, query, {
-      // The chosen intent, once its module has arrived; nothing until then.
-      intent: () => {
-        const id = settings.get().intent;
-        return id ? source.loaded(id, 'intent') : undefined;
-      },
+      // The chosen intent, once its module has arrived; nothing until then,
+      // and nothing ever if the plugin it names is not installed.
+      intent: () => source.loaded(settings.get().intent, 'intent'),
     }),
     terms,
     status,

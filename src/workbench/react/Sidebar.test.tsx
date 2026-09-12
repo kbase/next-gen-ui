@@ -2,16 +2,22 @@ import { configure, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import type { PluginId } from '../core';
+import { paneId } from '../core';
 import { testWorkbench } from '../../test/workbench';
 import { Sidebar } from './Sidebar';
 import { WorkbenchProvider } from './WorkbenchProvider';
 
 configure({ asyncUtilTimeout: 5000 });
 
-// The block menu names the plugin it was opened over and, for a reorder,
-// the position it is moving to. KOROS is pinned between two others here so
-// both directions are offered.
+// Every item a block's menu offers, and the command it runs. What names the
+// block differs by command: folding and unfolding act on the panel, pinning
+// on the plugin, and a reorder adds the position it is moving to. KOROS is
+// pinned between two others here so both directions are offered. The menu is
+// listed against this table below, so an item added without a command fails
+// here rather than passing unnoticed.
 const ACTIONS: Array<[item: string, command: string, args: object]> = [
+  ['Fold', 'workbench:fold', { panel: paneId('koros') }],
+  ['Move to main area', 'workbench:move-to-main-area', { panel: paneId('koros') }],
   ['Move up', 'workbench:pin', { plugin: 'koros', index: '0' }],
   ['Move down', 'workbench:pin', { plugin: 'koros', index: '2' }],
   ['Unpin', 'workbench:unpin', { plugin: 'koros' }],
@@ -56,6 +62,15 @@ describe("a sidebar block's menu", () => {
 
     expect(run).toHaveBeenCalledWith(command, args, 'user');
     expect(dispatch).not.toHaveBeenCalled();
+  });
+
+  it('offers nothing the table above does not list', async () => {
+    const user = userEvent.setup();
+    mount(['jobs', 'koros', 'data']);
+    await openBlockMenu(user, 'KOROS');
+    const menu = await screen.findByRole('menu');
+    const items = [...menu.querySelectorAll<HTMLElement>('[role^="menuitem"]')];
+    expect(items.map((el) => el.textContent?.trim())).toEqual(ACTIONS.map(([item]) => item));
   });
 });
 

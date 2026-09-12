@@ -13,7 +13,7 @@ import {
   Toolbar,
 } from '@kbase/design-system';
 import type { Panel, PluginId } from '../core';
-import { groups, makePane, sidebarPanels } from '../core';
+import { makePane, sidebarPanels } from '../core';
 import type { PluginInfo } from '../host/installed';
 import { useDispatch, useLayout, useRun, useServices, useTitle } from './context';
 import { PanelHost } from './PanelHost';
@@ -225,16 +225,10 @@ function Block({ panel, info }: { panel: Panel; info: PluginInfo | undefined }) 
           </button>
         </ContextMenu.Trigger>
         <ContextMenu.Popup aria-label={`${title} actions`}>
-          <ContextMenu.Item
-            onClick={() => dispatch({ type: 'fold', panel: panel.id, folded: !folded })}
-          >
+          <ContextMenu.Item onClick={() => run('workbench:fold', { panel: panel.id })}>
             {folded ? 'Unfold' : 'Fold'}
           </ContextMenu.Item>
-          <ContextMenu.Item
-            onClick={() =>
-              dispatch({ type: 'move', panel: panel.id, to: { group: groups(layout.main)[0].id } })
-            }
-          >
+          <ContextMenu.Item onClick={() => run('workbench:move-to-main-area', { panel: panel.id })}>
             Move to main area
           </ContextMenu.Item>
           <ContextMenu.Separator />

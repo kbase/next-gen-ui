@@ -100,7 +100,11 @@ export async function complete(
           qualifiedName(c).startsWith(parsed.name),
       )
       .map(({ c, shown }) => ({
-        value: `/${shown}${c.args?.length ? ' ' : ''}`,
+        // The trailing space invites the argument that has to follow. A
+        // command whose arguments are all optional is already whole, and
+        // the space would only make Enter retype the line instead of
+        // running it.
+        value: `/${shown}${c.args?.some((a) => a.required) ? ' ' : ''}`,
         label: usage(shown, c.args ?? []),
         detail: c.title,
         command: c,

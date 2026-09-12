@@ -95,6 +95,22 @@ describe('complete', () => {
     expect(options[0].label).toBe('/cancel <id>');
   });
 
+  // The space is what makes Enter complete rather than run, so only a
+  // command still owing an argument gets one.
+  it('offers a command with none but optional arguments as a whole line', async () => {
+    const r = registry();
+    r.register({
+      name: 'close',
+      title: 'Close a panel',
+      source: 'workbench',
+      args: [{ name: 'panel', complete: () => ['jobs/pane'] }],
+      run: () => {},
+    });
+    const options = await complete(r, '/c');
+    expect(options.map((o) => o.value)).toEqual(['/cancel ', '/close', '/customize']);
+    expect(options[1].label).toBe('/close [panel]');
+  });
+
   it('offers the qualified forms where the bare name is contested', async () => {
     expect((await complete(contested(), '/o')).map((o) => o.value)).toEqual([
       '/fj:open',

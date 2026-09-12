@@ -1,10 +1,14 @@
 import type { BarName, Layout, PanelId, Side, WorkbenchStore } from '../core';
-import { groupOf, groups, placementOf } from '../core';
+import { groupOf, groups, placementOf, sidebarPanels } from '../core';
+import type { ArgSpec } from './args';
 import type { Command } from './registry';
 
 // Command arguments arrive as strings, so a typed bar name is checked
 // against the layout's set before it reaches the store.
 const BARS = ['prompt', 'status'] as const satisfies readonly BarName[];
+
+// Said once, because every `panel` argument means it.
+const FOCUSED = 'The focused panel, unless another is named';
 
 function isBar(name: string): name is BarName {
   return (BARS as readonly string[]).includes(name);
@@ -58,26 +62,44 @@ export function workbenchCommands({
   const focusTo = (target: PanelId | null) => {
     if (target) dispatch({ type: 'focus', panel: target });
   };
-  const moveFocused = (side: Side) => {
+  // Every command that acts on one panel takes it the same way: absent, the
+  // focused panel; named, whatever the surface that called was acting on.
+  const panelArg = (pool: () => PanelId[]): ArgSpec => ({
+    name: 'panel',
+    complete: (p) => pool().filter((id) => id.startsWith(p)),
+  });
+  const panelFor = (value: string | undefined): PanelId | null => {
     const layout = store.get();
-    const focus = focusedPanel(layout);
-    if (!focus) return;
-    const group = groupOf(layout.main, focus);
+    if (value === undefined) return focusedPanel(layout);
+    if (layout.panels[value]) return value;
+    announce(`No panel named ${value}`);
+    return null;
+  };
+  const split = (side: Side, panel: string | undefined) => {
+    const target = panelFor(panel);
+    if (!target) return;
+    const layout = store.get();
+    const group = groupOf(layout.main, target);
     if (!group || group.tabs.length < 2) {
       announce('Nothing to split away from');
       return;
     }
-    dispatch({ type: 'move', panel: focus, to: { group: group.id, side } });
+    dispatch({ type: 'move', panel: target, to: { group: group.id, side } });
   };
-  // What `move-to-sidebar` can act on when it is given a panel: a pane in
-  // the main area. A pane already in the sidebar is where the command would
-  // put it, and a route cannot go there at all.
-  const movablePanes = (): PanelId[] => {
+  // A command completes over what it can act on, so an offered id works.
+  // Closing and splitting are main-area business: the store folds or unpins
+  // a sidebar pane rather than closing it, and a block is in no group.
+  const mainPanels = (): PanelId[] => {
     const layout = store.get();
     return Object.values(layout.panels)
-      .filter((p) => p.kind === 'pane' && placementOf(layout, p.id).zone === 'main')
+      .filter((p) => placementOf(layout, p.id).zone === 'main')
       .map((p) => p.id);
   };
+  // A route cannot go to the sidebar at all, and a pane already there is
+  // where `move-to-sidebar` would put it.
+  const movablePanes = (): PanelId[] =>
+    mainPanels().filter((id) => store.get().panels[id]?.kind === 'pane');
+  const sidebarPanes = (): PanelId[] => sidebarPanels(store.get()).map((p) => p.id);
   // Pin positions count from 0; the one past the last pin is where an
   // append lands, so it is offered too.
   const pinPositions = (): string[] => {
@@ -96,10 +118,12 @@ export function workbenchCommands({
     {
       ...base,
       name: 'close',
-      title: 'Close the focused panel',
-      run: () => {
-        const focus = focusedPanel(store.get());
-        if (focus) dispatch({ type: 'close', panel: focus });
+      title: 'Close a panel',
+      description: FOCUSED,
+      args: [panelArg(mainPanels)],
+      run: ({ panel }) => {
+        const target = panelFor(panel);
+        if (target) dispatch({ type: 'close', panel: target });
       },
     },
     {
@@ -130,55 +154,77 @@ export function workbenchCommands({
       ...base,
       name: 'move-left',
       title: 'Split the panel to the left',
-      run: () => moveFocused('left'),
+      description: FOCUSED,
+      args: [panelArg(mainPanels)],
+      run: ({ panel }) => split('left', panel),
     },
     {
       ...base,
       name: 'move-right',
       title: 'Split the panel to the right',
-      run: () => moveFocused('right'),
+      description: FOCUSED,
+      args: [panelArg(mainPanels)],
+      run: ({ panel }) => split('right', panel),
     },
-    { ...base, name: 'move-up', title: 'Split the panel upward', run: () => moveFocused('top') },
+    {
+      ...base,
+      name: 'move-up',
+      title: 'Split the panel upward',
+      description: FOCUSED,
+      args: [panelArg(mainPanels)],
+      run: ({ panel }) => split('top', panel),
+    },
     {
       ...base,
       name: 'move-down',
       title: 'Split the panel downward',
-      run: () => moveFocused('bottom'),
+      description: FOCUSED,
+      args: [panelArg(mainPanels)],
+      run: ({ panel }) => split('bottom', panel),
     },
     {
       ...base,
       name: 'move-to-sidebar',
       title: 'Move a panel to the sidebar',
-      description: 'The focused panel, unless another is named',
+      description: FOCUSED,
       when: (ctx) => ctx.focusKind === 'pane',
-      args: [
-        {
-          name: 'panel',
-          complete: (p) => movablePanes().filter((id) => id.startsWith(p)),
-        },
-      ],
+      args: [panelArg(movablePanes)],
       run: ({ panel }) => {
-        const target = panel === undefined ? focusedPanel(store.get()) : String(panel);
+        const target = panelFor(panel);
+        if (target) dispatch({ type: 'move', panel: target, to: { zone: 'sidebar' } });
+      },
+    },
+    {
+      ...base,
+      name: 'move-to-main-area',
+      title: 'Move a panel out of the sidebar',
+      description: FOCUSED,
+      when: (ctx) => ctx.focusKind === 'pane',
+      args: [panelArg(sidebarPanes)],
+      run: ({ panel }) => {
+        const target = panelFor(panel);
         if (!target) return;
-        if (!store.get().panels[target]) {
-          announce(`No panel named ${target}`);
-          return;
-        }
-        dispatch({ type: 'move', panel: target, to: { zone: 'sidebar' } });
+        const layout = store.get();
+        // Only out of the sidebar: a tab given to this command would be
+        // dragged across the main area's groups, which is not what it says.
+        if (placementOf(layout, target).zone !== 'sidebar') return;
+        const group = groups(layout.main)[0];
+        if (group) dispatch({ type: 'move', panel: target, to: { group: group.id } });
       },
     },
     {
       ...base,
       name: 'fold',
-      title: 'Fold or unfold the focused sidebar panel',
+      title: 'Fold or unfold a sidebar panel',
+      description: FOCUSED,
       when: (ctx) => ctx.focusKind === 'pane',
-      run: () => {
-        const layout = store.get();
-        const focus = focusedPanel(layout);
-        if (!focus) return;
-        const placement = placementOf(layout, focus);
+      args: [panelArg(sidebarPanes)],
+      run: ({ panel }) => {
+        const target = panelFor(panel);
+        if (!target) return;
+        const placement = placementOf(store.get(), target);
         if (placement.zone !== 'sidebar') return;
-        dispatch({ type: 'fold', panel: focus, folded: !placement.folded });
+        dispatch({ type: 'fold', panel: target, folded: !placement.folded });
       },
     },
     {

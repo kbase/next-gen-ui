@@ -36,6 +36,21 @@ describe('workbench commands', () => {
     expect(announced).toEqual([`Closed ${job.id}`]);
   });
 
+  it('close takes the panel it is given, not the focused one', async () => {
+    const { store, registry, announced } = setup();
+    await registry.run('close', { panel: arc.id });
+    expect(Object.keys(store.get().panels)).toEqual(['koros/pane', job.id]);
+    expect(announced.at(-1)).toBe(`Closed ${arc.id}`);
+  });
+
+  it('close refuses a panel that is not open', async () => {
+    const { store, registry, announced } = setup();
+    const before = store.get();
+    await registry.run('close', { panel: 'ghost/pane' });
+    expect(store.get()).toBe(before);
+    expect(announced.at(-1)).toBe('No panel named ghost/pane');
+  });
+
   it('tab focus wraps around', async () => {
     const { store, registry } = setup();
     await registry.run('focus-next-tab', {});
@@ -50,6 +65,31 @@ describe('workbench commands', () => {
     expect(groups(store.get().main).map((g) => g.tabs)).toEqual([[arc.id], [job.id]]);
     await registry.run('move-right', {});
     expect(groups(store.get().main).length).toBe(2);
+  });
+
+  it('move-right splits the tab it is given', async () => {
+    const { store, registry } = setup();
+    await registry.run('move-right', { panel: arc.id });
+    expect(groups(store.get().main).map((g) => g.tabs)).toEqual([[job.id], [arc.id]]);
+  });
+
+  it('fold folds and unfolds the block it is given', async () => {
+    const { store, registry } = setup();
+    const pane = paneId('koros');
+    await registry.run('fold', { panel: pane });
+    expect(store.get().sidebar.folded).toEqual([pane]);
+    await registry.run('fold', { panel: pane });
+    expect(store.get().sidebar.folded).toEqual([]);
+  });
+
+  it('move-to-main-area takes a block out of the sidebar and leaves a tab alone', async () => {
+    const { store, registry } = setup();
+    const pane = paneId('koros');
+    await registry.run('move-to-main-area', { panel: pane });
+    expect(placementOf(store.get(), pane).zone).toBe('main');
+    const after = store.get();
+    await registry.run('move-to-main-area', { panel: job.id });
+    expect(store.get()).toBe(after);
   });
 
   it('pin rejects an unknown plugin and accepts a known one', async () => {
@@ -125,13 +165,23 @@ describe('workbench commands', () => {
     expect(announced.at(-1)).toBe('No pin position last');
   });
 
-  it('completes a panel to move and a position to pin at', async () => {
+  it('completes each argument with what its command can act on', async () => {
     const { store, registry } = setup();
     const pane = paneId('koros');
-    store.dispatch({ type: 'move', panel: pane, to: { group: 'root' } });
     const argOf = (name: string, arg: string) =>
       registry.get(`workbench:${name}`)?.args?.find((a) => a.name === arg);
+
+    // The pane is a sidebar block: it can be folded or moved out, and the
+    // two tabs are what can be closed or split.
+    expect(await argOf('fold', 'panel')?.complete?.('')).toEqual([pane]);
+    expect(await argOf('move-to-main-area', 'panel')?.complete?.('')).toEqual([pane]);
+    expect(await argOf('close', 'panel')?.complete?.('')).toEqual([arc.id, job.id]);
+    expect(await argOf('move-to-sidebar', 'panel')?.complete?.('')).toEqual([]);
+
+    // Dragged into the main area, the same pane swaps sides of that split.
+    store.dispatch({ type: 'move', panel: pane, to: { group: 'root' } });
     expect(await argOf('move-to-sidebar', 'panel')?.complete?.('')).toEqual([pane]);
+    expect(await argOf('fold', 'panel')?.complete?.('')).toEqual([]);
     expect(await argOf('pin', 'index')?.complete?.('')).toEqual(['0', '1']);
   });
 

@@ -1,7 +1,7 @@
 import type { KeyboardEvent, MouseEvent } from 'react';
 import { House, X } from '@phosphor-icons/react';
 import { Button, ContextMenu, EmptyState, Tabs } from '@kbase/design-system';
-import type { Group, Panel, PanelId, Side } from '../core';
+import type { Group, Panel, PanelId } from '../core';
 import { openRoute } from '../host/open';
 import { useDispatch, useLayout, useRun, useServices, useTitle } from './context';
 import { Breadcrumbs } from './Breadcrumbs';
@@ -17,6 +17,7 @@ import styles from './Workbench.module.css';
 export function TabGroup({ group }: { group: Group }) {
   const layout = useLayout();
   const dispatch = useDispatch();
+  const run = useRun();
   const services = useServices();
   const { focusIntentRef } = services;
   const focused = layout.focus !== null && group.tabs.includes(layout.focus);
@@ -35,7 +36,10 @@ export function TabGroup({ group }: { group: Group }) {
     else if (event.key === 'End') next = group.tabs[group.tabs.length - 1];
     else if (event.key === 'Delete') {
       event.preventDefault();
-      dispatch({ type: 'close', panel: group.active });
+      // A keybinding like any other, except that the strip it fires in
+      // names the tab: Alt+Shift+W closes what is focused, Delete closes
+      // the tab this strip is on.
+      void run('workbench:close', { panel: group.active });
       return;
     } else return;
     event.preventDefault();
@@ -131,11 +135,12 @@ export function TabGroup({ group }: { group: Group }) {
   );
 }
 
-const SIDES: Array<[Side, string]> = [
-  ['left', 'Split left'],
-  ['right', 'Split right'],
-  ['top', 'Split up'],
-  ['bottom', 'Split down'],
+// The Panel menu's splits, aimed at this tab rather than the focused one.
+const SPLITS: Array<[command: string, label: string]> = [
+  ['workbench:move-left', 'Split left'],
+  ['workbench:move-right', 'Split right'],
+  ['workbench:move-up', 'Split up'],
+  ['workbench:move-down', 'Split down'],
 ];
 
 function Tab({
@@ -170,6 +175,8 @@ function Tab({
     kind: panel?.kind ?? 'route',
   });
   const { dropRef, isOver } = useDropTarget({ type: 'tab', group: group.id, index });
+  // The X and the middle click are gestures on this tab, not named actions;
+  // the menu item beside them carries the word "Close" and runs the command.
   const close = (event?: MouseEvent) => {
     event?.stopPropagation();
     dispatch({ type: 'close', panel: id });
@@ -214,13 +221,15 @@ function Tab({
         </span>
       </ContextMenu.Trigger>
       <ContextMenu.Popup aria-label={`${title} actions`}>
-        <ContextMenu.Item onClick={() => close()}>Close</ContextMenu.Item>
+        <ContextMenu.Item onClick={() => run('workbench:close', { panel: id })}>
+          Close
+        </ContextMenu.Item>
         <ContextMenu.Separator />
-        {SIDES.map(([side, label]) => (
+        {SPLITS.map(([command, label]) => (
           <ContextMenu.Item
-            key={side}
+            key={command}
             disabled={alone}
-            onClick={() => dispatch({ type: 'move', panel: id, to: { group: group.id, side } })}
+            onClick={() => run(command, { panel: id })}
           >
             {label}
           </ContextMenu.Item>

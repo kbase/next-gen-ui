@@ -49,23 +49,6 @@ function checkSizes(node: Layout['main'], errors: string[]) {
   node.children.forEach((c) => checkSizes(c, errors));
 }
 
-// Pins any host block the saved layout has never been offered. Without this a
-// block added to the host is invisible to everyone who has used the workbench
-// before, because their layout is restored verbatim and `defaultPinned` only
-// builds a fresh one.
-export function introduce(layout: Layout, blocks: readonly string[]): Layout {
-  const fresh = blocks.filter((id) => !layout.introduced.includes(id));
-  if (fresh.length === 0) return layout;
-  return {
-    ...layout,
-    sidebar: {
-      ...layout.sidebar,
-      pinned: [...layout.sidebar.pinned, ...fresh.filter((id) => !layout.sidebar.pinned.includes(id))],
-    },
-    introduced: [...layout.introduced, ...fresh],
-  };
-}
-
 export function deserialize(text: string | null | undefined, fallback: () => Layout): Layout {
   if (!text) return fallback();
   let raw: unknown;

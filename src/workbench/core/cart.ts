@@ -76,19 +76,16 @@ export interface CartStore {
   subscribe: (listener: () => void) => () => void;
 }
 
-export const CART_STORAGE_KEY = 'kbase-workbench-cart.v2';
+export const CART_STORAGE_KEY = 'kbase-workbench-cart.v3';
 
-// A stored cart is read back item by item: one item written by an older build,
-// or truncated by a full disk, costs the user that item and not the cart.
+// A stored cart that does not match the schema is an empty cart, not a
+// crash: the key names the shape, so anything under it was written by a build
+// that agreed on `CartItemSchema`, and anything that disagrees is damage.
 export function readCart(raw: string | null): CartItem[] {
   if (!raw) return [];
   try {
-    const parsed: unknown = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.flatMap((entry) => {
-      const item = CartItemSchema.safeParse(entry);
-      return item.success ? [item.data] : [];
-    });
+    const parsed = z.array(CartItemSchema).safeParse(JSON.parse(raw));
+    return parsed.success ? parsed.data : [];
   } catch {
     return [];
   }

@@ -2,15 +2,15 @@ import { z } from 'zod';
 
 // User settings that are not layout: which plugin answers the prompt bar,
 // and which suggests commands for what is typed there. Persisted separately
-// so resetting the layout keeps them. A setting a saved copy predates keeps
-// its default.
+// so resetting the layout keeps them. A stored copy that does not match this
+// schema is dropped for the defaults; the key is bumped when the shape moves.
 export const SettingsSchema = z.object({
   assistant: z.string().nullable(),
-  intent: z.string().nullable().optional(),
+  intent: z.string().nullable(),
 });
 export type Settings = z.infer<typeof SettingsSchema>;
 
-export const SETTINGS_STORAGE_KEY = 'workbench.settings.v1';
+export const SETTINGS_STORAGE_KEY = 'workbench.settings.v3';
 
 export interface SettingsStore {
   get: () => Settings;
@@ -19,7 +19,7 @@ export interface SettingsStore {
 }
 
 export function createSettingsStore(storage: Storage | null, defaults: Settings): SettingsStore {
-  let current: Settings = { ...defaults, ...(read(storage) ?? {}) };
+  let current: Settings = read(storage) ?? defaults;
   const listeners = new Set<() => void>();
   return {
     get: () => current,

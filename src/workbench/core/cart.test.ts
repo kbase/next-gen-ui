@@ -41,17 +41,10 @@ describe('the cart', () => {
     expect(back[1].source).toEqual({ command: 'fitness', args: { acc: 'P0AEX9' } });
   });
 
-  // One item written by an older build should cost the user that item, not the
-  // cart: a session restore is exactly when a person has least patience for
-  // losing what they collected.
-  it('keeps the readable items when one is corrupt', () => {
-    const raw = JSON.stringify([item('good'), { id: 'bad' }, item('also-good')]);
-    expect(readCart(raw).map((i) => i.id)).toEqual(['good', 'also-good']);
-  });
-
   it('treats unreadable storage as an empty cart', () => {
     expect(readCart('not json')).toEqual([]);
     expect(readCart(null)).toEqual([]);
     expect(readCart('{"not":"an array"}')).toEqual([]);
+    expect(readCart(JSON.stringify([item('good'), { id: 'bad' }]))).toEqual([]);
   });
 });

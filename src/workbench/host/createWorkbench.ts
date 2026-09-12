@@ -10,7 +10,6 @@ import {
   createWorkbenchStore,
   defaultLayout,
   deserialize,
-  introduce,
   readCart,
   serialize,
 } from '../core';
@@ -28,12 +27,9 @@ import { createQueryRunner } from './query/runner';
 import { createSettingsStore } from './settings';
 import { createStatusStore } from './status';
 
-export const LAYOUT_STORAGE_KEY = 'workbench.layout.v2';
-
-// Keys earlier builds wrote. Removed on boot rather than read: a layout or
-// cart from before the contract change is not migrated, and leaving it in
-// storage would only let a later build find it.
-const RETIRED_STORAGE_KEYS = ['workbench.layout.v1', 'kbase-workbench-cart'];
+// The key names the saved shape. A layout written against a different
+// `LayoutSchema` lives under a different key and is never read again.
+export const LAYOUT_STORAGE_KEY = 'workbench.layout.v3';
 
 export interface CreateWorkbenchOptions {
   installed: InstalledPlugin[];
@@ -68,23 +64,13 @@ export function createWorkbench({
     assistant: defaultAssistant,
     intent: defaultIntent,
   });
-  for (const key of RETIRED_STORAGE_KEYS) {
-    try {
-      storage?.removeItem(key);
-    } catch {
-      // Privacy mode; there is nothing there to retire.
-    }
-  }
   // The cart is host state, not layout: it survives a layout reset, and it is
   // the thing most likely to move to the account later.
   const cart = createCartStore(readCart(storage?.getItem(CART_STORAGE_KEY) ?? null));
 
-  const fallback = () => defaultLayout({ pinned: defaultPinned });
-  const saved = deserialize(read(storage), fallback);
-  // `introduce` is what makes a newly added host block appear for someone
-  // whose layout predates it; the saved layout is otherwise restored verbatim,
-  // and defaultPinned only ever builds a fresh one.
-  const initial = introduce(saved, defaultPinned);
+  // A saved layout is restored verbatim; `defaultPinned` only builds a fresh
+  // one, which is what a reader with no readable layout gets.
+  const initial = deserialize(read(storage), () => defaultLayout({ pinned: defaultPinned }));
   const store = createWorkbenchStore({
     initial,
     title: (id, panel) => titles.get(id) ?? fallbackTitle(services, panel, id),
@@ -149,28 +135,7 @@ export function createWorkbench({
   registry.onRun(() => status.refresh());
   status.refresh();
 
-  // A saved layout may pin a plugin that has since stopped being a sidebar
-  // panel — the catalog did. Installed and pane-less means the block could
-  // only ever render as a ghost, so the pin goes; an uninstalled plugin
-  // keeps its place, because reinstalling should restore it.
-  for (const plugin of store.get().sidebar.pinned) {
-    if (source.manifest(plugin) && !source.has(plugin, 'pane')) {
-      store.dispatch({ type: 'unpin', plugin });
-    }
-  }
-
   if (storage) {
-    // Written now, not on the next change: the record of which blocks have
-    // been offered is part of the layout, and if nothing else happens to save
-    // it the same block is introduced again on every load — which looks like
-    // the workbench re-pinning something the user just removed.
-    if (initial !== saved) {
-      try {
-        storage.setItem(LAYOUT_STORAGE_KEY, serialize(store.get()));
-      } catch {
-        // Quota or privacy mode; the introduction simply repeats next time.
-      }
-    }
     store.subscribe(() => {
       try {
         storage.setItem(LAYOUT_STORAGE_KEY, serialize(store.get()));

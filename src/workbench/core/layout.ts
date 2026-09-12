@@ -65,8 +65,10 @@ export const BarsSchema = z.object({ status: z.boolean(), prompt: z.boolean() })
 export type Bars = z.infer<typeof BarsSchema>;
 export type BarName = keyof Bars;
 
+// The storage key names the shape: a saved layout that does not match this
+// schema exactly is discarded for the default, and a change to the shape is
+// accompanied by a new key.
 export const LayoutSchema = z.object({
-  version: z.literal(2),
   panels: z.record(z.string(), PanelSchema),
   main: NodeSchema,
   sidebar: SidebarSchema,
@@ -74,13 +76,7 @@ export const LayoutSchema = z.object({
   focus: z.string().nullable(),
   keybindings: z.record(z.string(), z.string()),
   // A locked layout keeps its arrangement: structural operations no-op.
-  // Defaulted so layouts saved before the field still parse.
-  locked: z.boolean().default(false),
-  // Host blocks this layout has already been offered. A block added to the
-  // host after a layout was saved is pinned once, on the next load, and never
-  // again — so a new one arrives for existing users, and one they unpinned
-  // stays unpinned. Defaulted for layouts saved before the field.
-  introduced: z.array(z.string()).default([]),
+  locked: z.boolean(),
 });
 export type Layout = z.infer<typeof LayoutSchema>;
 
@@ -125,7 +121,6 @@ export function defaultLayout({
     panels[panel.id] = panel;
   }
   return {
-    version: 2,
     panels,
     main: emptyGroup(rootGroupId),
     sidebar: {
@@ -139,6 +134,5 @@ export function defaultLayout({
     focus: null,
     keybindings: {},
     locked: false,
-    introduced: [...pinned],
   };
 }

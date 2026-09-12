@@ -1,10 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { defaultLayout, makeRoute } from './layout';
 import { reduce } from './reduce';
-import { deserialize, introduce, serialize } from './serialize';
-import type { Layout } from './layout';
+import { deserialize, serialize } from './serialize';
 
 const fallback = () => defaultLayout({ pinned: ['koros'] });
+
+// No field is defaulted, so a layout written before a field existed is a
+// parse failure, not a partial restore. The storage key carries the shape.
+function withoutLocked(): unknown {
+  const rest: Record<string, unknown> = { ...defaultLayout() };
+  delete rest.locked;
+  return rest;
+}
 
 describe('deserialize', () => {
   it('round-trips a layout', () => {
@@ -18,7 +25,7 @@ describe('deserialize', () => {
   it.each([
     ['nothing', null],
     ['not json', '{'],
-    ['an earlier version', JSON.stringify({ ...defaultLayout(), version: 1 })],
+    ['a document missing a field the schema requires', JSON.stringify(withoutLocked())],
     [
       'a tab without a panel',
       JSON.stringify({
@@ -28,36 +35,5 @@ describe('deserialize', () => {
     ],
   ])('falls back to the default on %s', (_label, text) => {
     expect(deserialize(text, fallback)).toEqual(fallback());
-  });
-});
-
-describe('introducing a host block to an existing layout', () => {
-  const saved = (over: Partial<Layout> = {}): Layout => ({
-    ...defaultLayout({ pinned: ['koros'] }),
-    introduced: ['koros'],
-    ...over,
-  });
-
-  // The case that made this necessary: a block added to the host after
-  // someone's layout was saved is invisible to them, because the saved layout
-  // is restored verbatim and defaultPinned only builds a fresh one.
-  it('pins a block the layout has never been offered', () => {
-    const next = introduce(saved(), ['koros', 'related']);
-    expect(next.sidebar.pinned).toEqual(['koros', 'related']);
-    expect(next.introduced).toContain('related');
-  });
-
-  it('leaves a block the user unpinned alone', () => {
-    const once = introduce(saved(), ['koros', 'related']);
-    const unpinned: Layout = {
-      ...once,
-      sidebar: { ...once.sidebar, pinned: once.sidebar.pinned.filter((p) => p !== 'related') },
-    };
-    expect(introduce(unpinned, ['koros', 'related']).sidebar.pinned).not.toContain('related');
-  });
-
-  it('changes nothing when there is nothing new', () => {
-    const layout = saved();
-    expect(introduce(layout, ['koros'])).toBe(layout);
   });
 });

@@ -25,6 +25,10 @@ function memoryStorage(): Storage {
 }
 
 function mount(storage: Storage | null = null) {
+  // This suite drives the shell through the jobs plugin's sidebar list
+  // (open/focus/close/move panels, keyboard shortcuts, layout lock) and
+  // through koros's assistant reply, so both need to be pinned here
+  // regardless of what a fresh workbench ships with.
   const services = createWorkbench({
     installed: localPlugins,
     storage,

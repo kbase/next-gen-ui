@@ -19,6 +19,7 @@ import {
 } from './api/auth';
 import { localPlugins } from './plugins/local';
 import { createWorkbench, loadInstalled } from './workbench/host';
+import { DEFAULT_ASSISTANT, DEFAULT_INTENT, DEFAULT_PINNED } from './workbenchDefaults';
 import './styles.css';
 
 const queryClient = new QueryClient({
@@ -44,12 +45,9 @@ installAuthExpiryWatcher(queryClient);
 const workbench = createWorkbench({
   installed: await loadInstalled(localPlugins),
   storage: window.localStorage,
-  // Related is last on purpose: it appears and disappears with what is on
-  // screen, and anywhere above the navigators it would shove them down the
-  // column every time it did.
-  defaultPinned: ['shortcuts', 'koros', 'related'],
-  defaultAssistant: 'koros',
-  defaultIntent: 'intent',
+  defaultPinned: [...DEFAULT_PINNED],
+  defaultAssistant: DEFAULT_ASSISTANT,
+  defaultIntent: DEFAULT_INTENT,
 });
 
 const router = createRouter({

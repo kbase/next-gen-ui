@@ -7,6 +7,7 @@ import { WorkbenchProvider } from './WorkbenchProvider';
 import { PromptBar } from './PromptBar';
 import { CartTray } from './CartTray';
 import promptStyles from '../../design-system/components/PromptInput/PromptInput.module.scss';
+import { DEFAULT_ASSISTANT, DEFAULT_INTENT, DEFAULT_PINNED } from '../../workbenchDefaults';
 
 function mount(
   items: {
@@ -18,11 +19,14 @@ function mount(
     context?: Record<string, unknown>;
   }[],
 ) {
+  // These tests are about the tray's own rendering, not the sidebar, so
+  // there is nothing here for a non-default layout to be about.
   const services = createWorkbench({
     installed: localPlugins,
     storage: null,
-    defaultPinned: ['koros', 'data', 'jobs'],
-    defaultAssistant: 'koros',
+    defaultPinned: [...DEFAULT_PINNED],
+    defaultAssistant: DEFAULT_ASSISTANT,
+    defaultIntent: DEFAULT_INTENT,
   });
   items.forEach((i, n) => services.cart.add({ ...i, addedAt: n }));
   render(
@@ -130,8 +134,9 @@ describe('the cart tray', () => {
     const services = createWorkbench({
       installed: localPlugins,
       storage: null,
-      defaultPinned: ['koros', 'data', 'jobs'],
-      defaultAssistant: 'koros',
+      defaultPinned: [...DEFAULT_PINNED],
+      defaultAssistant: DEFAULT_ASSISTANT,
+      defaultIntent: DEFAULT_INTENT,
     });
     const { container } = render(
       <WorkbenchProvider services={services}>

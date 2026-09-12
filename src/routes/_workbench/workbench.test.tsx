@@ -11,11 +11,11 @@ import { testWorkbench } from '../../test/workbench';
 // under a loaded test run that exceeds the 1s default.
 configure({ asyncUtilTimeout: 5000 });
 
-function mountAt(path: string) {
+function mountAt(path: string, workbenchOverrides?: Parameters<typeof testWorkbench>[0]) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   queryClient.setQueryData(['auth', 'me'], { user: 'tester', display: 'Tester' });
   queryClient.setQueryData(['auth', 'tokenInfo'], { id: 'session-1', user: 'tester', mfa: 'Used' });
-  const workbench = testWorkbench();
+  const workbench = testWorkbench(workbenchOverrides);
   const history = createMemoryHistory({ initialEntries: [path] });
   const router = createRouter({
     routeTree,
@@ -62,7 +62,10 @@ describe('workbench deep links', () => {
 
   it('writes the URL when a page opens or gains focus, and clears it on close', async () => {
     const user = userEvent.setup();
-    const { router } = mountAt('/workbench');
+    // This is about the URL syncing with panel focus, exercised through the
+    // jobs pane's click-to-open list; jobs need not be a default pin for
+    // that.
+    const { router } = mountAt('/workbench', { defaultPinned: ['jobs'] });
     const sidebar = await screen.findByRole('region', { name: 'Sidebar' });
     await user.click(await within(sidebar).findByRole('button', { name: /assemble reads/i }));
     await waitFor(() => expect(pathname(router)).toBe('/p/jobs/12'));

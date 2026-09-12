@@ -16,7 +16,7 @@ export function ShortcutsNavigator() {
   usePanelTitle('Shortcuts');
   const { source, registry } = useServices();
   useSyncExternalStore(source.subscribe, source.version, source.version);
-  useSyncExternalStore(registry.subscribe, () => registry.list().length);
+  useSyncExternalStore(registry.subscribe, registry.version);
   const shortcuts = source.manifests().flatMap((m) =>
     (m.shortcuts ?? []).map((call) => {
       const name = qualifyCommand(call.command, m.id);

@@ -137,7 +137,7 @@ function byOwner(a: Command, b: Command): number {
 // are the same thing read two ways.
 function Keyboard() {
   const { registry, settings } = useServices();
-  useSyncExternalStore(registry.subscribe, () => registry.list().length);
+  useSyncExternalStore(registry.subscribe, registry.version);
   const current = useSyncExternalStore(settings.subscribe, settings.get, settings.get);
   // Which row is listening for a chord, and what the last attempt collided
   // with. One at a time: recording swallows every key, so two rows listening

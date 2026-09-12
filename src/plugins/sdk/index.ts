@@ -66,6 +66,6 @@ export type {
 } from './modules';
 export { fromReact } from './fromReact';
 export { useCart } from './cart';
-export type { Cart, CartItem } from './cart';
+export type { Cart, CartItem, CartSource } from './cart';
 export { CartButton } from './CartButton';
 export type { CartButtonProps } from './CartButton';

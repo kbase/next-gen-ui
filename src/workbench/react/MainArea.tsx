@@ -4,10 +4,13 @@ import { SplitView } from './SplitView';
 import { TabGroup } from './TabGroup';
 import styles from './Workbench.module.css';
 
+// The page is compact (index.html) and the content is not: the main area and
+// the prompt bar declare the default tier, and everything else — the chrome,
+// and the popups, which portal to <body> — takes the page's.
 export function MainArea() {
   const layout = useLayout();
   return (
-    <div className={styles.main} role="region" aria-label="Main area">
+    <div className={styles.main} role="region" aria-label="Main area" data-density="comfortable">
       <NodeView node={layout.main} />
     </div>
   );

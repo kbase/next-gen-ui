@@ -224,23 +224,25 @@
 }
 
 /* The design system's accordion header: bold ink title, leading icon in
-   ink3, chevron on the right rotating open/closed. */
+   ink3, chevron on the right rotating open/closed. A section header, not a
+   control: it reads the type and spacing scales directly, so the page's
+   density tier, which resizes controls and rows, leaves it alone. */
 .blockToggle {
   flex: 1;
   display: flex;
   align-items: center;
   gap: var(--s-3);
   /* Left inset --s-3, not --s-4: the icon centres on x=24 with the rail
-     glyphs and the brand logo. The vertical is the sidebar's row tier: the
-     sidebar declares itself compact, since it stacks four of these. */
-  padding: var(--row-py) var(--ctl-px) var(--row-py) var(--s-3);
+     glyphs and the brand logo. Vertically one step tighter: the sidebar
+     stacks four of these, so the header height is paid four times over. */
+  padding: var(--s-2) var(--s-4) var(--s-2) var(--s-3);
   background: none;
   border: none;
   /* The More row's treatment: a section header names the section, so it
      sits back in ink3 and comes forward on hover. */
   color: var(--c-ink3);
   font-family: inherit;
-  font-size: var(--ctl-fs);
+  font-size: var(--fs-4);
   font-weight: var(--fw-bold);
   text-align: left;
   cursor: pointer;
@@ -422,18 +424,20 @@
   min-height: 0;
 }
 
-/* The accordion's footer: shaped like a section header, but an action. */
+/* The accordion's footer: shaped like a section header, but an action. Sized
+   as the header is, off the type and spacing scales rather than the density
+   tier. */
 .moreRow {
   display: flex;
   align-items: center;
   gap: var(--s-3);
   width: 100%;
-  padding: var(--row-py) var(--ctl-px) var(--row-py) var(--s-3);
+  padding: var(--s-2) var(--s-4) var(--s-2) var(--s-3);
   background: var(--c-raised);
   border: none;
   border-top: 1px solid var(--c-border);
   font-family: inherit;
-  font-size: var(--ctl-fs);
+  font-size: var(--fs-4);
   font-weight: var(--fw-bold);
   color: var(--c-ink3);
   text-align: left;

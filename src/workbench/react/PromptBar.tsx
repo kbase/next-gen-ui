@@ -252,7 +252,8 @@ export function PromptBar() {
 
   const open = suggestions.length > 0;
   return (
-    <div ref={wrapper} className={styles.promptBar}>
+    // Content tier, not the page's compact one: see MainArea.
+    <div ref={wrapper} className={styles.promptBar} data-density="comfortable">
       {open && (
         <ul id={listId} role="listbox" aria-label="Completions" className={styles.completions}>
           {suggestions.map((s, i) => (

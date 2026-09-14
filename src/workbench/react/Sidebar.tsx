@@ -80,7 +80,6 @@ export function Sidebar() {
   return (
     <div
       className={styles.sidebar}
-      data-density="compact"
       data-collapsed={sidebar.collapsed || undefined}
       style={{ width: sidebar.collapsed ? 48 : sidebar.width }}
     >

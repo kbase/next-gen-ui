@@ -16,7 +16,7 @@ export function StatusBar() {
   const collapsed = layout.sidebar.collapsed;
 
   return (
-    <div className={styles.statusBar} data-density="compact" aria-label="Status bar">
+    <div className={styles.statusBar} aria-label="Status bar">
       <Button
         size="xs"
         variant="ghost"

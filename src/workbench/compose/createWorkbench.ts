@@ -5,7 +5,11 @@ import {
   createQueryStore,
   createTermStore,
   createWorkbenchStore,
+  defaultContext,
   defaultLayout,
+  paneId,
+  placementOf,
+  reduce,
 } from '../core';
 import type { Command } from '../commands';
 import { createCommandRegistry, createRunStore, workbenchCommands } from '../commands';
@@ -69,9 +73,26 @@ export function createWorkbench({
   // the thing most likely to move to the account later.
   const cart = createCartStore([...(loaded.cart ?? [])]);
 
-  // A saved layout is restored verbatim; `defaultPinned` only builds a fresh
-  // one, which is what a reader with no readable layout gets.
-  const initial = loaded.layout ?? defaultLayout({ pinned: defaultPinned });
+  // A saved layout is restored as written; `defaultPinned` builds a fresh
+  // one. A default pin the reader's layout has never been offered — a block
+  // added to the workbench after their layout was saved — is pinned once
+  // now, and recorded in the settings document so that unpinning it holds.
+  // The record is beside the cart and the settings rather than in the layout,
+  // where the next layout key bump would take it. A pane the reader moved to
+  // the main area is placed already and is left there.
+  const offered = new Set(settings.get().offered ?? []);
+  let initial = loaded.layout ?? defaultLayout({ pinned: defaultPinned });
+  const newlyOffered: PluginId[] = [];
+  for (const plugin of defaultPinned) {
+    if (offered.has(plugin)) continue;
+    if (placementOf(initial, paneId(plugin)).zone === 'none') {
+      const pinned = reduce(initial, { type: 'pin', plugin }, defaultContext);
+      // A locked layout refuses the pin; the offer then waits for the unlock.
+      if (pinned === initial) continue;
+      initial = pinned;
+    }
+    newlyOffered.push(plugin);
+  }
   const store = createWorkbenchStore({
     initial,
     title: (id, panel) => titles.get(id) ?? fallbackTitle(services, panel, id),
@@ -140,6 +161,9 @@ export function createWorkbench({
   // separate for the same reason — resetting the layout keeps them.
   cart.subscribe(() => save('cart', cart.items()));
   settings.subscribe(() => save('settings', settings.get()));
+  // Written now that a change reaches storage, so a block is offered once
+  // rather than pinned again on every load.
+  if (newlyOffered.length) settings.set({ offered: [...offered, ...newlyOffered] });
   return services;
 }
 

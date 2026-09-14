@@ -18,6 +18,12 @@ export const SettingsSchema = z.object({
   // Chord text to qualified command name, over commands/keys.ts's defaults.
   // '' takes a default away without putting anything in its place.
   keybindings: z.record(z.string(), z.string()),
+  // The default pins this reader's layout has been offered. A saved layout
+  // is restored as written, so a block added to the defaults after it was
+  // saved is pinned once, at startup, and recorded here so that unpinning
+  // it holds; a document written before the field existed has been offered
+  // nothing (compose/createWorkbench.ts).
+  offered: z.array(z.string()).optional(),
 });
 export type Settings = z.infer<typeof SettingsSchema>;
 
@@ -34,7 +40,10 @@ export interface SettingsStore {
 // settings document is written to storage on every change, and a reader that
 // picks its current assistant out of a menu should not cost a write.
 const same = (a: Settings, b: Settings) =>
-  a.assistant === b.assistant && a.intent === b.intent && a.keybindings === b.keybindings;
+  a.assistant === b.assistant &&
+  a.intent === b.intent &&
+  a.keybindings === b.keybindings &&
+  a.offered === b.offered;
 
 // The two plugin choices have to be named: which plugin answers the bar and
 // which ranks what is typed there is the app's decision, and there is no

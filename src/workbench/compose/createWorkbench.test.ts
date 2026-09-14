@@ -1,7 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { CartItem, DeclaredCall } from '../../plugins/sdk';
 import { definePluginManifest, qualifyCommand } from '../../plugins/sdk';
+import { localPlugins } from '../../plugins/local';
 import { createWorkbench } from './createWorkbench';
+import { defaultContext, defaultLayout, groups, paneId, placementOf, reduce } from '../core';
+import type { LoadedDocs } from '../host/persistence';
 import { pluginHostFor } from '../host/pluginHost';
 import { localPlugin } from '../host/local';
 import { noPersistence } from '../host/persistence';
@@ -158,5 +161,59 @@ describe('an item a plugin adds to the cart', () => {
     const sent = { id: 'gk:83333', name: 'E. coli', source: { path: '/83333' } } as unknown as CartItem;
     expect(() => gk.cart.add(sent)).toThrow(/plugin gk: cart.add refused the item: source\.command/);
     expect(services.cart.items()).toEqual([]);
+  });
+});
+
+// A saved layout is restored as written, so a block added to the defaults
+// after it was saved has no way into it on its own. Which blocks a reader has
+// been offered is kept in the settings document, beside the cart, where a
+// layout key bump does not reach.
+describe('a default pin a saved layout has never been offered', () => {
+  const saved = () => {
+    // A layout saved when the defaults were ['koros'] alone.
+    const layout = defaultLayout({ pinned: ['koros'] });
+    return { layout, settings: { assistant: 'koros', intent: 'intent', keybindings: {} } };
+  };
+  const build = (docs: Partial<LoadedDocs>, save = vi.fn()) =>
+    createWorkbench({
+      installed: localPlugins,
+      persistence: { loaded: { layout: null, cart: null, settings: null, ...docs }, save },
+      defaultPinned: ['koros', 'jobs'],
+      defaultAssistant: 'koros',
+      defaultIntent: 'intent',
+    });
+
+  it('is pinned once at startup and recorded as offered', () => {
+    const save = vi.fn();
+    const { layout, settings } = saved();
+    const services = build({ layout, settings }, save);
+    expect(services.store.get().sidebar.pinned).toEqual(['koros', 'jobs']);
+    expect(services.settings.get().offered).toEqual(['koros', 'jobs']);
+    expect(save).toHaveBeenCalledWith('settings', expect.objectContaining({ offered: ['koros', 'jobs'] }));
+  });
+
+  it('stays unpinned on the next load once it has been offered', () => {
+    const { layout } = saved();
+    // The reader unpinned jobs after it was offered.
+    const services = build({
+      layout,
+      settings: { assistant: 'koros', intent: 'intent', keybindings: {}, offered: ['koros', 'jobs'] },
+    });
+    expect(services.store.get().sidebar.pinned).toEqual(['koros']);
+  });
+
+  it('leaves a pane the reader moved to the main area where it is', () => {
+    const { layout, settings } = saved();
+    const inMain = reduce(
+      reduce(layout, { type: 'pin', plugin: 'jobs' }, defaultContext),
+      { type: 'move', panel: paneId('jobs'), to: { group: groups(layout.main)[0].id } },
+      defaultContext,
+    );
+    // Moved out, the plugin stays pinned and its pane is a tab.
+    expect(placementOf(inMain, paneId('jobs')).zone).toBe('main');
+    const services = build({ layout: inMain, settings });
+    expect(services.store.get()).toEqual(inMain);
+    expect(placementOf(services.store.get(), paneId('jobs')).zone).toBe('main');
+    expect(services.settings.get().offered).toEqual(['koros', 'jobs']);
   });
 });

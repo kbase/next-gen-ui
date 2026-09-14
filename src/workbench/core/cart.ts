@@ -85,8 +85,10 @@ export interface CartStore {
 export const CART_STORAGE_KEY = 'kbase-workbench-cart.v4';
 
 // A stored cart that does not match the schema is an empty cart, not a
-// crash: the key names the shape, so anything under it was written by a build
-// that agreed on `CartItemSchema`, and anything that disagrees is damage.
+// crash: the key names the shape, every item is checked against the SDK's
+// schema where a plugin hands it over (host/pluginHost.ts), so anything under
+// the key was written by a build that agreed on `CartItemSchema`, and anything
+// that disagrees is damage.
 export function readCart(raw: string | null): StoredCartItem[] {
   if (!raw) return [];
   try {

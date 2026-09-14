@@ -6,9 +6,11 @@ import type {
   TermsQuery,
   TieredTerms,
 } from '../../../plugins/sdk';
-import { qualifyCommand } from '../../../plugins/sdk';
+import { z } from 'zod';
+import { CartItemSchema, OfferSchema, SuggestionSchema, qualifyCommand } from '../../../plugins/sdk';
 import type { Answer, PluginOffers, QuerySource, QueryStore } from '../../core';
 import { EMPTY_TYPING, unionAnswers } from '../../core';
+import { accepted } from '../checked';
 import type { HostIndex } from '../installed';
 
 // Asking every plugin what it offers for the text, what it has about a
@@ -136,7 +138,8 @@ export function createQueryRunner(
     for (const { plugin, background } of index.backgrounds()) {
       if (!background.terms) continue;
       try {
-        for (const term of background.terms({ text })) found.add(term);
+        const terms = accepted(`plugin ${plugin}`, 'a term terms() found', z.string(), background.terms({ text }));
+        for (const term of terms) found.add(term);
       } catch (err) {
         console.warn(`plugin ${plugin}: its terms() threw; ignoring it`, err);
       }
@@ -175,7 +178,10 @@ export function createQueryRunner(
     suggesting = controller;
     const land = (suggestions: Suggestion[]) => {
       if (controller.signal.aborted) return;
-      store.setTyping({ ...store.typing(), suggestions });
+      store.setTyping({
+        ...store.typing(),
+        suggestions: accepted('the intent plugin', 'a row suggest() answered with', SuggestionSchema, suggestions),
+      });
     };
     const fail = (err: unknown) => {
       if (!controller.signal.aborted)
@@ -228,7 +234,8 @@ export function createQueryRunner(
           o.calls.map((c) => ({ ...c, command: qualifyCommand(c.command, o.plugin) })),
         );
     typing = { text, terms, offers: current };
-    const land = (plugin: string, calls: Offer[]) => {
+    const land = (plugin: string, offered: Offer[]) => {
+      const calls = accepted(`plugin ${plugin}`, 'an offer offer() made', OfferSchema, offered);
       if (calls.length) offers.set(plugin, { plugin, calls });
       else offers.delete(plugin);
     };
@@ -314,7 +321,8 @@ export function createQueryRunner(
       plugins.map(async ({ plugin, background }) => {
         let items: CartItem[];
         try {
-          items = await background.relate!(query);
+          const answered = await background.relate!(query);
+          items = accepted(`plugin ${plugin}`, 'an item relate() answered with', CartItemSchema, answered);
         } catch (err) {
           if (!controller.signal.aborted) {
             console.warn(`plugin ${plugin}: its relate() threw; ignoring it`, err);

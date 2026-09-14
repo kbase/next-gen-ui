@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { DeclaredCall } from '../../plugins/sdk';
+import type { CartItem, DeclaredCall } from '../../plugins/sdk';
 import { definePluginManifest, qualifyCommand } from '../../plugins/sdk';
 import { createWorkbench } from './createWorkbench';
 import { pluginHostFor } from '../host/pluginHost';
@@ -144,5 +144,19 @@ describe('the catalog the intent is handed', () => {
     });
     const pane = (await calls()).find((c) => c.command === 'workbench:show');
     expect(services.registry.get(pane!.command)).toBeDefined();
+  });
+});
+
+// The one place a plugin hands the host something it keeps. Checked here and
+// refused to the call that sent it, so nothing the cart holds has a shape it
+// did not check.
+describe('an item a plugin adds to the cart', () => {
+  it('is refused, naming the field, when its source names no command', () => {
+    const services = workbench(vi.fn());
+    const gk = pluginHostFor(services, 'gk');
+    // The shape Function Junction's Python half still sends (K90).
+    const sent = { id: 'gk:83333', name: 'E. coli', source: { path: '/83333' } } as unknown as CartItem;
+    expect(() => gk.cart.add(sent)).toThrow(/plugin gk: cart.add refused the item: source\.command/);
+    expect(services.cart.items()).toEqual([]);
   });
 });

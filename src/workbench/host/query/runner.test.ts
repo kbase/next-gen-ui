@@ -586,3 +586,27 @@ describe('the chosen intent', () => {
     expect(intent.suggest).toHaveBeenCalledTimes(1);
   });
 });
+
+// A plugin that answers with the wrong shape is contained the way one that
+// throws is: the item is refused where it arrives, with a line naming the
+// plugin and the field, and the rest of its answer stands.
+describe('what a plugin answers is checked where it arrives', () => {
+  it('keeps the items relate() answered with that parse and refuses the rest', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const store = createQueryStore();
+    const p: Background = {
+      relate: async () => [
+        { id: 'p:1', name: 'One', source: { command: 'open' } },
+        { id: 'p:2', name: 'Two', source: { path: '/two' } } as unknown as CartItem,
+      ],
+    };
+    const runner = createQueryRunner(index({ p }), store);
+    runner.set('cart', { terms: ['x:1'] });
+    await vi.advanceTimersByTimeAsync(SETTLE_MS);
+    expect(store.get('cart').answers.map((a) => a.items.map((i) => i.id))).toEqual([['p:1']]);
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringMatching(/^plugin p: an item relate\(\) answered with — source\.command/),
+    );
+    warn.mockRestore();
+  });
+});

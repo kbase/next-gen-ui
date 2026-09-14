@@ -1,5 +1,7 @@
+import { z } from 'zod';
 import type { CartItem } from './cart';
 import type { CommandCall, Offer, SlashCommand, TieredTerms } from './contract';
+import { CommandCallSchema } from './contract';
 import type { PluginHost } from './host';
 import type { PanelHandle } from './panel';
 
@@ -81,6 +83,11 @@ export interface StatusItem {
   action?: CommandCall;
 }
 
+export const StatusItemSchema = z.object({
+  text: z.string(),
+  action: CommandCallSchema.optional(),
+}) satisfies z.ZodType<StatusItem>;
+
 // The two questions a background answers are asked on different clocks and
 // answered with different things, so each is its own member.
 //
@@ -133,6 +140,13 @@ export interface Destination {
   select?: (key: string) => void;
 }
 
+export const DestinationSchema = z.object({
+  label: z.string(),
+  path: z.string().optional(),
+  options: z.array(z.object({ key: z.string(), label: z.string() })).optional(),
+  select: z.custom<(key: string) => void>((v) => typeof v === 'function').optional(),
+}) satisfies z.ZodType<Destination>;
+
 export interface Prompt {
   // Free text the prompt bar did not resolve to a command or a suggestion,
   // with the term pool and the cart as it stood when Enter was pressed.
@@ -181,6 +195,13 @@ export interface Suggestion {
   // Higher is a closer match; rows are shown in the order returned.
   score: number;
 }
+
+export const SuggestionSchema = z.object({
+  call: CommandCallSchema,
+  plugin: z.string().optional(),
+  detail: z.string().optional(),
+  score: z.number(),
+}) satisfies z.ZodType<Suggestion>;
 
 // What an intent is asked on the keystroke. Beside the text it carries
 // everything the workbench has in view, tiered by where it came from: the

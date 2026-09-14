@@ -18,6 +18,9 @@ export {
   definePluginManifest,
   qualifyCommand,
   CONTEXT_TIERS,
+  MatchKindSchema,
+  MatchSchema,
+  OfferSchema,
 } from './contract';
 export type {
   Manifest,
@@ -39,6 +42,9 @@ export {
   defineCommands,
   definePrompt,
   defineIntent,
+  StatusItemSchema,
+  DestinationSchema,
+  SuggestionSchema,
 } from './modules';
 export type {
   Background,
@@ -68,7 +74,7 @@ export { fromReact } from './fromReact';
 export { AppFrame } from './AppFrame';
 export type { AppFrameProps } from './AppFrame';
 export type { FrameLayer } from './frames';
-export { useCart } from './cart';
+export { useCart, CartItemSchema, CartSourceSchema } from './cart';
 export type { Cart, CartItem, CartSource } from './cart';
 export { CartButton } from './CartButton';
 export type { CartButtonProps } from './CartButton';

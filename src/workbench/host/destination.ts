@@ -1,6 +1,8 @@
 import type { Cleanup, Destination } from '../../plugins/sdk';
+import { DestinationSchema } from '../../plugins/sdk';
 import type { PluginId } from '../core';
 import { createStore } from '../core/subscribable';
+import { issueText } from './checked';
 import type { HostIndex } from './installed';
 import type { SettingsStore } from './settings';
 
@@ -70,7 +72,18 @@ export function createDestinationStore(
         if (mine !== generation || !prompt.destination) return;
         stopPlugin = prompt.destination((value) => {
           if (mine !== generation) return;
-          current.set(value);
+          if (value === null) {
+            current.set(null);
+            return;
+          }
+          const parsed = DestinationSchema.safeParse(value);
+          if (!parsed.success) {
+            console.warn(
+              `plugin ${assistant}: the destination it pushed — ${issueText(parsed.error.issues)}; ignoring it`,
+            );
+            return;
+          }
+          current.set(parsed.data);
         });
       })
       .catch((err: unknown) => {

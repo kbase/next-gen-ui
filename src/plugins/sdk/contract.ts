@@ -93,7 +93,8 @@ export type TieredTerms = Record<ContextTier, string[]>;
 // `name` — words matched words: a label the plugin knows, or a description
 //   that says it takes this kind of thing. The weakest of the three, since
 //   ordinary sentences are made of words.
-export type MatchKind = 'record' | 'identifier' | 'name';
+export const MatchKindSchema = z.enum(['record', 'identifier', 'name']);
+export type MatchKind = z.infer<typeof MatchKindSchema>;
 
 // Why a command is offered. No score: one plugin's 0.8 says nothing beside
 // another's, and ordering is the intent's job — what the intent cannot work
@@ -109,10 +110,20 @@ export interface Match {
   kind: MatchKind;
 }
 
+// The schemas beside the types a plugin's code hands back: what the host
+// checks each value against where it arrives, so a plugin that answers with
+// the wrong shape is refused there rather than believed.
+export const MatchSchema = z.object({
+  term: z.string().min(1),
+  kind: MatchKindSchema,
+}) satisfies z.ZodType<Match>;
+
 // A command a plugin volunteered for what was typed, with what it matched.
 export interface Offer extends CommandCall {
   match: Match;
 }
+
+export const OfferSchema = CommandCallSchema.extend({ match: MatchSchema }) satisfies z.ZodType<Offer>;
 
 // Plugin ids are URL-visible (`/p/<id>/...`), so they are restricted to what
 // reads well there and never change once published.

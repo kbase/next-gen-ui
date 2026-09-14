@@ -189,7 +189,7 @@ function Preview({ item, plugin }: { item: StoredCartItem; plugin?: string }) {
         </section>
       )}
 
-      {source && (
+      {source?.command && (
         <p className={styles.cartPreviewSource}>
           {/* The item's own plugin qualifies the command, so this opens an
               item the tray did not add and could not have named a path for. */}

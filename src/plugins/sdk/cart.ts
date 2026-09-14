@@ -1,5 +1,7 @@
 import { useSyncExternalStore } from 'react';
+import { z } from 'zod';
 import type { Match } from './contract';
+import { MatchSchema } from './contract';
 import { useHost } from './host';
 
 // Adding something to the cart, from inside a plugin.
@@ -89,6 +91,25 @@ export interface CartItem {
   source?: CartSource;
   context?: Record<string, unknown>;
 }
+
+// What the host checks an item against where a plugin hands it over —
+// `cart.add`, and every item `relate` answers with. `plugin` is not here: the
+// host writes it. An item that fails is refused to the plugin that sent it.
+export const CartSourceSchema = z.object({
+  command: z.string().min(1),
+  args: z.record(z.string(), z.string()).optional(),
+}) satisfies z.ZodType<CartSource>;
+
+export const CartItemSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  subject: z.string().optional(),
+  summary: z.string().optional(),
+  terms: z.array(z.string()).optional(),
+  answers: z.array(MatchSchema).optional(),
+  source: CartSourceSchema.optional(),
+  context: z.record(z.string(), z.unknown()).optional(),
+}) satisfies z.ZodType<Omit<CartItem, 'plugin'>>;
 
 // The slice of the host's cart a plugin can see. It cannot read other
 // plugins' items: what is in the cart is the user's business and the

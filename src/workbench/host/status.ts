@@ -1,6 +1,8 @@
 import type { Cleanup, StatusItem } from '../../plugins/sdk';
+import { StatusItemSchema } from '../../plugins/sdk';
 import type { PluginId } from '../core';
 import { createKeyedStore } from '../core/subscribable';
+import { accepted } from './checked';
 import type { HostIndex } from './installed';
 
 // What each plugin last pushed for the status bar. Every background's
@@ -36,8 +38,9 @@ export function createStatusStore(source: HostIndex): StatusStore {
       try {
         stops.set(
           plugin,
-          background.status((items) => {
+          background.status((pushed) => {
             if (!live) return;
+            const items = accepted(`plugin ${plugin}`, 'a status line it pushed', StatusItemSchema, pushed);
             if (items.length) current.set(plugin, items);
             else current.forget(plugin);
           }),

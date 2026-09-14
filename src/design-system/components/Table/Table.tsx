@@ -8,10 +8,14 @@ import type {
 import { CaretUp, CaretDown } from '@phosphor-icons/react';
 import styles from './Table.module.scss';
 import { cx } from '../../util/cx';
+import type { Size } from '../../util/size';
 
 interface TableProps extends HTMLAttributes<HTMLTableElement> {
   children: ReactNode;
   className?: string;
+  /** Density tier; unset, the enclosing `data-density` applies. */
+  size?: Size;
+  /** No border, radius or background, and `size="sm"` unless `size` says otherwise. */
   compact?: boolean;
 }
 interface TheadProps extends HTMLAttributes<HTMLTableSectionElement> {
@@ -40,9 +44,12 @@ export interface ThProps {
   colSpan?: number;
 }
 
-export function Table({ children, className, compact, ...props }: TableProps) {
+export function Table({ children, className, size, compact, ...props }: TableProps) {
   return (
-    <div className={cx(styles.wrapper, compact && styles.compact)}>
+    <div
+      className={cx(styles.wrapper, compact && styles.compact)}
+      data-size={size ?? (compact ? 'sm' : undefined)}
+    >
       <table className={cx(styles.table, className)} {...props}>
         {children}
       </table>

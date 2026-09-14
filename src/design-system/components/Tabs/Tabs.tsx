@@ -1,13 +1,16 @@
 import { Tabs as BaseTabs } from '@base-ui/react/tabs';
 import styles from './Tabs.module.scss';
 import { cx } from '../../util/cx';
+import type { Size } from '../../util/size';
 
 export interface TabsRootProps extends BaseTabs.Root.Props {
+  /** Density tier; unset, the enclosing `data-density` applies. */
+  size?: Size;
   className?: string;
 }
 
-export function Root({ className, ...props }: TabsRootProps) {
-  return <BaseTabs.Root className={className} {...props} />;
+export function Root({ size, className, ...props }: TabsRootProps) {
+  return <BaseTabs.Root className={className} data-size={size} {...props} />;
 }
 
 export interface TabsListProps extends Omit<BaseTabs.List.Props, 'className'> {

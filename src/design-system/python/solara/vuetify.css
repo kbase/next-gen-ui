@@ -250,6 +250,13 @@
   box-shadow: none;
 }
 
+/* Button and Tab take their floor from the density tier (--ctl-h in tokens.css); the
+   selector above outranks their single class, so the floor is restated here. The other
+   classes get their height from padding alone. */
+.v-btn:is(.kb-button--btn, .kb-tabs--tab) {
+  min-height: var(--ctl-h);
+}
+
 .v-btn:is(
     .kb-tabs--tab,
     .kb-segmented-control--btn,

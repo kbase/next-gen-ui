@@ -1,6 +1,7 @@
 import s from './showcase.module.scss';
 import { Button, ButtonLink } from '../components/Button';
 import { CopyButton } from '../components/CopyButton';
+import { CartButton } from '../components/CartButton';
 import { SegmentedControl } from '../components/SegmentedControl';
 import { CodeBlock } from '../components/CodeBlock';
 import {
@@ -168,6 +169,34 @@ export function Section05Actions() {
         from a dead button. <code>label</code> is required, because a button is operable and always
         needs a name; <code>iconOnly</code> hides the words and keeps it. Takes Button's{' '}
         <code>variant</code>, <code>size</code>, and its other props.
+      </p>
+
+      <div className={s.sub}>Cart button</div>
+      <p className={s.note}>
+        A toggle that puts an item in the cart. Primary ink with a plus marks an item that can be
+        added; once it is in, the glyph is a check and the pill drops to neutral ink. The icon form
+        keeps the name &ldquo;Add to cart&rdquo; and <code>aria-pressed</code> carries the state;
+        the labelled form is named by its words.
+      </p>
+      <div className={s.row} style={{ marginBottom: 'var(--s-7)', alignItems: 'center' }}>
+        <CartButton />
+        <CartButton defaultPressed />
+        <CartButton labelled />
+        <CartButton labelled defaultPressed />
+      </div>
+      <CodeBlock
+        language="tsx"
+        code={`<CartButton onPressedChange={(inCart) => ...} />
+<CartButton pressed={inCart} onPressedChange={setInCart} />
+<CartButton labelled />`}
+      />
+      <p className={s.note}>
+        The icon form is a 30px pill, level with NavIcon and the sm buttons, for tables and other
+        tight rows. Hover or focus shows the words in a tooltip drawn over the pill and extended to
+        the right, or to the left when there is no room, so the row never changes width.{' '}
+        <code>labelled</code> keeps the words in the pill for a prominent placement.{' '}
+        <code>label</code> and <code>pressedLabel</code> replace the words; Toggle&apos;s other
+        props pass through.
       </p>
 
       <div className={s.sub}>Segmented control</div>

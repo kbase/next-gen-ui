@@ -1,0 +1,95 @@
+/* Reshapes Button's outline variant into a 30px pill, level with NavIcon and
+   the sm buttons, so the icon form is a circle and the words, when shown, sit
+   in the same pill. Ink and border are the primary's; the ground stays
+   outline's, transparent at rest and raised on hover. Button.module.scss is
+   imported first, in the bundle and in components.css, so the rules here win
+   at equal specificity. */
+.pill {
+  color: var(--ct-primary);
+  border-color: var(--bo-primary);
+  height: 30px;
+  /* With the 1px border, the 18px glyph's ring sits 6px inside the pill's. */
+  padding: 0 5px;
+  border-radius: var(--r-full);
+  gap: var(--s-2);
+  font-size: var(--fs-3);
+
+  /* Words need more optical inset than a circle does. */
+  &[data-labelled] {
+    padding-right: 11px;
+  }
+
+  /* Pressed, ink and border drop to neutral; the primary is kept for the
+     action still available. Button's data-pressed rule is its press
+     animation; on a Toggle the attribute is the on state, so without the
+     reset the pill would stay shrunk. */
+  &[data-pressed] {
+    color: var(--c-ink3);
+    border-color: var(--c-border2);
+    transform: none;
+  }
+}
+
+/* Both glyphs are in the DOM and the Toggle's data-pressed picks one, so the
+   trigger needs no React state. Anchored to .pill because Button's
+   `.btn svg { display: block }` outranks a bare class. */
+.pill .check,
+.pill[data-pressed] .plus {
+  display: none;
+}
+
+.pill[data-pressed] .check {
+  display: block;
+}
+
+/* Set the z-index here, not on .popup. See --z-anchored in tokens.css. */
+.positioner {
+  z-index: var(--z-anchored);
+}
+
+/* The hover form is the pill drawn again over the trigger and extended with
+   the words, so nothing in the row changes width. The positioner's sideOffset
+   is -30, the pill's width: from the right the popup starts at the trigger's
+   left edge; flipped to the left it ends at the trigger's right edge and the
+   order reverses. Colours track the pill's hover state; a change there is
+   made here too. */
+.popup {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  height: 30px;
+  padding: 0 11px 0 5px;
+  border: 1px solid var(--bo-primary);
+  border-radius: var(--r-full);
+  background: var(--c-raised);
+  color: var(--ct-primary);
+  font-family: var(--f-sans);
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-3);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  cursor: pointer;
+
+  svg {
+    display: block;
+    flex-shrink: 0;
+  }
+
+  &[data-side='left'] {
+    flex-direction: row-reverse;
+    padding: 0 5px 0 11px;
+  }
+
+  /* data-pressed is set by CartButton.tsx: the popup is portaled, so no
+     selector can reach it from the trigger. */
+  &[data-pressed] {
+    color: var(--c-ink3);
+    border-color: var(--c-border2);
+  }
+
+  /* It covers the trigger and its ring, so the ring is redrawn here when the
+     tooltip opened on focus. */
+  &[data-instant='focus'] {
+    box-shadow: 0 0 0 3px var(--c-focus);
+  }
+}

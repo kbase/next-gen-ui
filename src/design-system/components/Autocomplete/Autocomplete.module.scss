@@ -20,8 +20,8 @@
 }
 
 .item {
-  font-size: var(--fs-4);
-  padding: var(--s-2) var(--s-4);
+  font-size: var(--ctl-fs);
+  padding: var(--item-py) var(--ctl-px);
   border-radius: var(--r-sm);
   cursor: pointer;
   outline: none;
@@ -39,6 +39,6 @@
   /* The element stays mounted and visible when empty, because Base UI
      announces it, so padding applies only when it has text. */
   &:not(:empty) {
-    padding: var(--s-2) var(--s-4);
+    padding: var(--item-py) var(--ctl-px);
   }
 }

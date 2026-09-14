@@ -14,6 +14,7 @@ import { Separator } from '../components/Separator';
 import { SearchBar } from '../components/SearchBar';
 import { Autocomplete } from '../components/Autocomplete';
 import { CodeBlock } from '../components/CodeBlock';
+import { SegmentedControl } from '../components/SegmentedControl';
 import { Play } from '@phosphor-icons/react';
 
 const PROJECTS = [
@@ -28,6 +29,7 @@ export function Section04Forms() {
   const [project, setProject] = useState('Soil Carbon Flux');
 
   const [running, setRunning] = useState(false);
+  const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable');
 
   function sendPrompt() {
     setPrompt('');
@@ -281,6 +283,51 @@ export function Section04Forms() {
           </div>
         </div>
       </Frame>
+
+      <div className={s.sub}>Density</div>
+      <p className={s.note}>
+        <code>data-density=&quot;compact&quot;</code> on any element sets every control and row
+        below it to the <code>sm</code> tier; a component&apos;s own <code>size</code> prop outranks
+        it. The attribute is plain HTML, so it works the same from Solara or a static page. Popups
+        are portaled to <code>&lt;body&gt;</code> and do not inherit from a region &mdash; set the
+        attribute on <code>&lt;html&gt;</code> or pass <code>size</code> to the popup part.
+      </p>
+      <div className={s.row} style={{ marginBottom: 'var(--s-5)' }}>
+        <SegmentedControl
+          value={density}
+          onChange={(v) => setDensity(v as 'comfortable' | 'compact')}
+          options={[
+            { value: 'comfortable', label: 'Comfortable' },
+            { value: 'compact', label: 'Compact' },
+          ]}
+        />
+      </div>
+      <Frame padding={6}>
+        <div data-density={density} className={s.row}>
+          <div style={{ flex: 1 }}>
+            <Input placeholder="Inherits the region" />
+          </div>
+          <Select.Root defaultValue="Perlmutter">
+            <Select.Trigger style={{ width: 160 }} />
+            <Select.Popup size={density === 'compact' ? 'sm' : undefined}>
+              <Select.Item value="Perlmutter">Perlmutter</Select.Item>
+              <Select.Item value="KBase">KBase</Select.Item>
+            </Select.Popup>
+          </Select.Root>
+          <Button variant="primary">Submit</Button>
+          <Button variant="outline" size="xs">
+            Always xs
+          </Button>
+        </div>
+      </Frame>
+      <CodeBlock
+        language="tsx"
+        code={`<div data-density="compact">
+  <Input />                              {/* sm, inherited */}
+  <Select.Popup size="sm">…</Select.Popup>  {/* portaled: told explicitly */}
+  <Button size="xs">Always xs</Button>   {/* own attribute wins */}
+</div>`}
+      />
     </div>
   );
 }

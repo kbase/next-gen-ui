@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { Autocomplete as BaseAutocomplete } from '@base-ui/react/autocomplete';
 import styles from './Autocomplete.module.scss';
 import { cx } from '../../util/cx';
+import type { Size } from '../../util/size';
 
 /**
  * Plain strings: Base UI's published union omits `input-press`, which its
@@ -11,7 +12,7 @@ const BROWSE_REASONS: readonly string[] = ['input-press', 'list-navigation'];
 
 export interface AutocompleteProps extends Omit<
   BaseAutocomplete.Input.Props,
-  'className' | 'value' | 'defaultValue' | 'onChange'
+  'className' | 'value' | 'defaultValue' | 'onChange' | 'size'
 > {
   /** The suggestions. A value outside this list is also valid. */
   items: readonly string[];
@@ -21,6 +22,11 @@ export interface AutocompleteProps extends Omit<
   onValueChange?: BaseAutocomplete.Root.Props<string>['onValueChange'];
   /** Shown when nothing matches. State what happens to the typed value. */
   emptyMessage?: string;
+  /**
+   * Density tier for the input and its popup. The popup is portaled to <body>, so a
+   * `data-density` on the page region around the input does not reach it; this prop does.
+   */
+  size?: Size;
   className?: string;
 }
 
@@ -30,6 +36,7 @@ export function Autocomplete({
   defaultValue,
   onValueChange,
   emptyMessage = 'No matches',
+  size,
   className,
   ...props
 }: AutocompleteProps) {
@@ -63,10 +70,10 @@ export function Autocomplete({
       }}
       openOnInputClick
     >
-      <BaseAutocomplete.Input className={cx(styles.input, className)} {...props} />
+      <BaseAutocomplete.Input className={cx(styles.input, className)} data-size={size} {...props} />
       <BaseAutocomplete.Portal>
         <BaseAutocomplete.Positioner sideOffset={4} className={styles.positioner}>
-          <BaseAutocomplete.Popup className={styles.popup}>
+          <BaseAutocomplete.Popup className={styles.popup} data-size={size}>
             {/* Base UI announces this, so it must stay mounted rather than be
                 rendered conditionally. */}
             <BaseAutocomplete.Empty className={styles.empty}>{emptyMessage}</BaseAutocomplete.Empty>

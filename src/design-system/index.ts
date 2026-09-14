@@ -1,4 +1,5 @@
 export { cx } from './util/cx';
+export type { Size } from './util/size';
 
 // Theme
 export { useTheme, themeInitScript } from './theme/useTheme';
@@ -31,6 +32,8 @@ export { Button, ButtonLink } from './components/Button';
 export type { ButtonProps, ButtonLinkProps, ButtonVariant, ButtonSize } from './components/Button';
 export { CopyButton } from './components/CopyButton';
 export type { CopyButtonProps } from './components/CopyButton';
+export { CartButton } from './components/CartButton';
+export type { CartButtonProps } from './components/CartButton';
 export { Input } from './components/Input';
 export type { InputProps } from './components/Input';
 export { Textarea } from './components/Textarea';

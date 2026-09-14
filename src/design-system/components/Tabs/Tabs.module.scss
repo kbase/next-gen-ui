@@ -6,8 +6,10 @@
 
 .tab {
   font-family: var(--f-sans);
-  font-size: var(--fs-4);
-  padding: var(--s-3) var(--s-5);
+  /* Height, side padding and type come from the density tier (tokens.css). */
+  min-height: var(--ctl-h);
+  padding: 0 var(--row-px);
+  font-size: var(--ctl-fs);
   cursor: pointer;
   border: none;
   background: none;

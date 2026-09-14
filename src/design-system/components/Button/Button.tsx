@@ -2,12 +2,14 @@ import { forwardRef, type ComponentPropsWithRef } from 'react';
 import { Button as BaseButton } from '@base-ui/react/button';
 import styles from './Button.module.scss';
 import { cx } from '../../util/cx';
+import type { Size } from '../../util/size';
 
 export type ButtonVariant = 'primary' | 'teal' | 'purple' | 'outline' | 'ghost' | 'danger' | 'link';
-export type ButtonSize = 'xs' | 'sm' | 'md';
+export type ButtonSize = Size;
 
 export interface ButtonProps extends Omit<BaseButton.Props, 'className'> {
   variant?: ButtonVariant;
+  /** Density tier; unset, the enclosing `data-density` applies (`md` on a plain page). */
   size?: ButtonSize;
   className?: string;
 }
@@ -20,13 +22,14 @@ export interface ButtonProps extends Omit<BaseButton.Props, 'className'> {
  * warns, production is silent. The same applies to every wrapper here with a `render =` default.
  */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant = 'primary', size = 'md', className, children, ...props },
+  { variant = 'primary', size, className, children, ...props },
   ref,
 ) {
   return (
     <BaseButton
       ref={ref}
-      className={cx(styles.btn, styles[variant], styles[size], className)}
+      className={cx(styles.btn, styles[variant], className)}
+      data-size={size}
       {...props}
     >
       {children}
@@ -50,13 +53,13 @@ export interface ButtonLinkProps extends Omit<ComponentPropsWithRef<'a'>, 'class
  */
 export function ButtonLink({
   variant = 'primary',
-  size = 'md',
+  size,
   className,
   children,
   ...props
 }: ButtonLinkProps) {
   return (
-    <a className={cx(styles.btn, styles[variant], styles[size], className)} {...props}>
+    <a className={cx(styles.btn, styles[variant], className)} data-size={size} {...props}>
       {children}
     </a>
   );

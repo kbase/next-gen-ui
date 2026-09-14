@@ -102,9 +102,11 @@ describe('complete', () => {
   });
 
   it('offers the qualified forms where the bare name is contested', async () => {
+    // The two the text begins first; customize, which has an o inside, after.
     expect((await complete(contested(), '/o')).map((o) => o.value)).toEqual([
       '/fj:open',
       '/workbench:open',
+      '/customize',
     ]);
     expect((await complete(contested(), '/fj:')).map((o) => o.value)).toEqual(['/fj:open']);
     expect((await complete(contested(), '/workbench:o')).map((o) => o.value)).toEqual([
@@ -124,5 +126,26 @@ describe('complete', () => {
   it('offers nothing for a prompt or past the last argument', async () => {
     expect(await complete(registry(), 'hello')).toEqual([]);
     expect(await complete(registry(), '/cancel 12 ')).toEqual([]);
+  });
+});
+
+// Three things a reader meets in order: a name typed from its middle, a
+// space after a name that is not a command, and Enter on a line that is
+// already whole (the bar's own test).
+describe('complete, for a name typed from its middle', () => {
+  it('offers a command the text falls inside, after the ones it begins', async () => {
+    const r = registry();
+    r.register({ name: 'new-question', title: 'New question', source: 'koros', run: () => {} });
+    expect((await complete(r, '/question')).map((o) => o.value)).toEqual(['/new-question']);
+    // `/c` begins cancel and customize; nothing else has a c in it.
+    expect((await complete(r, '/c')).map((o) => o.value)).toEqual(['/cancel ', '/customize']);
+  });
+
+  it('goes on offering names after a space, while the name resolves to nothing', async () => {
+    const r = registry();
+    r.register({ name: 'new-question', title: 'New question', source: 'koros', run: () => {} });
+    expect((await complete(r, '/new ')).map((o) => o.value)).toEqual(['/new-question']);
+    // A name that does resolve moves on to its arguments, as before.
+    expect((await complete(r, '/cancel ')).map((o) => o.label)).toEqual(['12', '13', '20']);
   });
 });

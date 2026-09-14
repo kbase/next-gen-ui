@@ -241,9 +241,11 @@ export function PromptBar() {
       accept(suggestions[Math.max(0, highlight)]);
     } else if (event.key === 'Enter' && highlight >= 0) {
       const chosen = suggestions[highlight];
-      // A row that acts always acts; a completion is skipped when it
-      // would only retype what is already there.
-      if (chosen.run || chosen.value !== value) {
+      // A row that acts always acts. Under a completion, Enter runs the line
+      // when it names one command with every required argument filled — the
+      // field's own submit does that — and completes the row into the box
+      // otherwise, so `/pin` becomes `/pin ` and waits for its plugin.
+      if (chosen.run || !resolve(registry, value).ok) {
         event.preventDefault();
         accept(chosen);
       }

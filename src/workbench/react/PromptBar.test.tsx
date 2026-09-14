@@ -249,3 +249,43 @@ describe('the destination row', () => {
     koros.setCurrent('nitro');
   });
 });
+
+// Enter under a completion: the line runs when it names one command with
+// every required argument filled, and the row is completed into the box
+// otherwise. Running a completed command is one Enter, not two.
+describe('Enter under a completion', () => {
+  it('runs a whole line once, and completes a part of a name into the box', async () => {
+    const user = userEvent.setup();
+    const services = mount();
+    const run = vi.spyOn(services.registry, 'run').mockResolvedValue(undefined);
+
+    await user.type(field(), '/quest');
+    await screen.findByRole('option', { name: /new-question/ });
+    await user.keyboard('{Enter}');
+    expect(field()).toHaveValue('/new-question');
+    expect(run).not.toHaveBeenCalled();
+
+    await screen.findByRole('option', { name: /new-question/ });
+    await user.keyboard('{Enter}');
+    expect(run).toHaveBeenCalledTimes(1);
+    expect(run).toHaveBeenCalledWith('koros:new-question', {}, 'user');
+    expect(field()).toHaveValue('');
+  });
+
+  it('completes a command still owing its argument, and runs it once the argument is typed', async () => {
+    const user = userEvent.setup();
+    const services = mount();
+    const run = vi.spyOn(services.registry, 'run').mockResolvedValue(undefined);
+
+    await user.type(field(), '/pin');
+    await screen.findByRole('option', { name: /^\/pin </ });
+    await user.keyboard('{Enter}');
+    expect(field()).toHaveValue('/pin ');
+    expect(run).not.toHaveBeenCalled();
+
+    await user.type(field(), 'data');
+    await screen.findByRole('option', { name: /^data/ });
+    await user.keyboard('{Enter}');
+    expect(run).toHaveBeenCalledWith('workbench:pin', { plugin: 'data' }, 'user');
+  });
+});

@@ -88,19 +88,24 @@ export async function complete(registry: CommandRegistry, input: string): Promis
   const parsed = parse(input);
   if (parsed.kind !== 'command') return [];
 
-  const namingCommand = parsed.tokens.length === 0 && !parsed.trailingSpace;
+  // The name is still being typed while there is no argument after it, or
+  // while what is typed names no command — `/new ` is a space after a name
+  // that has not resolved, and the names are what to offer for it.
+  const found = registry.find(parsed.name);
+  const namingCommand = parsed.tokens.length === 0 && (!parsed.trailingSpace || !found.ok);
   if (namingCommand) {
-    // A prefix of the bare name reaches a contested command too, shown in
-    // the qualified form the user will have to type.
-    return registry
-      .list()
-      .map((c) => ({ c, shown: displayName(registry, c) }))
-      .filter(
-        ({ c, shown }) =>
-          shown.startsWith(parsed.name) ||
-          c.name.startsWith(parsed.name) ||
-          qualifiedName(c).startsWith(parsed.name),
-      )
+    // Anywhere in the name, not only at its start: `/question` reaches
+    // `/new-question`. A name the text begins comes before one it falls
+    // inside, each group in the registry's order. A part of the bare name
+    // reaches a contested command too, shown in the qualified form the user
+    // will have to type.
+    const starts = ({ c, shown }: { c: Command; shown: string }) =>
+      [shown, c.name, qualifiedName(c)].some((n) => n.startsWith(parsed.name));
+    // Inside the bare name only: the qualified form's plugin prefix is not
+    // what a reader is typing from the middle of.
+    const within = ({ c }: { c: Command }) => c.name.includes(parsed.name);
+    const candidates = registry.list().map((c) => ({ c, shown: displayName(registry, c) }));
+    return [...candidates.filter(starts), ...candidates.filter((x) => !starts(x) && within(x))]
       .map(({ c, shown }) => ({
         // The trailing space invites the argument that has to follow. A
         // command whose arguments are all optional is already whole, and
@@ -113,7 +118,6 @@ export async function complete(registry: CommandRegistry, input: string): Promis
       }));
   }
 
-  const found = registry.find(parsed.name);
   if (!found.ok) return [];
   const specs = found.command.args ?? [];
   const index = parsed.trailingSpace ? parsed.tokens.length : parsed.tokens.length - 1;

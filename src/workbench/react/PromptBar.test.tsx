@@ -177,9 +177,12 @@ describe('an assistant that is not installed', () => {
     );
   });
 
-  it('still names where the text would go', () => {
+  it('says above the box that there is no assistant, rather than naming a destination', () => {
     missing();
-    expect(screen.getByText('uninstalled')).toBeVisible();
+    expect(
+      screen.getByText('No assistant: uninstalled is not installed. Pick one in Settings.'),
+    ).toBeVisible();
+    expect(screen.queryByRole('button', { name: /Prompt destination/ })).toBeNull();
   });
 });
 

@@ -319,18 +319,27 @@ function PromptDestination() {
   const assistant = useSyncExternalStore(settings.subscribe, settings.get, settings.get).assistant;
   useSyncExternalStore(source.subscribe, source.version, source.version);
   const manifest = source.manifest(assistant);
-  const title = manifest?.title ?? assistant;
+  // The setting names a plugin that is not installed — uninstalled since, or
+  // named by a settings document from a deployment that shipped it. There is
+  // no destination to draw, and the line says so rather than naming one.
+  if (!manifest) {
+    return (
+      <p className={styles.promptContext}>
+        {`No assistant: ${assistant} is not installed. Pick one in Settings.`}
+      </p>
+    );
+  }
   const prompt = source.loaded(assistant, 'prompt');
   return (
     <p className={styles.promptContext}>
       <PluginMark
-        icon={manifest?.icon}
-        color={manifest?.color}
+        icon={manifest.icon}
+        color={manifest.color}
         size={13}
         className={styles.promptMark}
         aria-hidden="true"
       />
-      <span className={styles.promptDestination}>{title}</span>
+      <span className={styles.promptDestination}>{manifest.title}</span>
       {prompt && <AssistantContext assistant={assistant} prompt={prompt} />}
     </p>
   );

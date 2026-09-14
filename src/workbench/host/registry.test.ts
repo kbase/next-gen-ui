@@ -30,18 +30,23 @@ const remote: Manifest = {
 describe('fetchRegistry', () => {
   it('parses manifests and drops invalid ones', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const list = await fetchRegistry('/plugin-registry', ok([remote, { id: 'Bad Id' }]));
-    expect(list.map((m) => m.id)).toEqual(['commons']);
+    const { manifests, declined } = await fetchRegistry('/plugin-registry', ok([remote, { id: 'Bad Id' }]));
+    expect(manifests.map((m) => m.id)).toEqual(['commons']);
+    expect(declined.map((d) => d.id)).toEqual(['Bad Id']);
   });
 
   it('names the plugin, its SDK and the rule when the version is the reason', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     warn.mockClear();
-    const list = await fetchRegistry(
+    const { manifests, declined } = await fetchRegistry(
       '/plugin-registry',
       ok([{ ...remote, id: 'function-junction', sdkVersion: '0.1.0' }]),
     );
-    expect(list).toEqual([]);
+    expect(manifests).toEqual([]);
+    // What Settings lists: the id, the SDK it declared, and the rule.
+    expect(declined).toEqual([
+      { id: 'function-junction', sdkVersion: '0.1.0', reason: expect.stringContaining(SDK_VERSION) },
+    ]);
     const message = warn.mock.calls[0].join(' ');
     expect(message).toContain('function-junction');
     expect(message).toContain('0.1.0');

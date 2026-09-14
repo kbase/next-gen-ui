@@ -40,6 +40,10 @@ export interface WorkbenchCommandDeps {
   previewPane: (plugin: string) => void;
   // The prompt bar is DOM; the command only asks for it.
   focusPrompt: () => void;
+  // A plugin and a panel as a sentence names them: the plugin's title, and
+  // the panel's tab or block title. An id is what a reader has never seen.
+  pluginTitle: (plugin: string) => string;
+  panelTitle: (panel: PanelId) => string;
 }
 
 function focusedPanel(layout: Layout): PanelId | null {
@@ -73,11 +77,25 @@ export function workbenchCommands({
   focusPane,
   previewPane,
   focusPrompt,
+  pluginTitle,
+  panelTitle,
 }: WorkbenchCommandDeps): Command[] {
-  const focusTo = (target: PanelId | null) => {
+  // Every command is runnable at any moment, so one that changes nothing says
+  // why (registry.ts, `Command`). A dispatch reports whether it changed the
+  // layout; when it did not, this says what stood in the way — the lock, when
+  // the layout is locked, and the sentence the caller gives otherwise.
+  const apply = (op: Operation, unchanged: string) => {
+    if (dispatch(op)) return;
+    announce(store.get().locked ? 'The layout is locked' : unchanged);
+  };
+  const focusTo = (target: PanelId | null, none: string) => {
+    if (!target) {
+      announce('Nothing is focused');
+      return;
+    }
     // A named action moves the caret to the panel it names, so the focus sync
     // has to hear that this was a command and not a pointer landing somewhere.
-    if (target) dispatch({ type: 'focus', panel: target, by: 'command' });
+    apply({ type: 'focus', panel: target, by: 'command' }, none);
   };
   // Every command that acts on one panel takes it the same way: absent, the
   // focused panel; named, whatever the surface that called was acting on.
@@ -87,7 +105,11 @@ export function workbenchCommands({
   });
   const panelFor = (value: string | undefined): PanelId | null => {
     const layout = store.get();
-    if (value === undefined) return focusedPanel(layout);
+    if (value === undefined) {
+      const focus = focusedPanel(layout);
+      if (!focus) announce('Nothing is focused');
+      return focus;
+    }
     if (layout.panels[value]) return value;
     announce(`No panel named ${value}`);
     return null;
@@ -101,7 +123,10 @@ export function workbenchCommands({
       announce('Nothing to split away from');
       return;
     }
-    dispatch({ type: 'move', panel: target, to: { group: group.id, side } });
+    apply(
+      { type: 'move', panel: target, to: { group: group.id, side } },
+      `${panelTitle(target)} stayed where it was`,
+    );
   };
   // A command completes over what it can act on, so an offered id works.
   // Closing and splitting are main-area business: the store folds or unpins
@@ -140,32 +165,33 @@ export function workbenchCommands({
       args: [panelArg(mainPanels)],
       run: ({ panel }) => {
         const target = panelFor(panel);
-        if (target) dispatch({ type: 'close', panel: target });
+        // The store folds or unpins a sidebar pane rather than closing it.
+        if (target) apply({ type: 'close', panel: target }, `${panelTitle(target)} is pinned; unpin it to close it`);
       },
     },
     {
       ...base,
       name: 'focus-next-tab',
       title: 'Focus the next tab',
-      run: () => focusTo(tabNeighbour(store.get(), 1)),
+      run: () => focusTo(tabNeighbour(store.get(), 1), 'No other tab to focus'),
     },
     {
       ...base,
       name: 'focus-previous-tab',
       title: 'Focus the previous tab',
-      run: () => focusTo(tabNeighbour(store.get(), -1)),
+      run: () => focusTo(tabNeighbour(store.get(), -1), 'No other tab to focus'),
     },
     {
       ...base,
       name: 'focus-next-group',
       title: 'Focus the next group',
-      run: () => focusTo(groupNeighbour(store.get(), 1)),
+      run: () => focusTo(groupNeighbour(store.get(), 1), 'No other group to focus'),
     },
     {
       ...base,
       name: 'focus-previous-group',
       title: 'Focus the previous group',
-      run: () => focusTo(groupNeighbour(store.get(), -1)),
+      run: () => focusTo(groupNeighbour(store.get(), -1), 'No other group to focus'),
     },
     {
       ...base,
@@ -211,10 +237,13 @@ export function workbenchCommands({
         // The sidebar holds plugins' panes; the store would drop a `move`
         // naming a page, so say so instead of letting it fall silent.
         if (store.get().panels[target]?.kind !== 'pane') {
-          announce(`${target} is a page, and only a plugin's pane goes in the sidebar`);
+          announce(`${panelTitle(target)} is a page, and only a plugin's pane goes in the sidebar`);
           return;
         }
-        dispatch({ type: 'move', panel: target, to: { zone: 'sidebar' } });
+        apply(
+          { type: 'move', panel: target, to: { zone: 'sidebar' } },
+          `${panelTitle(target)} is already in the sidebar`,
+        );
       },
     },
     {
@@ -234,7 +263,12 @@ export function workbenchCommands({
           return;
         }
         const group = groups(layout.main)[0];
-        if (group) dispatch({ type: 'move', panel: target, to: { group: group.id } });
+        if (group) {
+          apply(
+            { type: 'move', panel: target, to: { group: group.id } },
+            `${panelTitle(target)} stayed in the sidebar`,
+          );
+        }
       },
     },
     {
@@ -251,7 +285,10 @@ export function workbenchCommands({
           announce(notInSidebar(target));
           return;
         }
-        dispatch({ type: 'fold', panel: target, folded: !placement.folded });
+        apply(
+          { type: 'fold', panel: target, folded: !placement.folded },
+          `${panelTitle(target)} stayed as it was`,
+        );
       },
     },
     {
@@ -259,7 +296,10 @@ export function workbenchCommands({
       name: 'sidebar',
       title: 'Collapse or expand the sidebar',
       run: () => {
-        dispatch({ type: 'sidebar', collapsed: !store.get().sidebar.collapsed });
+        apply(
+          { type: 'sidebar', collapsed: !store.get().sidebar.collapsed },
+          'The sidebar stayed as it was',
+        );
       },
     },
     {
@@ -279,7 +319,7 @@ export function workbenchCommands({
           announce(`No bar named ${name}`);
           return;
         }
-        dispatch({ type: 'bar', bar: name, visible: !store.get().bars[name] });
+        apply({ type: 'bar', bar: name, visible: !store.get().bars[name] }, `The ${name} bar stayed as it was`);
       },
     },
     {
@@ -306,7 +346,7 @@ export function workbenchCommands({
           return;
         }
         if (!panes().includes(id)) {
-          announce(`${id} has no pane`);
+          announce(`${pluginTitle(id)} has no pane`);
           return;
         }
         if (store.get().sidebar.pinned.includes(id)) {
@@ -315,7 +355,7 @@ export function workbenchCommands({
         }
         previewPane(id);
         // The preview is not an operation, so nothing else speaks for it.
-        announce(`Previewing ${id} in the sidebar`);
+        announce(`Previewing ${pluginTitle(id)} in the sidebar`);
       },
     },
     {
@@ -343,7 +383,7 @@ export function workbenchCommands({
           return;
         }
         if (!panes().includes(String(plugin))) {
-          announce(`${String(plugin)} has no pane`);
+          announce(`${pluginTitle(String(plugin))} has no pane`);
           return;
         }
         let at: number | undefined;
@@ -354,7 +394,10 @@ export function workbenchCommands({
           }
           at = Number(index);
         }
-        dispatch({ type: 'pin', plugin: String(plugin), index: at });
+        apply(
+          { type: 'pin', plugin: String(plugin), index: at },
+          `${pluginTitle(String(plugin))} is already pinned there`,
+        );
       },
     },
     {
@@ -369,7 +412,7 @@ export function workbenchCommands({
         },
       ],
       run: ({ plugin }) => {
-        dispatch({ type: 'unpin', plugin: String(plugin) });
+        apply({ type: 'unpin', plugin: String(plugin) }, `${pluginTitle(String(plugin))} is not pinned`);
       },
     },
     {
@@ -390,6 +433,7 @@ export function workbenchCommands({
       title: 'Lock or unlock the layout',
       description: 'A locked layout keeps its arrangement; opening and closing panels stays free',
       run: () => {
+        // The one operation a locked layout takes, so nothing stands in its way.
         dispatch({ type: 'lock', locked: !store.get().locked });
       },
     },

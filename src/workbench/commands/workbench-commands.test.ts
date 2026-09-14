@@ -38,6 +38,8 @@ function setup() {
     focusPane: (plugin) => void shown.push(`focus ${plugin}`),
     previewPane: (plugin) => void shown.push(`preview ${plugin}`),
     focusPrompt: () => announced.push('<prompt>'),
+    pluginTitle: (id) => ({ koros: 'KOROS', data: 'Data', jobs: 'Jobs' })[id] ?? id,
+    panelTitle: (id) => id,
   }).forEach((c) => registry.register(c));
   store.dispatch({ type: 'open', panel: arc });
   store.dispatch({ type: 'open', panel: job });
@@ -135,7 +137,7 @@ describe('workbench commands', () => {
     const { store, registry, announced } = setup();
     await registry.run('pin', { plugin: 'jobs' });
     expect(store.get().sidebar.pinned).toEqual(['koros']);
-    expect(announced.at(-1)).toBe('jobs has no pane');
+    expect(announced.at(-1)).toBe('Jobs has no pane');
   });
 
   it('toggle-bar hides and shows the named bar', async () => {
@@ -198,14 +200,14 @@ describe('workbench commands', () => {
     const before = store.get();
     await registry.run('show', { plugin: 'data' });
     expect(shown).toEqual(['preview data']);
-    expect(announced.at(-1)).toBe('Previewing data in the sidebar');
+    expect(announced.at(-1)).toBe('Previewing Data in the sidebar');
     expect(store.get()).toBe(before);
   });
 
   it('show refuses a plugin with no pane, and one that is not installed', async () => {
     const { registry, announced, shown } = setup();
     await registry.run('show', { plugin: 'jobs' });
-    expect(announced.at(-1)).toBe('jobs has no pane');
+    expect(announced.at(-1)).toBe('Jobs has no pane');
     await registry.run('show', { plugin: 'ghost' });
     expect(announced.at(-1)).toBe('No plugin named ghost');
     expect(shown).toEqual([]);
@@ -291,5 +293,41 @@ describe('workbench commands', () => {
     await registry.run('undo', {});
     await registry.run('undo', {});
     expect(announced.at(-1)).toBe('Nothing to undo');
+  });
+});
+
+// Every command is findable and runnable at any moment, so one that has
+// nothing to do says why. These six said nothing.
+describe('a command that changes nothing says why', () => {
+  it('close, with nothing focused', async () => {
+    const { store, registry, announced } = setup();
+    store.dispatch({ type: 'close', panel: arc.id });
+    store.dispatch({ type: 'close', panel: job.id });
+    expect(store.get().focus).toBeNull();
+    await registry.run('close', {});
+    expect(announced.at(-1)).toBe('Nothing is focused');
+  });
+
+  it('the focus commands, with nowhere else to go', async () => {
+    const { store, registry, announced } = setup();
+    store.dispatch({ type: 'close', panel: job.id });
+    await registry.run('focus-next-tab', {});
+    expect(announced.at(-1)).toBe('No other tab to focus');
+    await registry.run('focus-previous-group', {});
+    expect(announced.at(-1)).toBe('No other group to focus');
+  });
+
+  it('unpin, for a plugin that is not pinned', async () => {
+    const { registry, announced } = setup();
+    await registry.run('unpin', { plugin: 'data' });
+    expect(announced.at(-1)).toBe('Data is not pinned');
+  });
+
+  // Closing stays free under the lock; a split is what it refuses.
+  it('names the lock when that is what stood in the way', async () => {
+    const { store, registry, announced } = setup();
+    store.dispatch({ type: 'lock', locked: true });
+    await registry.run('move-right', {});
+    expect(announced.at(-1)).toBe('The layout is locked');
   });
 });

@@ -15,10 +15,25 @@ export const REGISTRY_BASE = '/plugin-registry';
 // id.
 export const SERVICES_BASE = '/services';
 
+// A registry entry the workbench did not load, and why: what Settings lists
+// beside the plugins that are installed, so a reader who cannot find a plugin
+// sees that it was declined rather than nothing at all.
+export interface DeclinedPlugin {
+  id: string;
+  // The SDK the manifest declared, when that is the reason.
+  sdkVersion?: string;
+  reason: string;
+}
+
+export interface RegistryReport {
+  manifests: Manifest[];
+  declined: DeclinedPlugin[];
+}
+
 export async function fetchRegistry(
   base: string = REGISTRY_BASE,
   fetchImpl: typeof fetch = fetch,
-): Promise<Manifest[]> {
+): Promise<RegistryReport> {
   const res = await fetchImpl(`${base}/plugins`);
   if (!res.ok) throw new Error(`plugin registry answered ${res.status}`);
   // The shell's own fallback page answers any path with HTML; that is a
@@ -29,6 +44,7 @@ export async function fetchRegistry(
   const raw: unknown = await res.json();
   if (!Array.isArray(raw)) throw new Error('plugin registry did not return a list');
   const manifests: Manifest[] = [];
+  const declined: DeclinedPlugin[] = [];
   for (const item of raw) {
     const parsed = ManifestSchema.safeParse(item);
     if (parsed.success) {
@@ -40,19 +56,25 @@ export async function fetchRegistry(
     // plugin, the SDK it declared and the rule, in place of a pile of issues.
     const entry = item as { id?: unknown; sdkVersion?: unknown };
     const issues = parsed.error.issues;
+    const id = typeof entry.id === 'string' ? entry.id : String(entry.id);
     if (
       issues.length === 1 &&
       issues[0].path[0] === 'sdkVersion' &&
       typeof entry.sdkVersion === 'string'
     ) {
+      declined.push({ id, sdkVersion: entry.sdkVersion, reason: issues[0].message });
       console.warn(
-        `plugin registry: not loading ${String(entry.id)}, built against SDK ${entry.sdkVersion}: ${issues[0].message}`,
+        `plugin registry: not loading ${id}, built against SDK ${entry.sdkVersion}: ${issues[0].message}`,
       );
     } else {
+      declined.push({
+        id,
+        reason: issues.map((i) => `${i.path.map(String).join('.') || 'manifest'}: ${i.message}`).join('; '),
+      });
       console.warn('plugin registry: skipping an invalid manifest', item, issues);
     }
   }
-  return manifests;
+  return { manifests, declined };
 }
 
 // A registry manifest becomes an installed plugin whose modules arrive over
@@ -106,13 +128,17 @@ export function mergeInstalled(
   return [...local, ...extra];
 }
 
-// What main.tsx calls: the bundled list plus whatever the registry adds. A
-// registry that is down or absent leaves the bundled plugins working.
-export async function loadInstalled(local: InstalledPlugin[]): Promise<InstalledPlugin[]> {
+// What main.tsx calls: the bundled list plus whatever the registry adds, and
+// what the registry listed that was not loaded. A registry that is down or
+// absent leaves the bundled plugins working.
+export async function loadInstalled(
+  local: InstalledPlugin[],
+): Promise<{ installed: InstalledPlugin[]; declined: DeclinedPlugin[] }> {
   try {
-    return mergeInstalled(local, await fetchRegistry());
+    const { manifests, declined } = await fetchRegistry();
+    return { installed: mergeInstalled(local, manifests), declined };
   } catch (err) {
     console.warn('plugin registry unavailable; using bundled plugins only', err);
-    return local;
+    return { installed: local, declined: [] };
   }
 }

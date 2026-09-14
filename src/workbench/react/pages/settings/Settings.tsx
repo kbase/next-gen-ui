@@ -31,6 +31,16 @@ export function SettingsDocument() {
   const manifests = source.manifests().filter((m) => m.id !== 'settings');
   const assistants = manifests.filter((m) => m.modules.includes('prompt'));
   const intents = manifests.filter((m) => m.modules.includes('intent'));
+  const declined = source.declined();
+  // A setting can name a plugin that is not installed: uninstalled since, or
+  // named by a settings document from a deployment that shipped it. The list
+  // then draws nothing selected, and this says why.
+  const missing = (chosen: string, among: { id: string }[]) =>
+    among.some((m) => m.id === chosen) ? null : (
+      <p className="caption" role="status">
+        {`${chosen} is set here and is not installed.`}
+      </p>
+    );
 
   return (
     <div className={styles.root}>
@@ -69,6 +79,27 @@ export function SettingsDocument() {
             );
           })}
         </ul>
+        {declined.length > 0 && (
+          <>
+            {/* What the registry listed and the workbench did not load. The
+                console said so already; a reader who cannot find a plugin
+                they installed is not reading the console. */}
+            <h3 id="settings-declined" className="section-label">
+              Not loaded
+            </h3>
+            <ul className={styles.list} aria-labelledby="settings-declined">
+              {declined.map((d) => (
+                <li key={d.id} className={styles.row}>
+                  <span className={styles.rowTitle}>
+                    <span className="body">{d.id}</span>
+                    {d.sdkVersion && <Chip color="neutral" label={`SDK ${d.sdkVersion}`} />}
+                  </span>
+                  <p className={`caption ${styles.rowDesc}`}>{d.reason}</p>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
       </section>
 
       <section aria-labelledby="settings-assistant" className={styles.section}>
@@ -89,6 +120,7 @@ export function SettingsDocument() {
             </label>
           ))}
         </Radio.Group>
+        {missing(current.assistant, assistants)}
       </section>
 
       <section aria-labelledby="settings-intent" className={styles.section}>
@@ -112,6 +144,7 @@ export function SettingsDocument() {
             </label>
           ))}
         </Radio.Group>
+        {missing(current.intent, intents)}
       </section>
 
       <Keyboard />

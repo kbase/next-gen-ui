@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { PanelContext } from '../../../../plugins/sdk';
@@ -25,8 +25,8 @@ const panel = {
 
 // The page is mounted with the window listener that reads the table it
 // edits, because recording a chord has to keep the keypress away from it.
-function mount() {
-  const services = testWorkbench({ defaultPinned: ['jobs'] });
+function mount(overrides: Parameters<typeof testWorkbench>[0] = {}) {
+  const services = testWorkbench({ defaultPinned: ['jobs'], ...overrides });
   function Page() {
     useKeybindings();
     return <SettingsDocument />;
@@ -165,5 +165,37 @@ describe("the Settings page's keyboard section", () => {
     await user.click(screen.getByRole('button', { name: `Reset the key for ${UNDO}` }));
     expect(services.settings.get().keybindings).toEqual({});
     expect(row(UNDO).getByText('Ctrl+Z')).toBeInTheDocument();
+  });
+});
+
+// The console said so already; a reader who cannot find a plugin they
+// installed is not reading the console.
+describe("the Settings page's Not loaded list", () => {
+  it('names each declined plugin, the SDK it declared, and the rule', () => {
+    mount({
+      declined: [
+        { id: 'function-junction', sdkVersion: '0.1.0', reason: 'sdkVersion must be 0.3.x' },
+      ],
+    });
+    const list = within(screen.getByRole('list', { name: 'Not loaded' }));
+    expect(list.getByText('function-junction')).toBeInTheDocument();
+    expect(list.getByText('SDK 0.1.0')).toBeInTheDocument();
+    expect(list.getByText('sdkVersion must be 0.3.x')).toBeInTheDocument();
+  });
+
+  it('is absent when nothing was declined', () => {
+    mount();
+    expect(screen.queryByRole('list', { name: 'Not loaded' })).toBeNull();
+  });
+});
+
+describe("a setting that names a plugin that is not installed", () => {
+  it('is said under the list, which otherwise draws nothing selected', () => {
+    const services = mount();
+    act(() => services.settings.set({ assistant: 'uninstalled' }));
+    expect(screen.getByText('uninstalled is set here and is not installed.')).toBeInTheDocument();
+    expect(
+      within(screen.getByRole('radiogroup', { name: 'Assistant' })).queryByRole('radio', { checked: true }),
+    ).toBeNull();
   });
 });

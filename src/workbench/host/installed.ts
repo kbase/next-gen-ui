@@ -13,6 +13,7 @@ import { qualifyCommand } from '../../plugins/sdk';
 import type { PluginId } from '../core';
 import { createNotifier } from '../core/subscribable';
 import type { Command, CommandRegistry } from '../commands';
+import type { DeclinedPlugin } from './registry';
 
 // What a pane row runs: `show`, which focuses the pane of a pinned plugin
 // and previews an unpinned one, and in neither case moves anything. A row
@@ -49,6 +50,8 @@ export interface HostIndex {
   plugins: () => PluginInfo[];
   manifest: (id: PluginId) => Manifest | undefined;
   manifests: () => Manifest[];
+  // What the registry listed and the workbench did not load, with the reason.
+  declined: () => DeclinedPlugin[];
   // Every manifest's commands, each with the plugin that declares it.
   declaredCommands: () => DeclaredCommand[];
   // Every call the manifests have already filled in: launchers, shortcut
@@ -73,7 +76,10 @@ export interface HostIndex {
   registerCommands: (registry: CommandRegistry, host: (plugin: PluginId) => PluginHost) => void;
 }
 
-export function createHostIndex(installed: InstalledPlugin[]): HostIndex {
+export function createHostIndex(
+  installed: InstalledPlugin[],
+  declined: DeclinedPlugin[] = [],
+): HostIndex {
   const byId = new Map(installed.map((p) => [p.manifest.id, p]));
   const loaded = new Map<string, unknown>();
   const loading = new Map<string, Promise<unknown>>();
@@ -188,6 +194,7 @@ export function createHostIndex(installed: InstalledPlugin[]): HostIndex {
       })),
     manifest: (id) => byId.get(id)?.manifest,
     manifests: () => installed.map((p) => p.manifest),
+    declined: () => declined,
     declaredCommands,
     declaredCalls,
     has,

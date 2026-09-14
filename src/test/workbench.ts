@@ -11,7 +11,7 @@ import { DEFAULT_ASSISTANT, DEFAULT_INTENT, DEFAULT_PINNED } from '../workbenchD
 // rather than editing the default.
 export function testWorkbench(
   overrides: Partial<
-    Pick<CreateWorkbenchOptions, 'defaultPinned' | 'defaultAssistant' | 'defaultIntent'>
+    Pick<CreateWorkbenchOptions, 'defaultPinned' | 'defaultAssistant' | 'defaultIntent' | 'declined'>
   > = {},
 ): WorkbenchServices {
   return createWorkbench({

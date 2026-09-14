@@ -15,6 +15,7 @@ import { createDestinationStore } from '../host/destination';
 import { createFrameLayer } from '../host/frames';
 import type { InstalledPlugin } from '../host/installed';
 import { createHostIndex } from '../host/installed';
+import type { DeclinedPlugin } from '../host/registry';
 import { openPane, openRoute } from '../host/open';
 import { pluginHostFor } from '../host/pluginHost';
 import { hostPlugins } from './hostPlugins';
@@ -28,6 +29,9 @@ import { createTitleStore } from '../host/titles';
 
 export interface CreateWorkbenchOptions {
   installed: InstalledPlugin[];
+  // What the registry listed and `loadInstalled` did not load; Settings
+  // shows it beside what is installed.
+  declined?: DeclinedPlugin[];
   // What a previous session left, already loaded, and where changes go.
   // `noPersistence` is a workbench that starts fresh and forgets.
   persistence: WorkbenchPersistence;
@@ -46,6 +50,7 @@ export interface CreateWorkbenchOptions {
 // first render is already the restored one.
 export function createWorkbench({
   installed,
+  declined = [],
   persistence: { loaded, save },
   defaultPinned = [],
   defaultAssistant,
@@ -56,7 +61,7 @@ export function createWorkbench({
   const announcer = createAnnouncer();
   const prompt = createPromptHandle();
   const preview = createPreviewHandle();
-  const source = createHostIndex([...installed, ...hostPlugins(() => services)]);
+  const source = createHostIndex([...installed, ...hostPlugins(() => services)], declined);
   const settings = createSettingsStore(
     loaded.settings ?? { assistant: defaultAssistant, intent: defaultIntent },
   );
@@ -123,6 +128,8 @@ export function createWorkbench({
     focusPane: (plugin) => void openPane(services, plugin),
     previewPane: (plugin) => preview.set(plugin),
     focusPrompt: () => prompt.focus(),
+    pluginTitle: (plugin) => source.manifest(plugin)?.title ?? plugin,
+    panelTitle: (id) => titles.get(id) ?? fallbackTitle(services, store.get().panels[id], id),
   }).forEach((c) => registry.register(c));
   registry.register(openCommand(services));
   source.registerCommands(registry, (plugin) => pluginHostFor(services, plugin));

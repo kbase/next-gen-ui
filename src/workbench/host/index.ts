@@ -13,6 +13,7 @@ export {
   REGISTRY_BASE,
   SERVICES_BASE,
 } from './registry';
+export type { DeclinedPlugin, RegistryReport } from './registry';
 export { createSettingsStore, SETTINGS_STORAGE_KEY } from './settings';
 export type { Settings, SettingsStore } from './settings';
 export { createAnnouncer } from './announcer';

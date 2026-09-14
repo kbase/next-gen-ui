@@ -62,6 +62,10 @@
    mid-animation; the blocks keep their full width and are cropped by the
    container, so nothing inside re-lays-out. */
 .sidebar {
+  /* The rail: 48px wide so its glyphs centre on x=24, the line the brand
+     logo and the accordion header icons sit on. Collapsed, the sidebar is
+     the rail's width; expanded, it is the layout's, set inline. */
+  --rail: 48px;
   position: relative;
   flex: none;
   min-height: 0;
@@ -69,8 +73,10 @@
   transition: width var(--t-slow) ease;
 }
 
-/* 48px wide so the rail glyphs centre on x=24 — the same line the brand
-   logo and the accordion header icons sit on. */
+.sidebar[data-collapsed] {
+  width: var(--rail);
+}
+
 .iconColumn {
   position: absolute;
   inset-block: 0;
@@ -81,7 +87,7 @@
   align-items: center;
   gap: var(--s-2);
   box-sizing: border-box;
-  width: 48px;
+  width: var(--rail);
   padding: var(--s-3) var(--s-2);
   background: var(--c-bg);
   transition:
@@ -195,7 +201,9 @@
   padding: var(--s-1) var(--s-2) var(--s-1) var(--s-3);
 }
 
-.previewTitle {
+/* The title of a card that is not an accordion section — the preview block,
+   the rail flyout — in full ink, where a section header sits back in ink3. */
+.cardTitle {
   font-size: var(--fs-4);
   font-weight: var(--fw-bold);
   color: var(--c-ink);
@@ -323,12 +331,6 @@
   padding: var(--s-2) var(--s-4);
   background: var(--c-raised);
   border-bottom: 1px solid var(--c-border);
-}
-
-.popoutTitle {
-  font-size: var(--fs-4);
-  font-weight: var(--fw-bold);
-  color: var(--c-ink);
 }
 
 /* Main area */
@@ -1084,7 +1086,7 @@
    tray of figures says `2 small molecules` and never says of what. */
 .cartSubject {
   font-size: var(--fs-3);
-  font-weight: 500;
+  font-weight: var(--fw-normal);
   color: var(--c-ink2);
   overflow: hidden;
   text-overflow: ellipsis;

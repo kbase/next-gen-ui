@@ -2,129 +2,137 @@
    KBASE TYPOGRAPHY UTILITIES
    CSS classes for the documented type scale. Use these instead of
    inline fontSize/fontWeight/color styles.
+
+   In a cascade layer, so that a component's own rule outranks these
+   whatever order the bundler emits the two stylesheets in: an unlayered
+   declaration beats a layered one of the same specificity. An element
+   carrying both a utility class and a module class gets the module's
+   size and colour where the module states them, in a development server
+   and in a production build alike.
    ================================================================ */
+@layer kbase.utilities {
+  .h1 {
+    font-size: var(--fs-9);
+    font-weight: var(--fw-bold);
+    color: var(--c-ink);
+  }
 
-.h1 {
-  font-size: var(--fs-9);
-  font-weight: var(--fw-bold);
-  color: var(--c-ink);
-}
+  .h2 {
+    font-size: var(--fs-7);
+    font-weight: var(--fw-bold);
+    color: var(--c-ink);
+  }
 
-.h2 {
-  font-size: var(--fs-7);
-  font-weight: var(--fw-bold);
-  color: var(--c-ink);
-}
+  .h3 {
+    font-size: var(--fs-6);
+    font-weight: var(--fw-bold);
+    color: var(--c-ink);
+  }
 
-.h3 {
-  font-size: var(--fs-6);
-  font-weight: var(--fw-bold);
-  color: var(--c-ink);
-}
+  .h4 {
+    font-size: var(--fs-5);
+    font-weight: var(--fw-bold);
+    color: var(--c-ink);
+  }
 
-.h4 {
-  font-size: var(--fs-5);
-  font-weight: var(--fw-bold);
-  color: var(--c-ink);
-}
+  .body {
+    font-size: var(--fs-5);
+    color: var(--c-ink2);
+    line-height: 1.55;
+  }
 
-.body {
-  font-size: var(--fs-5);
-  color: var(--c-ink2);
-  line-height: 1.55;
-}
+  .label {
+    font-size: var(--fs-4);
+    font-weight: var(--fw-bold);
+    color: var(--c-ink3);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
 
-.label {
-  font-size: var(--fs-4);
-  font-weight: var(--fw-bold);
-  color: var(--c-ink3);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
+  .sub {
+    font-size: var(--fs-4);
+    font-weight: var(--fw-bold);
+    color: var(--c-ink3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
 
-.sub {
-  font-size: var(--fs-4);
-  font-weight: var(--fw-bold);
-  color: var(--c-ink3);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
+  .caption {
+    font-size: var(--fs-4);
+    color: var(--c-ink4);
+  }
 
-.caption {
-  font-size: var(--fs-4);
-  color: var(--c-ink4);
-}
+  .mono {
+    font-family: var(--f-mono);
+    font-size: var(--fs-4);
+    color: var(--c-ink3);
+  }
 
-.mono {
-  font-family: var(--f-mono);
-  font-size: var(--fs-4);
-  color: var(--c-ink3);
-}
+  .note {
+    font-size: var(--fs-4);
+    color: var(--c-ink4);
+    line-height: 1.55;
+  }
 
-.note {
-  font-size: var(--fs-4);
-  color: var(--c-ink4);
-  line-height: 1.55;
-}
+  /* Mono data, for inline numeric values with labels.
+     Self-sizes so the number stands out regardless of parent text
+     size; pair with a smaller class on the surrounding label. */
+  .mono-value {
+    font-family: var(--f-mono);
+    font-size: var(--fs-4);
+    font-weight: var(--fw-bold);
+    color: var(--c-ink2);
+  }
 
-/* Mono data, for inline numeric values with labels.
-   Self-sizes so the number stands out regardless of parent text
-   size; pair with a smaller class on the surrounding label. */
-.mono-value {
-  font-family: var(--f-mono);
-  font-size: var(--fs-4);
-  font-weight: var(--fw-bold);
-  color: var(--c-ink2);
-}
+  /* Mono data (secondary): table cells, sizes, IDs */
+  .mono-secondary {
+    font-family: var(--f-mono);
+    font-size: var(--fs-4);
+    color: var(--c-ink4);
+  }
 
-/* Mono data (secondary): table cells, sizes, IDs */
-.mono-secondary {
-  font-family: var(--f-mono);
-  font-size: var(--fs-4);
-  color: var(--c-ink4);
-}
+  /* Section label, used inside forms/panels (not uppercase like .label) */
+  .section-label {
+    font-size: var(--fs-4);
+    font-weight: var(--fw-bold);
+    color: var(--c-ink2);
+  }
 
-/* Section label, used inside forms/panels (not uppercase like .label) */
-.section-label {
-  font-size: var(--fs-4);
-  font-weight: var(--fw-bold);
-  color: var(--c-ink2);
-}
+  /* Species and emphasis: scientific names, gene names.
+     Oxygen has no italic variant, so synthesis is required. */
+  .italic {
+    font-style: italic;
+    font-synthesis: style;
+  }
 
-/* Species and emphasis: scientific names, gene names.
-   Oxygen has no italic variant, so synthesis is required. */
-.italic {
-  font-style: italic;
-  font-synthesis: style;
-}
+  /* Byline: chat participants, app authors, attribution.
+     Recessive: smaller and lighter than body so the author label
+     reads as metadata, not as the message itself. */
+  .byline {
+    font-size: var(--fs-4);
+    color: var(--c-ink3);
+  }
 
-/* Byline: chat participants, app authors, attribution.
-   Recessive: smaller and lighter than body so the author label
-   reads as metadata, not as the message itself. */
-.byline {
-  font-size: var(--fs-4);
-  color: var(--c-ink3);
-}
+  /* Timestamp: mono, smallest */
+  .timestamp {
+    font-family: var(--f-mono);
+    font-size: var(--fs-3);
+    color: var(--c-ink5);
+    font-variant-numeric: tabular-nums;
+  }
 
-/* Timestamp: mono, smallest */
-.timestamp {
-  font-family: var(--f-mono);
-  font-size: var(--fs-3);
-  color: var(--c-ink5);
-  font-variant-numeric: tabular-nums;
-}
+  /* Anchors, and buttons styled as anchors. font: inherit keeps a <button> at
+     body size beside real anchors. */
+  .link {
+    font: inherit;
+    color: var(--ct-link);
+    font-weight: var(--fw-bold);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
 
-/* Anchors, and buttons styled as anchors. font: inherit keeps a <button> at
-   body size beside real anchors. */
-.link {
-  font: inherit;
-  color: var(--ct-link);
-  font-weight: var(--fw-bold);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  cursor: pointer;
-}
-
-.link:hover {
-  text-decoration-thickness: 2px;
+  .link:hover {
+    text-decoration-thickness: 2px;
+  }
 }

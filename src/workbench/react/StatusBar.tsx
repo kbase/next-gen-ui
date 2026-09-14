@@ -37,7 +37,7 @@ export function StatusBar() {
           item.action ? (
             <StatusAction key={`${plugin}/${i}`} plugin={plugin} item={item} />
           ) : (
-            <span key={`${plugin}/${i}`} className={`caption ${styles.statusItem}`}>
+            <span key={`${plugin}/${i}`} className={styles.statusItem}>
               {item.text}
             </span>
           ),

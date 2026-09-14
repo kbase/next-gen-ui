@@ -81,7 +81,7 @@ export function Sidebar() {
     <div
       className={styles.sidebar}
       data-collapsed={sidebar.collapsed || undefined}
-      style={{ width: sidebar.collapsed ? 48 : sidebar.width }}
+      style={sidebar.collapsed ? undefined : { width: sidebar.width }}
     >
       <Toolbar.Root
         orientation="vertical"
@@ -406,7 +406,7 @@ function PreviewBlock({
           <span className={styles.blockIcon} aria-hidden="true">
             <Mark info={info} size={14} />
           </span>
-          <span className={styles.previewTitle}>{title}</span>
+          <span className={styles.cardTitle}>{title}</span>
         </span>
         <div className={styles.spacer} />
         <Button
@@ -498,7 +498,7 @@ function PanePopout({
                     {icon}
                   </span>
                 )}
-                <span className={styles.popoutTitle}>{label}</span>
+                <span className={styles.cardTitle}>{label}</span>
                 {onPin && (
                   <>
                     <div className={styles.spacer} />

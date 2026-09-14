@@ -430,6 +430,37 @@ const DECLARED: readonly Portal[] = [
     version: 'v0.1.7',
     updated: '2026-09-01',
   },
+  {
+    slug: 'fungal-biochemistry',
+    title: 'Fungal GEMs Portal',
+    blurb:
+      'The 13 core published fungal genome-scale metabolic models, reconciled onto ModelSEED biochemistry — reactions, compounds and pathways with LLM-consensus confidence tiers, placed on the fungal tree of life with model and genome coverage.',
+    section: 'data',
+    facets: [FACETS.genomes, FACETS.proteins],
+    topics: ['Fungi', 'Metabolic models', 'BRaVE + BREAD'],
+    // `fungal-biochemistry sources --json` emits only the 13 models' papers, so
+    // these are docs/DATA_SOURCES.md plus what the two contributed-dataset tabs
+    // render (they read their own packaged assets, not the core-13 bundle).
+    sources: [
+      'Published fungal GEMs (13 reconstructions, 2008–2016)',
+      'fungi_recon corpus (KBase)',
+      'ModelSEED Biochemistry',
+      'JGI MycoCosm',
+      'NCBI Taxonomy / Assembly',
+      'BiGG',
+      'KEGG',
+      'MetaCyc',
+      'UniProt',
+      'NCBI CDD',
+    ],
+    // The deployed portal prints `app 0.1.0` in its footer; the `core13 · v1` in
+    // the header is the export bundle's build, not the app's version.
+    version: 'v0.1.0',
+    // The repo carries no tags, so this is the commit date of what is deployed:
+    // the portal serves the post-rename /portals/fungal-biochemistry/ path and
+    // the two contributed tabs, both of which land by 36778d5 (2026-09-11).
+    updated: '2026-09-11',
+  },
 ];
 
 const PORTALS = DECLARED.filter((p) => !p.undeployed);

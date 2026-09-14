@@ -442,7 +442,7 @@ const DECLARED: readonly Portal[] = [
     // these are docs/DATA_SOURCES.md plus what the two contributed-dataset tabs
     // render (they read their own packaged assets, not the core-13 bundle).
     sources: [
-      'Published fungal GEMs (13 reconstructions, 2008–2016)',
+      'Published fungal GEMs',
       'fungi_recon corpus (KBase)',
       'ModelSEED Biochemistry',
       'JGI MycoCosm',

@@ -344,13 +344,6 @@
   font-size: var(--fs-4);
   line-height: 1.6;
   color: var(--c-ink3);
-  /* Keep every card's text block the same height so the tag row and
-     meta strip line up across the grid. */
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
-  line-clamp: 4;
-  overflow: hidden;
 }
 
 .facets {

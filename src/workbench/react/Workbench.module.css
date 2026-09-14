@@ -1198,14 +1198,6 @@
   color: var(--c-ink4);
 }
 
-.cartPreviewParam {
-  margin-inline-start: var(--s-1);
-  padding: 1px var(--s-1);
-  border-radius: var(--r-sm);
-  background: var(--c-bg);
-  color: var(--c-ink2);
-}
-
 .cartPreviewActions {
   display: flex;
   justify-content: flex-end;

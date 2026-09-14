@@ -18,7 +18,7 @@ import type { Panel, PanelId } from '../core';
 // rail icon opens — and a node can be attached in only one place, so this
 // picks between them. That is the whole of what is central here.
 
-export interface SlotSpec {
+interface SlotSpec {
   panel: Panel;
   // The slot is not showing its panel: a background tab, a pinned pane whose
   // sidebar is collapsed. It still holds the panel, so the contents stay
@@ -33,7 +33,7 @@ export interface Entry {
   node: HtmlPortalNode;
 }
 
-export interface PanelLayerApi {
+interface PanelLayerApi {
   // A claim, keyed by the hook instance that owns it rather than by panel, so
   // two slots can name one panel and the loser is still known.
   claim: (key: number, spec: SlotSpec) => void;

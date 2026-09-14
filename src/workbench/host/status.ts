@@ -1,7 +1,7 @@
 import type { Cleanup, StatusItem } from '../../plugins/sdk';
 import { StatusItemSchema } from '../../plugins/sdk';
 import type { PluginId } from '../core';
-import { createKeyedStore } from '../core/subscribable';
+import { createEpoch, createKeyedStore } from '../core/subscribable';
 import { accepted } from './checked';
 import type { HostIndex } from './installed';
 
@@ -24,14 +24,17 @@ export interface StatusStore {
 export function createStatusStore(source: HostIndex): StatusStore {
   const current = createKeyedStore<PluginId, StatusItem[]>();
   const stops = new Map<PluginId, Cleanup>();
-  let live = true;
+  // One epoch for the store's life: `stop` ends it, and a push after that —
+  // a plugin whose cleanup missed a request in flight — is not heard.
+  const epoch = createEpoch();
+  const live = epoch.begin();
 
   // Subscribes to each background that has arrived and is not subscribed to
   // yet. The plugin is entered in `stops` before `status` is called, because
   // a plugin that throws on subscribe must not be called again every time
   // another module loads.
   const attach = () => {
-    if (!live) return;
+    if (!live()) return;
     for (const { plugin, background } of source.backgrounds()) {
       if (!background.status || stops.has(plugin)) continue;
       stops.set(plugin, () => {});
@@ -39,7 +42,7 @@ export function createStatusStore(source: HostIndex): StatusStore {
         stops.set(
           plugin,
           background.status((pushed) => {
-            if (!live) return;
+            if (!live()) return;
             const items = accepted(`plugin ${plugin}`, 'a status line it pushed', StatusItemSchema, pushed);
             if (items.length) current.set(plugin, items);
             else current.forget(plugin);
@@ -59,8 +62,8 @@ export function createStatusStore(source: HostIndex): StatusStore {
     subscribe: current.subscribe,
     version: current.version,
     stop() {
-      if (!live) return;
-      live = false;
+      if (!live()) return;
+      epoch.end();
       unwatch();
       for (const [plugin, stop] of stops) {
         try {

@@ -70,6 +70,33 @@ export function createStore<T>(initial: T, equal: (a: T, b: T) => boolean = Obje
   };
 }
 
+// Whether an answer that arrives late is still wanted. A store that
+// subscribes to a plugin and can be stopped, or can move on to another
+// plugin, begins an epoch per subscription and asks the predicate it gets
+// back before taking a push: a push after `stop`, or from a subscription
+// that has been replaced, is not heard. Two stores had written this as a
+// generation counter and as a live flag.
+export interface Epoch {
+  // Starts a new epoch, ending the one before; returns whether the new one
+  // is still the current one.
+  begin: () => () => boolean;
+  // Ends the current epoch and starts none.
+  end: () => void;
+}
+
+export function createEpoch(): Epoch {
+  let current = 0;
+  return {
+    begin() {
+      const mine = ++current;
+      return () => mine === current;
+    },
+    end() {
+      current += 1;
+    },
+  };
+}
+
 export interface KeyedStore<K, V> {
   get: (key: K) => V | undefined;
   has: (key: K) => boolean;
@@ -80,7 +107,6 @@ export interface KeyedStore<K, V> {
   // In insertion order, so a store whose order is meaningful — the cart's —
   // reads it straight off.
   entries: () => [K, V][];
-  size: () => number;
   version: () => number;
   subscribe: (listener: () => void) => () => void;
 }
@@ -116,7 +142,6 @@ export function createKeyedStore<K, V>({
       changed();
     },
     entries: () => [...held.entries()],
-    size: () => held.size,
     version,
     subscribe,
   };

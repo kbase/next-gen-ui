@@ -1,5 +1,4 @@
 import { createContext, useCallback, useContext, useSyncExternalStore } from 'react';
-import type { Crumb } from '../../plugins/sdk';
 import type { Layout, Operation, Panel, PanelId, Snapshot } from '../core';
 import type { ArgValues } from '../commands';
 import { qualifiedName } from '../commands';
@@ -67,12 +66,6 @@ export function useBusy(name: string): boolean {
   useSyncExternalStore(runs.subscribe, runs.version, runs.version);
   const found = registry.find(name);
   return runs.running(found.ok ? qualifiedName(found.command) : name);
-}
-
-export function useCrumbs(id: PanelId): Crumb[] {
-  const { crumbs } = useServices();
-  useSyncExternalStore(crumbs.subscribe, crumbs.version, crumbs.version);
-  return crumbs.get(id);
 }
 
 export function useTitle(panel: Panel | undefined, id: PanelId = panel?.id ?? ''): string {

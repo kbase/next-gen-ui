@@ -3,8 +3,7 @@ import { describe } from './describe';
 import type { Layout } from './layout';
 import type { Operation } from './operations';
 import { isUndoable } from './operations';
-import type { ReduceContext } from './reduce';
-import { defaultContext, reduce } from './reduce';
+import { reduce } from './reduce';
 import { createStore } from './subscribable';
 
 export interface DispatchResult {
@@ -47,18 +46,14 @@ export interface WorkbenchStore {
 export interface StoreOptions {
   initial: Layout;
   title?: TitleOf;
-  ctx?: ReduceContext;
-  limit?: number;
 }
+
+// How many layouts undo keeps.
+const UNDO_DEPTH = 50;
 
 // Undo is a stack of whole layouts: each structural operation pushes the
 // layout it replaced.
-export function createWorkbenchStore({
-  initial,
-  title = (id) => id,
-  ctx = defaultContext,
-  limit = 50,
-}: StoreOptions): WorkbenchStore {
+export function createWorkbenchStore({ initial, title = (id) => id }: StoreOptions): WorkbenchStore {
   const noCause: Cause = { focus: null, path: null };
   const state = createStore<Snapshot>({ layout: initial, cause: noCause });
   const past: Layout[] = [];
@@ -66,7 +61,7 @@ export function createWorkbenchStore({
 
   function push(snapshot: Layout) {
     past.push(snapshot);
-    if (past.length > limit) past.shift();
+    if (past.length > UNDO_DEPTH) past.shift();
     future.length = 0;
   }
 
@@ -76,7 +71,7 @@ export function createWorkbenchStore({
     subscribe: state.subscribe,
     dispatch(op) {
       const before = state.get().layout;
-      const after = reduce(before, op, ctx);
+      const after = reduce(before, op);
       if (after === before) return { changed: false, announcement: '' };
       if (isUndoable(op)) push(before);
       const announcement = describe(op, before, after, title);

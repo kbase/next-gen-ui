@@ -82,7 +82,6 @@ describe('a keyed store', () => {
     store.set('b', 2);
     store.forget('a');
     expect(store.entries()).toEqual([['b', 2]]);
-    expect(store.size()).toBe(1);
     expect(store.has('a')).toBe(false);
   });
 

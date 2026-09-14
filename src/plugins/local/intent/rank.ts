@@ -108,6 +108,9 @@ interface Entry {
 export interface CommandIndex {
   entries: Entry[];
   idf: Map<string, number>;
+  // The weight of an n-gram no document holds: what the index gives a term
+  // it has never seen, so a query's vector is measured on the same scale.
+  unseen: number;
 }
 
 // Below this cosine a match is letters in common, not a command in mind.
@@ -247,7 +250,7 @@ export function buildCommandIndex(
     vector: vectorize(text, idf, unseen),
     argVectors: doc.args.map((a) => vectorize(argText(a), idf, unseen)),
   }));
-  return { entries, idf };
+  return { entries, idf, unseen };
 }
 
 // The text with each tagged span read as the kind of thing it is.
@@ -262,15 +265,20 @@ function reading(text: string, tags: Tag[]): string {
   return out + text.slice(at);
 }
 
-// A term and where it came from. Every term in play appears once, under the
-// strongest tier that carried it, and the tiers come in the contract's order,
-// which is strongest first.
+// A term and where it came from, with its namespace read as a vector once:
+// what binds it to an argument depends on the term alone, and every
+// candidate is bound against the same pool. Every term in play appears
+// once, under the strongest tier that carried it, and the tiers come in the
+// contract's order, which is strongest first. A term with no namespace binds
+// nothing and is left out.
 interface Term {
   term: string;
   tier: ContextTier;
+  id: string;
+  query: Map<string, number>;
 }
 
-function tiered(tags: Tag[], terms: TieredTerms): Term[] {
+function tiered(tags: Tag[], terms: TieredTerms, index: CommandIndex): Term[] {
   const seen = new Set<string>();
   const pool: Term[] = [];
   for (const tier of CONTEXT_TIERS) {
@@ -278,7 +286,9 @@ function tiered(tags: Tag[], terms: TieredTerms): Term[] {
     for (const term of found) {
       if (seen.has(term)) continue;
       seen.add(term);
-      pool.push({ term, tier });
+      const ns = namespaceOf(term);
+      if (!ns) continue;
+      pool.push({ term, tier, id: ns.id, query: vectorize(ns.words.join(' '), index.idf, index.unseen) });
     }
   }
   return pool;
@@ -290,18 +300,10 @@ function tiered(tags: Tag[], terms: TieredTerms): Term[] {
 // row is weighted by the strongest tier that reached it — the pool is in
 // tier order, and a term binds an argument the same way whatever tier it
 // came from.
-function bind(
-  entry: Entry,
-  index: CommandIndex,
-  pool: Term[],
-): { args: Record<string, string>; evidence?: Evidence } {
+function bind(entry: Entry, pool: Term[]): { args: Record<string, string>; evidence?: Evidence } {
   const args: Record<string, string> = {};
   let evidence: Evidence | undefined;
-  const unseen = Math.log((1 + index.entries.length) / 1) + 1;
-  for (const { term, tier } of pool) {
-    const ns = namespaceOf(term);
-    if (!ns) continue;
-    const query = vectorize(ns.words.join(' '), index.idf, unseen);
+  for (const { term, tier, id, query } of pool) {
     let best: { arg: string; score: number } | undefined;
     entry.argVectors.forEach((v, i) => {
       const arg = entry.args[i].name;
@@ -311,7 +313,7 @@ function bind(
       }
     });
     if (!best) continue;
-    args[best.arg] = ns.id;
+    args[best.arg] = id;
     // The ranker's own account of the match, and the weakest of the three:
     // what matched is the namespace's words against the argument's
     // description, which is words against words. A plugin claiming the same
@@ -332,10 +334,15 @@ export function rankCommands(
 ): RankedCall[] {
   const trimmed = text.trim();
   if (trimmed.length < 2 || !index.entries.length) return [];
-  const unseen = Math.log((1 + index.entries.length) / 1) + 1;
-  const query = vectorize(reading(trimmed, tags), index.idf, unseen);
-  const pool = tiered(tags, terms);
-  const tierOf = new Map(pool.map(({ term, tier }) => [term, tier]));
+  const query = vectorize(reading(trimmed, tags), index.idf, index.unseen);
+  const pool = tiered(tags, terms, index);
+  // A plugin's claim is weighed under the tier the term arrived in, whether
+  // or not the term has a namespace to bind by.
+  const tierOf = new Map<string, ContextTier>();
+  for (const tier of CONTEXT_TIERS) {
+    const found = tier === 'typed' ? [...tags.map((t) => t.term), ...terms.typed] : terms[tier];
+    for (const term of found) if (!tierOf.has(term)) tierOf.set(term, tier);
+  }
   const offered = new Map<string, Offer>();
   for (const offer of offers) if (!offered.has(offer.command)) offered.set(offer.command, offer);
   // A plugin's claim is weighed only about a term the query carried: an
@@ -369,7 +376,7 @@ export function rankCommands(
           };
         }
         const offer = offered.get(entry.command);
-        const bound = offer ? undefined : bind(entry, index, pool);
+        const bound = offer ? undefined : bind(entry, pool);
         const evidence = offer ? claimed(offer) : bound?.evidence;
         // The floor is read against the letters alone, so no amount of
         // evidence can put a command the sentence does not name on screen.

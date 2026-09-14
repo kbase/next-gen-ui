@@ -1,7 +1,7 @@
 import type { Cleanup, Destination } from '../../plugins/sdk';
 import { DestinationSchema } from '../../plugins/sdk';
 import type { PluginId } from '../core';
-import { createStore } from '../core/subscribable';
+import { createEpoch, createStore } from '../core/subscribable';
 import { issueText } from './checked';
 import type { HostIndex } from './installed';
 import type { SettingsStore } from './settings';
@@ -33,17 +33,16 @@ export function createDestinationStore(
   settings: SettingsStore,
 ): DestinationStore {
   const current = createStore<Destination | null>(null);
-  let live = true;
-  // The assistant being followed, the call that ends its subscription, and
-  // a count that makes every push from an earlier one stale — a module that
-  // loads after the user has moved on must not subscribe, and a plugin that
-  // pushes after its cleanup must not be heard.
+  // The assistant being followed and the call that ends its subscription.
+  // Each follow is an epoch: a module that loads after the user has moved
+  // on must not subscribe, and a plugin that pushes after its cleanup must
+  // not be heard.
   let followed: PluginId | null = null;
   let stopPlugin: Cleanup = () => {};
-  let generation = 0;
+  const epoch = createEpoch();
 
   const release = () => {
-    generation += 1;
+    epoch.end();
     const [was, stop] = [followed, stopPlugin];
     followed = null;
     stopPlugin = () => {};
@@ -59,19 +58,18 @@ export function createDestinationStore(
   // has to be subscribed to before it renders, and Settings naming the
   // plugin is what says a subscription is wanted.
   const follow = () => {
-    if (!live) return;
     const assistant = settings.get().assistant;
     if (assistant === followed) return;
     release();
     if (!source.has(assistant, 'prompt')) return;
     followed = assistant;
-    const mine = ++generation;
+    const still = epoch.begin();
     source
       .module(assistant, 'prompt')
       .then((prompt) => {
-        if (mine !== generation || !prompt.destination) return;
+        if (!still() || !prompt.destination) return;
         stopPlugin = prompt.destination((value) => {
-          if (mine !== generation) return;
+          if (!still()) return;
           if (value === null) {
             current.set(null);
             return;
@@ -98,9 +96,8 @@ export function createDestinationStore(
     get: current.get,
     subscribe: current.subscribe,
     version: current.version,
+    // Nothing calls `follow` once the settings subscription is gone.
     stop() {
-      if (!live) return;
-      live = false;
       unwatch();
       release();
     },

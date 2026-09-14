@@ -107,13 +107,9 @@ export function emptyGroup(id: GroupId): Group {
 
 export interface DefaultLayoutOptions {
   pinned?: PluginId[];
-  rootGroupId?: GroupId;
 }
 
-export function defaultLayout({
-  pinned = [],
-  rootGroupId = 'root',
-}: DefaultLayoutOptions = {}): Layout {
+export function defaultLayout({ pinned = [] }: DefaultLayoutOptions = {}): Layout {
   const panels: Record<PanelId, Panel> = {};
   for (const plugin of pinned) {
     const panel = makePane(plugin);
@@ -121,7 +117,7 @@ export function defaultLayout({
   }
   return {
     panels,
-    main: emptyGroup(rootGroupId),
+    main: emptyGroup('root'),
     sidebar: {
       pinned: [...pinned],
       folded: [],

@@ -311,7 +311,7 @@ function Block({ panel, info }: { panel: Panel; info: PluginInfo | undefined }) 
 // two clicks to look at a plugin without pinning it. The `row` variant is
 // the accordion's footer row; the icon variant sits in the collapsed
 // column.
-export function MoreMenu({
+function MoreMenu({
   plugins,
   variant = 'icon',
   onPreview,

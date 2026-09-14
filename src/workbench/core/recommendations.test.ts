@@ -27,7 +27,8 @@ const state = (
 // The rule both merges call: `mergeRecommendations` for two items in one
 // round, the query runner for two rounds about a pool that grew.
 describe('unionAnswers', () => {
-  it('keeps the first mention of a term, so a later answer cannot weaken it', () => {
+  it('keeps the stronger account of a term, whichever round it came in', () => {
+    // A later round cannot weaken a record to a name…
     expect(
       unionAnswers(
         [{ term: 'uniprot:P11558', kind: 'record' }],
@@ -39,6 +40,20 @@ describe('unionAnswers', () => {
     ).toEqual([
       { term: 'uniprot:P11558', kind: 'record' },
       { term: 'ncbitaxon:562', kind: 'record' },
+    ]);
+    // …and a plugin that matched a label first and then found the thing in
+    // its records is believed the second time, in the term's first place.
+    expect(
+      unionAnswers(
+        [
+          { term: 'uniprot:P11558', kind: 'name' },
+          { term: 'ncbitaxon:562', kind: 'identifier' },
+        ],
+        [{ term: 'uniprot:P11558', kind: 'record' }],
+      ),
+    ).toEqual([
+      { term: 'uniprot:P11558', kind: 'record' },
+      { term: 'ncbitaxon:562', kind: 'identifier' },
     ]);
   });
 

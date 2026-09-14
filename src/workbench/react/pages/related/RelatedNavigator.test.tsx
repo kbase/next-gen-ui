@@ -109,7 +109,8 @@ async function mount(relate: (q: TermsQuery) => Promise<CartItem[]>) {
 
 const wait = (ms: number) => act(async () => void (await vi.advanceTimersByTimeAsync(ms)));
 
-const asking = () => screen.queryAllByText('Asking the other plugins…');
+// The waiting line names whose rows are still to come, by the plugin's title.
+const asking = () => screen.queryAllByText('Nothing yet from genKnown…');
 const paneEmpty = () => screen.queryByText('Nothing to show');
 
 beforeEach(() => vi.useFakeTimers());
@@ -179,6 +180,26 @@ describe('the Related pane before it has answers', () => {
     expect(asking()).toHaveLength(0);
     // The pane has a header the reader can see, so it cannot go blank.
     expect(paneEmpty()).toBeInTheDocument();
+  });
+
+  // The budget ends nothing the reader sees. A plugin still answering past it
+  // keeps its section up, with the line naming it, and the pane does not say
+  // it has nothing until the last plugin has answered.
+  it('holds a section past the budget while a plugin is still answering', async () => {
+    const gk = plugin();
+    const services = await mount(gk.relate);
+    await act(async () => {
+      services.store.dispatch({ type: 'open', panel: page });
+      services.terms.set(page.id, ['uniprot:P0AEX9']);
+    });
+    await wait(SETTLE_MS + BUDGET_MS + 1);
+    expect(screen.getByText(page.path)).toBeInTheDocument();
+    expect(asking()).toHaveLength(1);
+    expect(paneEmpty()).toBeNull();
+
+    await gk.answer('uniprot:P0AEX9', [item('gk:P0AEX9')]);
+    expect(screen.getByText('gk:P0AEX9')).toBeInTheDocument();
+    expect(asking()).toHaveLength(0);
   });
 
   it('reports the pane empty until a section has something to draw', async () => {

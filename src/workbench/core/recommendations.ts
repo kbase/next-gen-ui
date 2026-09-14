@@ -1,4 +1,4 @@
-import type { CartItem, Match } from '../../plugins/sdk';
+import type { CartItem, Match, MatchKind } from '../../plugins/sdk';
 import type { QuerySource, SourceState } from './query';
 
 // The Related pane's list, with the recommendation as the unit.
@@ -32,19 +32,27 @@ export interface Recommendation {
   offeredBy: ItemOffer[];
 }
 
+// How much a plugin's account of a term claims, strongest first: it holds the
+// thing, it recognised an identifier it serves, words matched words. The
+// order the bundled ranker weighs them in (plugins/local/intent/rank.ts).
+const STRENGTH: Record<MatchKind, number> = { record: 2, identifier: 1, name: 0 };
+
 // Everything one plugin's item is known to answer, once each, in the order the
 // terms were first named. The same id comes back with different evidence
 // twice: from two items in one round, which `mergeRecommendations` folds into
 // one offer, and from two rounds about a pool that grew, which the query
 // runner folds into one item (host/query/runner.ts). Both are the plugin
 // answering about one thing under terms it was asked about separately, and a
-// row that kept one set would name half the reason it is there. The first
-// mention of a term keeps its kind: a later round cannot weaken to `name` what
-// an earlier one found in a record.
+// row that kept one set would name half the reason it is there. A term named
+// twice keeps the stronger account: a later round cannot weaken to `name`
+// what an earlier one found in a record, and a plugin that first matched a
+// label and then found the thing in its records is believed the second time.
 export function unionAnswers(first: readonly Match[] = [], second: readonly Match[] = []): Match[] {
   const answers = [...first];
   for (const match of second) {
-    if (!answers.some((a) => a.term === match.term)) answers.push(match);
+    const at = answers.findIndex((a) => a.term === match.term);
+    if (at === -1) answers.push(match);
+    else if (STRENGTH[match.kind] > STRENGTH[answers[at].kind]) answers[at] = match;
   }
   return answers;
 }

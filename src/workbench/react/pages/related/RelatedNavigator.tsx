@@ -66,9 +66,16 @@ const HEADING: Record<RelatedSource, (label: string) => string> = {
   cart: () => 'Cart',
 };
 
+// Plugins as a sentence names them: titles, from the manifests.
+function listPlugins(ids: readonly string[], titleOf: (id: string) => string): string {
+  const names = ids.map(titleOf);
+  if (names.length <= 1) return names.join('');
+  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+}
+
 export function RelatedNavigator() {
   usePanelTitle('Related');
-  const { query, cart } = useServices();
+  const { query, cart, source: index } = useServices();
   useSyncExternalStore(cart.subscribe, cart.version, cart.version);
 
   // The list is state of this pane rather than a derivation, because its
@@ -95,9 +102,12 @@ export function RelatedNavigator() {
   // `pool` is the terms the source was last asked about: written when the
   // question is put, before the settle, and emptied when the source has
   // nothing to ask. It is the whole test for whether a section exists, so a
-  // section outlives a round of answers. `loading` runs from the same moment
-  // until every plugin has answered or the budget ends the waiting; an answer
-  // after that still adds its rows.
+  // section outlives a round of answers. `pending` is the plugins asked the
+  // current question that have not answered it: the one place "nobody has
+  // anything" and "nobody has answered yet" can be told apart, so it is what
+  // holds a section up and what the waiting line names. The runner's budget
+  // (`loading`) is not read here: it would take a slow plugin's section down
+  // and draw the empty state, and the answer would then replace it.
   const sections = SOURCES.map((source) => {
     const state = query.get(source);
     return {
@@ -108,7 +118,7 @@ export function RelatedNavigator() {
       // term in the pool and the heading already names the only candidate.
       manyAsked: state.pool.length > 1,
       rows: shown.filter((r) => r.offeredBy[0].source === source),
-      asking: state.loading,
+      pending: state.pending,
     };
   }).filter((s) => s.asked);
 
@@ -118,7 +128,7 @@ export function RelatedNavigator() {
   // — it is a shelf with nothing on it, and shelves with nothing on them come
   // down. The distinction that matters is the pane itself, which has a header
   // the reader can see and so cannot be blank.
-  const drawn = sections.filter((s) => s.rows.length > 0 || s.asking);
+  const drawn = sections.filter((s) => s.rows.length > 0 || s.pending.length > 0);
   if (drawn.length === 0) {
     return <EmptyState icon={<MagnifyingGlass size={32} />} title="Nothing to show" />;
   }
@@ -135,12 +145,15 @@ export function RelatedNavigator() {
               ))}
             </ul>
           )}
-          {s.asking && (
+          {s.pending.length > 0 && (
             // The line carries the announcement; the loader beside it is
             // decoration, and a label on it would say the same words twice.
+            // It names whose rows are still to come, by title.
             <p className={`note ${styles.relatedLine}`} role="status">
               <Loader size={14} />
-              <span>Asking the other plugins…</span>
+              <span>
+                {`Nothing yet from ${listPlugins(s.pending, (id) => index.manifest(id)?.title ?? id)}…`}
+              </span>
             </p>
           )}
         </div>
@@ -264,7 +277,10 @@ function RelatedRow({ row, manyAsked }: { row: Recommendation; manyAsked: boolea
       </Tooltip.Root>
 
       {row.offeredBy.length > 1 && (
-        <span className={styles.relatedOffers} aria-label={`Offered ${row.offeredBy.length} times`}>
+        <span
+          className={styles.relatedOffers}
+          aria-label={`Suggested by ${row.offeredBy.length} plugins`}
+        >
           {`×${row.offeredBy.length}`}
         </span>
       )}

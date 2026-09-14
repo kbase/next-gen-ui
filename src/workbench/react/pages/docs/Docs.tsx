@@ -708,11 +708,39 @@ function fromReact(Component: ComponentType): { mount: Mount };`}</Sig>
             <p className={styles.para}>
               <Code>{'openRoute(path, { duplicate: true })'}</Code> opens a second tab for the same
               page. <Code>{'navigate(path, { replace: true })'}</Code> replaces the history entry
-              instead of adding one. A panel is drawn once and mounted once: moving its tab to
-              another group, splitting the group, and moving a pane between the sidebar and the main
-              area all change where the body is drawn rather than what it sits inside, so{' '}
-              <Code>mount</Code> does not run again and an <Code>iframe</Code> inside it does not
-              reload.
+              instead of adding one. A panel is mounted once: moving its tab to another group,
+              splitting the group, and moving a pane between the sidebar and the main area all move
+              the element the panel drew into rather than rebuilding it, so <Code>mount</Code> does
+              not run again. A browser reloads an <Code>iframe</Code> that is moved, whatever moves
+              it; a page holding one draws it with <Code>AppFrame</Code>, which keeps the frame
+              where a move cannot reach it.
+            </p>
+          </Entry>
+
+          <Entry
+            id="r-frame"
+            name="AppFrame"
+            when="Rendered by a page or pane that embeds an app. The frame is created once and kept while the panel lives."
+          >
+            <Sig>{`interface AppFrameProps {
+  src: string;
+  title: string;
+  ref?: Ref<HTMLIFrameElement>;  // the <iframe>: post to its contentWindow, match a message's source against it
+}
+
+function AppFrame(props: AppFrameProps): ReactElement;
+
+interface FrameLayer {
+  container: HTMLElement;        // where the frame is rendered; the panel holds a box the frame is laid over
+  attach: (frame: HTMLElement, placeholder: HTMLElement) => Cleanup;
+}`}</Sig>
+            <p className={styles.para}>
+              The frame is rendered into the workbench's frame layer, at the end of the document,
+              and laid over the box <Code>AppFrame</Code> leaves in the panel; the box moves with
+              the panel and the frame follows it without moving. It fills the box, so size the
+              element around it. <Code>FrameLayer</Code> is <Code>host.frames</Code>, which{' '}
+              <Code>AppFrame</Code> uses; a panel that is not React attaches its own frame the same
+              way.
             </p>
           </Entry>
 
@@ -840,6 +868,7 @@ function defineIntent(i: Intent): Intent;`}</Sig>
   hasCommand: (command: string) => boolean;
   notify: (text: string) => void;
   cart: Cart;
+  frames: FrameLayer;            // where an iframe goes so that a move does not reload it; see AppFrame
 }
 
 interface Crumb {

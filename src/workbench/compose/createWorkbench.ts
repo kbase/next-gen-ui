@@ -12,6 +12,7 @@ import { createCommandRegistry, createRunStore, workbenchCommands } from '../com
 import { createAnnouncer } from '../host/announcer';
 import { createCrumbStore } from '../host/crumbs';
 import { createDestinationStore } from '../host/destination';
+import { createFrameLayer } from '../host/frames';
 import type { InstalledPlugin } from '../host/installed';
 import { createHostIndex } from '../host/installed';
 import { openPane, openRoute } from '../host/open';
@@ -105,6 +106,7 @@ export function createWorkbench({
     announcer,
     prompt,
     preview,
+    frames: createFrameLayer(),
     dispatch,
   };
 

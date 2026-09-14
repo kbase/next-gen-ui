@@ -276,8 +276,11 @@
   box-shadow: inset 0 0 0 2px var(--c-focus);
 }
 
+/* `flex-basis: auto`, not 0: a block whose height is its content's — the
+   preview card, a pane declaring `fit: 'content'` — is as tall as what the
+   pane draws, and one sharing the stack is as tall as its share. */
 .blockBody {
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
 }
@@ -750,40 +753,29 @@
   opacity: 0.4;
 }
 
-/* Panel bodies */
+/* Frames */
 
-/* Every panel body, drawn once and laid over the slot its place in the
-   layout measures out. The container generates no box at all — a positioned
-   one would be a stacking context, and a body's z-index would then be
-   compared only against its siblings here, leaving a pane drawn into a
-   flyout underneath the popover the flyout is. Each body positions itself
+/* Every plugin iframe, drawn once and laid over the placeholder its panel
+   holds (host/frames.ts). The container generates no box at all — a
+   positioned one would be a stacking context, and a frame's z-index would
+   then be compared only against its siblings here, leaving a frame in a rail
+   flyout underneath the popover the flyout is. Each frame positions itself
    against the viewport instead, which is the frame its measured box is in. */
-.panelLayer {
+.frameLayer {
   display: contents;
 }
 
-.panelBody {
+.frameLayer > iframe {
   position: fixed;
   top: 0;
   left: 0;
-  overflow: auto;
+  border: 0;
   z-index: var(--z-raised);
 }
 
-/* A pane drawn into a flyout: above the popover that anchors it. */
-.panelBody[data-anchored] {
-  z-index: calc(var(--z-anchored) + 1);
-}
-
-/* The group card rounds and clips its bottom corners; a body drawn over the
-   card is outside it, so it carries the radius itself. */
-.panelBody[data-shape='group'] {
-  border-radius: 0 0 var(--r-lg) var(--r-lg);
-}
-
-/* The drop zones sit under the bodies, so while a panel is being dragged the
-   bodies stop taking pointer events and the zones can. */
-.panelLayer[data-dragging] .panelBody {
+/* The drop zones sit under the frames, so while a panel is being dragged the
+   frames stop taking pointer events and the zones can. */
+.frameLayer[data-dragging] > iframe {
   pointer-events: none;
 }
 

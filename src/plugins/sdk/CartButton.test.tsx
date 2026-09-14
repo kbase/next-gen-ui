@@ -34,6 +34,7 @@ function host(): PluginHost {
         return () => listeners.delete(l);
       },
     },
+    frames: { container: document.createElement('div'), attach: () => () => {} },
   };
 }
 

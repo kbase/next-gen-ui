@@ -1,5 +1,6 @@
 import { useRef, useSyncExternalStore } from 'react';
 import type { ReactElement, ReactNode, RefObject } from 'react';
+import { OutPortal } from 'react-reverse-portal';
 // Chrome glyphs come straight from Phosphor, never from the plugins' icon
 // table — the table is the plugins' namespace (react/icons.ts).
 import { CaretDown, DotsThree, PushPin, X } from '@phosphor-icons/react';
@@ -20,8 +21,7 @@ import { makePane, sidebarPanels } from '../core';
 import type { PluginInfo } from '../host/installed';
 import { useDispatch, useLayout, useRun, useServices, useTitle } from './context';
 import { PluginMark } from './PluginMark';
-import { panelDomId } from './domIds';
-import { usePanelSlot } from './panelSlots';
+import { usePanelActivation, usePanelSlot } from './panelSlots';
 import { SplitView } from './SplitView';
 import { useDragPanel, useDragging, useDropTarget } from './useDnd';
 import styles from './Workbench.module.css';
@@ -203,19 +203,15 @@ function Block({ panel, info }: { panel: Panel; info: PluginInfo | undefined }) 
   const layout = useLayout();
   const dispatch = useDispatch();
   const run = useRun();
-  const { source } = useServices();
   const title = useTitle(panel);
   const folded = layout.sidebar.folded.includes(panel.id);
   const collapsed = layout.sidebar.collapsed;
   // Collapsed, the blocks are cropped away and the pane is drawn in the
-  // flyout its rail icon opens; the slot stays registered so the pane keeps
-  // its mount while nothing is showing it.
-  const slot = usePanelSlot<HTMLDivElement>({
-    panel,
-    hidden: collapsed,
-    activates: true,
-    sizing: source.loaded(panel.plugin, 'pane')?.fit === 'content' ? 'content' : undefined,
-  });
+  // flyout its rail icon opens; the block keeps its claim so the pane keeps
+  // its mount while nothing is showing it. Folded, there is no claim at all,
+  // and the pane is torn down until the block is opened again.
+  const node = usePanelSlot(folded ? null : { panel, hidden: collapsed });
+  const activate = usePanelActivation(panel.id);
   const focused = layout.focus === panel.id;
   const headerId = `wb-block-${panel.plugin}`;
   const at = layout.sidebar.pinned.indexOf(panel.plugin);
@@ -235,10 +231,6 @@ function Block({ panel, info }: { panel: Panel; info: PluginInfo | undefined }) 
       ref={dropRef}
       className={styles.block}
       aria-labelledby={headerId}
-      // The pane's body is drawn in the panel layer, outside this element;
-      // `aria-owns` puts it back inside the region its header names, which
-      // containing it used to do.
-      aria-owns={folded ? undefined : panelDomId(panel.id)}
       data-focused={focused || undefined}
       data-folded={folded || undefined}
       data-over={isOver || undefined}
@@ -301,7 +293,16 @@ function Block({ panel, info }: { panel: Panel; info: PluginInfo | undefined }) 
           </ContextMenu.Item>
         </ContextMenu.Popup>
       </ContextMenu.Root>
-      {!folded && <div ref={slot} className={styles.blockBody} data-panel-slot={panel.id} />}
+      {!folded && (
+        <div
+          className={styles.blockBody}
+          data-panel={panel.id}
+          onPointerDownCapture={activate}
+          onFocusCapture={activate}
+        >
+          {node && <OutPortal node={node} />}
+        </div>
+      )}
     </section>
   );
 }
@@ -384,7 +385,6 @@ function PreviewBlock({
   onDismiss: () => void;
 }) {
   const run = useRun();
-  const { source } = useServices();
   const panel = makePane(plugin);
   const title = info?.title ?? plugin;
   const { dragRef, dragHandlers, isDragging } = useDragPanel({
@@ -392,15 +392,11 @@ function PreviewBlock({
     kind: 'pane',
     pins: plugin,
   });
-  const slot = usePanelSlot<HTMLDivElement>({
-    panel,
-    sizing: source.loaded(plugin, 'pane')?.fit === 'content' ? 'content' : undefined,
-  });
+  const node = usePanelSlot({ panel });
   return (
     <section
       className={`${styles.block} ${styles.previewBlock}`}
       aria-label={`${title} preview`}
-      aria-owns={panelDomId(panel.id)}
       data-dragging={isDragging || undefined}
     >
       <div className={`${styles.blockHeader} ${styles.previewHeader}`}>
@@ -433,7 +429,9 @@ function PreviewBlock({
           <X size={13} aria-hidden="true" />
         </Button>
       </div>
-      <div ref={slot} className={styles.blockBody} data-panel-slot={panel.id} />
+      <div className={styles.blockBody} data-panel={panel.id}>
+        {node && <OutPortal node={node} />}
+      </div>
     </section>
   );
 }
@@ -468,15 +466,6 @@ function PanePopout({
   const width = useLayout().sidebar.width;
   // A content-fit pane's flyout hugs its content too.
   const fit = useServices().source.loaded(panel.plugin, 'pane')?.fit;
-  // Priority over the block's slot: while this is open it is where the pane
-  // is drawn, and the block's slot is the hidden one. `anchored` puts the
-  // body above the popover it is drawn into.
-  const slot = usePanelSlot<HTMLDivElement>({
-    panel,
-    priority: 1,
-    anchored: true,
-    sizing: fit === 'content' ? 'content' : undefined,
-  });
   return (
     <Popover.Root open={open} onOpenChange={(next) => !next && onDismiss?.()}>
       {trigger && <Popover.Trigger render={trigger} />}
@@ -489,8 +478,7 @@ function PanePopout({
       <BasePopover.Portal>
         {/* Beside the rail with its top at the icon: the default bottom-
             centered placement would cover the icons under the clicked one.
-            The stacking tier goes here and not on the popup, per tokens.css.
-            The pane's body draws a tier above it, from the panel layer. */}
+            The stacking tier goes here and not on the popup, per tokens.css. */}
         <BasePopover.Positioner
           anchor={anchor}
           side="right"
@@ -503,8 +491,6 @@ function PanePopout({
             className={styles.popout}
             style={{ width, height: fit === 'content' ? 'auto' : undefined }}
             aria-label={name}
-            // The pane's body is drawn over this flyout, not inside it.
-            aria-owns={panelDomId(panel.id)}
           >
             <Frame padding={0} className={styles.popoutBody}>
               <div className={styles.popoutHeader}>
@@ -523,11 +509,24 @@ function PanePopout({
                   </>
                 )}
               </div>
-              <div ref={slot} className={styles.blockBody} data-panel-slot={panel.id} />
+              <PopoutBody panel={panel} />
             </Frame>
           </BasePopover.Popup>
         </BasePopover.Positioner>
       </BasePopover.Portal>
     </Popover.Root>
+  );
+}
+
+// The pane inside an open flyout. Its own component because the claim has to
+// last exactly as long as the flyout does, and the popup's contents are
+// rendered only while it is open: the pane's block keeps a claim of its own
+// the whole time, and this one outranks it.
+function PopoutBody({ panel }: { panel: Panel }) {
+  const node = usePanelSlot({ panel, priority: 1 });
+  return (
+    <div className={styles.blockBody} data-panel={panel.id}>
+      {node && <OutPortal node={node} />}
+    </div>
   );
 }

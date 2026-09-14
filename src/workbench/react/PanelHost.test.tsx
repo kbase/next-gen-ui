@@ -5,11 +5,10 @@ import { describe, expect, it, vi } from 'vitest';
 import type { Route } from '../../plugins/sdk';
 import { defineRoute } from '../../plugins/sdk';
 import type { Panel, PluginId } from '../core';
-import { paneId } from '../core';
 import { noPersistence } from '../host';
 import { createWorkbench } from '../compose';
 import { localPlugin } from '../host/local';
-import { panelBody, testWorkbench } from '../../test/workbench';
+import { testWorkbench } from '../../test/workbench';
 import { PanelLayer } from './PanelLayer';
 import { Sidebar } from './Sidebar';
 import { WorkbenchProvider } from './WorkbenchProvider';
@@ -119,7 +118,7 @@ describe('a pinned plugin with no pane to draw', () => {
   it('says the installed plugin has no pane, and unpins from the block', async () => {
     const user = userEvent.setup();
     const services = mountPinned('settings');
-    const body = await panelBody(paneId('settings'));
+    const body = await screen.findByRole('region', { name: 'Settings' });
     expect(body).toHaveTextContent('Settings has no sidebar pane');
     expect(body).toHaveTextContent('Settings is installed and has no sidebar pane to draw.');
     const run = vi.spyOn(services.registry, 'run');
@@ -135,7 +134,7 @@ describe('a pinned plugin with no pane to draw', () => {
   // the plugin returning finds its block where it left it.
   it('says an uninstalled plugin is not installed, and keeps its block for it', async () => {
     const services = mountPinned('gone');
-    const body = await panelBody(paneId('gone'));
+    const body = await screen.findByRole('region', { name: 'gone' });
 
     expect(body).toHaveTextContent('gone is not installed');
     expect(body).toHaveTextContent('This block is held for it, so reinstalling brings');

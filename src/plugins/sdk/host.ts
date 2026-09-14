@@ -1,9 +1,11 @@
 import { createContext, useContext } from 'react';
 import type { Cart } from './cart';
+import type { FrameLayer } from './frames';
 
 // What a plugin may ask the workbench to do: open its own route, run a
 // command — its own by bare name, another plugin's by "plugin:name" — say
-// something when nothing on screen changed, and set things aside in the cart.
+// something when nothing on screen changed, set things aside in the cart,
+// and keep an iframe where a move cannot reload it.
 export interface PluginHost {
   // This plugin's page at a path. A panel already showing the same page,
   // as the route's `normalize` judges it, is focused instead of a second
@@ -20,6 +22,9 @@ export interface PluginHost {
   // its own is in it. Reached through `useCart()` rather than directly, so a
   // plugin does not have to hold the handle.
   cart: Cart;
+  // Where an <iframe> goes so that moving the panel does not reload it.
+  // Reached through `AppFrame` rather than directly.
+  frames: FrameLayer;
 }
 
 export const HostContext = createContext<PluginHost | null>(null);

@@ -1,7 +1,7 @@
-import { act, configure, render, screen, waitFor } from '@testing-library/react';
+import { StrictMode } from 'react';
+import { act, configure, render, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { definePane, defineRoute } from '../../plugins/sdk';
-import { panelBody } from '../../test/workbench';
 import type { GroupId, PanelId } from '../core';
 import { groups, makeRoute, paneId } from '../core';
 import { noPersistence } from '../host';
@@ -105,6 +105,45 @@ describe('a panel that is moved', () => {
     });
   });
 
+  // The first panel opened, moved after a second: its claim is now the
+  // newest, and a layer that listed panels in claim order would reorder its
+  // keyed children. React moves a reordered child, and StrictMode re-runs
+  // the effects of a child React moved — the development server's build,
+  // where that would run `mount` again on every split.
+  it('keeps its mount when it is the first opened and moved last, under StrictMode', async () => {
+    const { mounts, plugin } = countingPlugin();
+    const services = createWorkbench({
+      installed: [plugin],
+      persistence: noPersistence,
+      defaultAssistant: 'none',
+      defaultIntent: 'none',
+    });
+    render(
+      <StrictMode>
+        <WorkbenchProvider services={services}>
+          <Workbench />
+        </WorkbenchProvider>
+      </StrictMode>,
+    );
+    const first = makeRoute('counter', '/one', 'a');
+    const second = makeRoute('counter', '/two', 'b');
+    act(() => {
+      services.dispatch({ type: 'open', panel: first });
+      services.dispatch({ type: 'open', panel: second });
+    });
+    await screen.findByText(`page ${first.id}`);
+    await screen.findByText(`page ${second.id}`);
+    // StrictMode mounts twice on purpose; what is counted is what a move adds.
+    const settled = mounts.get(first.id)!;
+    const [root] = mainGroups(services);
+    act(() => {
+      services.dispatch({ type: 'move', panel: first.id, to: { group: root, side: 'right' } });
+    });
+    await waitFor(() => expect(mainGroups(services)).toHaveLength(2));
+    await act(() => new Promise((r) => setTimeout(r, 20)));
+    expect(mounts.get(first.id)).toBe(settled);
+  });
+
   // The counter above asserts an absence, so this asserts it can be present:
   // folding a block does take the pane's slot away, the panel is unmounted,
   // and unfolding runs `mount` a second time.
@@ -136,8 +175,8 @@ describe('a panel that is moved', () => {
   });
 });
 
-describe('a panel body and the tab that names it', () => {
-  it('are wired to each other by id across the document', async () => {
+describe('a panel and the tab that names it', () => {
+  it('are wired to each other, and the panel is inside the box the tab names', async () => {
     const { services } = mount();
     const first = makeRoute('counter', '/one', 'a');
     const second = makeRoute('counter', '/two', 'b');
@@ -146,18 +185,18 @@ describe('a panel body and the tab that names it', () => {
       services.dispatch({ type: 'open', panel: second });
     });
 
-    const body = await panelBody(second.id);
+    const body = await screen.findByRole('tabpanel');
     const tab = document.getElementById(tabDomId(second.id))!;
     expect(tab).toHaveAttribute('role', 'tab');
     expect(tab).toHaveAttribute('aria-controls', body.id);
-    expect(body).toHaveAttribute('role', 'tabpanel');
     expect(body).toHaveAttribute('aria-labelledby', tab.id);
     expect(body.id).toBe(panelDomId(second.id));
+    expect(within(body).getByText(`page ${second.id}`)).toBeInTheDocument();
 
-    // The background tab's body is still mounted and still where it was; it
-    // is out of the accessibility tree until its tab is selected again.
-    const background = await panelBody(first.id);
-    expect(background).toHaveAttribute('aria-hidden', 'true');
+    // The background tab's panel is still mounted and still where it was,
+    // hidden rather than taken away, so coming back to it costs nothing.
+    const background = document.getElementById(panelDomId(first.id))!;
+    expect(within(background).getByText(`page ${first.id}`)).toBeInTheDocument();
     expect(background).not.toBeVisible();
     expect(body).toBeVisible();
     act(() => {

@@ -1,5 +1,6 @@
 import { Toast } from '@kbase/design-system';
 import { useLayout, useServices } from './context';
+import { FrameLayer } from './FrameLayer';
 import { LiveRegion } from './LiveRegion';
 import { MainArea } from './MainArea';
 import { PanelLayer } from './PanelLayer';
@@ -33,6 +34,7 @@ export function Workbench() {
               </div>
             </div>
           </PanelLayer>
+          <FrameLayer />
         </WorkbenchDnd>
         {layout.bars.status && <StatusBar />}
         <LiveRegion />

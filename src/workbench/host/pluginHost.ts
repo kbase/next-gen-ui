@@ -36,5 +36,6 @@ export function pluginHostFor(services: WorkbenchServices, plugin: PluginId): Pl
       count: () => services.cart.items().filter((i) => i.plugin === plugin).length,
       subscribe: (listener) => services.cart.subscribe(listener),
     },
+    frames: services.frames,
   };
 }

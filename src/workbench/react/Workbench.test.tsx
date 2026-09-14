@@ -2,8 +2,6 @@ import { configure, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { localPlugins } from '../../plugins/local';
-import { panelBody } from '../../test/workbench';
-import { paneId } from '../core';
 import { loadWorkbench, noPersistence } from '../host';
 import { createWorkbench } from '../compose';
 import type { WorkbenchPersistence } from '../host';
@@ -50,7 +48,8 @@ function mount(persistence: WorkbenchPersistence = noPersistence) {
 
 const status = () => screen.getByRole('status', { name: 'Workbench announcements' });
 const openJob = async (user: ReturnType<typeof userEvent.setup>, name: RegExp) => {
-  const pane = await panelBody(paneId('jobs'));
+  // The block its header names, searched: the pane is inside it.
+  const pane = await screen.findByRole('region', { name: 'Jobs' });
   await user.click(await within(pane).findByRole('button', { name }));
 };
 
@@ -140,7 +139,8 @@ describe('Workbench', () => {
     mount();
     await openJob(user, /assemble reads/i);
     // The Tree's click handler sits on the row inside the treeitem.
-    await user.click(await within(await panelBody(paneId('data'))).findByText('Crash test panel'));
+    const data = await screen.findByRole('region', { name: 'Data' });
+    await user.click(await within(data).findByText('Crash test panel'));
     expect(await screen.findByRole('alert')).toHaveTextContent('This panel crashed');
     await user.click(screen.getByRole('tab', { name: /job 12/i }));
     expect(screen.getByRole('heading', { name: /assemble reads/i })).toBeVisible();

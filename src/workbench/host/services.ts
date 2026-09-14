@@ -14,6 +14,7 @@ import type { CommandRegistry, RunStore } from '../commands';
 import type { Announcer } from './announcer';
 import type { CrumbStore } from './crumbs';
 import type { DestinationStore } from './destination';
+import type { FrameLayerStore } from './frames';
 import type { HostIndex } from './installed';
 import type { QueryRunner } from './query/runner';
 import type { SettingsStore } from './settings';
@@ -92,6 +93,9 @@ export interface WorkbenchServices {
   prompt: PromptHandle;
   // The unpinned pane the sidebar is previewing, if any.
   preview: PreviewHandle;
+  // Where plugins' iframes are kept, so that a moved panel does not reload
+  // one. Handed to each plugin as `host.frames`.
+  frames: FrameLayerStore;
 }
 
 // Everything held under a panel's id that is not in the layout. A panel id is

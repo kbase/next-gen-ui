@@ -1,4 +1,5 @@
 import type { KeyboardEvent, MouseEvent } from 'react';
+import { OutPortal } from 'react-reverse-portal';
 import { House, X } from '@phosphor-icons/react';
 import { Button, ContextMenu, EmptyState, Tabs } from '@kbase/design-system';
 import type { Group, Panel, PanelId } from '../core';
@@ -8,7 +9,7 @@ import { useDispatch, useLayout, useRun, useServices, useTitle } from './context
 import { Breadcrumbs } from './Breadcrumbs';
 import { useGroupLabels } from './useGroupLabels';
 import { panelDomId, tabDomId } from './domIds';
-import { usePanelSlot } from './panelSlots';
+import { usePanelActivation, usePanelSlot } from './panelSlots';
 import { useDragPanel, useDropTarget } from './useDnd';
 import { GroupDropZones } from './WorkbenchDnd';
 import styles from './Workbench.module.css';
@@ -107,10 +108,11 @@ export function TabGroup({ group }: { group: Group }) {
   );
 }
 
-// Where this tab's panel is drawn, not what draws it: the body lives in the
-// layer and is laid over this box, so a tab moved to another group changes
-// which box its body follows and not what its body hangs from. The tabpanel
-// role, and the id the tab's `aria-controls` names, travel with the body.
+// This tab's panel. The contents are rendered elsewhere and attached here,
+// which is what keeps them across a move; everything a reader or a screen
+// reader meets — the box, the tabpanel role, the id the tab's `aria-controls`
+// names — is this element. An inactive tab keeps its panel attached and
+// hidden, so switching tabs costs nothing.
 function TabPanelSlot({
   panel,
   id,
@@ -120,19 +122,22 @@ function TabPanelSlot({
   id: PanelId;
   active: boolean;
 }) {
-  const slot = usePanelSlot<HTMLDivElement>(
-    panel
-      ? {
-          panel,
-          hidden: !active,
-          activates: true,
-          shape: 'group',
-          role: 'tabpanel',
-          labelledBy: tabDomId(id),
-        }
-      : null,
+  const node = usePanelSlot(panel ? { panel, hidden: !active } : null);
+  const activate = usePanelActivation(id);
+  return (
+    <div
+      role="tabpanel"
+      id={panelDomId(id)}
+      aria-labelledby={tabDomId(id)}
+      hidden={!active}
+      className={styles.tabpanel}
+      data-panel={id}
+      onPointerDownCapture={activate}
+      onFocusCapture={activate}
+    >
+      {node && <OutPortal node={node} />}
+    </div>
   );
-  return <div ref={slot} hidden={!active} className={styles.tabpanel} data-panel-slot={id} />;
 }
 
 // The Panel menu's splits, aimed at this tab rather than the focused one.

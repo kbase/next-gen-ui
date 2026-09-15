@@ -1,5 +1,5 @@
 import { StrictMode } from 'react';
-import { act, configure, render, screen, waitFor, within } from '@testing-library/react';
+import { act, configure, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { definePane, defineRoute } from '../../plugins/sdk';
 import type { GroupId, PanelId } from '../core';
@@ -172,6 +172,35 @@ describe('a panel that is moved', () => {
     // drawn in the flyout its icon opens; there is one body either way.
     await waitFor(() => expect(screen.getAllByText(`pane ${pane}`)).toHaveLength(1));
     expect(mounts.get(pane)).toBe(1);
+  });
+});
+
+// The contents are a React child of the layer and a DOM child of the slot,
+// and React delivers events along the React tree; a handler that sat on the
+// slot saw nothing from inside the contents, and the focus stayed where it
+// was when a reader clicked into a pane or a page.
+describe('a pointer or a focus inside a panel', () => {
+  it('makes it the focused panel, in a tab and in a sidebar block', async () => {
+    const { services } = mount();
+    const pane = paneId('counter');
+    const first = makeRoute('counter', '/one', 'a');
+    const second = makeRoute('counter', '/two', 'b');
+    act(() => {
+      services.dispatch({ type: 'open', panel: first });
+      services.dispatch({ type: 'open', panel: second });
+    });
+    const inFirst = await screen.findByText(`page ${first.id}`);
+    const inPane = await screen.findByText(`pane ${pane}`);
+    expect(services.store.get().focus).toBe(second.id);
+
+    fireEvent.pointerDown(inFirst);
+    expect(services.store.get().focus).toBe(first.id);
+
+    fireEvent.pointerDown(inPane);
+    expect(services.store.get().focus).toBe(pane);
+
+    fireEvent.focusIn(inFirst);
+    expect(services.store.get().focus).toBe(first.id);
   });
 });
 

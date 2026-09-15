@@ -246,7 +246,8 @@ export function usePanelSlot(spec: SlotSpec | null): HtmlPortalNode | null {
 // as well as focus: most of a panel is plain text, and clicking it fires no
 // focus event, so the workbench focus would stay where it last was. The store
 // is read rather than subscribed to: this asks about the focus at the moment
-// of the click, and nothing here draws it.
+// of the click, and nothing here draws it. Used by the layer, on the React
+// parent of the panel's contents (PanelLayer.tsx), not by a slot.
 export function usePanelActivation(id: PanelId): () => void {
   const { store } = useServices();
   const dispatch = useDispatch();

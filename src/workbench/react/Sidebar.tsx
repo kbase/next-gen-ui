@@ -22,7 +22,7 @@ import { makePane, sidebarPanels } from '../core';
 import type { PluginInfo } from '../host/installed';
 import { useDispatch, useLayout, useRun, useServices, useTitle } from './context';
 import { PluginMark } from './PluginMark';
-import { usePanelActivation, usePanelSlot } from './panelSlots';
+import { usePanelSlot } from './panelSlots';
 import { SplitView } from './SplitView';
 import { useDragPanel, useDragging, useDropTarget } from './useDnd';
 import styles from './Workbench.module.css';
@@ -232,7 +232,6 @@ function Block({ panel, info }: { panel: Panel; info: PluginInfo | undefined }) 
   // its mount while nothing is showing it. Folded, there is no claim at all,
   // and the pane is torn down until the block is opened again.
   const node = usePanelSlot(folded ? null : { panel, hidden: collapsed });
-  const activate = usePanelActivation(panel.id);
   const focused = layout.focus === panel.id;
   const headerId = `wb-block-${panel.plugin}`;
   const at = layout.sidebar.pinned.indexOf(panel.plugin);
@@ -313,12 +312,7 @@ function Block({ panel, info }: { panel: Panel; info: PluginInfo | undefined }) 
           </ContextMenu.Item>
         </ContextMenu.Popup>
       </ContextMenu.Root>
-      <Accordion.Panel
-        className={styles.blockBody}
-        data-panel={panel.id}
-        onPointerDownCapture={activate}
-        onFocusCapture={activate}
-      >
+      <Accordion.Panel className={styles.blockBody} data-panel={panel.id}>
         {node && <OutPortal node={node} />}
       </Accordion.Panel>
     </Accordion.Item>

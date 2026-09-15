@@ -9,7 +9,7 @@ import { useDispatch, useLayout, useRun, useServices, useTitle } from './context
 import { Breadcrumbs } from './Breadcrumbs';
 import { useGroupLabels } from './useGroupLabels';
 import { panelDomId, tabDomId } from './domIds';
-import { usePanelActivation, usePanelSlot } from './panelSlots';
+import { usePanelSlot } from './panelSlots';
 import { useDragPanel, useDropTarget } from './useDnd';
 import { GroupDropZones } from './WorkbenchDnd';
 import styles from './Workbench.module.css';
@@ -123,7 +123,6 @@ function TabPanelSlot({
   active: boolean;
 }) {
   const node = usePanelSlot(panel ? { panel, hidden: !active } : null);
-  const activate = usePanelActivation(id);
   return (
     <div
       role="tabpanel"
@@ -132,8 +131,6 @@ function TabPanelSlot({
       hidden={!active}
       className={styles.tabpanel}
       data-panel={id}
-      onPointerDownCapture={activate}
-      onFocusCapture={activate}
     >
       {node && <OutPortal node={node} />}
     </div>

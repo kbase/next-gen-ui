@@ -1,3 +1,4 @@
+import { PathSchema } from '../../plugins/sdk';
 import type { MainTarget, PanelId, PluginId } from '../core';
 import { makePane, makeRoute, placementOf } from '../core';
 import type { WorkbenchServices } from './services';
@@ -40,9 +41,21 @@ export async function openRoute(
     return undefined;
   }
   if (!options.duplicate) {
-    const wanted = normalize(path);
+    // `normalize` is the plugin's own judgement of what one page is, and the
+    // only thing the host compares paths by. A plugin that answers with
+    // something other than a string would make every page distinct from
+    // every other, so an unusable answer is dropped and the path stands for
+    // itself: a second tab is a worse outcome than no tab at all.
+    const same = (p: string) => {
+      const said: unknown = normalize(p);
+      const parsed = PathSchema.safeParse(said);
+      if (parsed.success) return parsed.data;
+      console.warn(`plugin ${plugin}: its route's normalize() did not answer with a path; ignoring it`);
+      return p;
+    };
+    const wanted = same(path);
     const existing = Object.values(store.get().panels).find(
-      (p) => p.plugin === plugin && p.kind === 'route' && normalize(p.path) === wanted,
+      (p) => p.plugin === plugin && p.kind === 'route' && same(p.path) === wanted,
     );
     if (existing) {
       dispatch({ type: 'focus', panel: existing.id, by: 'command' });

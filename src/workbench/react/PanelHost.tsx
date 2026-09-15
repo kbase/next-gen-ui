@@ -11,9 +11,11 @@ import type { ErrorInfo, ReactNode } from 'react';
 import { ArrowCounterClockwise, Placeholder, Plug } from '@phosphor-icons/react';
 import { Alert, Button, EmptyState, Loader } from '@kbase/design-system';
 import type { Crumb, Mount, PanelHandle, PluginHost } from '../../plugins/sdk';
+import { CrumbsSchema, PanelTermsSchema, PathSchema, TitleSchema } from '../../plugins/sdk';
 import type { Panel } from '../core';
 import { placementOf } from '../core';
 import { useLayout, useRun, useServices } from './context';
+import { taken } from '../host/checked';
 import { forgetPanel } from '../host/services';
 import { pluginHostFor } from '../host/pluginHost';
 import styles from './Workbench.module.css';
@@ -65,6 +67,7 @@ export function PanelHost({ panel }: { panel: Panel }) {
   // they change.
   const handle = useMemo<PanelHandle>(() => {
     const id = panel.id;
+    const who = `plugin ${panel.plugin}`;
     const snapshot = () => {
       const layout = services.store.get();
       return `${layout.panels[id]?.path ?? ''} ${layout.focus === id}`;
@@ -79,12 +82,26 @@ export function PanelHost({ panel }: { panel: Panel }) {
       get focused() {
         return services.store.get().focus === id;
       },
+      // Each of these takes a value from the plugin, so each is checked
+      // against the SDK's schema for it and refused to the plugin's own
+      // call (host/checked.ts). A panel's title, trail and terms are read
+      // by the tab strip, the breadcrumb row and every other plugin, and a
+      // panel whose body is a framed app builds them where TypeScript
+      // cannot see them.
       navigate: (path, options) => {
-        dispatch({ type: 'setPath', panel: id, path, replace: options?.replace });
+        dispatch({
+          type: 'setPath',
+          panel: id,
+          path: taken(who, 'navigate refused the path', PathSchema, path),
+          replace: options?.replace,
+        });
       },
-      setTitle: (title) => services.titles.set(id, title),
-      setCrumbs: (crumbs: Crumb[]) => services.crumbs.set(id, crumbs),
-      setTerms: (terms) => services.terms.set(id, terms),
+      setTitle: (title) =>
+        services.titles.set(id, taken(who, 'setTitle refused the title', TitleSchema, title)),
+      setCrumbs: (crumbs: Crumb[]) =>
+        services.crumbs.set(id, taken(who, 'setCrumbs refused the trail', CrumbsSchema, crumbs)),
+      setTerms: (terms) =>
+        services.terms.set(id, taken(who, 'setTerms refused the terms', PanelTermsSchema, terms)),
       subscribe: (listener) => {
         let last = snapshot();
         return services.store.subscribe(() => {

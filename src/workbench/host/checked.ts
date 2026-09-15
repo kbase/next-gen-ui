@@ -12,6 +12,17 @@ export function issueText(issues: readonly z.core.$ZodIssue[]): string {
   return path ? `${path}: ${first.message}` : first.message;
 }
 
+// What the host does with a value a plugin handed it from a call of its
+// own: check it the same way, and throw the refusal back, because the
+// plugin's own call is on the stack to receive it. `who` and `what` read as
+// one sentence — plugin fj: setCrumbs refused the trail — 1.label: expected
+// string.
+export function taken<T>(who: string, what: string, schema: z.ZodType<T>, value: unknown): T {
+  const parsed = schema.safeParse(value);
+  if (parsed.success) return parsed.data;
+  throw new TypeError(`${who}: ${what} — ${issueText(parsed.error.issues)}`);
+}
+
 // The items of `values` that parse. `who` is the plugin as a sentence names
 // it — "plugin fj", "the intent plugin" — and `what` is the value as the
 // contract names it, so the line reads: plugin fj: an item relate() answered

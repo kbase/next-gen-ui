@@ -2,7 +2,7 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { UserEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import type { Route } from '../../plugins/sdk';
+import type { Crumb, PanelHandle, Route } from '../../plugins/sdk';
 import { defineRoute } from '../../plugins/sdk';
 import type { Panel, PluginId } from '../core';
 import { noPersistence } from '../host';
@@ -169,5 +169,67 @@ describe('a panel whose code throws while rendering', () => {
     expect(await screen.findByText('panel body')).toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     logged.mockRestore();
+  });
+});
+
+
+// The panel handle takes four values from the plugin — its path, its title,
+// its trail, its terms — and each is read by something else: the tab strip,
+// the breadcrumb row, the question every other plugin is asked. A panel whose
+// body is a framed app builds all four where TypeScript cannot see them, so
+// each is checked where the plugin hands it over and refused to that call.
+describe('a value the panel handle takes', () => {
+  function handleFor(onMount: (panel: PanelHandle) => void) {
+    const plugin = localPlugin({
+      config: { id: 'flaky', title: 'Flaky' },
+      route: (): Promise<Route> =>
+        Promise.resolve(
+          defineRoute({
+            normalize: (path) => path,
+            mount: (el, { panel: handle }) => {
+              el.textContent = 'body';
+              onMount(handle);
+            },
+          }),
+        ),
+    });
+    const services = createWorkbench({
+      installed: [plugin],
+      persistence: noPersistence,
+      defaultAssistant: 'none',
+      defaultIntent: 'none',
+    });
+    render(
+      <WorkbenchProvider services={services}>
+        <PanelHost panel={panel} />
+      </WorkbenchProvider>,
+    );
+    return services;
+  }
+
+  it('is refused, naming the call and the field, and the store keeps what it had', async () => {
+    let handle: PanelHandle | undefined;
+    const services = handleFor((h) => {
+      handle = h;
+    });
+    await screen.findByText('body');
+
+    expect(() => handle!.setCrumbs([{ label: 7 }] as unknown as Crumb[])).toThrow(
+      /plugin flaky: setCrumbs refused the trail — 0\.label/,
+    );
+    expect(() => handle!.setTerms('uniprot:P0AEX9' as unknown as string[])).toThrow(
+      /plugin flaky: setTerms refused the terms/,
+    );
+    expect(() => handle!.setTitle(undefined as unknown as string)).toThrow(
+      /plugin flaky: setTitle refused the title/,
+    );
+    expect(() => handle!.navigate(null as unknown as string)).toThrow(
+      /plugin flaky: navigate refused the path/,
+    );
+
+    expect(services.crumbs.get('p1')).toEqual([]);
+    expect(services.terms.get('p1')).toEqual([]);
+    expect(services.titles.get('p1')).toBeUndefined();
+    expect(services.store.get().panels['p1']?.path ?? '/').toBe('/');
   });
 });

@@ -150,17 +150,43 @@ describe('the catalog the intent is handed', () => {
   });
 });
 
-// The one place a plugin hands the host something it keeps. Checked here and
-// refused to the call that sent it, so nothing the cart holds has a shape it
-// did not check.
-describe('an item a plugin adds to the cart', () => {
+// What a plugin hands the host is checked where it hands it over, and the
+// refusal goes back to that call: the plugin's own frame is on the stack, so
+// it is the one that can say what it meant. Nothing the workbench keeps has
+// a shape it did not check.
+describe('a value a plugin hands the host', () => {
   it('is refused, naming the field, when its source names no command', () => {
     const services = workbench(vi.fn());
     const gk = pluginHostFor(services, 'gk');
-    // The shape Function Junction's Python half still sends (K90).
+    // The shape Function Junction's Python half still sends (K90, K125).
     const sent = { id: 'gk:83333', name: 'E. coli', source: { path: '/83333' } } as unknown as CartItem;
-    expect(() => gk.cart.add(sent)).toThrow(/plugin gk: cart.add refused the item: source\.command/);
+    expect(() => gk.cart.add(sent)).toThrow(/plugin gk: cart.add refused the item — source\.command/);
     expect(services.cart.items()).toEqual([]);
+  });
+
+  it('is refused when it is a notice that is not text', () => {
+    const services = workbench(vi.fn());
+    const gk = pluginHostFor(services, 'gk');
+    expect(() => gk.notify(undefined as unknown as string)).toThrow(
+      /plugin gk: notify refused the text/,
+    );
+  });
+
+  it("is refused when it is a command's arguments and one is not a string", async () => {
+    const services = workbench(vi.fn());
+    const gk = pluginHostFor(services, 'gk');
+    const args = { q: 83333 } as unknown as Record<string, string>;
+    await expect(gk.execute('open', args)).rejects.toThrow(
+      /plugin gk: execute refused the arguments for \/gk:open — q/,
+    );
+  });
+
+  it('is refused when it is a path that is not a string', () => {
+    const services = workbench(vi.fn());
+    const gk = pluginHostFor(services, 'gk');
+    expect(() => gk.openRoute(null as unknown as string)).toThrow(
+      /plugin gk: openRoute refused the path/,
+    );
   });
 });
 

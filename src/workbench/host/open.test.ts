@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { Operation, PluginId, WorkbenchStore } from '../core';
 import { createWorkbenchStore, defaultLayout, makeRoute, paneId, placementOf } from '../core';
 import type { WorkbenchServices } from './services';
-import { openPane } from './open';
+import { openPane, openRoute } from './open';
 
 const arc = makeRoute('koros', '/nitro', 'a');
 
@@ -68,5 +68,39 @@ describe('openPane', () => {
 
     expect(openPane(fakeServices(store, []), 'jobs')).toBe(false);
     expect(store.get()).toBe(before);
+  });
+});
+
+
+// `normalize` is the plugin's own judgement of what one page is, and the only
+// thing the host compares paths by. A plugin whose route answers with
+// something that is not a path would make every page distinct from every
+// other, and the reader would collect a tab per press.
+describe('openRoute against a route that does not answer with a path', () => {
+  function services(store: WorkbenchStore, normalize: (p: string) => string) {
+    return {
+      store,
+      dispatch: (op: Operation) => store.dispatch(op).changed,
+      source: {
+        has: (_: PluginId, kind: string) => kind === 'route',
+        manifest: (plugin: PluginId) => ({ id: plugin, title: plugin }),
+        module: () => Promise.resolve({ normalize }),
+      },
+      announcer: { announce: () => {} },
+    } as unknown as WorkbenchServices;
+  }
+
+  it('says so once and takes the path as it stands, rather than opening a second tab', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const store = createWorkbenchStore({ initial: defaultLayout() });
+    const bad = () => undefined as unknown as string;
+
+    const first = await openRoute(services(store, bad), 'gk', '/83333');
+    const again = await openRoute(services(store, bad), 'gk', '/83333');
+
+    expect(again).toBe(first);
+    expect(Object.keys(store.get().panels)).toHaveLength(1);
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/plugin gk: its route's normalize/));
+    warn.mockRestore();
   });
 });

@@ -120,22 +120,21 @@ export function createFrameLayer(): FrameLayerStore {
   let watching: (() => void) | null = null;
   let observer: ResizeObserver | null = null;
 
-  // Where the frame's own coordinates start. A frame is positioned, so this
-  // is its containing block: the nearest positioned ancestor's padding box,
-  // or the document itself when there is none — which is the case here, since
-  // nothing between the layer and the root is positioned.
+  // Where the frame's own coordinates start: its containing block, which is
+  // the layer's own box (Workbench.module.css, `.frameLayer`). Both that box
+  // and the placeholder are read with getBoundingClientRect, so the position
+  // written is the difference between two numbers in one coordinate space —
+  // and a pinch-zoom, which redefines the viewport that space is reported in,
+  // moves both by the same amount and cancels.
   //
-  // Positioning in the document rather than in the viewport is what makes a
-  // frame survive a pinch. A zoom redefines the visual viewport and leaves
-  // the document alone, so a `fixed` frame is placed against a box that has
-  // just moved under it while its placeholder, in flow, has not; measured in
-  // document coordinates the two cannot come apart, because both are read in
-  // the same space and the difference between them is what is written.
+  // The page's own scroll offset is deliberately absent. The workbench fills
+  // the viewport and the document never scrolls, but on iOS `window.scrollY`
+  // moves on its own while the URL bar collapses and while a rubber-band
+  // settles; a frame that added it would walk down the page, and the page
+  // growing is what moves the URL bar again.
   const origin = (frame: HTMLElement) => {
     const parent = frame.offsetParent;
-    if (!(parent instanceof HTMLElement) || parent === document.body) {
-      return { left: -window.scrollX, top: -window.scrollY };
-    }
+    if (!(parent instanceof HTMLElement)) return { left: 0, top: 0 };
     const box = parent.getBoundingClientRect();
     const style = getComputedStyle(parent);
     return {

@@ -9,7 +9,8 @@ import {
   rmSync,
 } from 'node:fs';
 import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { emitSchemas } from './emit-schemas.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(here, '..');
@@ -60,8 +61,12 @@ const pkg = {
     '.': { types: './types/index.d.ts', import: './index.js' },
     './config': { types: './types/contract.d.ts', import: './config.js' },
     './vite': { types: './types/pluginFederation.d.ts', import: './vite.js' },
+    './boundary': { types: './types/boundary/index.d.ts', import: './boundary.js' },
+    // The boundary as JSON Schema, for a plugin that builds one of these
+    // shapes somewhere TypeScript cannot check it.
+    './schemas/*': './schemas/*',
   },
-  files: ['*.js', '*.js.map', 'types/', 'README.md'],
+  files: ['*.js', '*.js.map', 'types/', 'schemas/', 'README.md'],
   sideEffects: false,
   // Keep in step with rollupOptions.external in vite.config.pluginsdk.ts.
   // The design system has no registry version: a plugin takes it from this
@@ -93,4 +98,12 @@ writeFileSync(join(distRoot, 'package.json'), JSON.stringify(pkg, null, 2) + '\n
 const readme = join(repoRoot, 'src/plugins/sdk/README.md');
 if (existsSync(readme)) copyFileSync(readme, join(distRoot, 'README.md'));
 
+// The boundary reaches nothing but zod, so the built module imports here and
+// the schemas are written from the same objects the host parses with.
+const { BOUNDARY } = await import(pathToFileURL(join(distRoot, 'boundary.js')).href);
+const schemas = emitSchemas(distRoot, BOUNDARY, version);
+
 console.log('plugin-sdk:', pkg.version, isPublishBuild ? '(publish)' : '(private)', '→', distRoot);
+console.log(
+  `  schemas: ${schemas.toHost.length} a plugin sends, ${schemas.toPlugin.length} it is sent`,
+);

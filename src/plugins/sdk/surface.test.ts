@@ -3,6 +3,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
+import { BOUNDARY } from './boundary';
 
 // The SDK's exported surface against the version it declares. The contract
 // says additions move the minor and removals the major, and below 1.0.0 a
@@ -14,9 +15,13 @@ import { describe, expect, it } from 'vitest';
 // To take a change: bump src/plugins/sdk/package.json, then
 //   SDK_SURFACE_WRITE=1 npx vitest run --dir src src/plugins/sdk/surface.test.ts
 //
-// Three surfaces, because a plugin touches all three: the runtime values
-// index.ts re-exports, the type names it re-exports, and the members of each
-// exported interface or object type, which is where a contract actually moves.
+// Four surfaces, because a plugin touches all four: the runtime values
+// index.ts re-exports, the type names it re-exports, the members of each
+// exported interface or object type, which is where a contract actually
+// moves, and the boundary — the values that cross, by the name their JSON
+// Schema is written under (scripts/emit-schemas.mjs). A plugin in another
+// language holds those names in its own test suite, so dropping one is a
+// removal even when every TypeScript name stays.
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '../../..');
@@ -28,6 +33,7 @@ interface Surface {
   values: string[];
   types: string[];
   members: Record<string, string[]>;
+  boundary: string[];
 }
 
 function current(): Surface {
@@ -62,7 +68,11 @@ function current(): Surface {
   }
   const version = (JSON.parse(readFileSync(join(HERE, 'package.json'), 'utf8')) as { version: string })
     .version;
-  return { version, values: [...values].sort(), types: [...types].sort(), members };
+  const boundary = [
+    ...Object.keys(BOUNDARY.toHost).map((n) => `toHost: ${n}`),
+    ...Object.keys(BOUNDARY.toPlugin).map((n) => `toPlugin: ${n}`),
+  ].sort();
+  return { version, values: [...values].sort(), types: [...types].sort(), members, boundary };
 }
 
 const gone = (a: string[], b: string[]) => a.filter((x) => !b.includes(x));
@@ -71,9 +81,9 @@ const gone = (a: string[], b: string[]) => a.filter((x) => !b.includes(x));
 function changes(recorded: Surface, now: Surface): { removed: string[]; added: string[] } {
   const removed: string[] = [];
   const added: string[] = [];
-  for (const kind of ['values', 'types'] as const) {
-    removed.push(...gone(recorded[kind], now[kind]).map((n) => `${kind}: ${n}`));
-    added.push(...gone(now[kind], recorded[kind]).map((n) => `${kind}: ${n}`));
+  for (const kind of ['values', 'types', 'boundary'] as const) {
+    removed.push(...gone(recorded[kind] ?? [], now[kind]).map((n) => `${kind}: ${n}`));
+    added.push(...gone(now[kind], recorded[kind] ?? []).map((n) => `${kind}: ${n}`));
   }
   for (const name of new Set([...Object.keys(recorded.members), ...Object.keys(now.members)])) {
     const before = recorded.members[name] ?? [];

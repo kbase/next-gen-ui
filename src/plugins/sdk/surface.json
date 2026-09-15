@@ -600,5 +600,39 @@
       "prompt?",
       "route?"
     ]
-  }
+  },
+  "boundary": [
+    "toHost: ArgDecl",
+    "toHost: ArgValues",
+    "toHost: CartItem",
+    "toHost: CartSource",
+    "toHost: CommandCall",
+    "toHost: Crumb",
+    "toHost: Crumbs",
+    "toHost: Destination",
+    "toHost: Manifest",
+    "toHost: Match",
+    "toHost: MatchKind",
+    "toHost: Module",
+    "toHost: Notice",
+    "toHost: Offer",
+    "toHost: PanelTerms",
+    "toHost: Path",
+    "toHost: PluginConfig",
+    "toHost: SlashCommand",
+    "toHost: StatusItem",
+    "toHost: Suggestion",
+    "toHost: Terms",
+    "toHost: Title",
+    "toPlugin: Caller",
+    "toPlugin: DeclaredCall",
+    "toPlugin: DeclaredCommand",
+    "toPlugin: IntentQuery",
+    "toPlugin: PanelState",
+    "toPlugin: Query",
+    "toPlugin: TermsQuery",
+    "toPlugin: TieredTerms",
+    "toPlugin: TypedQuery",
+    "toPlugin: TypedText"
+  ]
 }

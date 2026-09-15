@@ -9,6 +9,9 @@ import react from '@vitejs/plugin-react';
 //            plugin.config.ts, which the build loads in Node
 //   ./vite   the build-time preset (pluginFederation), which pulls in
 //            @module-federation/vite and so must not be reachable from `.`
+//   ./boundary the schemas alone, which is what the build reads to write
+//            them out as JSON Schema (scripts/emit-schemas.mjs); it reaches
+//            nothing but zod, so it can be imported in Node
 //
 // Everything the host shares as a singleton is external here: the built
 // SDK reaches the host's copy at runtime, and a plugin that bundled its own
@@ -25,6 +28,7 @@ export default defineConfig({
         index: fileURLToPath(new URL('./src/plugins/sdk/index.ts', import.meta.url)),
         config: fileURLToPath(new URL('./src/plugins/sdk/contract.ts', import.meta.url)),
         vite: fileURLToPath(new URL('./src/plugins/sdk/pluginFederation.ts', import.meta.url)),
+        boundary: fileURLToPath(new URL('./src/plugins/sdk/boundary/index.ts', import.meta.url)),
       },
       formats: ['es'],
     },

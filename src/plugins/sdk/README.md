@@ -33,7 +33,7 @@ Each module default-exports one `define*` call: `defineBackground`, `defineRoute
 the `mount` a route or pane needs; inside it, `usePanel`, `useHost`, `useCart`, `usePanelTitle`,
 `usePanelBreadcrumbs`, `usePanelTerms` and `CartButton` read the handles the host provides.
 
-## Three exports
+## Four exports
 
 - `.` — the runtime surface, imported by plugin code. Shares one instance with the host at
   runtime, so the handles' React contexts are the host's own.
@@ -42,6 +42,25 @@ the `mount` a route or pane needs; inside it, `usePanel`, `useHost`, `useCart`, 
   design-system imports cannot resolve.
 - `./vite` — `pluginFederation`, the build preset. Imports `@module-federation/vite`, so it is
   kept off the runtime entry.
+- `./boundary` — every value that crosses between a plugin and the host, as a zod schema with its
+  type inferred from it. Reachable from `.` as well; it is its own entry because it reaches
+  nothing but zod, so the build can import it in Node to write the schemas out.
+
+## The boundary as JSON Schema
+
+`dist-plugin-sdk/schemas/` holds one JSON Schema per value that crosses, `<Name>.json`, listed in
+`index.json` by the direction it travels. They are written from the same schema objects the host
+parses with, so they cannot drift from it.
+
+A plugin whose half is written in another language validates against them in its own test suite:
+
+```python
+SCHEMAS = Path("web/node_modules/@kbase/plugin-sdk/schemas")
+jsonschema.validate(card_item(ctx, snap), json.loads((SCHEMAS / "CartItem.json").read_text()))
+```
+
+That test fails when the plugin's pinned workbench ref moves past a change to the shape, which is
+where a Python-built cart item would otherwise reach the host as a cast nothing checks.
 
 ## Building it
 

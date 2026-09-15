@@ -100,6 +100,7 @@ export function PanelHost({ panel }: { panel: Panel }) {
     () => pluginHostFor(services, panel.plugin),
     [services, panel.plugin],
   );
+  const narrow = useNarrow(panel);
 
   if (!listed) return <GhostPanel panel={panel} />;
   const title = source.manifest(panel.plugin)?.title ?? panel.plugin;
@@ -110,10 +111,19 @@ export function PanelHost({ panel }: { panel: Panel }) {
       ) : module ? (
         <Mounted mount={module.mount} handle={handle} host={host} />
       ) : (
-        <Loading title={title} />
+        <Loading title={title} small={narrow} />
       )}
     </PanelBoundary>
   );
+}
+
+// Whether the panel is drawn in a sidebar column — a block, a preview, a rail
+// flyout — where the page-sized empty state would be most of the space. A
+// pane is in the sidebar unless it has been moved out into a tab; a preview's
+// pane is in no layout at all and is in the sidebar too.
+function useNarrow(panel: Panel): boolean {
+  const layout = useLayout();
+  return panel.kind === 'pane' && placementOf(layout, panel.id).zone !== 'main';
 }
 
 // The element the plugin draws into: a fresh child per mount, so a mount
@@ -145,9 +155,10 @@ function Mounted({ mount, handle, host }: { mount: Mount; handle: PanelHandle; h
 // The panel's own empty state until its code arrives, named: a bare
 // spinner in the corner of a blank pane says nothing about what is
 // coming, and reads as a stray graphic rather than the panel loading.
-function Loading({ title }: { title: string }) {
+function Loading({ title, small }: { title: string; small: boolean }) {
   return (
     <EmptyState
+      size={small ? 'sm' : undefined}
       icon={<Loader size={36} label={`Loading ${title}`} />}
       title={`Loading ${title}…`}
     />
@@ -200,6 +211,7 @@ function GhostPanel({ panel }: { panel: Panel }) {
   const run = useRun();
   const manifest = source.manifest(panel.plugin);
   const inSidebar = placementOf(layout, panel.id).zone === 'sidebar';
+  const small = useNarrow(panel);
   const what = panel.kind === 'pane' ? 'sidebar pane' : 'page';
   const here = inSidebar ? 'This block' : 'This tab';
   const { label, taking, leave } = inSidebar
@@ -215,6 +227,7 @@ function GhostPanel({ panel }: { panel: Panel }) {
       };
   return (
     <EmptyState
+      size={small ? 'sm' : undefined}
       icon={manifest ? <Placeholder size={32} /> : <Plug size={32} />}
       title={manifest ? `${manifest.title} has no ${what}` : `${panel.plugin} is not installed`}
       description={

@@ -3,10 +3,11 @@ import type { ReactElement, ReactNode, RefObject } from 'react';
 import { OutPortal } from 'react-reverse-portal';
 // Chrome glyphs come straight from Phosphor, never from the plugins' icon
 // table — the table is the plugins' namespace (react/icons.ts).
-import { CaretDown, DotsThree, PushPin, X } from '@phosphor-icons/react';
+import { DotsThree, PushPin, X } from '@phosphor-icons/react';
 import type { IconProps } from '@phosphor-icons/react';
 import { Popover as BasePopover } from '@base-ui/react/popover';
 import {
+  Accordion,
   Button,
   ContextMenu,
   EmptyState,
@@ -144,9 +145,27 @@ export function Sidebar() {
         aria-label="Sidebar"
         data-over={isOver || undefined}
       >
-        <div className={styles.accordion}>
+        <Accordion.Root
+          className={styles.accordion}
+          // The component makes its root a region; here the sidebar already
+          // is one, and the panels are the regions a header names.
+          role="presentation"
+          value={blocks.filter((b) => !sidebar.folded.includes(b.id)).map((b) => b.id)}
+          onValueChange={(open: string[]) => {
+            // One operation per change: `focus` on a folded sidebar panel
+            // already unfolds it, and dispatching it after `fold` would undo
+            // the fold.
+            for (const b of blocks) {
+              const wasOpen = !sidebar.folded.includes(b.id);
+              const isOpen = open.includes(b.id);
+              if (wasOpen && !isOpen) dispatch({ type: 'fold', panel: b.id, folded: true });
+              if (!wasOpen && isOpen) dispatch({ type: 'focus', panel: b.id, by: 'user' });
+            }
+          }}
+        >
           {blocks.length === 0 ? (
             <EmptyState
+              size="sm"
               icon={<PushPin size={32} />}
               title="Nothing pinned"
               description="Open More to add a plugin."
@@ -184,7 +203,7 @@ export function Sidebar() {
           {unpinned.length > 0 && (
             <MoreMenu plugins={unpinned} variant="row" onPreview={onPreview} />
           )}
-        </div>
+        </Accordion.Root>
 
         {previewing && !sidebar.collapsed && (
           <PreviewBlock
@@ -198,9 +217,12 @@ export function Sidebar() {
   );
 }
 
+// One section of the accordion, from the design system's parts: the header
+// is a heading, and the arrow keys move between blocks. The trigger carries
+// what a plain Item could not — the id the section is named by, the drag
+// handle, the context menu around it — and the panel is the pane's slot.
 function Block({ panel, info }: { panel: Panel; info: PluginInfo | undefined }) {
   const layout = useLayout();
-  const dispatch = useDispatch();
   const run = useRun();
   const title = useTitle(panel);
   const folded = layout.sidebar.folded.includes(panel.id);
@@ -225,43 +247,42 @@ function Block({ panel, info }: { panel: Panel; info: PluginInfo | undefined }) 
     dragging?.kind !== 'pane' || dragging?.panel === panel.id,
   );
 
+  // The item is a plain box: the component's panel part is the region, named
+  // by the trigger, which is what a search for the block by its title finds.
   return (
-    <section
+    <Accordion.Item
+      value={panel.id}
       ref={dropRef}
       className={styles.block}
-      aria-labelledby={headerId}
       data-focused={focused || undefined}
       data-folded={folded || undefined}
       data-over={isOver || undefined}
     >
       <ContextMenu.Root>
-        <ContextMenu.Trigger className={styles.blockHeader}>
-          <button
-            type="button"
+        <ContextMenu.Trigger render={<Accordion.Header className={styles.blockHeader} />}>
+          <Accordion.Trigger
             id={headerId}
             className={styles.blockToggle}
-            aria-expanded={!folded}
             data-panel-tab={panel.id}
             data-dragging={isDragging || undefined}
             ref={dragRef}
             {...dragHandlers}
-            onClick={() => {
-              // One operation per click: `focus` on a folded sidebar panel
-              // already unfolds it, and dispatching it after `fold` would
-              // undo the fold.
-              if (folded) dispatch({ type: 'focus', panel: panel.id, by: 'user' });
-              else dispatch({ type: 'fold', panel: panel.id, folded: true });
+            // The trigger takes every arrow key as its own, modifiers or not,
+            // and stops it there; a modified arrow is a workbench keybinding
+            // (Alt+Shift+Arrow moves focus between tabs) and has to reach
+            // the window.
+            onKeyDown={(event) => {
+              if (event.altKey || event.ctrlKey || event.metaKey) event.preventBaseUIHandler();
             }}
           >
-            {/* The accordion header pattern: icon, title, chevron on the
-                right. The icon repeats the rail's glyph, tying the block
-                to its icon-column entry. */}
+            {/* Icon, title, chevron on the right. The icon repeats the
+                rail's glyph, tying the block to its icon-column entry. */}
             <span className={styles.blockIcon} aria-hidden="true">
               <Mark info={info} size={14} />
             </span>
             <span className={styles.blockLabel}>{info?.title ?? title}</span>
-            <CaretDown size={12} className={styles.blockChevron} aria-hidden="true" />
-          </button>
+            <Accordion.Chevron />
+          </Accordion.Trigger>
         </ContextMenu.Trigger>
         <ContextMenu.Popup aria-label={`${title} actions`}>
           <ContextMenu.Item onClick={() => run('workbench:fold', { panel: panel.id })}>
@@ -292,17 +313,15 @@ function Block({ panel, info }: { panel: Panel; info: PluginInfo | undefined }) 
           </ContextMenu.Item>
         </ContextMenu.Popup>
       </ContextMenu.Root>
-      {!folded && (
-        <div
-          className={styles.blockBody}
-          data-panel={panel.id}
-          onPointerDownCapture={activate}
-          onFocusCapture={activate}
-        >
-          {node && <OutPortal node={node} />}
-        </div>
-      )}
-    </section>
+      <Accordion.Panel
+        className={styles.blockBody}
+        data-panel={panel.id}
+        onPointerDownCapture={activate}
+        onFocusCapture={activate}
+      >
+        {node && <OutPortal node={node} />}
+      </Accordion.Panel>
+    </Accordion.Item>
   );
 }
 

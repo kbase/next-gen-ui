@@ -231,11 +231,13 @@
   border-bottom: 1px solid var(--c-border);
 }
 
-/* The design system's accordion header: bold ink title, leading icon in
-   ink3, chevron on the right rotating open/closed. A section header, not a
-   control: it reads the type and spacing scales directly, so the page's
-   density tier, which resizes controls and rows, leaves it alone. */
-.blockToggle {
+/* The accordion's trigger, as the design system draws it, at the sidebar's
+   scale: bold ink3 title one step smaller, leading icon, chevron on the
+   right. Two classes deep so these outrank the component's own `.trigger`
+   rule whatever order the two stylesheets are emitted in. A section header,
+   not a control: it reads the type and spacing scales directly, so the
+   page's density tier, which resizes controls and rows, leaves it alone. */
+.blockHeader .blockToggle {
   flex: 1;
   display: flex;
   align-items: center;
@@ -256,7 +258,7 @@
   cursor: pointer;
 }
 
-.blockToggle:hover {
+.blockHeader .blockToggle:hover {
   color: var(--c-ink);
 }
 
@@ -264,35 +266,31 @@
   display: inline-flex;
 }
 
-.blockChevron {
-  margin-left: auto;
-  color: var(--c-ink4);
-  transition: transform var(--t-base);
-  transform: rotate(180deg);
-}
-
-.block[data-folded] .blockChevron {
-  transform: none;
-}
-
 .block[data-focused] .blockIcon {
   color: var(--ct-primary);
 }
 
 /* Surface, not raised: the header itself is raised now. */
-.blockToggle:focus-visible {
+.blockHeader .blockToggle:focus-visible {
   outline: none;
   background: var(--c-surface);
+  border-radius: 0;
   box-shadow: inset 0 0 0 2px var(--c-focus);
 }
 
 /* `flex-basis: auto`, not 0: a block whose height is its content's — the
    preview card, a pane declaring `fit: 'content'` — is as tall as what the
-   pane draws, and one sharing the stack is as tall as its share. */
-.blockBody {
+   pane draws, and one sharing the stack is as tall as its share. On an
+   accordion block this is the component's panel part, which sizes itself to
+   its measured content and animates; a block's body is its share of the
+   stack instead, and the two-class selector outranks the part's rule. */
+.blockBody,
+.block .blockBody {
   flex: 1 1 auto;
+  height: auto;
   min-height: 0;
   overflow: auto;
+  transition: none;
 }
 
 /* The flyout's size, and nothing else: the surface below it is a Frame, so
@@ -755,7 +753,7 @@
   box-shadow: inset 0 -3px 0 var(--c-primary);
 }
 
-.blockToggle[data-dragging] {
+.blockHeader .blockToggle[data-dragging] {
   opacity: 0.4;
 }
 

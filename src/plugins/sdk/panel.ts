@@ -1,32 +1,15 @@
 import { createContext, useContext, useEffect } from 'react';
+import type { Crumb, PanelState } from './boundary/panel';
 
 // What a panel can learn about itself and ask of its own tab. The host
-// provides this context; a plugin reads it with `usePanel`. Types here
-// mirror the core's on purpose: the SDK is a leaf and imports nothing from
-// the workbench.
+// provides this context; a plugin reads it with `usePanel`. What the panel
+// knows is `PanelState` in `boundary/panel.ts`; what is here is the calls
+// that change it.
 
-export type PanelKind = 'route' | 'pane';
+export { CrumbSchema, CrumbsSchema, PanelKindSchema, PanelStateSchema } from './boundary/panel';
+export type { Crumb, PanelKind, PanelState } from './boundary/panel';
 
-// One step of a panel's trail: where this level is, in the plugin's own
-// words, and the path that gets back to it. A crumb that only names a
-// level leaves the path out.
-export interface Crumb {
-  label: string;
-  path?: string;
-  // A mark beside the label, by name from the host's icon set. A plugin naming
-  // itself as the root of its own trail wants its own mark there, and the
-  // manifest's `icon` is the name to give.
-  icon?: string;
-}
-
-export interface PanelHandle {
-  // Opaque; stable while the panel lives, whatever its path becomes.
-  id: string;
-  plugin: string;
-  kind: PanelKind;
-  // Everything under /p/<plugin>, query string included; '' for a pane.
-  path: string;
-  focused: boolean;
+export interface PanelHandle extends PanelState {
   // Changes this panel's path in place and pushes a history entry, or
   // replaces the current one.
   navigate: (path: string, options?: { replace?: boolean }) => void;

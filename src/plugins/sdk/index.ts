@@ -1,5 +1,10 @@
+// Everything that crosses between a plugin and the host is defined in
+// `boundary/`, as a schema with the type inferred from it; this file adds
+// what a plugin calls and what the host reads.
+export * from './boundary';
+
 export { PanelContext, usePanel, usePanelTitle, usePanelBreadcrumbs, usePanelTerms } from './panel';
-export type { Crumb, PanelHandle, PanelKind } from './panel';
+export type { PanelHandle } from './panel';
 export { HostContext, useHost } from './host';
 export type { PluginHost } from './host';
 export {
@@ -7,33 +12,10 @@ export {
   acceptsSdkVersion,
   MODULES,
   manifestFor,
-  ManifestSchema,
-  PluginConfigSchema,
-  SlashCommandSchema,
-  CommandCallSchema,
-  ArgDeclSchema,
-  PluginIdSchema,
-  ModuleSchema,
   parseManifest,
   definePluginManifest,
   qualifyCommand,
   CONTEXT_TIERS,
-  MatchKindSchema,
-  MatchSchema,
-  OfferSchema,
-} from './contract';
-export type {
-  Manifest,
-  PluginConfig,
-  SlashCommand,
-  CommandCall,
-  ArgDecl,
-  Module,
-  ContextTier,
-  TieredTerms,
-  MatchKind,
-  Match,
-  Offer,
 } from './contract';
 export {
   defineBackground,
@@ -42,9 +24,6 @@ export {
   defineCommands,
   definePrompt,
   defineIntent,
-  StatusItemSchema,
-  DestinationSchema,
-  SuggestionSchema,
 } from './modules';
 export type {
   Background,
@@ -53,20 +32,10 @@ export type {
   Commands,
   Prompt,
   Intent,
-  Suggestion,
-  DeclaredCommand,
-  DeclaredCall,
   Modules,
   Mount,
   Cleanup,
   Subscribe,
-  Query,
-  IntentQuery,
-  TypedText,
-  TypedQuery,
-  TermsQuery,
-  StatusItem,
-  Destination,
   CommandContext,
   CommandHandler,
 } from './modules';
@@ -74,7 +43,7 @@ export { fromReact } from './fromReact';
 export { AppFrame } from './AppFrame';
 export type { AppFrameProps } from './AppFrame';
 export type { FrameLayer } from './frames';
-export { useCart, CartItemSchema, CartSourceSchema } from './cart';
-export type { Cart, CartItem, CartSource } from './cart';
+export { useCart } from './cart';
+export type { Cart } from './cart';
 export { CartButton } from './CartButton';
 export type { CartButtonProps } from './CartButton';

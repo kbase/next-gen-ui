@@ -35,6 +35,9 @@ const SDK_ENTRIES = [join(SDK, 'index.ts'), join(SDK, 'pluginFederation.ts')];
 // Types the SDK exports that the page deliberately does not name. Each one is
 // a decision: delete the line to make the check demand a passage for it.
 const UNDOCUMENTED: Record<string, string> = {
+  ArgValues: "a command's arguments, written out as Record<string, string> at every signature",
+  Caller: "the caller a handler reads, written out as `caller: string` in CommandContext",
+  PanelState: 'what a panel knows about itself, documented as the first five fields of PanelHandle',
   Modules: 'the host-side map from module name to module; a plugin writes one module at a time',
   PanelKind: "written out as 'route' | 'pane' inside PanelHandle, the only place a plugin meets it",
   PluginFederationOptions: "pluginFederation's argument, written out at its own reference entry",

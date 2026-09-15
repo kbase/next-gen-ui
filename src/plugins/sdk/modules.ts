@@ -1,9 +1,41 @@
-import { z } from 'zod';
-import type { CartItem } from './cart';
-import type { CommandCall, Offer, SlashCommand, TieredTerms } from './contract';
-import { CommandCallSchema } from './contract';
+import type { CartItem } from './boundary/cart';
+import type { Offer, TermsQuery, TypedQuery, TypedText } from './boundary/background';
+import type { Destination, Query } from './boundary/prompt';
+import type { StatusItem } from './boundary/status';
+import type { DeclaredCall, DeclaredCommand, IntentQuery, Suggestion } from './boundary/intent';
+import type { ArgValues, Caller } from './boundary/commands';
 import type { PluginHost } from './host';
 import type { PanelHandle } from './panel';
+
+export {
+  StatusItemSchema,
+  DestinationSchema,
+  SuggestionSchema,
+  QuerySchema,
+  IntentQuerySchema,
+  TypedTextSchema,
+  TypedQuerySchema,
+  TermsQuerySchema,
+  TermsSchema,
+  DeclaredCommandSchema,
+  DeclaredCallSchema,
+  ArgValuesSchema,
+  CallerSchema,
+} from './boundary';
+export type {
+  StatusItem,
+  Destination,
+  Suggestion,
+  Query,
+  IntentQuery,
+  TypedText,
+  TypedQuery,
+  TermsQuery,
+  DeclaredCommand,
+  DeclaredCall,
+  ArgValues,
+  Caller,
+} from './boundary';
 
 // The six modules a plugin can expose, in the order the host reaches them.
 // Each `define*` is identity at runtime: it exists so the file's default
@@ -42,52 +74,6 @@ export interface Pane {
   fit?: 'content';
 }
 
-// What the assistant is asked to answer: the message, and the terms the
-// backgrounds found in it. The signal aborts when the user sends another
-// message or presses Stop.
-//
-// `text` holds something other than whitespace: the prompt bar's field and
-// its Send button both refuse a blank box, so a send never happens without
-// text and `handle` has no empty case to guard. `terms` is the term pool as
-// it stood at Enter, empty when no background found anything in the text or
-// when none had answered yet.
-export interface Query {
-  text: string;
-  terms: string[];
-  signal: AbortSignal;
-}
-
-// The text as it stands in the prompt bar. `terms` reads it and nothing
-// else, so there is no signal: the answer is due before the next keystroke.
-export interface TypedText {
-  text: string;
-}
-
-// The text and every term the backgrounds found in it. The signal aborts on
-// the next keystroke.
-export interface TypedQuery extends TypedText {
-  terms: string[];
-  signal: AbortSignal;
-}
-
-// The terms an open page or the cart carries. The signal aborts when they
-// change again.
-export interface TermsQuery {
-  terms: string[];
-  signal: AbortSignal;
-}
-
-export interface StatusItem {
-  text: string;
-  // Run when the line is pressed.
-  action?: CommandCall;
-}
-
-export const StatusItemSchema = z.object({
-  text: z.string(),
-  action: CommandCallSchema.optional(),
-}) satisfies z.ZodType<StatusItem>;
-
 // The two questions a background answers are asked on different clocks and
 // answered with different things, so each is its own member.
 //
@@ -120,32 +106,12 @@ export interface Background {
 // `execute`, or 'user' for the prompt bar and every button.
 export interface CommandContext {
   host: PluginHost;
-  caller: string;
+  caller: Caller;
 }
 
-export type CommandHandler = (
-  args: Record<string, string>,
-  ctx: CommandContext,
-) => void | Promise<void>;
+export type CommandHandler = (args: ArgValues, ctx: CommandContext) => void | Promise<void>;
 
 export type Commands = Record<string, CommandHandler>;
-
-// Where the next free-text message lands, shown above the prompt bar.
-export interface Destination {
-  label: string;
-  // This plugin's route for it; the bar offers a jump there.
-  path?: string;
-  // Other places it could land, and how the user picks one.
-  options?: { key: string; label: string }[];
-  select?: (key: string) => void;
-}
-
-export const DestinationSchema = z.object({
-  label: z.string(),
-  path: z.string().optional(),
-  options: z.array(z.object({ key: z.string(), label: z.string() })).optional(),
-  select: z.custom<(key: string) => void>((v) => typeof v === 'function').optional(),
-}) satisfies z.ZodType<Destination>;
 
 export interface Prompt {
   // Free text the prompt bar did not resolve to a command or a suggestion,
@@ -159,65 +125,6 @@ export interface Prompt {
   // subscribes, and again whenever it moves. `null` is no destination, and
   // the bar shows New conversation.
   destination?: Subscribe<Destination | null>;
-}
-
-// A command as its manifest declares it, with the plugin that declares it.
-// Its arguments are holes: what fills them is what the user typed.
-export type DeclaredCommand = SlashCommand & { plugin: string; pluginTitle: string };
-
-// A call a manifest has already filled in — a plugin's launcher, one of its
-// shortcut buttons, or the workbench's own `show` for a plugin that has a
-// sidebar pane. It runs as written, so nothing the user types fills anything
-// in it; what the text decides is whether it is worth showing. The command it
-// names is declared somewhere, by this plugin, another, or the workbench.
-export interface DeclaredCall extends CommandCall {
-  // The manifest the call came from, whose mark the row wears. Not the
-  // plugin that declares `command`: a pane's call runs the workbench's.
-  plugin: string;
-  pluginTitle: string;
-  // The manifest's own description, where the call stands for the whole
-  // plugin — a launcher or a pane. What a reader typing a plugin's name
-  // rather than a command's is matching against.
-  description?: string;
-}
-
-export interface Suggestion {
-  // `command` qualified as "plugin:name": the plugin suggesting is seldom
-  // the one that declared it.
-  call: CommandCall;
-  // Whose row it is, when that is not the plugin the command belongs to: a
-  // pane row runs `workbench:show` and belongs to the plugin it shows. The
-  // host draws the row with this plugin's icon and colour.
-  plugin?: string;
-  // The row's caption, in place of the plugin's title: what the row does,
-  // when the label is what it does it to.
-  detail?: string;
-  // Higher is a closer match; rows are shown in the order returned.
-  score: number;
-}
-
-export const SuggestionSchema = z.object({
-  call: CommandCallSchema,
-  plugin: z.string().optional(),
-  detail: z.string().optional(),
-  score: z.number(),
-}) satisfies z.ZodType<Suggestion>;
-
-// What an intent is asked on the keystroke. Beside the text it carries
-// everything the workbench has in view, tiered by where it came from: the
-// terms the backgrounds found in the text, the front tab's terms, and the
-// cart's. No plugin is asked about `page` or `cart` on a keystroke — the
-// intent is the one module that sees them while the user types, and it
-// already ranks every command any manifest declares, so it can reach a
-// command for a term the user merely has around without five plugins being
-// asked a bigger question on every keystroke.
-export interface IntentQuery {
-  text: string;
-  terms: TieredTerms;
-  // What the plugins offered for the typed text, each `command` qualified
-  // and each carrying the term it answers.
-  offers: Offer[];
-  signal: AbortSignal;
 }
 
 // What turns typed text into the rows under the prompt bar. One plugin's

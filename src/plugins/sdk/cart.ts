@@ -1,7 +1,6 @@
 import { useSyncExternalStore } from 'react';
-import { z } from 'zod';
-import type { Match } from './contract';
-import { MatchSchema } from './contract';
+import { CartItemSchema, CartSourceSchema } from './boundary/cart';
+import type { CartItem, CartSource } from './boundary/cart';
 import { useHost } from './host';
 
 // Adding something to the cart, from inside a plugin.
@@ -53,63 +52,8 @@ import { useHost } from './host';
 // The item carries no data. What it names is fetched by whoever consumes it,
 // through the terms and the source, from where the data lives.
 
-// One of the adding plugin's commands, with the arguments that produce the
-// item. The name is bare: `plugin` says whose it is, and a consumer qualifies
-// it with `qualifyCommand` before running it.
-export interface CartSource {
-  command: string;
-  args?: Record<string, string>;
-}
-
-export interface CartItem {
-  id: string;
-  // Who added it. The host stamps this when the item enters the cart and it
-  // cannot be set from a plugin — `Cart.add` does not take it, and what
-  // `pluginHostFor` writes overrides whatever the object carried. Absent on an
-  // item on its way in, including everything `relate` answers with, and
-  // present on every item the cart hands back.
-  readonly plugin?: string;
-  name: string;
-  subject?: string;
-  summary?: string;
-  // Namespaced keys other plugins may recognise — `uniprot:P0AEX9`,
-  // `taxon:562`. Optional and unpoliced: a plugin answers on the prefixes it
-  // knows and stays silent on the rest, the same way `terms` does. This is
-  // what lets a second plugin say something about an item without knowing
-  // anything about the plugin that added it.
-  terms?: string[];
-  // What this item was given for, on an item `relate` answers with: the terms
-  // out of the query it answers, each with how the plugin came by it, in the
-  // shape an offer's evidence has (`Match`). `terms` is what the item carries
-  // onward and `answers` is what it was asked about, so an item may answer a
-  // term it does not carry and carry terms nobody asked for.
-  //
-  // Evidence about a question, not a property of the thing: the Related pane
-  // reads it off the answer, and what it adds to the cart is the item without
-  // it. An item already in the cart answers nothing.
-  answers?: Match[];
-  source?: CartSource;
-  context?: Record<string, unknown>;
-}
-
-// What the host checks an item against where a plugin hands it over —
-// `cart.add`, and every item `relate` answers with. `plugin` is not here: the
-// host writes it. An item that fails is refused to the plugin that sent it.
-export const CartSourceSchema = z.object({
-  command: z.string().min(1),
-  args: z.record(z.string(), z.string()).optional(),
-}) satisfies z.ZodType<CartSource>;
-
-export const CartItemSchema = z.object({
-  id: z.string().min(1),
-  name: z.string().min(1),
-  subject: z.string().optional(),
-  summary: z.string().optional(),
-  terms: z.array(z.string()).optional(),
-  answers: z.array(MatchSchema).optional(),
-  source: CartSourceSchema.optional(),
-  context: z.record(z.string(), z.unknown()).optional(),
-}) satisfies z.ZodType<Omit<CartItem, 'plugin'>>;
+export { CartItemSchema, CartSourceSchema };
+export type { CartItem, CartSource };
 
 // The slice of the host's cart a plugin can see. It cannot read other
 // plugins' items: what is in the cart is the user's business and the

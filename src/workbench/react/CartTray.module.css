@@ -1,0 +1,246 @@
+/* Attachments on the next message, above the input the way a chat client puts
+   them: they travel with what is being said, so they sit where it is said.
+
+   Tiles rather than pills, which is what Slack, assistant-ui and Claude all
+   settle on for a composer — but with the figure in the preview slot where
+   those have a thumbnail. See CartTray.tsx. */
+/* The cart sits in the composer's own surface (PromptInput's `attachments`
+   slot), so the composer holds it — no second container, no second border. */
+/* Sideways, never taller. A row that wraps grows the composer downward and
+   pushes the message being written off the screen, worst when the most has
+   been collected. A photo strip scrolls; so does this. */
+.cartRow {
+  display: flex;
+  gap: var(--s-2);
+  margin: 0;
+  /* Room for the tiles' overhanging remove controls, which sit outside the
+     tile box and would otherwise be clipped by the scroller. */
+  padding: var(--s-2) var(--s-2) var(--s-1);
+  /* One height for the row, set by its tallest tile: a ragged strip reads as
+     debris rather than as a set of like things. */
+  align-items: stretch;
+  list-style: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  min-inline-size: 0;
+}
+
+.cartItem {
+  position: relative;
+  /* Fixed against the scroller: flexible widths would shrink every tile as
+     the row filled, which is the height problem turned on its side. */
+  flex: 0 0 auto;
+  inline-size: 10.5rem;
+}
+
+/* The tile is the control that opens the item: a square mark and two lines
+   beside it, the shape a file attachment takes in a composer. */
+.cartOpen {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  inline-size: 100%;
+  block-size: 100%;
+  padding: var(--s-2);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-sm);
+  /* Raised against the composer surface: a thing set down in it. */
+  background: var(--c-raised);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.cartOpen:hover {
+  border-color: var(--c-ink4);
+}
+
+.cartOpen:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 1px;
+}
+
+/* The thumbnail slot. Square, because every item has one and a row of equal
+   squares is what makes the strip scannable. */
+.cartMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  inline-size: 28px;
+  block-size: 28px;
+  border-radius: var(--r-sm);
+  background: var(--c-bg);
+}
+
+/* What the item is *about* — the protein, the dataset, the run. Without it a
+   tray of figures says `2 small molecules` and never says of what. */
+.cartSubject {
+  font-size: var(--fs-3);
+  font-weight: var(--fw-normal);
+  color: var(--c-ink2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The figure it was added for. One line, clipped: the tile is a glance and the
+   whole of it is a press away. */
+.cartSummary {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-2);
+  color: var(--c-ink3);
+}
+
+/* Ghost darkens its background on hover and leaves the ink alone; on a caption
+   row there is no background to read, so the ink is what has to move. Rest
+   colour is ghost's own --c-ink3. */
+.cartClear:hover {
+  color: var(--c-ink);
+}
+
+/* An inline SVG sits on the text baseline, which leaves it riding high against
+   a line of capitals. Blocked and centred by the button's own flex row. */
+.cartClear svg,
+.cartMeasure svg {
+  display: block;
+}
+
+.cartMeasure {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+}
+
+/* Two lines of text beside the mark, and the reason the tile has a fixed
+   height: the pair is always a subject and a figure. */
+.cartText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-inline-size: 0;
+}
+
+/* The cart's own line, above its tiles: what this row is on the left, and the
+   one control that acts on all of it at the far right, where a section's
+   controls go. Caption weight for the label — the tiles are the content. */
+.cartCaption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  margin: 0;
+  padding-inline: var(--s-2);
+  font-size: var(--fs-3);
+  color: var(--c-ink4);
+}
+
+/* Size only; the column and its gap are Dialog.Popup's own. Doubled because
+   `max-inline-size` and the popup's `max-width` are one property at one class
+   of specificity, and components.css is the last layer loaded. The 520px cap
+   is right for a dialog whose body is a sentence and two buttons; this one
+   holds JSON. */
+.cartPreview.cartPreview {
+  inline-size: min(46rem, 92vw);
+  max-inline-size: none;
+  max-block-size: 80vh;
+  overflow-y: auto;
+}
+
+.cartPreviewSummary {
+  margin: 0;
+  font-size: var(--fs-4);
+  color: var(--c-ink2);
+}
+
+.cartPreviewPart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  min-inline-size: 0;
+}
+
+.cartPreviewHeading {
+  margin: 0;
+  font-size: var(--fs-3);
+  font-weight: var(--fw-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--c-ink4);
+}
+
+/* The pointer half, as one line. It is two keys and a value; a JSON block
+   around it was more chrome than content. */
+/* Wrapped rather than scrolled sideways. A context value is prose as often as
+   it is a number — the builder's caveats run to a sentence — and a horizontal
+   scrollbar hides the end of exactly the field a reader opened this to read.
+   `anywhere` because what overflows is one unbroken token: a ref or a path.
+   The `code` inside inherits both. */
+.cartPreviewJson {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.cartPreviewSource {
+  margin: 0;
+  font-size: var(--fs-3);
+  color: var(--c-ink4);
+}
+
+.cartPreviewActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--s-2);
+}
+
+/* Dismiss at one end, destroy at the other. Side by side they were a pair a
+   hand could slip between, and they are not a pair: one closes a look at an
+   item, the other throws the item away. */
+/* Close is where nearly every visit ends, so it is the filled button on the
+   right where a hand goes. Removing is rare and cannot be undone, so it is
+   quiet, at the other end, and out of that path — two buttons of equal weight
+   an inch apart still trade places under a quick hand. */
+.cartPreviewFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-6);
+  margin-block-start: var(--s-2);
+}
+
+.cartPreviewRemove.cartPreviewRemove {
+  color: var(--ct-red);
+}
+
+/* In the corner, over the tile, the way a composer puts it. */
+.cartRemove {
+  position: absolute;
+  inset-block-start: -6px;
+  inset-inline-end: -6px;
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-full);
+  background: var(--c-raised);
+  color: var(--c-ink3);
+  cursor: pointer;
+  opacity: 0;
+}
+
+.cartItem:hover .cartRemove,
+.cartRemove:focus-visible {
+  opacity: 1;
+}
+
+.cartRemove:hover {
+  color: var(--c-ink);
+}
+
+.cartRemove:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 1px;
+}

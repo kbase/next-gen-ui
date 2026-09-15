@@ -1,0 +1,121 @@
+/* Cards separated by a gap; each separator straddles the gap after its
+   child, so the grab area is exactly the visible gutter. */
+.split {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  gap: var(--s-2);
+}
+
+.splitRow {
+  flex-direction: row;
+}
+
+.splitCol {
+  flex-direction: column;
+}
+
+.splitChild {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.splitChild > :first-child {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+
+.separator {
+  position: absolute;
+  z-index: 1;
+  background: transparent;
+  border-radius: var(--r-full);
+  touch-action: none;
+}
+
+.splitRow > .splitChild > .separator {
+  top: 0;
+  bottom: 0;
+  right: calc(-1 * var(--s-2));
+  width: var(--s-2);
+  cursor: col-resize;
+}
+
+.splitCol > .splitChild > .separator {
+  left: 0;
+  right: 0;
+  bottom: calc(-1 * var(--s-2));
+  height: var(--s-2);
+  cursor: row-resize;
+}
+
+/* A pointer over the seam draws the line it would move, in the ink the
+   workbench draws every other border in. It is not the brand blue: a filled
+   band in that colour is how a drop target says a panel would land there,
+   and a touch screen keeps the last thing touched hovered, so the seam a
+   reader brushed past sat lit as a drop target until they touched something
+   else. The hairline is drawn by a child, since the seam itself is 6 pixels
+   wide so that a finger can catch it. */
+.separator::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  background: transparent;
+}
+
+.splitRow > .splitChild > .separator::before {
+  width: 2px;
+}
+
+.splitCol > .splitChild > .separator::before {
+  height: 2px;
+}
+
+.separator:hover::before,
+.separator:active::before {
+  background: var(--c-border2);
+}
+
+/* Nothing at rest: a seam is the boundary between two panels, not a control
+   standing in the layout. What appears when the pointer reaches it says the
+   boundary moves — a grip rather than a longer line, which is the difference
+   between marking an edge and offering to drag it. On a touch screen the
+   hover sticks to the last thing touched, so the grip stays out once found. */
+.grip {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--s-5);
+  height: var(--s-6);
+  border-radius: var(--r-full);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border2);
+  color: var(--c-ink4);
+  opacity: 0;
+  transition: opacity var(--t-fast) ease;
+}
+
+.splitCol > .splitChild > .separator .grip {
+  rotate: 90deg;
+}
+
+.separator:hover .grip,
+.separator:active .grip,
+.separator:focus-visible .grip {
+  opacity: 1;
+}
+
+.separator:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--c-focus);
+}

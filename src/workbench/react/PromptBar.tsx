@@ -13,7 +13,7 @@ import { PluginMark } from './PluginMark';
 import { CartTray } from './CartTray';
 import { useLayout, useRun, useServices } from './context';
 import { focusPanelElement } from './useFocusSync';
-import styles from './Workbench.module.css';
+import styles from './PromptBar.module.css';
 
 // A row in the bar's list, from either producer: a completion of a slash
 // command, or a call the intent ranked. Only a completion carries the command

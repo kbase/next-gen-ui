@@ -2,7 +2,8 @@ import { KBaseSymbol, Menu, Menubar } from '@kbase/design-system';
 import type { Side } from '../core';
 import { groupOf } from '../core';
 import { useLayout, useRun, useServices } from './context';
-import styles from './Workbench.module.css';
+import styles from './WorkbenchMenubar.module.css';
+import shell from './Workbench.module.css';
 
 // Menus are another surface over the same commands the keyboard and the
 // prompt bar reach; nothing here does anything a command cannot.
@@ -22,7 +23,7 @@ export function WorkbenchMenubar() {
             and had nothing to do with the mark. */}
         <KBaseSymbol className={styles.brandMark} aria-hidden="true" />
         <span aria-hidden="true">KBase</span>
-        <span className={styles.srOnly}>KBase Workbench</span>
+        <span className={shell.srOnly}>KBase Workbench</span>
       </span>
       <Menubar.Root aria-label="Workbench menu">
         <Menu.Root>

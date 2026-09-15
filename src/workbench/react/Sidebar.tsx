@@ -25,7 +25,8 @@ import { PluginMark } from './PluginMark';
 import { usePanelSlot } from './panelSlots';
 import { SplitView } from './SplitView';
 import { useDragPanel, useDragging, useDropTarget } from './useDnd';
-import styles from './Workbench.module.css';
+import styles from './Sidebar.module.css';
+import shell from './Workbench.module.css';
 
 // A plugin's glyph from its index entry. The pin is for a panel whose plugin
 // is not installed: there is no entry, so there is no name to resolve.
@@ -421,7 +422,7 @@ function PreviewBlock({
           </span>
           <span className={styles.cardTitle}>{title}</span>
         </span>
-        <div className={styles.spacer} />
+        <div className={shell.spacer} />
         <Button
           size="xs"
           variant="outline"
@@ -514,7 +515,7 @@ function PanePopout({
                 <span className={styles.cardTitle}>{label}</span>
                 {onPin && (
                   <>
-                    <div className={styles.spacer} />
+                    <div className={shell.spacer} />
                     <Button size="xs" variant="outline" onClick={onPin}>
                       Pin
                     </Button>

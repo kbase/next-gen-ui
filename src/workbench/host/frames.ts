@@ -121,7 +121,7 @@ export function createFrameLayer(): FrameLayerStore {
   let observer: ResizeObserver | null = null;
 
   // Where the frame's own coordinates start: its containing block, which is
-  // the layer's own box (Workbench.module.css, `.frameLayer`). Both that box
+  // the layer's own box (FrameLayer.module.css, `.frameLayer`). Both that box
   // and the placeholder are read with getBoundingClientRect, so the position
   // written is the difference between two numbers in one coordinate space —
   // and a pinch-zoom, which redefines the viewport that space is reported in,

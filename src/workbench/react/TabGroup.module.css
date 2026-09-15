@@ -1,0 +1,112 @@
+/* The design system's tabs (Tabs.tabClasses.list / .tab) dress the strip
+   inside the group card. These classes hold only what the workbench adds:
+   scrolling, the strip inset, the close button's flex layout, drag
+   markers, and the second focus level. */
+.group {
+  /* A root-level group has no SplitView assigning it a share; without
+     flex it would shrink to its content's width. */
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  height: 100%;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+
+.tablist {
+  flex: none;
+  overflow-x: auto;
+  background: var(--c-raised);
+  /* Inset so the first tab clears the card's rounded corner. */
+  padding: 0 var(--s-3);
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  white-space: nowrap;
+}
+
+/* The DS marks the selected tab --ct-primary; the workbench has many
+   groups, so only the focused group's keeps the tint. The .tablist hop
+   outranks the DS's .tab[data-selected]. */
+.group:not([data-focused]) .tablist .tab[data-selected] {
+  color: var(--c-ink);
+  border-bottom-color: var(--c-ink5);
+}
+
+/* The plugin's glyph; currentColor, so it tints with the tab's state. */
+.tabIcon {
+  display: inline-flex;
+}
+
+/* Shown on the selected tab and under the pointer; hidden-but-present
+   elsewhere so tab widths never change. Nudged 1px down: geometrically
+   centered, the glyph reads high against a lowercase label's mass. */
+.tabClose {
+  position: relative;
+  top: 1px;
+  display: inline-flex;
+  border-radius: var(--r-sm);
+  padding: 2px;
+  color: var(--c-ink5);
+  opacity: 0;
+  transition: opacity var(--t-fast);
+}
+
+.tab:hover .tabClose,
+.tab:focus-visible .tabClose,
+.tab[data-selected] .tabClose {
+  opacity: 1;
+}
+
+.tabClose:hover {
+  background: var(--c-raised);
+  color: var(--c-ink2);
+}
+
+.tabClose:focus-visible {
+  outline: none;
+  background: var(--c-raised);
+  box-shadow: 0 0 0 2px var(--c-focus);
+}
+
+.tabpanel {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.tabpanel[hidden] {
+  display: none;
+}
+
+.tab[data-dragging] {
+  opacity: 0.4;
+}
+
+.tab[data-over] {
+  box-shadow: inset 2px 0 0 var(--c-primary);
+}
+
+.tabEnd {
+  flex: 1;
+  min-width: var(--s-6);
+}
+
+.tabEnd[data-over] {
+  box-shadow: inset 2px 0 0 var(--c-primary);
+}
+
+.groupBody {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}

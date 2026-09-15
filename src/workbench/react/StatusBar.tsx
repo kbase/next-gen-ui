@@ -4,7 +4,8 @@ import { Button } from '@kbase/design-system';
 import type { StatusItem } from '@kbase/plugin-sdk';
 import { qualifyCommand } from '@kbase/plugin-sdk';
 import { useBusy, useLayout, useRun, useServices, useTitle } from './context';
-import styles from './Workbench.module.css';
+import styles from './StatusBar.module.css';
+import shell from './Workbench.module.css';
 
 export function StatusBar() {
   const layout = useLayout();
@@ -43,7 +44,7 @@ export function StatusBar() {
           ),
         ),
       )}
-      <span className={styles.spacer} />
+      <span className={shell.spacer} />
       {focused && <span className="caption">{title}</span>}
     </div>
   );

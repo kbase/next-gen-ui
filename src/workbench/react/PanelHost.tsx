@@ -18,7 +18,7 @@ import { useLayout, useRun, useServices } from './context';
 import { taken } from '../host/checked';
 import { forgetPanel } from '../host/services';
 import { pluginHostFor } from '../host/pluginHost';
-import styles from './Workbench.module.css';
+import styles from './PanelHost.module.css';
 
 // Renders one panel: fetches its module through the host's index, hands the
 // module's `mount` an element and the SDK handles, and fences it. A crash or

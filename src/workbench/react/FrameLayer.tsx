@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useServices } from './context';
 import { useDragging } from './useDnd';
-import styles from './Workbench.module.css';
+import styles from './FrameLayer.module.css';
 
 // Puts the frame layer's container in the document and starts it following
 // the placeholders. The container is the store's, made before React and

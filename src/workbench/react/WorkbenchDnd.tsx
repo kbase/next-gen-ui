@@ -22,7 +22,7 @@ import { useDispatch, useLayout, useServices, useTitle } from './context';
 import type { DragData, DropData } from './dnd';
 import { dropOperation } from './dnd';
 import { DraggingContext, useDragging, useDropTarget } from './useDnd';
-import styles from './Workbench.module.css';
+import styles from './WorkbenchDnd.module.css';
 
 // Prefer the target under the pointer; fall back to overlap so a fast
 // release still lands somewhere sensible.

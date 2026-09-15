@@ -1,0 +1,70 @@
+/* Drag and drop */
+.dragGhost {
+  padding: var(--s-2) var(--s-3);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-sm);
+  box-shadow: var(--e-2);
+  font-size: var(--fs-4);
+  color: var(--c-ink2);
+  pointer-events: none;
+}
+
+.dropZones {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* The glyph says what the drop would do and is drawn only in the band the
+   pointer is in; the band being tinted is what says where. */
+.dropZone {
+  position: absolute;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ct-primary);
+}
+
+.dropZone[data-over] {
+  background: color-mix(in srgb, var(--c-primary) 18%, transparent);
+  outline: 2px solid var(--c-primary);
+  outline-offset: -2px;
+}
+
+.dropZoneLeft {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 25%;
+}
+
+.dropZoneRight {
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 25%;
+}
+
+.dropZoneTop {
+  left: 25%;
+  right: 25%;
+  top: 0;
+  height: 25%;
+}
+
+.dropZoneBottom {
+  left: 25%;
+  right: 25%;
+  bottom: 0;
+  height: 25%;
+}
+
+.dropZoneCentre {
+  left: 25%;
+  right: 25%;
+  top: 25%;
+  bottom: 25%;
+}

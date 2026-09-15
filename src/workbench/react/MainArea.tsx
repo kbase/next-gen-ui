@@ -2,7 +2,7 @@ import type { Node } from '../core';
 import { useDispatch, useLayout } from './context';
 import { SplitView } from './SplitView';
 import { TabGroup } from './TabGroup';
-import styles from './Workbench.module.css';
+import styles from './MainArea.module.css';
 
 // The page is compact (index.html) and the content is not: the main area and
 // the prompt bar declare the default tier, and everything else — the chrome,

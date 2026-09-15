@@ -12,7 +12,8 @@ import { qualifyCommand } from '@kbase/plugin-sdk';
 import type { StoredCartItem } from '../core';
 import { iconFor } from './icons';
 import { useRun, useServices } from './context';
-import styles from './Workbench.module.css';
+import styles from './CartTray.module.css';
+import shell from './Workbench.module.css';
 
 // The cart: what the user has added, sitting where it will be sent from.
 //
@@ -61,7 +62,7 @@ export function CartTray() {
         <span className={styles.cartMeasure}>
           <ShoppingCartSimple size={14} aria-hidden="true" />
           {items.length}
-          <span className={styles.srOnly}>{`in the cart`}</span>
+          <span className={shell.srOnly}>{`in the cart`}</span>
         </span>
         <AlertDialog.Root>
           {/* The word and the glyph: a trash can alone had to be guessed at,
@@ -125,7 +126,7 @@ export function CartTray() {
                   <span className={styles.cartSubject}>{item.subject ?? item.name}</span>
                   {item.summary && <span className={styles.cartSummary}>{item.summary}</span>}
                 </span>
-                <span className={styles.srOnly}>{`Open ${item.name}`}</span>
+                <span className={shell.srOnly}>{`Open ${item.name}`}</span>
               </button>
               <button
                 type="button"

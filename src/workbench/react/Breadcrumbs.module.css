@@ -1,0 +1,95 @@
+/* The trail, between a group's tabs and its panel. Absent when the active
+   panel declares none — the row is not rendered, so there is no band. */
+.crumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: var(--s-1);
+  /* One step of vertical padding, not two: the trail is a locator strip above
+     a panel, and every pixel it takes is one the panel does not get. */
+  padding: var(--s-1) var(--s-4);
+  /* A plugin's manifest colour, where it names one; the neutral bar otherwise.
+     Set as custom properties on the element by Breadcrumbs, so the host's
+     table stays the only place a colour name becomes a token. */
+  background: var(--crumb-tint, var(--c-surface));
+  border-bottom: 1px solid var(--crumb-edge, var(--c-border));
+  font-size: var(--fs-4);
+  overflow: hidden;
+}
+
+.crumb {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  min-width: 0;
+}
+
+.crumbSep {
+  color: var(--c-ink4);
+  flex: none;
+}
+
+.crumbLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  padding: 2px var(--s-2);
+  border-radius: var(--r-sm);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The plugin's own name, in the plugin's own colour. The crumbs after it are
+   places inside the plugin and stay in ink. */
+.crumbFirst {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  min-width: 0;
+  color: var(--crumb-ink, inherit);
+}
+
+.crumbFirst .crumbLink,
+.crumbFirst .crumbHere {
+  color: inherit;
+}
+
+/* A crumb's own mark, where it names one. Sits with the label rather than
+   apart from it, so the pair reads as one crumb. */
+.crumbIcon {
+  flex: none;
+}
+
+.crumbLink {
+  background: none;
+  border: none;
+  font: inherit;
+  color: var(--c-ink2);
+  cursor: pointer;
+}
+
+.crumbLink:hover {
+  background: var(--c-raised);
+  color: var(--c-ink);
+}
+
+.crumbLink:focus-visible {
+  outline: none;
+  background: var(--c-raised);
+  box-shadow: inset 0 0 0 2px var(--c-focus);
+}
+
+/* Where you are: the same size as its ancestors, in full-strength ink. */
+.crumbHere {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  padding: 2px var(--s-2);
+  border-radius: var(--r-sm);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--c-ink);
+  font-weight: var(--fw-bold);
+}

@@ -3,7 +3,7 @@ import { DotsSixVertical } from '@phosphor-icons/react';
 import type { Key, KeyboardEvent, PointerEvent, ReactNode } from 'react';
 import type { SplitDir } from '../core';
 import { normalizeSizes } from '../core';
-import styles from './Workbench.module.css';
+import styles from './SplitView.module.css';
 
 export interface SplitViewProps {
   dir: SplitDir;

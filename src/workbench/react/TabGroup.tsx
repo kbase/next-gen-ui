@@ -12,7 +12,7 @@ import { panelDomId, tabDomId } from './domIds';
 import { usePanelSlot } from './panelSlots';
 import { useDragPanel, useDropTarget } from './useDnd';
 import { GroupDropZones } from './WorkbenchDnd';
-import styles from './Workbench.module.css';
+import styles from './TabGroup.module.css';
 
 // One tab strip and the boxes its panels are drawn over. Every panel stays
 // mounted and is hidden when inactive, so switching tabs keeps scroll

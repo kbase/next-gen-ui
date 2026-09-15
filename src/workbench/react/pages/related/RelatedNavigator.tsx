@@ -8,7 +8,7 @@ import { mergeRecommendations } from '../../../core';
 import { pluginHostFor } from '../../../host/pluginHost';
 import { PluginMark } from '../../PluginMark';
 import { useRun, useServices } from '../../context';
-import styles from '../../Workbench.module.css';
+import styles from './RelatedNavigator.module.css';
 
 // What the rest of the workbench has about what is on screen and what is in
 // the cart: every plugin's `relate`, with the recommendation as the unit.

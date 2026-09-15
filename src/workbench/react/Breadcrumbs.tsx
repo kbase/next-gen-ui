@@ -4,7 +4,7 @@ import { CaretRight } from '@phosphor-icons/react';
 import { hueFor, iconFor } from './icons';
 import type { PanelId } from '../core';
 import { useDispatch, useLayout, useServices } from './context';
-import styles from './Workbench.module.css';
+import styles from './Breadcrumbs.module.css';
 
 // The trail a panel declares, above the panel and below its group's tabs.
 // A tab says which of the open things this is; a trail says where you are

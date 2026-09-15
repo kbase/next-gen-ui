@@ -1,0 +1,6 @@
+/* An alert inside a panel body, which has no padding of its own, so the
+   alert takes a gutter rather than sitting against the tab's edges. The
+   alert draws everything else. */
+.panelAlert {
+  margin: var(--s-5);
+}

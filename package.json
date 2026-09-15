@@ -3,10 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "files": [
+    "src/design-system",
+    "src/plugins/sdk",
+    "dist-plugin-sdk"
+  ],
   "engines": {
     "node": ">=22.0.0 <23"
   },
   "scripts": {
+    "prepare": "npm run build:plugin-sdk",
     "dev": "vite",
     "build": "vite build",
     "build:design-system": "vite build --config vite.config.designsystem.ts && tsc -p tsconfig.designsystem.json && node scripts/build-design-system.mjs",

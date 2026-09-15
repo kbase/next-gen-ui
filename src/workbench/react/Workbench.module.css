@@ -420,8 +420,42 @@
   height: 2px;
 }
 
-.separator:hover::before {
+.separator:hover::before,
+.separator:active::before {
   background: var(--c-border2);
+}
+
+/* Nothing at rest: a seam is the boundary between two panels, not a control
+   standing in the layout. What appears when the pointer reaches it says the
+   boundary moves — a grip rather than a longer line, which is the difference
+   between marking an edge and offering to drag it. On a touch screen the
+   hover sticks to the last thing touched, so the grip stays out once found. */
+.grip {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--s-5);
+  height: var(--s-6);
+  border-radius: var(--r-full);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border2);
+  color: var(--c-ink4);
+  opacity: 0;
+  transition: opacity var(--t-fast) ease;
+}
+
+.splitCol > .splitChild > .separator .grip {
+  rotate: 90deg;
+}
+
+.separator:hover .grip,
+.separator:active .grip,
+.separator:focus-visible .grip {
+  opacity: 1;
 }
 .separator:focus-visible {
   outline: none;

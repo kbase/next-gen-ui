@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { DotsSixVertical } from '@phosphor-icons/react';
 import type { Key, KeyboardEvent, PointerEvent, ReactNode } from 'react';
 import type { SplitDir } from '../core';
 import { normalizeSizes } from '../core';
@@ -109,7 +110,15 @@ export function SplitView({
               className={styles.separator}
               onPointerDown={startDrag(i)}
               onKeyDown={onKey(i)}
-            />
+            >
+              {/* Nothing at rest — the seam is a hairline between two panels
+                  and not a control sitting in the layout. What appears when
+                  the pointer reaches it is a grip rather than a line, because
+                  a line says where the boundary is and a grip says it moves. */}
+              <span className={styles.grip} aria-hidden="true">
+                <DotsSixVertical size={12} weight="bold" />
+              </span>
+            </div>
           )}
         </div>
       ))}

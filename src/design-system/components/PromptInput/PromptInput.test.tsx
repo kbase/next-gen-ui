@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { render, screen } from '@testing-library/react';
+import { createRef, useState } from 'react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PromptInput, type PromptInputProps } from './PromptInput';
 import { setMedia } from '../../../test/setup';
@@ -157,5 +157,46 @@ describe('PromptInput', () => {
 
     expect(onSubmit).not.toHaveBeenCalled();
     expect(field()).toHaveValue('a\nb');
+  });
+
+  // The slot above the field, for what travels with the message. Inside the
+  // surface rather than over it, so the composer stays one object.
+  it('puts attachments inside the surface, above the field', () => {
+    render(
+      <PromptInput
+        label="Ask"
+        value=""
+        onValueChange={() => {}}
+        onSubmit={() => {}}
+        attachments={<p data-testid="cart">2 attached</p>}
+      />,
+    );
+    const attached = screen.getByTestId('cart');
+    const field = screen.getByRole('textbox');
+    expect(attached).toBeInTheDocument();
+    // Before the field in document order, and under the same surface as it.
+    expect(attached.compareDocumentPosition(field) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(attached.closest('[class*="surface"]')).toBe(field.closest('[class*="surface"]'));
+  });
+
+  // The ref is the composer's focus handle. A consumer that instead hunts the
+  // wrapper for a textarea breaks silently when this markup changes.
+  it('points fieldRef at the textarea, which the holder can focus', () => {
+    const ref = createRef<HTMLTextAreaElement>();
+    render(<Harness fieldRef={ref} />);
+
+    expect(ref.current).toBe(field());
+    expect(ref.current?.tagName).toBe('TEXTAREA');
+
+    // Focus puts Field.Root into its focused state, which is a React update.
+    act(() => ref.current?.focus());
+    expect(field()).toHaveFocus();
+  });
+
+  it('leaves no attachments row when none are passed', () => {
+    const { container } = render(
+      <PromptInput label="Ask" value="" onValueChange={() => {}} onSubmit={() => {}} />,
+    );
+    expect(container.querySelector('[class*="attachments"]')).toBeNull();
   });
 });

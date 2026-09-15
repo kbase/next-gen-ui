@@ -151,3 +151,10 @@
     border-color: transparent;
   }
 }
+
+/* Weight is the base's, so opting out of it is a modifier rather than a
+   variant or a size: a quiet button is any variant at any size, in the face of
+   the text it sits beside. */
+.quiet {
+  font-weight: var(--fw-normal);
+}

@@ -35,3 +35,35 @@
 .action {
   margin-top: var(--s-6);
 }
+
+/* The same state at a narrow column's proportions: every part is drawn, each
+   a step smaller, and the description is measured by the column instead of
+   the 280 pixels a page allows it. */
+.root[data-size='sm'] {
+  padding: var(--s-5) var(--s-4);
+
+  .icon {
+    margin-bottom: var(--s-3);
+
+    /* The caller passes one glyph and the variant sizes it, so a state moves
+       between a page and a column without its call site changing. */
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  .title {
+    font-size: var(--fs-4);
+  }
+
+  .desc {
+    font-size: var(--fs-3);
+    margin-top: var(--s-1);
+    max-width: none;
+  }
+
+  .action {
+    margin-top: var(--s-4);
+  }
+}

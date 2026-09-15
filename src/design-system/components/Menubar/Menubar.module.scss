@@ -1,0 +1,26 @@
+.bar {
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+}
+
+.trigger {
+  font-family: var(--f-sans);
+  font-size: var(--fs-4);
+  color: var(--c-ink2);
+  background: none;
+  border: none;
+  border-radius: var(--r-sm);
+  padding: var(--s-1) var(--s-3);
+  cursor: pointer;
+
+  &:hover,
+  &[data-popup-open] {
+    background: var(--c-raised);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--c-focus);
+  }
+}

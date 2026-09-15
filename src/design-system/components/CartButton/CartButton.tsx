@@ -6,10 +6,8 @@ import buttonStyles from '../Button/Button.module.scss';
 import styles from './CartButton.module.scss';
 import { cx } from '../../util/cx';
 
-/* The glyph and the pill, in px. 30 = 18 + 2 × (5 padding + 1 border); the
-   padding and border are set in CartButton.module.scss. */
+/* The glyph, in px: it sizes an icon that has no CSS size. */
 const GLYPH = 18;
-const PILL = 30;
 
 export interface CartButtonProps extends Omit<
   BaseToggle.Props,
@@ -84,6 +82,7 @@ export const CartButton = forwardRef<HTMLButtonElement, CartButtonProps>(functio
             }}
             aria-label={labelled ? undefined : label}
             data-labelled={labelled || undefined}
+            data-size="sm"
             className={cx(buttonStyles.btn, buttonStyles.outline, styles.pill, className)}
             {...props}
           />
@@ -98,7 +97,9 @@ export const CartButton = forwardRef<HTMLButtonElement, CartButtonProps>(functio
           className={styles.positioner}
           side="right"
           align="center"
-          sideOffset={-PILL}
+          // Back over the pill by the pill's own height, whatever tier it
+          // renders at.
+          sideOffset={({ anchor }) => -anchor.height}
         >
           {/* A picture of the trigger, so hidden from assistive tech. A click on
               it is a click on the trigger; mousedown is cancelled so focus

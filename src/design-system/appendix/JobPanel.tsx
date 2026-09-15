@@ -62,6 +62,17 @@ const STAGE_MARK: Record<JobStage['status'], ReactNode> = {
   error: <XCircle size={10} weight="bold" className={styles.markError} />,
 };
 
+// Vite exports these locals camelCased (css.modules.localsConvention in
+// vite.config.designsystem.ts), so a key built from the status value would
+// have to be recased. Spelling the four out instead makes a renamed or
+// dropped status a type error.
+const STAGE_CLASS: Record<JobStage['status'], string> = {
+  queued: styles.stQueued,
+  running: styles.stRunning,
+  complete: styles.stComplete,
+  error: styles.stError,
+};
+
 export function JobPanel({
   status,
   title,
@@ -105,7 +116,7 @@ export function JobPanel({
       {stages && stages.length > 0 && (
         <div className={styles.stages}>
           {stages.map((st, i) => (
-            <div key={i} className={cx(styles.stageRow, styles[`st_${st.status}`])}>
+            <div key={i} className={cx(styles.stageRow, STAGE_CLASS[st.status])}>
               <span className={styles.stageMark}>{STAGE_MARK[st.status]}</span>
               <span>{st.label}</span>
             </div>

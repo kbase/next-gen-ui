@@ -1,2 +1,3 @@
 export { Provider, Viewport } from './Toast';
-export { useToastManager } from './useToastManager';
+export { useToastManager, createToastManager } from './useToastManager';
+export type { ToastManager } from './useToastManager';

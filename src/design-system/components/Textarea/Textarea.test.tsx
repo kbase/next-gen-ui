@@ -1,3 +1,4 @@
+import { createRef } from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Textarea } from './Textarea';
@@ -160,6 +161,23 @@ describe('Textarea', () => {
 
       rerender(<Textarea aria-label="Prompt" />);
       expect(el.style.height).toBe('');
+    } finally {
+      restore();
+    }
+  });
+
+  // Base UI merges this ref with the one autoGrow holds on the same element, so
+  // the second arrival must not displace the first.
+  it('gives a caller the textarea without losing autoGrow', () => {
+    const restore = stubLayout();
+    try {
+      const ref = createRef<HTMLTextAreaElement>();
+      render(<Textarea aria-label="Prompt" ref={ref} autoGrow />);
+      const el = screen.getByLabelText('Prompt');
+
+      expect(ref.current).toBe(el);
+      expect(ref.current?.tagName).toBe('TEXTAREA');
+      expect(el.style.height).not.toBe('');
     } finally {
       restore();
     }

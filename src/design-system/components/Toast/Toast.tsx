@@ -1,9 +1,17 @@
 import { Toast as BaseToast } from '@base-ui/react/toast';
 import styles from './Toast.module.scss';
 import { X } from '@phosphor-icons/react';
+import type { ToastManager } from './useToastManager';
 
-export function Provider({ children }: { children: React.ReactNode }) {
-  return <BaseToast.Provider>{children}</BaseToast.Provider>;
+export function Provider({
+  children,
+  manager,
+}: {
+  children: React.ReactNode;
+  // From `createToastManager()`, when toasts are raised outside the tree.
+  manager?: ToastManager;
+}) {
+  return <BaseToast.Provider toastManager={manager}>{children}</BaseToast.Provider>;
 }
 
 function ToastItem({ toast }: { toast: BaseToast.Root.Props['toast'] }) {

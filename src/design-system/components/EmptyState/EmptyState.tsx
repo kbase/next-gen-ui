@@ -10,8 +10,9 @@ export interface EmptyStateProps {
   action?: ReactNode;
   /**
    * `sm` for a narrow column — a sidebar block, a pane — where the page's
-   * proportions would be most of the space: one caption line, aligned left,
-   * the icon not drawn, the description as wide as the column.
+   * proportions would be most of the space. The same icon, title and
+   * description, each a step smaller, and the description measured by the
+   * column rather than by the 280 pixels a page allows it.
    */
   size?: Size;
   className?: string;

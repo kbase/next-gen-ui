@@ -397,10 +397,36 @@
   cursor: row-resize;
 }
 
-.separator:hover,
+/* A pointer over the seam draws the line it would move, in the ink the
+   workbench draws every other border in. It is not the brand blue: a filled
+   band in that colour is how a drop target says a panel would land there,
+   and a touch screen keeps the last thing touched hovered, so the seam a
+   reader brushed past sat lit as a drop target until they touched something
+   else. The hairline is drawn by a child, since the seam itself is 6 pixels
+   wide so that a finger can catch it. */
+.separator::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  background: transparent;
+}
+
+.splitRow > .splitChild > .separator::before {
+  width: 2px;
+}
+
+.splitCol > .splitChild > .separator::before {
+  height: 2px;
+}
+
+.separator:hover::before {
+  background: var(--c-border2);
+}
+
 .separator:focus-visible {
-  background: var(--c-focus);
   outline: none;
+  box-shadow: 0 0 0 2px var(--c-focus);
 }
 
 /* The sidebar's accordion card: all pinned navigators on one surface,

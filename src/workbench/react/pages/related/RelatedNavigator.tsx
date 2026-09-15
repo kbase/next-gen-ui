@@ -130,7 +130,14 @@ export function RelatedNavigator() {
   // the reader can see and so cannot be blank.
   const drawn = sections.filter((s) => s.rows.length > 0 || s.pending.length > 0);
   if (drawn.length === 0) {
-    return <EmptyState size="sm" icon={<MagnifyingGlass size={32} />} title="Nothing to show" />;
+    return (
+      <EmptyState
+        size="sm"
+        icon={<MagnifyingGlass size={32} />}
+        title="Nothing to show"
+        description="No page is open and the cart is empty."
+      />
+    );
   }
 
   return (

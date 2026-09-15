@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { render, screen } from '@testing-library/react';
+import { createRef, useState } from 'react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PromptInput, type PromptInputProps } from './PromptInput';
 import { setMedia } from '../../../test/setup';
@@ -177,6 +177,20 @@ describe('PromptInput', () => {
     // Before the field in document order, and under the same surface as it.
     expect(attached.compareDocumentPosition(field) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(attached.closest('[class*="surface"]')).toBe(field.closest('[class*="surface"]'));
+  });
+
+  // The ref is the composer's focus handle. A consumer that instead hunts the
+  // wrapper for a textarea breaks silently when this markup changes.
+  it('points fieldRef at the textarea, which the holder can focus', () => {
+    const ref = createRef<HTMLTextAreaElement>();
+    render(<Harness fieldRef={ref} />);
+
+    expect(ref.current).toBe(field());
+    expect(ref.current?.tagName).toBe('TEXTAREA');
+
+    // Focus puts Field.Root into its focused state, which is a React update.
+    act(() => ref.current?.focus());
+    expect(field()).toHaveFocus();
   });
 
   it('leaves no attachments row when none are passed', () => {

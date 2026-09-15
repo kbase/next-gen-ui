@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useRef } from 'react';
+import { useCallback, useLayoutEffect, useRef, type Ref } from 'react';
 import { Input as BaseInput } from '@base-ui/react/input';
 import styles from './Textarea.module.scss';
 import { cx } from '../../util/cx';
@@ -14,11 +14,15 @@ const CSS_SIZED = typeof CSS !== 'undefined' && !!CSS.supports?.('field-sizing',
 /* onSubmit is omitted and redefined: a textarea never fires a native submit
    event, so the DOM prop is dead here and the name is the one consumers reach
    for. `size` is redefined as the density tier; the native attribute is a width in
-   characters and does not apply to a textarea. */
+   characters and does not apply to a textarea. `ref` is redefined because the
+   part's props are those of an `input` and the element rendered here is a
+   textarea; inherited, it would type the ref as HTMLInputElement and force every
+   consumer to cast. */
 export interface TextareaProps extends Omit<
   BaseInput.Props,
-  'className' | 'render' | 'onSubmit' | 'size'
+  'className' | 'render' | 'onSubmit' | 'size' | 'ref'
 > {
+  ref?: Ref<HTMLTextAreaElement>;
   rows?: number;
   /** Grows with its content rather than scrolling, up to `maxRows`. */
   autoGrow?: boolean;
@@ -40,6 +44,7 @@ export interface TextareaProps extends Omit<
 /* Base UI's Input part rendered as a textarea, so Field.Root supplies the id,
    label and description wiring. */
 export function Textarea({
+  ref: externalRef,
   rows,
   autoGrow,
   maxRows,
@@ -119,6 +124,9 @@ export function Textarea({
 
   return (
     <BaseInput
+      // Merged with the render element's ref by Base UI, so both land on the
+      // textarea below rather than one replacing the other.
+      ref={externalRef}
       render={<textarea ref={ref} rows={rows} />}
       className={cx(styles.textarea, autoGrow && styles.autoGrow, className)}
       data-size={size}

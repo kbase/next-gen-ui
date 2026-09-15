@@ -71,17 +71,17 @@
   border: 1.5px solid var(--c-ink5);
 }
 
-.st_queued {
+.stQueued {
   color: var(--c-ink5);
 }
-.st_running {
+.stRunning {
   color: var(--ct-primary);
   font-weight: var(--fw-bold);
 }
-.st_complete {
+.stComplete {
   color: var(--c-ink3);
 }
-.st_error {
+.stError {
   color: var(--ct-red);
 }
 

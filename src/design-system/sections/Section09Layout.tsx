@@ -103,6 +103,22 @@ export function Section09Layout() {
   </Accordion.Item>
 </Accordion.Root>`}
       />
+      <p className={s.note}>
+        An Item with a title is the whole section. When the trigger has to carry more than a title,
+        an icon and a summary — an id something else names, a drag handle, a context menu around it
+        — give Item no title and compose the parts inside it. Heading and arrow keys come with them.
+      </p>
+      <CodeBlock
+        language="tsx"
+        code={`<Accordion.Item value="jobs">
+  <Accordion.Header>
+    <Accordion.Trigger id="jobs-title" ref={dragRef} {...dragHandlers}>
+      <JobsIcon /> Jobs <Accordion.Chevron />
+    </Accordion.Trigger>
+  </Accordion.Header>
+  <Accordion.Panel>{pane}</Accordion.Panel>
+</Accordion.Item>`}
+      />
 
       <div className={s.sub}>Collapsible</div>
       <p className={s.note}>

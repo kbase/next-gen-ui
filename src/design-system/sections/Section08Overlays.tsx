@@ -77,6 +77,14 @@ export function Section08Overlays({ onShowToast }: Section08OverlaysProps) {
       <p className={s.note}>
         Click-triggered. Has Title and Description sub-components for structured content.
       </p>
+      <p className={s.note}>
+        The popup is a padded box capped at 320px, sized for the detail behind a control. A floating
+        surface that holds a whole panel &mdash; the workbench&apos;s flyout for a pinned navigator,
+        at the sidebar&apos;s own width &mdash; is not a component: an app builds it from{' '}
+        <code>Frame</code> at <code>padding={'{0}'}</code> and the <code>--e-4</code> elevation
+        token, inside Base UI&apos;s own popover positioner. Overriding the cap and the padding away
+        leaves nothing of this popup but the parts that were already tokens.
+      </p>
       <Popover.Root>
         <Popover.Trigger
           render={
@@ -187,7 +195,7 @@ toasts.add({
                 title="A name needs at least one non-space character."
               />
             </Field.Root>
-            <div className={s.row} style={{ justifyContent: 'flex-end', marginTop: 'var(--s-7)' }}>
+            <div className={s.row} style={{ justifyContent: 'flex-end' }}>
               <Dialog.Close
                 render={
                   <Button variant="ghost" type="button">

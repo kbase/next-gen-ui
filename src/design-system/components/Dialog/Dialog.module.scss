@@ -19,6 +19,26 @@
   max-width: 520px;
   box-shadow: var(--e-4);
 
+  /* The one thing that spaces a dialog's parts. The parts themselves carry no
+     margin: a margin on Title is sized for the Description that usually
+     follows, and is wrong the moment one does not, or the moment the body is
+     laid out with a gap of its own — then both apply and the dialog springs
+     open. One step below the popup's own padding, so the edge inset stays the
+     larger distance. */
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-6);
+
+  /* A dialog that collects a value wraps its body in a form, which is what
+     makes Enter submit (Section 08). That form is a single flex item, so
+     without this the gap would reach the form and stop. It takes the popup's
+     gap rather than a value of its own, so the two cannot drift. */
+  > form {
+    display: flex;
+    flex-direction: column;
+    gap: inherit;
+  }
+
   &:focus-visible {
     outline: none;
   }
@@ -28,12 +48,10 @@
   font-size: var(--fs-7);
   font-weight: var(--fw-bold);
   color: var(--c-ink);
-  margin-bottom: var(--s-2);
 }
 
 .description {
   font-size: var(--fs-4);
   color: var(--c-ink3);
   line-height: 1.55;
-  margin-bottom: var(--s-8);
 }

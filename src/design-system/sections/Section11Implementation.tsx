@@ -12,6 +12,16 @@ export function Section11Implementation() {
         highlighted code, and <code>.prose</code> for rendered Markdown. Both are built from the
         design tokens, so they sit in the same palette as the surface around them.
       </p>
+      <p className={s.note}>
+        The theme sets the face, the palette and the block&apos;s box, and leaves{' '}
+        <code>white-space</code> alone. A long line therefore scrolls sideways, which is right for a
+        program &mdash; a wrapped statement reads as two. A block holding a record rather than a
+        program, a context object in a dialog, wants the opposite; one ordinary class on the{' '}
+        <code>pre</code> (<code>white-space: pre-wrap</code>, <code>overflow-wrap: anywhere</code>)
+        is enough, and the <code>code</code> inside inherits it. Nothing in the theme outranks that
+        class, which is the point: the caller knows which kind of block it is and the theme does
+        not.
+      </p>
 
       <div className={s.sub}>Python (KBase SDK pattern)</div>
       <CodeBlock

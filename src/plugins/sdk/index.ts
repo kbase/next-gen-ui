@@ -3,10 +3,10 @@
 // what a plugin calls and what the host reads.
 export * from './boundary';
 
-export { PanelContext, usePanel, usePanelTitle, usePanelBreadcrumbs, usePanelTerms } from './usePanel';
-export type { PanelHandle } from './usePanel';
-export { HostContext, useHost } from './useHost';
-export type { PluginHost } from './useHost';
+export { PanelContext, usePanel, usePanelTitle, usePanelBreadcrumbs, usePanelTerms } from './hooks/usePanel';
+export type { PanelHandle } from './hooks/usePanel';
+export { HostContext, useHost } from './hooks/useHost';
+export type { PluginHost } from './hooks/useHost';
 export {
   SDK_VERSION,
   acceptsSdkVersion,
@@ -40,10 +40,10 @@ export type {
   CommandHandler,
 } from './modules';
 export { fromReact } from './fromReact';
-export { AppFrame } from './AppFrame';
-export type { AppFrameProps } from './AppFrame';
+export { AppFrame } from './components/AppFrame';
+export type { AppFrameProps } from './components/AppFrame';
 export type { FrameLayer } from './frames';
-export { useCart } from './useCart';
-export type { Cart } from './useCart';
-export { CartButton } from './CartButton';
-export type { CartButtonProps } from './CartButton';
+export { useCart } from './hooks/useCart';
+export type { Cart } from './hooks/useCart';
+export { CartButton } from './components/CartButton';
+export type { CartButtonProps } from './components/CartButton';

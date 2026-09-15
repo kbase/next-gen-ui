@@ -3,7 +3,7 @@ import { DestinationSchema } from '@kbase/plugin-sdk';
 import type { PluginId } from '../core';
 import { createEpoch, createStore } from '../core/subscribable';
 import { issueText } from './checked';
-import type { HostIndex } from './installed';
+import type { HostIndex } from './plugins/installed';
 import type { SettingsStore } from './settings';
 
 // Where the assistant says the next message lands. The plugin pushes it —

@@ -4,7 +4,7 @@ import { defineRoute } from '@kbase/plugin-sdk';
 import { makeRoute } from '../core';
 import { noPersistence } from '../host';
 import { createWorkbench } from '../compose';
-import { localPlugin } from '../host/local';
+import { localPlugin } from '../host/plugins/local';
 import type { WorkbenchServices } from '../host/services';
 import { WorkbenchProvider } from './WorkbenchProvider';
 import { Workbench } from './Workbench';

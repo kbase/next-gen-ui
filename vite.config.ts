@@ -7,7 +7,7 @@ import react from '@vitejs/plugin-react';
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import { federation } from '@module-federation/vite';
 import { themeInitScript } from './src/design-system/theme/useTheme';
-import { SHARED_SINGLETONS } from './src/plugins/sdk/shared';
+import { SHARED_SINGLETONS } from './src/plugins/sdk/build/shared';
 
 // `@kbase/design-system` is the public name; the canonical source
 // lives in this repo at `src/design-system/`. Keep this alias in

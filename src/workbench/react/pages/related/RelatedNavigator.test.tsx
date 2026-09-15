@@ -9,7 +9,7 @@ import { useAmbientQueries } from '../../hooks/useAmbientQueries';
 import { createWorkbench } from '../../../compose/createWorkbench';
 import { pluginHostFor } from '../../../host/pluginHost';
 import { noPersistence } from '../../../host/persistence';
-import { localPlugin } from '../../../host/local';
+import { localPlugin } from '../../../host/plugins/local';
 import { BUDGET_MS, SETTLE_MS } from '../../../host/query/runner';
 import { RelatedNavigator } from './RelatedNavigator';
 

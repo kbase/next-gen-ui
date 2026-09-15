@@ -60,7 +60,7 @@ const pkg = {
   exports: {
     '.': { types: './types/index.d.ts', import: './index.js' },
     './config': { types: './types/contract.d.ts', import: './config.js' },
-    './vite': { types: './types/pluginFederation.d.ts', import: './vite.js' },
+    './vite': { types: './types/build/pluginFederation.d.ts', import: './vite.js' },
     './boundary': { types: './types/boundary/index.d.ts', import: './boundary.js' },
     // The boundary as JSON Schema, for a plugin that builds one of these
     // shapes somewhere TypeScript cannot check it.

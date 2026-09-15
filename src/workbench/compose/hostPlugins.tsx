@@ -3,8 +3,8 @@ import { definePluginManifest, fromReact } from '@kbase/plugin-sdk';
 import type { Mount, Pane, Route } from '@kbase/plugin-sdk';
 import { ServicesContext } from '../react/context';
 import type { WorkbenchServices } from '../host/services';
-import type { InstalledPlugin } from '../host/installed';
-import { localPlugin } from '../host/local';
+import type { InstalledPlugin } from '../host/plugins/installed';
+import { localPlugin } from '../host/plugins/local';
 
 // The host's own pages and blocks, installed over the same index as every
 // plugin so they pin, fold, drag, complete and link like one. They reach

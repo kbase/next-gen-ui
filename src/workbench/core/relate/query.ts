@@ -1,5 +1,5 @@
 import type { CartItem, Offer, Suggestion } from '@kbase/plugin-sdk';
-import { createNotifier } from './subscribable';
+import { createNotifier } from '../subscribable';
 
 // What every plugin's `relate` said about each source of terms, and what
 // they offered for the text.

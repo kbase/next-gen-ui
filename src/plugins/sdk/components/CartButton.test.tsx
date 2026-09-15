@@ -2,9 +2,9 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { CartButton } from './CartButton';
-import { HostContext } from './useHost';
-import type { PluginHost } from './useHost';
-import type { CartItem } from './useCart';
+import { HostContext } from '../hooks/useHost';
+import type { PluginHost } from '../hooks/useHost';
+import type { CartItem } from '../hooks/useCart';
 
 // A host whose cart is a map: enough for the binding, which reads `has`,
 // calls `add` and `remove`, and re-renders on `subscribe`.

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { Ref } from 'react';
 import { createPortal } from 'react-dom';
-import { useHost } from './useHost';
+import { useHost } from '../hooks/useHost';
 
 export interface AppFrameProps {
   src: string;

@@ -1,4 +1,4 @@
-import type { InstalledPlugin } from '../../workbench/host/installed';
+import type { InstalledPlugin } from '../../workbench/host/plugins/installed';
 import { data } from './data';
 import { intentPlugin } from './intent';
 import { jobs } from './jobs';

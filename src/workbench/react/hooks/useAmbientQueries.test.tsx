@@ -11,7 +11,7 @@ import {
   defaultLayout,
   makeRoute,
 } from '../../core';
-import type { HostIndex } from '../../host/installed';
+import type { HostIndex } from '../../host/plugins/installed';
 import { SETTLE_MS, createQueryRunner } from '../../host/query/runner';
 import { ServicesContext } from '../context';
 import type { WorkbenchServices } from '../../host/services';

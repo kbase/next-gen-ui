@@ -7,7 +7,7 @@ import { defineRoute } from '@kbase/plugin-sdk';
 import type { Panel, PluginId } from '../../core';
 import { noPersistence } from '../../host';
 import { createWorkbench } from '../../compose';
-import { localPlugin } from '../../host/local';
+import { localPlugin } from '../../host/plugins/local';
 import { testWorkbench } from '../../../test/workbench';
 import { PanelLayer } from '../PanelLayer';
 import { Sidebar } from '../Sidebar';

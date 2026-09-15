@@ -4,7 +4,7 @@ import type { Layout } from './layout';
 import type { Operation } from './operations';
 import { isUndoable } from './operations';
 import { reduce } from './reduce';
-import { createStore } from './subscribable';
+import { createStore } from '../subscribable';
 
 export interface DispatchResult {
   changed: boolean;

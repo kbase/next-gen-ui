@@ -27,7 +27,7 @@ export default defineConfig({
       entry: {
         index: fileURLToPath(new URL('./src/plugins/sdk/index.ts', import.meta.url)),
         config: fileURLToPath(new URL('./src/plugins/sdk/contract.ts', import.meta.url)),
-        vite: fileURLToPath(new URL('./src/plugins/sdk/pluginFederation.ts', import.meta.url)),
+        vite: fileURLToPath(new URL('./src/plugins/sdk/build/pluginFederation.ts', import.meta.url)),
         boundary: fileURLToPath(new URL('./src/plugins/sdk/boundary/index.ts', import.meta.url)),
       },
       formats: ['es'],

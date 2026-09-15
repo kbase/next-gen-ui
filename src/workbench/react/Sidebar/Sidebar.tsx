@@ -19,7 +19,7 @@ import {
 } from '@kbase/design-system';
 import type { Panel, PluginId } from '../../core';
 import { makePane, sidebarPanels } from '../../core';
-import type { PluginInfo } from '../../host/installed';
+import type { PluginInfo } from '../../host/plugins/installed';
 import { useDispatch, useLayout, useRun, useServices, useTitle } from '../context';
 import { PluginMark } from '../PluginMark';
 import { usePanelSlot } from '../panelSlots';

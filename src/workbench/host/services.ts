@@ -15,7 +15,7 @@ import type { Announcer } from './announcer';
 import type { CrumbStore } from './crumbs';
 import type { DestinationStore } from './destination';
 import type { FrameLayerStore } from './frames';
-import type { HostIndex } from './installed';
+import type { HostIndex } from './plugins/installed';
 import type { QueryRunner } from './query/runner';
 import type { SettingsStore } from './settings';
 import type { StatusStore } from './status';

@@ -1,8 +1,8 @@
 export { loadWorkbench, noPersistence, LAYOUT_STORAGE_KEY } from './persistence';
 export type { LoadedDocs, SaveWorkbench, WorkbenchDocs, WorkbenchPersistence } from './persistence';
-export { createHostIndex } from './installed';
-export type { HostIndex, InstalledPlugin, ModuleLoaders, PluginInfo } from './installed';
-export { localPlugin } from './local';
+export { createHostIndex } from './plugins/installed';
+export type { HostIndex, InstalledPlugin, ModuleLoaders, PluginInfo } from './plugins/installed';
+export { localPlugin } from './plugins/local';
 export { openRoute, openPane } from './open';
 export type { OpenRouteOptions } from './open';
 export {
@@ -12,8 +12,8 @@ export {
   remotePlugin,
   REGISTRY_BASE,
   SERVICES_BASE,
-} from './registry';
-export type { DeclinedPlugin, RegistryReport } from './registry';
+} from './plugins/registry';
+export type { DeclinedPlugin, RegistryReport } from './plugins/registry';
 export { createSettingsStore, SETTINGS_STORAGE_KEY } from './settings';
 export type { Settings, SettingsStore } from './settings';
 export { createAnnouncer } from './announcer';

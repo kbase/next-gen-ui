@@ -10,9 +10,9 @@ import type {
   PluginHost,
 } from '@kbase/plugin-sdk';
 import { qualifyCommand } from '@kbase/plugin-sdk';
-import type { PluginId } from '../core';
-import { createNotifier } from '../core/subscribable';
-import type { Command, CommandRegistry } from '../commands';
+import type { PluginId } from '../../core';
+import { createNotifier } from '../../core/subscribable';
+import type { Command, CommandRegistry } from '../../commands';
 import type { DeclinedPlugin } from './registry';
 
 // What a pane row runs: `show`, which focuses the pane of a pinned plugin

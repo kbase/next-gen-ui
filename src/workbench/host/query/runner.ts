@@ -11,7 +11,7 @@ import { CartItemSchema, OfferSchema, SuggestionSchema, qualifyCommand } from '@
 import type { Answer, PluginOffers, QuerySource, QueryStore } from '../../core';
 import { EMPTY_TYPING, unionAnswers } from '../../core';
 import { accepted } from '../checked';
-import type { HostIndex } from '../installed';
+import type { HostIndex } from '../plugins/installed';
 
 // Asking every plugin what it offers for the text, what it has about a
 // page's or the cart's terms, and the chosen intent about the text.

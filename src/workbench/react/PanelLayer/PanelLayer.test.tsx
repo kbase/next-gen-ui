@@ -6,7 +6,7 @@ import type { GroupId, PanelId } from '../../core';
 import { groups, makeRoute, paneId } from '../../core';
 import { noPersistence } from '../../host';
 import { createWorkbench } from '../../compose';
-import { localPlugin } from '../../host/local';
+import { localPlugin } from '../../host/plugins/local';
 import { panelDomId, tabDomId } from '../domIds';
 import { WorkbenchProvider } from '../WorkbenchProvider';
 import { Workbench } from '../Workbench';

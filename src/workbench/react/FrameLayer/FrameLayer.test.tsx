@@ -6,7 +6,7 @@ import type { GroupId } from '../../core';
 import { groups, makeRoute } from '../../core';
 import { noPersistence } from '../../host';
 import { createWorkbench } from '../../compose';
-import { localPlugin } from '../../host/local';
+import { localPlugin } from '../../host/plugins/local';
 import { WorkbenchProvider } from '../WorkbenchProvider';
 import { Workbench } from '../Workbench';
 

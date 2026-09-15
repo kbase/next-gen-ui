@@ -6,7 +6,7 @@ import { createWorkbench } from './createWorkbench';
 import { defaultContext, defaultLayout, groups, paneId, placementOf, reduce } from '../core';
 import type { LoadedDocs } from '../host/persistence';
 import { pluginHostFor } from '../host/pluginHost';
-import { localPlugin } from '../host/local';
+import { localPlugin } from '../host/plugins/local';
 import { noPersistence } from '../host/persistence';
 
 // genKnown owns a command and adds items; KOROS owns neither and is handed one

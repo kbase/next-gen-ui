@@ -3,7 +3,7 @@ import { StatusItemSchema } from '@kbase/plugin-sdk';
 import type { PluginId } from '../core';
 import { createEpoch, createKeyedStore } from '../core/subscribable';
 import { accepted } from './checked';
-import type { HostIndex } from './installed';
+import type { HostIndex } from './plugins/installed';
 
 // What each plugin last pushed for the status bar. Every background's
 // `status` is subscribed to as its module arrives, and the plugin pushes:

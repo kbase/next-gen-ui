@@ -9,7 +9,7 @@ import type {
   TypedQuery,
 } from '@kbase/plugin-sdk';
 import { createQueryStore, mergeRecommendations } from '../../core';
-import type { HostIndex } from '../installed';
+import type { HostIndex } from '../plugins/installed';
 import { BUDGET_MS, SETTLE_MS, createQueryRunner } from './runner';
 
 // The runner over a stand-in index: only `backgrounds()` is consulted.

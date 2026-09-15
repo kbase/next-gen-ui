@@ -25,7 +25,7 @@ import { BOUNDARY } from './boundary';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '../../..');
-const ENTRIES = [join(HERE, 'index.ts'), join(HERE, 'pluginFederation.ts')];
+const ENTRIES = [join(HERE, 'index.ts'), join(HERE, 'build', 'pluginFederation.ts')];
 const RECORD = join(HERE, 'surface.json');
 
 interface Surface {

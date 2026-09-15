@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 import type { Cart } from './useCart';
-import type { FrameLayer } from './frames';
+import type { FrameLayer } from '../frames';
 
 // What a plugin may ask the workbench to do: open its own route, run a
 // command — its own by bare name, another plugin's by "plugin:name" — say

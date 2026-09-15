@@ -1,4 +1,4 @@
-import { localPlugin } from '../../../workbench/host/local';
+import { localPlugin } from '../../../workbench/host/plugins/local';
 import config from './plugin.config';
 
 export const koros = localPlugin({

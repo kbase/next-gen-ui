@@ -12,7 +12,7 @@ import type { PanelHandle } from '@kbase/plugin-sdk';
 import { defineRoute } from '@kbase/plugin-sdk';
 import { noPersistence, openRoute } from '../../host';
 import { createWorkbench } from '../../compose';
-import { localPlugin } from '../../host/local';
+import { localPlugin } from '../../host/plugins/local';
 import { WORKBENCH_PATH } from './useUrlSync';
 import { WorkbenchPage } from '../WorkbenchPage';
 

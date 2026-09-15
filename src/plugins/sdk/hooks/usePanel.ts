@@ -1,13 +1,13 @@
 import { createContext, useContext, useEffect } from 'react';
-import type { Crumb, PanelState } from './boundary/panel';
+import type { Crumb, PanelState } from '../boundary/panel';
 
 // What a panel can learn about itself and ask of its own tab. The host
 // provides this context; a plugin reads it with `usePanel`. What the panel
 // knows is `PanelState` in `boundary/panel.ts`; what is here is the calls
 // that change it.
 
-export { CrumbSchema, CrumbsSchema, PanelKindSchema, PanelStateSchema } from './boundary/panel';
-export type { Crumb, PanelKind, PanelState } from './boundary/panel';
+export { CrumbSchema, CrumbsSchema, PanelKindSchema, PanelStateSchema } from '../boundary/panel';
+export type { Crumb, PanelKind, PanelState } from '../boundary/panel';
 
 export interface PanelHandle extends PanelState {
   // Changes this panel's path in place and pushes a history entry, or

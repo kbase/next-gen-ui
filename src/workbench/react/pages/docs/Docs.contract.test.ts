@@ -30,7 +30,7 @@ import { describe, expect, it } from 'vitest';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '../../../../..');
 const SDK = join(ROOT, 'src/plugins/sdk');
-const SDK_ENTRIES = [join(SDK, 'index.ts'), join(SDK, 'pluginFederation.ts')];
+const SDK_ENTRIES = [join(SDK, 'index.ts'), join(SDK, 'build', 'pluginFederation.ts')];
 
 // Types the SDK exports that the page deliberately does not name. Each one is
 // a decision: delete the line to make the check demand a passage for it.

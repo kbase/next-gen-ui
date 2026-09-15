@@ -91,12 +91,65 @@ export function createPanelLayer(): PanelLayerApi {
     for (const listener of listeners) listener();
   };
 
+  // Scroll offsets inside each node. The node is swapped out of one box and
+  // into another when its slot changes, and a browser drops a scroll offset
+  // with the box it belonged to, so the offsets are kept here — recorded as
+  // the reader scrolls, by a capturing listener on the node — and written
+  // back once the node is in its new box. Recorded continuously rather than
+  // read at the moment of the move: the flyout's box is out of the document
+  // before its slot's cleanup runs, and a read then finds nothing.
+  const offsets = new Map<PanelId, Map<Element, { top: number; left: number }>>();
+  const moved = new Set<PanelId>();
+
+  const record = (id: PanelId, el: Element) => {
+    let inside = offsets.get(id);
+    if (!inside) offsets.set(id, (inside = new Map()));
+    if (el.scrollTop > 0 || el.scrollLeft > 0)
+      inside.set(el, { top: el.scrollTop, left: el.scrollLeft });
+    else inside.delete(el);
+  };
+
+  // After the commit that moved a node, once the DOM is final: in
+  // development StrictMode re-runs a new OutPortal's mount after every
+  // layout effect has run, which takes the node out and puts it back once
+  // more, and a write before that would be lost. A microtask runs after
+  // that and before paint. An offset written to an element with no box is
+  // lost, so a node moved into a hidden box keeps its turn for a later move.
+  const restore = () => {
+    for (const id of moved) {
+      const element = nodes.get(id)?.element;
+      const inside = offsets.get(id);
+      if (!element || !inside) {
+        moved.delete(id);
+        continue;
+      }
+      if (!element.isConnected) continue;
+      for (const [el, { top, left }] of inside) {
+        if (!el.isConnected) {
+          inside.delete(el);
+          continue;
+        }
+        if (el.clientHeight === 0 && el.clientWidth === 0) continue;
+        el.scrollTop = top;
+        el.scrollLeft = left;
+      }
+      moved.delete(id);
+    }
+  };
+
   const node = (panel: PanelId): HtmlPortalNode => {
     const have = nodes.get(panel);
     if (have) return have;
     // `display: contents` so the panel's own root is laid out by the slot it
     // is attached in, exactly as if it had been written there.
     const made = createHtmlPortalNode({ attributes: { style: 'display: contents' } });
+    made.element.addEventListener(
+      'scroll',
+      (event) => {
+        if (event.target instanceof Element) record(panel, event.target);
+      },
+      true,
+    );
     nodes.set(panel, made);
     return made;
   };
@@ -136,12 +189,17 @@ export function createPanelLayer(): PanelLayerApi {
         panel: entries.find((e) => e.panel.id === id)?.panel ?? held.get(id)!,
         node: node(id),
       }));
-      for (const id of nodes.keys()) if (!held.has(id)) nodes.delete(id);
+      for (const id of nodes.keys())
+        if (!held.has(id)) {
+          nodes.delete(id);
+          offsets.delete(id);
+        }
 
-      const moved =
-        nextDrawing.size !== drawing.size ||
-        [...nextDrawing].some(([id, key]) => drawing.get(id) !== key);
-      if (!moved && sameEntries(next, entries)) return;
+      for (const [id, key] of nextDrawing) if (drawing.get(id) !== key) moved.add(id);
+      if (moved.size) queueMicrotask(restore);
+
+      const changedHands = [...nextDrawing].some(([id, key]) => drawing.get(id) !== key);
+      if (!changedHands && nextDrawing.size === drawing.size && sameEntries(next, entries)) return;
       entries = next;
       drawing = nextDrawing;
       changed();

@@ -120,6 +120,30 @@ export function createFrameLayer(): FrameLayerStore {
   let watching: (() => void) | null = null;
   let observer: ResizeObserver | null = null;
 
+  // Where the frame's own coordinates start. A frame is positioned, so this
+  // is its containing block: the nearest positioned ancestor's padding box,
+  // or the document itself when there is none — which is the case here, since
+  // nothing between the layer and the root is positioned.
+  //
+  // Positioning in the document rather than in the viewport is what makes a
+  // frame survive a pinch. A zoom redefines the visual viewport and leaves
+  // the document alone, so a `fixed` frame is placed against a box that has
+  // just moved under it while its placeholder, in flow, has not; measured in
+  // document coordinates the two cannot come apart, because both are read in
+  // the same space and the difference between them is what is written.
+  const origin = (frame: HTMLElement) => {
+    const parent = frame.offsetParent;
+    if (!(parent instanceof HTMLElement) || parent === document.body) {
+      return { left: -window.scrollX, top: -window.scrollY };
+    }
+    const box = parent.getBoundingClientRect();
+    const style = getComputedStyle(parent);
+    return {
+      left: box.left + (parseFloat(style.borderLeftWidth) || 0),
+      top: box.top + (parseFloat(style.borderTopWidth) || 0),
+    };
+  };
+
   const place = ({ frame, placeholder }: Entry) => {
     const rect = placeholder.getBoundingClientRect();
     // No box: the placeholder is in a hidden tab, or in a document with no
@@ -129,7 +153,8 @@ export function createFrameLayer(): FrameLayerStore {
       return;
     }
     frame.style.visibility = '';
-    frame.style.transform = `translate(${rect.left}px, ${rect.top}px)`;
+    const from = origin(frame);
+    frame.style.transform = `translate(${rect.left - from.left}px, ${rect.top - from.top}px)`;
     frame.style.width = `${rect.width}px`;
     frame.style.height = `${rect.height}px`;
     frame.style.clipPath = clipOf(placeholder, rect) ?? 'inset(100%)';

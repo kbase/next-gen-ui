@@ -795,8 +795,12 @@
   display: contents;
 }
 
+/* Absolute, not fixed: a frame is placed in the document's coordinates, which
+   a pinch-zoom does not move, rather than the viewport's, which it redefines
+   (host/frames.ts, `origin`). Nothing between the layer and the workbench
+   root is positioned, so the containing block is the document. */
 .frameLayer > iframe {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   border: 0;

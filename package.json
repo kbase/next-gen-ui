@@ -8,6 +8,20 @@
     "src/plugins/sdk",
     "dist-plugin-sdk"
   ],
+  "exports": {
+    ".": {
+      "types": "./dist-plugin-sdk/types/index.d.ts",
+      "import": "./dist-plugin-sdk/index.js"
+    },
+    "./config": {
+      "types": "./dist-plugin-sdk/types/contract.d.ts",
+      "import": "./dist-plugin-sdk/config.js"
+    },
+    "./vite": {
+      "types": "./dist-plugin-sdk/types/pluginFederation.d.ts",
+      "import": "./dist-plugin-sdk/vite.js"
+    }
+  },
   "engines": {
     "node": ">=22.0.0 <23"
   },

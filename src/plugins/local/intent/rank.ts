@@ -10,7 +10,7 @@ import type {
 } from '@kbase/plugin-sdk';
 import { CONTEXT_TIERS, qualifyCommand } from '@kbase/plugin-sdk';
 import type { Tag } from './tag';
-import { namespaceOf, shapeFor } from './tag';
+import { identifierType, namespaceOf } from './tag';
 
 // Ranking everything the workbench can be asked to do against typed text,
 // and filling arguments from the terms the text carries.
@@ -259,7 +259,7 @@ function reading(text: string, tags: Tag[]): string {
   let at = 0;
   for (const tag of [...tags].sort((a, b) => a.start - b.start)) {
     if (tag.start < at) continue;
-    out += text.slice(at, tag.start) + (shapeFor(tag.prefix)?.name ?? tag.prefix);
+    out += text.slice(at, tag.start) + (identifierType(tag.prefix)?.name ?? tag.prefix);
     at = tag.end;
   }
   return out + text.slice(at);

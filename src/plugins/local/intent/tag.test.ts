@@ -35,7 +35,7 @@ describe('tagging identifiers in typed text', () => {
     expect(terms('what is 9606')).toEqual([]);
   });
 
-  it('knows the shapes the plugins already mint', () => {
+  it('knows the identifier types the plugins already mint', () => {
     expect(terms('GCF_000005845.2')).toEqual(['insdc.gcf:GCF_000005845.2']);
     expect(terms('RS_GCF_000005845.2')).toEqual(['gtdb.genome:RS_GCF_000005845.2']);
     expect(terms('12345/6/7')).toEqual(['upa:12345/6/7']);

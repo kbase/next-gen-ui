@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Writes the boundary out as JSON Schema, one document per value that
 // crosses between a plugin and the host (src/plugins/sdk/boundary).
 //

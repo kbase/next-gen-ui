@@ -1,14 +1,14 @@
-import shapesJson from './shapes.json';
+import identifierTypes from './identifier-types.json';
 
-// Identifiers the workbench recognises in typed text by shape alone, under
+// Identifiers the workbench recognises in typed text by idType alone, under
 // the prefix Bioregistry gives them: `P0AEX9` is `uniprot:P0AEX9` wherever
-// it sits in a sentence, and so is `p0aex9`: the shape is matched in any
-// case and the id minted in the registry's. The shapes are extracted from a pinned Bioregistry
-// release by scripts/build-shapes.mjs, which also says why an entry is
+// it sits in a sentence, and so is `p0aex9`: the idType is matched in any
+// case and the id minted in the registry's. The identifier types are extracted from a pinned Bioregistry
+// release by scripts/fetch-identifier-types.mjs, which also says why an entry is
 // tagged only in its prefixed form (`taxon:562`): a bare integer names as
 // many things as there are databases.
 
-export interface Shape {
+export interface IdentifierType {
   prefix: string;
   name: string;
   // The registry's name and synonyms: what the prefix is called in prose.
@@ -30,41 +30,41 @@ export interface Tag {
   end: number;
 }
 
-interface Compiled extends Shape {
+interface Compiled extends IdentifierType {
   re: RegExp;
   // The registry writes the id in one case; typed text comes in any.
-  // A shape whose pattern names only upper-case letters is minted upper.
+  // A idType whose pattern names only upper-case letters is minted upper.
   upper: boolean;
 }
 
-const SHAPES: Compiled[] = (shapesJson as { shapes: Shape[] }).shapes.map((s) => ({
+const IDENTIFIER_TYPES: Compiled[] = (identifierTypes as { identifierTypes: IdentifierType[] }).identifierTypes.map((s) => ({
   ...s,
   re: new RegExp(s.pattern, 'i'),
   upper: !/[a-z]/.test(s.pattern.replace(/\\[a-zA-Z]/g, '')),
 }));
 
 // The id as the registry writes it: `p0aex9` is `P0AEX9` to UniProt.
-const canonical = (shape: Compiled, id: string) => (shape.upper ? id.toUpperCase() : id);
-const BARE = SHAPES.filter((s) => s.bare);
+const canonical = (idType: Compiled, id: string) => (idType.upper ? id.toUpperCase() : id);
+const BARE = IDENTIFIER_TYPES.filter((s) => s.bare);
 const BY_ALIAS = new Map<string, Compiled[]>();
-for (const shape of SHAPES) {
-  for (const alias of shape.aliases) {
-    BY_ALIAS.set(alias, [...(BY_ALIAS.get(alias) ?? []), shape]);
+for (const idType of IDENTIFIER_TYPES) {
+  for (const alias of idType.aliases) {
+    BY_ALIAS.set(alias, [...(BY_ALIAS.get(alias) ?? []), idType]);
   }
 }
-const BY_PREFIX = new Map(SHAPES.map((s) => [s.prefix, s]));
+const BY_PREFIX = new Map(IDENTIFIER_TYPES.map((s) => [s.prefix, s]));
 
-export const shapeFor = (prefix: string): Shape | undefined => BY_PREFIX.get(prefix);
+export const identifierType = (prefix: string): IdentifierType | undefined => BY_PREFIX.get(prefix);
 
 // The prefix of a `prefix:value` term, and what it is called: the registry's
-// words for a shape the workbench knows, the prefix's own letters otherwise.
+// words for a type the workbench knows, the prefix's own letters otherwise.
 export function namespaceOf(term: string): { prefix: string; id: string; words: string[] } | null {
   const at = term.indexOf(':');
   if (at <= 0) return null;
   const prefix = term.slice(0, at);
   const id = term.slice(at + 1);
-  const shape = BY_PREFIX.get(prefix);
-  return { prefix, id, words: shape ? shape.words : prefix.split(/[^a-zA-Z0-9]+/) };
+  const idType = BY_PREFIX.get(prefix);
+  return { prefix, id, words: idType ? idType.words : prefix.split(/[^a-zA-Z0-9]+/) };
 }
 
 // A token is a run of non-space characters less the quotes and brackets
@@ -89,18 +89,18 @@ export function tagText(text: string): Tag[] {
     const colon = token.indexOf(':');
     if (colon > 0) {
       const id = token.slice(colon + 1);
-      for (const shape of BY_ALIAS.get(token.slice(0, colon).toLowerCase()) ?? []) {
-        if (shape.re.test(id)) {
-          const as = canonical(shape, id);
-          tags.push({ term: `${shape.prefix}:${as}`, prefix: shape.prefix, id: as, start, end });
+      for (const idType of BY_ALIAS.get(token.slice(0, colon).toLowerCase()) ?? []) {
+        if (idType.re.test(id)) {
+          const as = canonical(idType, id);
+          tags.push({ term: `${idType.prefix}:${as}`, prefix: idType.prefix, id: as, start, end });
         }
       }
       continue;
     }
-    for (const shape of BARE) {
-      if (shape.re.test(token)) {
-        const as = canonical(shape, token);
-        tags.push({ term: `${shape.prefix}:${as}`, prefix: shape.prefix, id: as, start, end });
+    for (const idType of BARE) {
+      if (idType.re.test(token)) {
+        const as = canonical(idType, token);
+        tags.push({ term: `${idType.prefix}:${as}`, prefix: idType.prefix, id: as, start, end });
       }
     }
   }

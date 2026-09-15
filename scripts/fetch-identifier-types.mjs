@@ -1,4 +1,4 @@
-// Regenerate src/plugins/local/intent/shapes.json from a pinned Bioregistry release.
+// Regenerate src/plugins/local/intent/identifier-types.json from a pinned Bioregistry release.
 //
 // The intent plugin tags identifiers it recognises in typed text, under the
 // prefix Bioregistry gives them, so the vocabulary is the registry's rather
@@ -7,14 +7,14 @@
 // the prefixes listed in TAKE are extracted, and an entry whose registry
 // pattern is too loose to trust on a bare token carries its own.
 //
-//   node scripts/build-shapes.mjs
+//   node scripts/fetch-identifier-types.mjs
 
 import { execFileSync } from 'node:child_process';
 import { writeFile } from 'node:fs/promises';
 
 const TAG = 'v0.14.5';
 const SOURCE = `https://raw.githubusercontent.com/biopragmatics/bioregistry/${TAG}/exports/registry/registry.json`;
-const OUT = new URL('../src/plugins/local/intent/shapes.json', import.meta.url);
+const OUT = new URL('../src/plugins/local/intent/identifier-types.json', import.meta.url);
 
 // prefix -> overrides. `bare: false` means the id is tagged only when typed
 // with its prefix (`taxon:562`, `GO:0008150`): the bare form is an integer
@@ -103,7 +103,7 @@ const LOCAL = [
 const ALIAS = /^[a-z0-9_.-]+$/;
 
 const registry = await (await fetch(SOURCE)).json();
-const shapes = [];
+const identifierTypes = [];
 for (const [prefix, over] of Object.entries(TAKE)) {
   const entry = registry[prefix];
   if (!entry) throw new Error(`${prefix} is not in Bioregistry ${TAG}`);
@@ -114,7 +114,7 @@ for (const [prefix, over] of Object.entries(TAKE)) {
   const aliases = new Set([prefix, ...(over.aliases ?? [])]);
   if (entry.banana) aliases.add(entry.banana.toLowerCase());
   for (const s of synonyms) if (ALIAS.test(s.toLowerCase())) aliases.add(s.toLowerCase());
-  shapes.push({
+  identifierTypes.push({
     prefix,
     name: entry.name,
     words: [entry.name, ...synonyms],
@@ -125,12 +125,12 @@ for (const [prefix, over] of Object.entries(TAKE)) {
 }
 for (const local of LOCAL) {
   new RegExp(local.pattern);
-  shapes.push({ ...local, aliases: [...new Set([local.prefix, ...local.aliases])].sort() });
+  identifierTypes.push({ ...local, aliases: [...new Set([local.prefix, ...local.aliases])].sort() });
 }
-shapes.sort((a, b) => a.prefix.localeCompare(b.prefix));
+identifierTypes.sort((a, b) => a.prefix.localeCompare(b.prefix));
 
-await writeFile(OUT, JSON.stringify({ bioregistry: TAG, shapes }, null, 2) + '\n');
+await writeFile(OUT, JSON.stringify({ bioregistry: TAG, identifierTypes }, null, 2) + '\n');
 // Laid out the way the repo's formatter would, so a regeneration diffs only
 // where the registry changed.
 execFileSync('npx', ['prettier', '--write', OUT.pathname], { stdio: 'ignore' });
-console.log(`${shapes.length} shapes from Bioregistry ${TAG} → ${OUT.pathname}`);
+console.log(`${identifierTypes.length} identifier types from Bioregistry ${TAG} → ${OUT.pathname}`);

@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { PanelContext } from '@kbase/plugin-sdk';
 import type { PanelHandle } from '@kbase/plugin-sdk';
 import { testWorkbench } from '../../../../test/workbench';
-import { useKeybindings } from '../../useKeybindings';
+import { useKeybindings } from '../../hooks/useKeybindings';
 import { WorkbenchProvider } from '../../WorkbenchProvider';
 import { SettingsDocument } from './Settings';
 

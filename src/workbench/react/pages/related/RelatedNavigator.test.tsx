@@ -5,7 +5,7 @@ import type { Background, CartItem, PanelHandle, TermsQuery } from '@kbase/plugi
 import { HostContext, PanelContext, definePluginManifest } from '@kbase/plugin-sdk';
 import { makeRoute } from '../../../core';
 import { ServicesContext } from '../../context';
-import { useAmbientQueries } from '../../useAmbientQueries';
+import { useAmbientQueries } from '../../hooks/useAmbientQueries';
 import { createWorkbench } from '../../../compose/createWorkbench';
 import { pluginHostFor } from '../../../host/pluginHost';
 import { noPersistence } from '../../../host/persistence';

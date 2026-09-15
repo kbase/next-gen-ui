@@ -1,7 +1,7 @@
 import { CartButton as Control } from '@kbase/design-system';
 import type { CartButtonProps as ControlProps } from '@kbase/design-system';
-import { useCart } from './cart';
-import type { CartItem } from './cart';
+import { useCart } from './useCart';
+import type { CartItem } from './useCart';
 
 // Putting a thing in the cart, drawn the same way everywhere.
 //

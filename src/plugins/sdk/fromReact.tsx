@@ -3,9 +3,9 @@ import type { ComponentType, ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ArrowCounterClockwise } from '@phosphor-icons/react';
 import { Alert, Button } from '@kbase/design-system';
-import { HostContext } from './host';
+import { HostContext } from './useHost';
 import type { Mount } from './modules';
-import { PanelContext } from './panel';
+import { PanelContext } from './usePanel';
 
 // A React component as a panel body. React is the plugin's choice, not the
 // host's: the host hands over an element and a handle, and this puts a

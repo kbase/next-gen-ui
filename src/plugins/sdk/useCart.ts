@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { CartItemSchema, CartSourceSchema } from './boundary/cart';
 import type { CartItem, CartSource } from './boundary/cart';
-import { useHost } from './host';
+import { useHost } from './useHost';
 
 // Adding something to the cart, from inside a plugin.
 //

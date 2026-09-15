@@ -3,10 +3,10 @@
 // what a plugin calls and what the host reads.
 export * from './boundary';
 
-export { PanelContext, usePanel, usePanelTitle, usePanelBreadcrumbs, usePanelTerms } from './panel';
-export type { PanelHandle } from './panel';
-export { HostContext, useHost } from './host';
-export type { PluginHost } from './host';
+export { PanelContext, usePanel, usePanelTitle, usePanelBreadcrumbs, usePanelTerms } from './usePanel';
+export type { PanelHandle } from './usePanel';
+export { HostContext, useHost } from './useHost';
+export type { PluginHost } from './useHost';
 export {
   SDK_VERSION,
   acceptsSdkVersion,
@@ -43,7 +43,7 @@ export { fromReact } from './fromReact';
 export { AppFrame } from './AppFrame';
 export type { AppFrameProps } from './AppFrame';
 export type { FrameLayer } from './frames';
-export { useCart } from './cart';
-export type { Cart } from './cart';
+export { useCart } from './useCart';
+export type { Cart } from './useCart';
 export { CartButton } from './CartButton';
 export type { CartButtonProps } from './CartButton';

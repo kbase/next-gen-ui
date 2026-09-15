@@ -4,8 +4,8 @@ import type { Destination, Query } from './boundary/prompt';
 import type { StatusItem } from './boundary/status';
 import type { DeclaredCall, DeclaredCommand, IntentQuery, Suggestion } from './boundary/intent';
 import type { ArgValues, Caller } from './boundary/commands';
-import type { PluginHost } from './host';
-import type { PanelHandle } from './panel';
+import type { PluginHost } from './useHost';
+import type { PanelHandle } from './usePanel';
 
 export {
   StatusItemSchema,

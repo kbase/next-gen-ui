@@ -423,7 +423,6 @@
 .separator:hover::before {
   background: var(--c-border2);
 }
-
 .separator:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px var(--c-focus);
@@ -714,9 +713,15 @@
   pointer-events: none;
 }
 
+/* The glyph says what the drop would do and is drawn only in the band the
+   pointer is in; the band being tinted is what says where. */
 .dropZone {
   position: absolute;
   pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ct-primary);
 }
 
 .dropZone[data-over] {

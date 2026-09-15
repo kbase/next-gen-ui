@@ -1,6 +1,13 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import {
+  ColumnsPlusLeft,
+  ColumnsPlusRight,
+  RowsPlusBottom,
+  RowsPlusTop,
+  Tabs,
+} from '@phosphor-icons/react';
+import {
   DndContext,
   DragOverlay,
   PointerSensor,
@@ -103,14 +110,39 @@ const EDGE_CLASS: Record<Side, string> = {
   bottom: styles.dropZoneBottom,
 };
 
+// What the drop would do, drawn in the band that would do it: a column beside
+// the group on that side, a row above or below it. Five tinted rectangles
+// differ only in where they are, and where they are is the thing a reader is
+// trying to work out mid-drag.
+const EDGE_ICON: Record<Side, typeof ColumnsPlusLeft> = {
+  left: ColumnsPlusLeft,
+  right: ColumnsPlusRight,
+  top: RowsPlusTop,
+  bottom: RowsPlusBottom,
+};
+
+const EDGE_LABEL: Record<Side, string> = {
+  left: 'Split left',
+  right: 'Split right',
+  top: 'Split above',
+  bottom: 'Split below',
+};
+
 function EdgeZone({ group, side }: { group: string; side: Side }) {
   const { dropRef, isOver } = useDropTarget({ type: 'edge', group, side });
+  const Icon = EDGE_ICON[side];
   return (
     <div
       ref={dropRef}
       className={`${styles.dropZone} ${EDGE_CLASS[side]}`}
       data-over={isOver || undefined}
-    />
+      aria-label={EDGE_LABEL[side]}
+    >
+      {/* Only the band the pointer is in draws its glyph: five at once would
+          be five things to read, where what is being asked is which one the
+          pointer is in. */}
+      {isOver && <Icon size={28} weight="bold" aria-hidden="true" />}
+    </div>
   );
 }
 
@@ -121,6 +153,9 @@ function CentreZone({ group }: { group: string }) {
       ref={dropRef}
       className={`${styles.dropZone} ${styles.dropZoneCentre}`}
       data-over={isOver || undefined}
-    />
+      aria-label="Add as a tab"
+    >
+      {isOver && <Tabs size={28} weight="bold" aria-hidden="true" />}
+    </div>
   );
 }

@@ -8,7 +8,7 @@ import 'prismjs';
 import 'prismjs/components/prism-json.js';
 import { ShoppingCartSimple, X } from '@phosphor-icons/react';
 import { AlertDialog, Button, CodeBlock, Dialog, Tooltip } from '@kbase/design-system';
-import { qualifyCommand } from '../../plugins/sdk';
+import { qualifyCommand } from '@kbase/plugin-sdk';
 import type { StoredCartItem } from '../core';
 import { iconFor } from './icons';
 import { useRun, useServices } from './context';

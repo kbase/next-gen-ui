@@ -1,7 +1,7 @@
 import { useState, useSyncExternalStore } from 'react';
 import type { KeyboardEvent } from 'react';
 import { Button, Chip, Radio, Switch } from '@kbase/design-system';
-import { usePanelTitle } from '../../../../plugins/sdk';
+import { usePanelTitle } from '@kbase/plugin-sdk';
 import type { Command } from '../../../commands';
 import {
   DEFAULT_KEYBINDINGS,

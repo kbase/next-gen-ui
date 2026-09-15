@@ -1,8 +1,8 @@
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import type { StatusItem } from '../../plugins/sdk';
-import { defineBackground } from '../../plugins/sdk';
+import type { StatusItem } from '@kbase/plugin-sdk';
+import { defineBackground } from '@kbase/plugin-sdk';
 import { localPlugins } from '../../plugins/local';
 import type { InstalledPlugin } from '../host';
 import { localPlugin, noPersistence } from '../host';

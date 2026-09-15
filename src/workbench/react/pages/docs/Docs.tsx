@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { CodeBlock } from '@kbase/design-system';
-import { usePanelTitle } from '../../../../plugins/sdk';
+import { usePanelTitle } from '@kbase/plugin-sdk';
 import styles from './Docs.module.css';
 
 // The plugin contract as it is meant to be: the page is the specification and

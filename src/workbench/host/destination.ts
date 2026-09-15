@@ -1,5 +1,5 @@
-import type { Cleanup, Destination } from '../../plugins/sdk';
-import { DestinationSchema } from '../../plugins/sdk';
+import type { Cleanup, Destination } from '@kbase/plugin-sdk';
+import { DestinationSchema } from '@kbase/plugin-sdk';
 import type { PluginId } from '../core';
 import { createEpoch, createStore } from '../core/subscribable';
 import { issueText } from './checked';

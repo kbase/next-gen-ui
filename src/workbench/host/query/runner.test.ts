@@ -7,7 +7,7 @@ import type {
   Suggestion,
   TermsQuery,
   TypedQuery,
-} from '../../../plugins/sdk';
+} from '@kbase/plugin-sdk';
 import { createQueryStore, mergeRecommendations } from '../../core';
 import type { HostIndex } from '../installed';
 import { BUDGET_MS, SETTLE_MS, createQueryRunner } from './runner';

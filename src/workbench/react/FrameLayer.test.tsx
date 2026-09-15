@@ -1,7 +1,7 @@
 import { act, configure, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { useRef } from 'react';
-import { AppFrame, defineRoute, fromReact } from '../../plugins/sdk';
+import { AppFrame, defineRoute, fromReact } from '@kbase/plugin-sdk';
 import type { GroupId } from '../core';
 import { groups, makeRoute } from '../core';
 import { noPersistence } from '../host';

@@ -1,4 +1,4 @@
-import { PathSchema } from '../../plugins/sdk';
+import { PathSchema } from '@kbase/plugin-sdk';
 import type { MainTarget, PanelId, PluginId } from '../core';
 import { makePane, makeRoute, placementOf } from '../core';
 import type { WorkbenchServices } from './services';

@@ -8,8 +8,8 @@ import {
   createRoute,
   createRouter,
 } from '@tanstack/react-router';
-import type { PanelHandle } from '../../plugins/sdk';
-import { defineRoute } from '../../plugins/sdk';
+import type { PanelHandle } from '@kbase/plugin-sdk';
+import { defineRoute } from '@kbase/plugin-sdk';
 import { noPersistence, openRoute } from '../host';
 import { createWorkbench } from '../compose';
 import { localPlugin } from '../host/local';

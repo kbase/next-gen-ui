@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react';
-import { definePluginManifest, fromReact } from '../../plugins/sdk';
-import type { Mount, Pane, Route } from '../../plugins/sdk';
+import { definePluginManifest, fromReact } from '@kbase/plugin-sdk';
+import type { Mount, Pane, Route } from '@kbase/plugin-sdk';
 import { ServicesContext } from '../react/context';
 import type { WorkbenchServices } from '../host/services';
 import type { InstalledPlugin } from '../host/installed';

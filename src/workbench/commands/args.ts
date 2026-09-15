@@ -1,7 +1,7 @@
 // Typed command arguments. Specs are data so the prompt bar can complete
 // and validate a slash command before the code that runs it has loaded.
 
-import type { ArgDecl } from '../../plugins/sdk';
+import type { ArgDecl } from '@kbase/plugin-sdk';
 
 export type Completer = (prefix: string) => string[] | Promise<string[]>;
 

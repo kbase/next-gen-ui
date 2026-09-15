@@ -1,6 +1,6 @@
 import { loadRemote, registerRemotes } from '@module-federation/runtime';
-import type { Manifest, Module, Modules } from '../../plugins/sdk';
-import { ManifestSchema } from '../../plugins/sdk';
+import type { Manifest, Module, Modules } from '@kbase/plugin-sdk';
+import { ManifestSchema } from '@kbase/plugin-sdk';
 import type { InstalledPlugin, ModuleLoaders } from './installed';
 
 // The registry: GET <base>/plugins → Manifest[]. Same origin, so a remote

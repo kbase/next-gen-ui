@@ -10,8 +10,8 @@ import {
 import type { ErrorInfo, ReactNode } from 'react';
 import { ArrowCounterClockwise, Placeholder, Plug } from '@phosphor-icons/react';
 import { Alert, Button, EmptyState, Loader } from '@kbase/design-system';
-import type { Crumb, Mount, PanelHandle, PluginHost } from '../../plugins/sdk';
-import { CrumbsSchema, PanelTermsSchema, PathSchema, TitleSchema } from '../../plugins/sdk';
+import type { Crumb, Mount, PanelHandle, PluginHost } from '@kbase/plugin-sdk';
+import { CrumbsSchema, PanelTermsSchema, PathSchema, TitleSchema } from '@kbase/plugin-sdk';
 import type { Panel } from '../core';
 import { placementOf } from '../core';
 import { useLayout, useRun, useServices } from './context';

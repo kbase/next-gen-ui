@@ -1,7 +1,7 @@
 import { act, configure, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { definePane } from '../../plugins/sdk';
+import { definePane } from '@kbase/plugin-sdk';
 import type { PanelId, PluginId } from '../core';
 import { paneId } from '../core';
 import { noPersistence } from '../host';

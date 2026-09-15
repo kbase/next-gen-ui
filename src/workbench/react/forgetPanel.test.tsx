@@ -1,6 +1,6 @@
 import { act, configure, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { defineRoute } from '../../plugins/sdk';
+import { defineRoute } from '@kbase/plugin-sdk';
 import { makeRoute } from '../core';
 import { noPersistence } from '../host';
 import { createWorkbench } from '../compose';

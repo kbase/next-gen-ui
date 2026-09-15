@@ -1,7 +1,7 @@
 import { StrictMode } from 'react';
 import { act, configure, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { definePane, defineRoute } from '../../plugins/sdk';
+import { definePane, defineRoute } from '@kbase/plugin-sdk';
 import type { GroupId, PanelId } from '../core';
 import { groups, makeRoute, paneId } from '../core';
 import { noPersistence } from '../host';

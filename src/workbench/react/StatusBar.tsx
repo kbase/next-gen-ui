@@ -1,8 +1,8 @@
 import { useSyncExternalStore } from 'react';
 import { LockSimple, SidebarSimple } from '@phosphor-icons/react';
 import { Button } from '@kbase/design-system';
-import type { StatusItem } from '../../plugins/sdk';
-import { qualifyCommand } from '../../plugins/sdk';
+import type { StatusItem } from '@kbase/plugin-sdk';
+import { qualifyCommand } from '@kbase/plugin-sdk';
 import { useBusy, useLayout, useRun, useServices, useTitle } from './context';
 import styles from './Workbench.module.css';
 

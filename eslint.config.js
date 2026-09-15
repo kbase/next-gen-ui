@@ -89,7 +89,7 @@ export default tseslint.config(
               // (CartItem, Offer, Match), and those names are erased at
               // compile time. Importing a value from the SDK would pull
               // React in behind it.
-              group: ['**/plugins/sdk', '**/plugins/sdk/**'],
+              group: ['**/plugins/sdk', '**/plugins/sdk/**', '@kbase/plugin-sdk', '@kbase/plugin-sdk/**'],
               allowTypeImports: true,
               message: 'core and commands may name SDK types, not import its code.',
             },

@@ -1,8 +1,8 @@
 import { useState, useSyncExternalStore } from 'react';
 import { Button, Chip, SearchBar } from '@kbase/design-system';
 import { Code, Gear } from '@phosphor-icons/react';
-import type { Manifest } from '../../../../plugins/sdk';
-import { qualifyCommand, usePanelTitle } from '../../../../plugins/sdk';
+import type { Manifest } from '@kbase/plugin-sdk';
+import { qualifyCommand, usePanelTitle } from '@kbase/plugin-sdk';
 import { useLayout, useRun, useServices } from '../../context';
 import { iconFor } from '../../icons';
 import { openRoute } from '../../../host/open';

@@ -5,9 +5,9 @@ import type {
   Suggestion,
   TermsQuery,
   TieredTerms,
-} from '../../../plugins/sdk';
+} from '@kbase/plugin-sdk';
 import { z } from 'zod';
-import { CartItemSchema, OfferSchema, SuggestionSchema, qualifyCommand } from '../../../plugins/sdk';
+import { CartItemSchema, OfferSchema, SuggestionSchema, qualifyCommand } from '@kbase/plugin-sdk';
 import type { Answer, PluginOffers, QuerySource, QueryStore } from '../../core';
 import { EMPTY_TYPING, unionAnswers } from '../../core';
 import { accepted } from '../checked';

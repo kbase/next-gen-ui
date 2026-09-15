@@ -8,8 +8,8 @@ import type {
   Module,
   Modules,
   PluginHost,
-} from '../../plugins/sdk';
-import { qualifyCommand } from '../../plugins/sdk';
+} from '@kbase/plugin-sdk';
+import { qualifyCommand } from '@kbase/plugin-sdk';
 import type { PluginId } from '../core';
 import { createNotifier } from '../core/subscribable';
 import type { Command, CommandRegistry } from '../commands';

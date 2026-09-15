@@ -1,5 +1,5 @@
-import type { Cleanup, StatusItem } from '../../plugins/sdk';
-import { StatusItemSchema } from '../../plugins/sdk';
+import type { Cleanup, StatusItem } from '@kbase/plugin-sdk';
+import { StatusItemSchema } from '@kbase/plugin-sdk';
 import type { PluginId } from '../core';
 import { createEpoch, createKeyedStore } from '../core/subscribable';
 import { accepted } from './checked';

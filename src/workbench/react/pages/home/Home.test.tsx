@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { PanelContext } from '../../../../plugins/sdk';
-import type { PanelHandle } from '../../../../plugins/sdk';
+import { PanelContext } from '@kbase/plugin-sdk';
+import type { PanelHandle } from '@kbase/plugin-sdk';
 import { testWorkbench } from '../../../../test/workbench';
 import { WorkbenchProvider } from '../../WorkbenchProvider';
 import { HomeDocument } from './Home';

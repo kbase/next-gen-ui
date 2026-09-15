@@ -2,7 +2,7 @@ import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { localPlugins } from '../../plugins/local';
-import { definePluginManifest } from '../../plugins/sdk';
+import { definePluginManifest } from '@kbase/plugin-sdk';
 import { localPlugin, noPersistence } from '../host';
 import { createWorkbench } from '../compose';
 import { WorkbenchProvider } from './WorkbenchProvider';

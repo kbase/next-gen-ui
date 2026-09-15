@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { MagnifyingGlass, X } from '@phosphor-icons/react';
 import { CartButton, EmptyState, Loader, Tooltip } from '@kbase/design-system';
-import type { CartItem } from '../../../../plugins/sdk';
-import { qualifyCommand, usePanelTitle } from '../../../../plugins/sdk';
+import type { CartItem } from '@kbase/plugin-sdk';
+import { qualifyCommand, usePanelTitle } from '@kbase/plugin-sdk';
 import type { QuerySource, Recommendation } from '../../../core';
 import { mergeRecommendations } from '../../../core';
 import { pluginHostFor } from '../../../host/pluginHost';

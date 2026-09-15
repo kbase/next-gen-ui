@@ -1,4 +1,4 @@
-import type { Crumb } from '../../plugins/sdk';
+import type { Crumb } from '@kbase/plugin-sdk';
 import type { PanelId } from '../core';
 
 // What each tab in one group is called. A tab names the thing you would

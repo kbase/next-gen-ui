@@ -1,4 +1,4 @@
-import type { CartItem, Match, MatchKind } from '../../plugins/sdk';
+import type { CartItem, Match, MatchKind } from '@kbase/plugin-sdk';
 import type { QuerySource, SourceState } from './query';
 
 // The Related pane's list, with the recommendation as the unit.

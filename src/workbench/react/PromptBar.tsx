@@ -3,7 +3,7 @@ import type { ComponentType, KeyboardEvent } from 'react';
 import { ArrowUpRight, CaretRight, CaretUpDown, Check } from '@phosphor-icons/react';
 import type { IconProps } from '@phosphor-icons/react';
 import { Menu, PromptInput, cx } from '@kbase/design-system';
-import type { Prompt } from '../../plugins/sdk';
+import type { Prompt } from '@kbase/plugin-sdk';
 import type { Completion } from '../commands';
 import { complete, parse, qualifiedName, resolve, usage } from '../commands';
 import { pluginHostFor } from '../host/pluginHost';

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { SDK_VERSION } from '../../plugins/sdk';
-import type { Manifest } from '../../plugins/sdk';
+import { SDK_VERSION } from '@kbase/plugin-sdk';
+import type { Manifest } from '@kbase/plugin-sdk';
 import { localPlugins } from '../../plugins/local';
 import { fetchRegistry, mergeInstalled, remotePlugin } from './registry';
 

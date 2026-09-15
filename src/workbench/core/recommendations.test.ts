@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { CartItem } from '../../plugins/sdk';
+import type { CartItem } from '@kbase/plugin-sdk';
 import type { SourceState } from './query';
 import { mergeRecommendations, unionAnswers } from './recommendations';
 

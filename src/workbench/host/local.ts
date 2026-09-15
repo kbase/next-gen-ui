@@ -1,5 +1,5 @@
-import type { PluginConfig } from '../../plugins/sdk';
-import { MODULES, manifestFor } from '../../plugins/sdk';
+import type { PluginConfig } from '@kbase/plugin-sdk';
+import { MODULES, manifestFor } from '@kbase/plugin-sdk';
 import type { InstalledPlugin, ModuleLoaders } from './installed';
 
 // A plugin bundled with the host. The build's rule — a module exists iff

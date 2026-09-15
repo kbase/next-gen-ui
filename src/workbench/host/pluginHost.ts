@@ -1,11 +1,11 @@
-import type { PluginHost } from '../../plugins/sdk';
+import type { PluginHost } from '@kbase/plugin-sdk';
 import {
   ArgValuesSchema,
   CartItemSchema,
   NoticeSchema,
   PathSchema,
   qualifyCommand,
-} from '../../plugins/sdk';
+} from '@kbase/plugin-sdk';
 import type { PluginId } from '../core';
 import { taken } from './checked';
 import type { WorkbenchServices } from './services';

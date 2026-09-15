@@ -1,5 +1,5 @@
 import { autoUpdate } from '@floating-ui/dom';
-import type { FrameLayer } from '../../plugins/sdk';
+import type { FrameLayer } from '@kbase/plugin-sdk';
 
 // The frame layer's host side: one container at the end of the document, and
 // the geometry that lays each frame over the placeholder its panel holds. The

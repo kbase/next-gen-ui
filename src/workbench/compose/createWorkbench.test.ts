@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { CartItem, DeclaredCall } from '../../plugins/sdk';
-import { definePluginManifest, qualifyCommand } from '../../plugins/sdk';
+import type { CartItem, DeclaredCall } from '@kbase/plugin-sdk';
+import { definePluginManifest, qualifyCommand } from '@kbase/plugin-sdk';
 import { localPlugins } from '../../plugins/local';
 import { createWorkbench } from './createWorkbench';
 import { defaultContext, defaultLayout, groups, paneId, placementOf, reduce } from '../core';

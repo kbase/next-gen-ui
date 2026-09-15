@@ -1,4 +1,4 @@
-import type { CommandHandler } from '../../../../plugins/sdk';
+import type { CommandHandler } from '@kbase/plugin-sdk';
 
 // `/settings`, and the Shortcuts button that runs it. Its own file because
 // a component module may only export components.

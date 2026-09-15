@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { CartItem } from '../../plugins/sdk';
+import type { CartItem } from '@kbase/plugin-sdk';
 import { createKeyedStore } from './subscribable';
 
 // Things the user has set aside to work with.

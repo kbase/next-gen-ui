@@ -1,0 +1,32 @@
+/* Chrome sits on the warm page background; content panels are white
+   surface cards. The two-tone split is what makes the layout legible. */
+.menubar {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  padding: var(--s-1) var(--s-3);
+  border-bottom: 1px solid var(--c-border);
+}
+
+/* The design system's masthead RATIOS at menubar scale: per wordmark size
+   T, dots = 1.0 T and the mark→word gap = 0.75 T; the wordmark sits one
+   type step above its surroundings (triggers are --fs-4, so T = --fs-5),
+   bold ink2. */
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-4);
+  font-size: var(--fs-5);
+  font-weight: var(--fw-bold);
+  color: var(--c-ink2);
+  padding: 0 var(--s-2);
+}
+
+/* Sized by height; the symbol is 2.4:1 and keeps its own ratio. Blocked so it
+   sits on the wordmark's centre rather than on its baseline. */
+.brandMark {
+  display: block;
+  height: 18px;
+  width: auto;
+  flex: none;
+}

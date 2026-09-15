@@ -1,0 +1,109 @@
+#!/usr/bin/env node
+import {
+  readFileSync,
+  writeFileSync,
+  existsSync,
+  copyFileSync,
+  readdirSync,
+  renameSync,
+  rmSync,
+} from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { emitSchemas } from './emit-schemas.mjs';
+
+const here = dirname(fileURLToPath(import.meta.url));
+const repoRoot = join(here, '..');
+const distRoot = join(repoRoot, 'dist-plugin-sdk');
+
+if (!existsSync(distRoot)) {
+  console.error(`expected ${distRoot} to exist (run vite build first)`);
+  process.exit(1);
+}
+
+// shared.ts imports the repo-root package.json, so tsc roots the declarations
+// at the repo and nests them under types/src/plugins/sdk/. Flatten to types/.
+const nested = join(distRoot, 'types/src/plugins/sdk');
+if (existsSync(nested)) {
+  for (const f of readdirSync(nested)) renameSync(join(nested, f), join(distRoot, 'types', f));
+  rmSync(join(distRoot, 'types/src'), { recursive: true, force: true });
+}
+
+// Root package.json supplies the installed ranges the peerDependencies quote;
+// the SDK's own supplies its version. That version is also what contract.ts
+// stamps into every manifest and what shared.ts asks Module Federation for,
+// so all three read one file.
+const rootPkg = JSON.parse(readFileSync(join(repoRoot, 'package.json'), 'utf8'));
+const sdkPkg = JSON.parse(readFileSync(join(repoRoot, 'src/plugins/sdk/package.json'), 'utf8'));
+const version = sdkPkg.version;
+// CI sets SDK_VERSION from the release tag; a local build does not. Local
+// builds are marked private so `npm publish` from the dist refuses. The tag
+// cannot stand in for the in-source version: vite compiles that one into
+// config.js, so publishing under a different one would ship a package whose
+// `version` and whose manifest stamp disagree.
+const isPublishBuild = Boolean(process.env.SDK_VERSION);
+if (isPublishBuild && process.env.SDK_VERSION !== version) {
+  console.error(
+    `release tag says ${process.env.SDK_VERSION}, src/plugins/sdk/package.json says ${version}; bump the package.json and retag`,
+  );
+  process.exit(1);
+}
+const dep = (name) => rootPkg.dependencies[name] ?? rootPkg.devDependencies[name];
+
+const pkg = {
+  name: '@kbase/plugin-sdk',
+  version,
+  ...(isPublishBuild ? {} : { private: true }),
+  description:
+    'SDK for next-gen-ui workbench plugins: the manifest contract, panel hooks, and the Module Federation preset.',
+  type: 'module',
+  exports: {
+    '.': { types: './types/index.d.ts', import: './index.js' },
+    './config': { types: './types/contract.d.ts', import: './config.js' },
+    './vite': { types: './types/build/pluginFederation.d.ts', import: './vite.js' },
+    './boundary': { types: './types/boundary/index.d.ts', import: './boundary.js' },
+    // The boundary as JSON Schema, for a plugin that builds one of these
+    // shapes somewhere TypeScript cannot check it.
+    './schemas/*': './schemas/*',
+  },
+  files: ['*.js', '*.js.map', 'types/', 'schemas/', 'README.md'],
+  sideEffects: false,
+  // Keep in step with rollupOptions.external in vite.config.pluginsdk.ts.
+  // The design system has no registry version: a plugin takes it from this
+  // repo, the way it takes this SDK.
+  peerDependencies: {
+    react: dep('react'),
+    'react-dom': dep('react-dom'),
+    zod: dep('zod'),
+    '@phosphor-icons/react': dep('@phosphor-icons/react'),
+    '@kbase/design-system': '*',
+    '@module-federation/vite': dep('@module-federation/vite'),
+    vite: dep('vite'),
+  },
+  peerDependenciesMeta: {
+    '@module-federation/vite': { optional: true },
+    vite: { optional: true },
+  },
+  repository: {
+    type: 'git',
+    url: 'https://github.com/kbase/next-gen-ui.git',
+    directory: 'src/plugins/sdk',
+  },
+  publishConfig: { registry: 'https://npm.pkg.github.com' },
+  license: 'MIT',
+};
+
+writeFileSync(join(distRoot, 'package.json'), JSON.stringify(pkg, null, 2) + '\n');
+
+const readme = join(repoRoot, 'src/plugins/sdk/README.md');
+if (existsSync(readme)) copyFileSync(readme, join(distRoot, 'README.md'));
+
+// The boundary reaches nothing but zod, so the built module imports here and
+// the schemas are written from the same objects the host parses with.
+const { BOUNDARY } = await import(pathToFileURL(join(distRoot, 'boundary.js')).href);
+const schemas = emitSchemas(distRoot, BOUNDARY, version);
+
+console.log('plugin-sdk:', pkg.version, isPublishBuild ? '(publish)' : '(private)', '→', distRoot);
+console.log(
+  `  schemas: ${schemas.toHost.length} a plugin sends, ${schemas.toPlugin.length} it is sent`,
+);

@@ -21,8 +21,10 @@
     "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom"],
     "paths": {
       "@kbase/design-system": ["./src/design-system/index.ts"],
-      "@kbase/design-system/*": ["./src/design-system/*"]
+      "@kbase/design-system/*": ["./src/design-system/*"],
+      "@kbase/plugin-sdk": ["./src/plugins/sdk/index.ts"],
+      "@kbase/plugin-sdk/config": ["./src/plugins/sdk/contract.ts"]
     }
   },
-  "include": ["src", "vite.config.ts", "vite.config.designsystem.ts"]
+  "include": ["src", "vite.config.ts", "vite.config.designsystem.ts", "vite.config.pluginsdk.ts"]
 }

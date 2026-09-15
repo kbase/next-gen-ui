@@ -17,6 +17,10 @@ import {
   installAuthFailureInterceptor,
   installCrossTabAuthSync,
 } from './api/auth';
+import { localPlugins } from './plugins/local';
+import { loadInstalled, loadWorkbench } from './workbench/host';
+import { createWorkbench } from './workbench/compose';
+import { DEFAULT_ASSISTANT, DEFAULT_INTENT, DEFAULT_PINNED } from './workbenchDefaults';
 import './styles.css';
 
 const queryClient = new QueryClient({
@@ -34,9 +38,28 @@ installCrossTabAuthSync(queryClient);
 installAuthFailureInterceptor(queryClient);
 installAuthExpiryWatcher(queryClient);
 
+// Bundled plugins plus whatever the registry lists; a registry that is down
+// leaves the bundled ones working.
+//
+// A bundled plugin wins over a registry entry with the same id, which is what
+// stops a registry from replacing first-party code.
+//
+// The last session's layout, cart and settings are loaded before the
+// workbench exists, from localStorage today. An account service replaces
+// this call with one that fetches; `createWorkbench` does not change.
+const { installed, declined } = await loadInstalled(localPlugins);
+const workbench = createWorkbench({
+  installed,
+  declined,
+  persistence: await loadWorkbench(window.localStorage),
+  defaultPinned: [...DEFAULT_PINNED],
+  defaultAssistant: DEFAULT_ASSISTANT,
+  defaultIntent: DEFAULT_INTENT,
+});
+
 const router = createRouter({
   routeTree,
-  context: { queryClient },
+  context: { queryClient, workbench },
   defaultPreload: 'intent',
   defaultPreloadStaleTime: 0,
 });

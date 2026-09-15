@@ -1,0 +1,349 @@
+@value splitChild, separator from '../SplitView/SplitView.module.css';
+
+/* Sidebar */
+/* Both states stay mounted; the container's width is the ONE animated
+   layout property, and the rail and the blocks crossfade inside it. The
+   rail is a fixed-width overlay so its icons are never clipped
+   mid-animation; the blocks keep their full width and are cropped by the
+   container, so nothing inside re-lays-out. */
+.sidebar {
+  /* The rail: 48px wide so its glyphs centre on x=24, the line the brand
+     logo and the accordion header icons sit on. Collapsed, the sidebar is
+     the rail's width; expanded, it is the layout's, set inline. */
+  --rail: 48px;
+  position: relative;
+  flex: none;
+  min-height: 0;
+  overflow: hidden;
+  transition: width var(--t-slow) ease;
+}
+
+.sidebar[data-collapsed] {
+  width: var(--rail);
+}
+
+.iconColumn {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-2);
+  box-sizing: border-box;
+  width: var(--rail);
+  padding: var(--s-3) var(--s-2);
+  background: var(--c-bg);
+  transition:
+    opacity var(--t-slow) ease,
+    visibility 0s 0s;
+}
+
+.sidebar:not([data-collapsed]) .iconColumn {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--t-slow) ease,
+    visibility 0s var(--t-slow);
+}
+
+.sidebar[data-collapsed] .blocks {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--t-slow) ease,
+    visibility 0s var(--t-slow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .iconColumn,
+  .blocks {
+    transition: none;
+  }
+}
+
+.blocks {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  padding: var(--s-3);
+  transition:
+    opacity var(--t-slow) ease,
+    visibility 0s 0s;
+}
+
+/* One section of the accordion card (.blockStack); only the preview block
+   is a card of its own. */
+.block {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.block[data-folded] .blockHeader {
+  border-bottom: none;
+}
+
+/* Insertion line: a dropped navigator lands before this block. On the
+   header, whose own inset shadow paints above its background — on the
+   section it hid behind it. */
+.block[data-over] .blockHeader {
+  box-shadow: inset 0 3px 0 var(--c-primary);
+}
+
+/* An unpinned navigator being looked at. Its own card, dashed: not part
+   of the saved layout, gone on dismiss or reload. */
+.previewBlock {
+  flex: 0 0 auto;
+  height: auto;
+  max-height: 45%;
+  margin-top: var(--s-2);
+  background: var(--c-surface);
+  /* Dashed for ephemeral, primary for the offer it makes: drag this onto
+     the stack and it joins the layout there. */
+  border: 1px dashed var(--c-primary);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+
+.previewBlock[data-dragging] {
+  opacity: 0.5;
+}
+
+.previewGrip {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-width: 0;
+  cursor: grab;
+}
+
+.previewGrip:active {
+  cursor: grabbing;
+}
+
+.previewHeader {
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-1) var(--s-2) var(--s-1) var(--s-3);
+}
+
+/* The title of a card that is not an accordion section — the preview block,
+   the rail flyout — in full ink, where a section header sits back in ink3. */
+.cardTitle {
+  font-size: var(--fs-4);
+  font-weight: var(--fw-bold);
+  color: var(--c-ink);
+}
+
+/* Focus marks with the system's tint-plus-tinted-text pair (NavIcon
+   active, Tree selected), not an edge bar of raw primary. */
+.block[data-focused] .blockHeader {
+  background: var(--bg-primary);
+}
+
+.block[data-focused] .blockToggle {
+  color: var(--ct-primary);
+}
+
+.blockLabel {
+  color: inherit;
+}
+
+/* A whisper of tone, not a band: --c-raised plus the hairline and the
+   header's own height is what separates one section from the next. */
+.blockHeader {
+  display: flex;
+  background: var(--c-raised);
+  border-bottom: 1px solid var(--c-border);
+}
+
+/* The accordion's trigger, as the design system draws it, at the sidebar's
+   scale: bold ink3 title one step smaller, leading icon, chevron on the
+   right. Two classes deep so these outrank the component's own `.trigger`
+   rule whatever order the two stylesheets are emitted in. A section header,
+   not a control: it reads the type and spacing scales directly, so the
+   page's density tier, which resizes controls and rows, leaves it alone. */
+.blockHeader .blockToggle {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  /* Left inset --s-3, not --s-4: the icon centres on x=24 with the rail
+     glyphs and the brand logo. Vertically one step tighter: the sidebar
+     stacks four of these, so the header height is paid four times over. */
+  padding: var(--s-2) var(--s-4) var(--s-2) var(--s-3);
+  background: none;
+  border: none;
+  /* The More row's treatment: a section header names the section, so it
+     sits back in ink3 and comes forward on hover. */
+  color: var(--c-ink3);
+  font-family: inherit;
+  font-size: var(--fs-4);
+  font-weight: var(--fw-bold);
+  text-align: left;
+  cursor: pointer;
+}
+
+.blockHeader .blockToggle:hover {
+  color: var(--c-ink);
+}
+
+.blockIcon {
+  display: inline-flex;
+}
+
+.block[data-focused] .blockIcon {
+  color: var(--ct-primary);
+}
+
+/* Surface, not raised: the header itself is raised now. */
+.blockHeader .blockToggle:focus-visible {
+  outline: none;
+  background: var(--c-surface);
+  border-radius: 0;
+  box-shadow: inset 0 0 0 2px var(--c-focus);
+}
+
+/* `flex-basis: auto`, not 0: a block whose height is its content's — the
+   preview card, a pane declaring `fit: 'content'` — is as tall as what the
+   pane draws, and one sharing the stack is as tall as its share. On an
+   accordion block this is the component's panel part, which sizes itself to
+   its measured content and animates; a block's body is its share of the
+   stack instead, and the two-class selector outranks the part's rule. */
+.blockBody,
+.block .blockBody {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 0;
+  overflow: auto;
+  transition: none;
+}
+
+/* The flyout's size, and nothing else: the surface below it is a Frame, so
+   the fill, the border and the radius come from there. Width comes inline
+   from the layout's sidebar width, so the flyout is the sidebar's own size,
+   and a content-fit pane overrides the height inline. */
+.popout {
+  display: flex;
+  height: 480px;
+  max-height: 80vh;
+}
+
+/* Base UI focuses the popup when the flyout opens. The ring belongs on the
+   rail icon the reader is still looking at, not on the flyout that answered. */
+.popout:focus-visible {
+  outline: none;
+}
+
+/* The flyout's surface: a Frame, which is where the fill, the border, the
+   radius and the clipping come from. */
+.popoutBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  /* Popover elevation (--e-4, per the token's own grading), not the menu's
+     --e-3 — aligned flush with the cards, the shadow is what says this
+     floats above them. */
+  box-shadow: var(--e-4);
+}
+
+.popoutHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-2) var(--s-4);
+  background: var(--c-raised);
+  border-bottom: 1px solid var(--c-border);
+}
+
+/* The sidebar's accordion card: all pinned navigators on one surface,
+   sections met by hairlines rather than gaps, so the stack reads as one
+   object — closed by the More footer row. Separators straddle the seams
+   instead of living in gutters. */
+.accordion {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+
+.blockStack {
+  gap: 0;
+  flex: 1;
+  min-height: 0;
+}
+
+/* The accordion's footer: shaped like a section header, but an action. Sized
+   as the header is, off the type and spacing scales rather than the density
+   tier. */
+.moreRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  width: 100%;
+  padding: var(--s-2) var(--s-4) var(--s-2) var(--s-3);
+  background: var(--c-raised);
+  border: none;
+  border-top: 1px solid var(--c-border);
+  font-family: inherit;
+  font-size: var(--fs-4);
+  font-weight: var(--fw-bold);
+  color: var(--c-ink3);
+  text-align: left;
+  cursor: pointer;
+}
+
+.moreRow:hover {
+  color: var(--c-ink);
+}
+
+.moreRow:focus-visible {
+  outline: none;
+  background: var(--c-surface);
+  box-shadow: inset 0 0 0 2px var(--c-focus);
+}
+
+/* What the row opens onto, shown where a header would show its chevron. */
+.moreIcons {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin-left: auto;
+  color: var(--c-ink4);
+  font-size: var(--fs-3);
+  font-weight: var(--fw-normal);
+}
+
+.blockStack > .splitChild:not(:first-child) > .block {
+  border-top: 1px solid var(--c-border);
+}
+
+.blockStack > .splitChild > .separator {
+  bottom: -3px;
+  height: 6px;
+}
+
+/* The region is the end slot; the indicator is an insertion line at the
+   end of the pins — the More row's top edge, matching the per-block
+   lines — not a whole-region outline that reads as "into the sidebar". */
+.blocks[data-over] .moreRow {
+  box-shadow: inset 0 3px 0 var(--c-primary);
+}
+
+.blocks[data-over] .accordion:not(:has(.moreRow)) {
+  box-shadow: inset 0 -3px 0 var(--c-primary);
+}
+
+.blockHeader .blockToggle[data-dragging] {
+  opacity: 0.4;
+}

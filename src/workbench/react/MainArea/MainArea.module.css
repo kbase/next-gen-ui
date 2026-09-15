@@ -1,0 +1,8 @@
+/* Main area */
+.main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  padding: var(--s-3) var(--s-3) var(--s-3) 0;
+}

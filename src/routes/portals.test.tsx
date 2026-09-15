@@ -5,6 +5,7 @@ import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/rea
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { routeTree } from '../routeTree.gen';
+import { testWorkbench } from '../test/workbench';
 import styles from './portals.module.css';
 
 // Expectations are derived from what the page renders, never written down
@@ -18,7 +19,7 @@ function mountGallery() {
       <RouterProvider
         router={createRouter({
           routeTree,
-          context: { queryClient },
+          context: { queryClient, workbench: testWorkbench() },
           history: createMemoryHistory({ initialEntries: ['/portals'] }),
         })}
       />

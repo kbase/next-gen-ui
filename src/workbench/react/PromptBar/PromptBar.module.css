@@ -1,0 +1,153 @@
+/* Bars */
+/* A floating composer card on the page background, inset to the same
+   gutters as the panels; the wrapper also anchors the completion popup.
+   Lives in the main column, so it spans only the width right of the
+   sidebar. */
+.promptBar {
+  position: relative;
+  padding: 0 var(--s-3) var(--s-3) 0;
+}
+
+/* Lives inside the composer's footer row. */
+.promptContext {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin: 0;
+  min-width: 0;
+  font-size: var(--fs-4);
+  color: var(--c-ink4);
+}
+
+/* The trail's separator, at the same size and ink as a panel's breadcrumbs. */
+.promptThread {
+  flex: none;
+  color: var(--c-ink4);
+}
+
+/* The assistant's own mark, ahead of its name, as the first crumb carries it. */
+.promptMark {
+  flex: none;
+}
+
+.promptDestination {
+  color: var(--c-ink2);
+}
+
+/* Four spacings stacked between the switcher's caret and this arrow — the
+   switcher's own padding, the row's gap, this button's padding, and a margin
+   on top. Two are enough. */
+.promptJump {
+  margin-inline-start: calc(-1 * var(--s-1));
+  padding-inline: var(--s-1);
+}
+
+/* The destination switcher and the jump-to-it button. The pill's padding
+   is cancelled vertically so it doesn't inflate the footer row. */
+.promptTarget {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  padding: var(--s-1) var(--s-2);
+  margin-block: calc(-1 * var(--s-1));
+  border: none;
+  border-radius: var(--r-sm);
+  background: none;
+  font: inherit;
+  font-size: var(--fs-4);
+  color: var(--c-ink2);
+  cursor: pointer;
+}
+
+.promptTarget:hover {
+  background: var(--c-raised);
+  color: var(--c-ink);
+}
+
+.promptTarget:focus-visible {
+  outline: none;
+  background: var(--c-raised);
+  box-shadow: 0 0 0 2px var(--c-focus);
+}
+
+/* Prompt completions */
+.completions {
+  position: absolute;
+  /* The list sits above the field, so row zero — what Enter will do —
+     is painted at the bottom, nearest the text it answers. DOM order is
+     unchanged, so the listbox still reads in priority order. */
+  display: flex;
+  flex-direction: column-reverse;
+  left: var(--s-4);
+  /* A palette anchored where the text is typed, not a bar spanning the
+     viewport — full width would put each description a screen away from
+     its command. */
+  width: min(520px, calc(100% - 2 * var(--s-4)));
+  bottom: 100%;
+  margin: 0 0 var(--s-2);
+  padding: var(--s-2);
+  list-style: none;
+  /* Above the composer, and read as above it: the composer is the surface
+     tier, so the list takes the one over it, the border that goes with it and
+     the dialog's shadow. At surface-on-surface with e-3 it was a panel that
+     happened to overlap. */
+  background: var(--c-raised);
+  border: 1px solid var(--c-border2);
+  border-radius: var(--r-lg);
+  box-shadow: var(--e-4);
+  max-height: 40vh;
+  overflow: auto;
+  z-index: var(--z-anchored);
+  transform-origin: bottom center;
+  animation: completionsIn var(--t-fast) ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .completions {
+    animation: none;
+  }
+}
+
+.completion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding: var(--item-py) var(--ctl-px);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+}
+
+/* The row Enter will run. Against a raised list, a raised row is invisible —
+   this one takes the primary tint and its ink, so which row is armed is
+   legible from the far side of the screen. */
+.completion[data-highlighted] {
+  background: var(--bg-primary);
+  color: var(--ct-primary);
+}
+
+/* Whose row this is. The slot is kept when a row has no plugin (the
+   workbench's own commands) so the labels stay in one column. */
+.completionIcon {
+  display: inline-flex;
+  justify-content: center;
+  flex: none;
+  width: 16px;
+  color: var(--c-ink4);
+}
+
+.completionLabel {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--f-mono);
+  font-size: var(--fs-4);
+}
+
+/* An offer is a sentence about where you land, not a command name. */
+.completionText {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-4);
+  color: var(--c-ink);
+}

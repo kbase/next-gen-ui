@@ -1,0 +1,36 @@
+/* Frames */
+/* Every plugin iframe, drawn once and laid over the placeholder its panel
+   holds (host/frames.ts). The container generates no box at all — a
+   positioned one would be a stacking context, and a frame's z-index would
+   then be compared only against its siblings here, leaving a frame in a rail
+   flyout underneath the popover the flyout is. Each frame positions itself
+   against the viewport instead, which is the frame its measured box is in. */
+/* A box over the workbench rather than `display: contents`, so a frame's
+   containing block is this and not the document: the app never scrolls, and
+   taking the position from a box inside it keeps the page's scroll offset out
+   of the arithmetic entirely — on iOS that offset moves on its own while the
+   URL bar collapses, and a frame that reads it walks down the page.
+   Transparent to the pointer; the frames themselves take events. */
+.frameLayer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Absolute, not fixed: a frame is placed in the layer's box, which a
+   pinch-zoom leaves alone, rather than against the viewport, which a zoom
+   redefines under it (host/frames.ts, `origin`). */
+.frameLayer > iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: 0;
+  pointer-events: auto;
+  z-index: var(--z-raised);
+}
+
+/* The drop zones sit under the frames, so while a panel is being dragged the
+   frames stop taking pointer events and the zones can. */
+.frameLayer[data-dragging] > iframe {
+  pointer-events: none;
+}

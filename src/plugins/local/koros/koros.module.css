@@ -1,0 +1,94 @@
+/* The tree's rows ellipsise; the pane must not widen to their words. */
+.pane {
+  min-inline-size: 0;
+  overflow: hidden;
+}
+
+.stage {
+  white-space: nowrap;
+}
+
+/* A row's words: the arc's title, then its project when that is a different
+   thing. One line that ellipsises; the tree's rows are a fixed height. */
+.row {
+  display: block;
+  min-inline-size: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rowProject {
+  font-size: var(--fs-3);
+}
+
+.page {
+  display: grid;
+  gap: var(--s-5);
+  padding: var(--s-5);
+  max-width: 72ch;
+}
+
+.head {
+  display: grid;
+  gap: var(--s-1);
+}
+
+.head h1 {
+  margin: 0;
+}
+
+/* The four stages in order, the current one lit. */
+.stages {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.turns {
+  display: grid;
+  gap: var(--s-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.turn {
+  display: grid;
+  gap: var(--s-2);
+  padding-inline-start: var(--s-4);
+  border-inline-start: 3px solid var(--c-border);
+}
+
+.turn[data-by='you'] {
+  border-inline-start-color: var(--c-primary);
+}
+
+.by {
+  margin: 0;
+  font-size: var(--fs-3);
+  font-weight: var(--fw-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--c-ink4);
+}
+
+.attached {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.askRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+}

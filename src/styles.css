@@ -7,6 +7,14 @@ body,
   height: 100%;
 }
 
+/* The canvas wears the page colour. The page's background sits on the app's
+   root element, and a compositing change (a list mounting with an animation,
+   say) can show the canvas for a frame: with color-scheme dark that frame is
+   black. */
+html {
+  background: var(--c-bg);
+}
+
 .app-shell {
   /* Shared header height. Sidebar's brand band and the topbar align
      to the same Y baselines so the sidebar buttons start exactly

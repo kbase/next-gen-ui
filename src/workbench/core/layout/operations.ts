@@ -1,0 +1,53 @@
+import type { BarName, GroupId, Panel, PanelId, PluginId, SplitId } from './layout';
+import type { Side } from './tree';
+
+// The dispatch vocabulary. Every user action on the arrangement is one of
+// these; `reduce` applies them and `describe` announces them. Undo does not
+// invert operations, it restores snapshots, so nothing here needs an inverse.
+
+export type MainTarget = { group: GroupId; index?: number } | { group: GroupId; side: Side };
+// A sidebar index is a pin position, in pre-removal terms like a
+// same-group tab index; absent, a pinned plugin keeps its place and a new
+// one appends.
+export type Target = MainTarget | { zone: 'sidebar'; index?: number };
+
+export type Operation =
+  | { type: 'open'; panel: Panel; target?: MainTarget }
+  | { type: 'close'; panel: PanelId }
+  // `by` is for the DOM-focus sync, not for the layout: 'user' is a pointer
+  // or a focus event, whose caret is already where the user put it, and
+  // 'command' — which is what an absent `by` means — is everything else, so
+  // the caret follows the focus to the panel that gained it. Omitting it
+  // costs a caret jump, never a lost one.
+  | { type: 'focus'; panel: PanelId; by?: 'user' | 'command' }
+  // A route panel showing a different path. `replace` is for the browser
+  // history the URL sync writes, not for the layout.
+  | { type: 'setPath'; panel: PanelId; path: string; replace?: boolean }
+  | { type: 'move'; panel: PanelId; to: Target }
+  | { type: 'resize'; split: SplitId; sizes: number[] }
+  | { type: 'pin'; plugin: PluginId; index?: number }
+  | { type: 'unpin'; plugin: PluginId }
+  | { type: 'fold'; panel: PanelId; folded: boolean }
+  | { type: 'sidebar'; collapsed?: boolean; width?: number; sizes?: Record<PluginId, number> }
+  | { type: 'bar'; bar: BarName; visible: boolean }
+  | { type: 'lock'; locked: boolean };
+
+export type OperationType = Operation['type'];
+
+// Which operations push an undo snapshot, i.e. what one Ctrl+Z takes back.
+// Not reduce.ts's LOCKED_OUT, which answers a different question: `open` is
+// undoable yet allowed on a locked layout, `resize` is refused when locked
+// yet is no undo step.
+const UNDOABLE: ReadonlySet<OperationType> = new Set<OperationType>([
+  'open',
+  'close',
+  'move',
+  'pin',
+  'unpin',
+  'fold',
+  'bar',
+]);
+
+export function isUndoable(op: Operation): boolean {
+  return UNDOABLE.has(op.type);
+}

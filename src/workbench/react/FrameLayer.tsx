@@ -7,7 +7,7 @@ import styles from './Workbench.module.css';
 // the placeholders. The container is the store's, made before React and
 // handed to plugins as `host.frames.container`; this only adopts it.
 export function FrameLayer() {
-  const { frames, store } = useServices();
+  const { frames } = useServices();
   const holder = useRef<HTMLDivElement>(null);
   const dragging = useDragging();
 
@@ -15,7 +15,7 @@ export function FrameLayer() {
     if (holder.current) return frames.adopt(holder.current, styles.frameLayer);
   }, [frames]);
 
-  useEffect(() => frames.watch(store.subscribe), [frames, store]);
+  useEffect(() => frames.watch(), [frames]);
 
   useEffect(() => frames.setDragging(dragging !== null), [frames, dragging]);
 

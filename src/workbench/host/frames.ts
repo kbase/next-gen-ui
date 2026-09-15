@@ -1,3 +1,4 @@
+import { autoUpdate } from '@floating-ui/dom';
 import type { FrameLayer } from '../../plugins/sdk';
 
 // The frame layer's host side: one container at the end of the document, and
@@ -6,11 +7,17 @@ import type { FrameLayer } from '../../plugins/sdk';
 // never moves, which is what keeps its document across a move. See the SDK's
 // frames.ts for the contract a plugin sees.
 //
-// A frame follows its placeholder for the movements the layer hears about: a
-// size change of the placeholder, of anything that clips it, or of the
-// document (the observer); a scroll of something containing it (the capture
-// listener, filtered to that); the window resizing; and a layout operation,
-// which can move a box without resizing anything (the store's subscribe).
+// Keeping one element over another as everything around it moves is Floating
+// UI's whole subject, and `autoUpdate` is that part of it: it reports a
+// scroll of any overflow ancestor, a resize of one, a resize of either
+// element, and — the case a workbench needs and an observer cannot give — the
+// reference relocating without resizing, which is what a tab move, a split
+// and a popover's own placement all are. It comes in with Base UI, and is
+// declared in package.json because this reaches for it directly.
+//
+// What is still the layer's own: the clip. A frame is drawn outside the boxes
+// that crop its placeholder, so their geometry is as much a part of its
+// position as the placeholder's, and they are watched here.
 
 export interface FrameLayerStore extends FrameLayer {
   // Puts the container in the document, under `parent`, until the returned
@@ -20,14 +27,15 @@ export interface FrameLayerStore extends FrameLayer {
   // While a panel is being dragged the frames stop taking pointer events, so
   // the drop zones under them can.
   setDragging: (dragging: boolean) => void;
-  // Starts following the placeholders. `onLayoutChange` is the workbench
-  // store's subscribe.
-  watch: (onLayoutChange: (listener: () => void) => () => void) => () => void;
+  // Starts following the placeholders, until the returned function runs.
+  watch: () => () => void;
 }
 
 interface Entry {
   frame: HTMLElement;
   placeholder: HTMLElement;
+  // Floating UI's watch on this pair, while the layer is watching at all.
+  stop: (() => void) | null;
 }
 
 // The ancestors that clip a placeholder's overflow. They clip the placeholder;
@@ -112,52 +120,44 @@ export function createFrameLayer(): FrameLayerStore {
   let watching: (() => void) | null = null;
   let observer: ResizeObserver | null = null;
 
-  const measure = () => {
-    for (const { frame, placeholder } of entries) {
-      const rect = placeholder.getBoundingClientRect();
-      // No box: the placeholder is in a hidden tab, or in a document with no
-      // layout engine. The frame is hidden with it, and keeps its document.
-      if (rect.width === 0 && rect.height === 0) {
-        frame.style.visibility = 'hidden';
-        continue;
-      }
-      frame.style.visibility = '';
-      frame.style.transform = `translate(${rect.left}px, ${rect.top}px)`;
-      frame.style.width = `${rect.width}px`;
-      frame.style.height = `${rect.height}px`;
-      frame.style.clipPath = clipOf(placeholder, rect) ?? 'inset(100%)';
-      const tier = tierAbove(placeholder);
-      frame.style.zIndex = tier === null ? '' : String(tier + 1);
+  const place = ({ frame, placeholder }: Entry) => {
+    const rect = placeholder.getBoundingClientRect();
+    // No box: the placeholder is in a hidden tab, or in a document with no
+    // layout engine. The frame is hidden with it, and keeps its document.
+    if (rect.width === 0 && rect.height === 0) {
+      frame.style.visibility = 'hidden';
+      return;
     }
+    frame.style.visibility = '';
+    frame.style.transform = `translate(${rect.left}px, ${rect.top}px)`;
+    frame.style.width = `${rect.width}px`;
+    frame.style.height = `${rect.height}px`;
+    frame.style.clipPath = clipOf(placeholder, rect) ?? 'inset(100%)';
+    const tier = tierAbove(placeholder);
+    frame.style.zIndex = tier === null ? '' : String(tier + 1);
   };
 
-  const rewatch = () => {
+  const measure = () => {
+    for (const entry of entries) place(entry);
+  };
+
+  // The boxes that crop a placeholder, which Floating UI does not watch: it
+  // follows the reference and the frame, and a clipper can change size while
+  // both stand still — the sidebar's width animation crops every block
+  // without moving or resizing one.
+  const watchClippers = () => {
     if (!observer) return;
     observer.disconnect();
-    observer.observe(document.documentElement);
     for (const { placeholder } of entries) {
-      observer.observe(placeholder);
       for (const el of clippers(placeholder)) observer.observe(el);
     }
   };
 
-  // A burst rather than one measurement. A placeholder that has just moved
-  // may be placed again right after — by the popover positioner that holds
-  // it, or by the sidebar's width transition — and being moved is not a size
-  // change, so the observer says nothing about it.
-  let burst = 0;
-  let framesLeft = 0;
-  const resettle = () => {
-    if (!watching) return;
-    rewatch();
-    measure();
-    framesLeft = 3;
-    if (burst) return;
-    const tick = () => {
-      measure();
-      burst = (framesLeft -= 1) > 0 ? requestAnimationFrame(tick) : 0;
-    };
-    burst = requestAnimationFrame(tick);
+  const follow = (entry: Entry) => {
+    entry.stop?.();
+    entry.stop = watching
+      ? autoUpdate(entry.placeholder, entry.frame, () => place(entry))
+      : null;
   };
 
   const element = () => (container ??= document.createElement('div'));
@@ -176,37 +176,31 @@ export function createFrameLayer(): FrameLayerStore {
       element().toggleAttribute('data-dragging', dragging);
     },
     attach(frame, placeholder) {
-      const entry = { frame, placeholder };
+      const entry: Entry = { frame, placeholder, stop: null };
       entries.add(entry);
-      resettle();
+      follow(entry);
+      place(entry);
+      watchClippers();
       return () => {
+        entry.stop?.();
         entries.delete(entry);
-        resettle();
+        watchClippers();
       };
     },
-    watch(onLayoutChange) {
-      // A scroll moves a placeholder only when what scrolled contains it.
-      const onScroll = (event: Event) => {
-        const target = event.target;
-        const holds = (el: Node) => [...entries].some((e) => el.contains(e.placeholder));
-        if (!(target instanceof Node) || target === document || holds(target)) measure();
-      };
-      const onResize = () => measure();
-      const offLayout = onLayoutChange(resettle);
+    watch() {
       observer = new ResizeObserver(measure);
-      window.addEventListener('scroll', onScroll, true);
-      window.addEventListener('resize', onResize);
       watching = () => {
-        offLayout();
-        window.removeEventListener('scroll', onScroll, true);
-        window.removeEventListener('resize', onResize);
+        for (const entry of entries) {
+          entry.stop?.();
+          entry.stop = null;
+        }
         observer?.disconnect();
         observer = null;
-        if (burst) cancelAnimationFrame(burst);
-        burst = 0;
         watching = null;
       };
-      resettle();
+      for (const entry of entries) follow(entry);
+      watchClippers();
+      measure();
       return watching;
     },
   };

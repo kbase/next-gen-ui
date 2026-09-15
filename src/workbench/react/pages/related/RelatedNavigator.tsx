@@ -130,12 +130,19 @@ export function RelatedNavigator() {
   // the reader can see and so cannot be blank.
   const drawn = sections.filter((s) => s.rows.length > 0 || s.pending.length > 0);
   if (drawn.length === 0) {
+    // Which of the two empty states this is: nothing was asked, or the
+    // plugins were asked and offered nothing. `sections` is already the
+    // sources that put a question, so its own emptiness is the test.
+    const line =
+      sections.length === 0
+        ? 'No page is open and the cart is empty.'
+        : `No plugin offers anything for ${sections.map((s) => ASKED[s.source]).join(' or ')}.`;
     return (
       <EmptyState
         size="sm"
         icon={<MagnifyingGlass size={32} />}
         title="Nothing to show"
-        description="No other plugin has anything about the open page or the cart."
+        description={line}
       />
     );
   }

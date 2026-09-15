@@ -276,8 +276,9 @@ const { icon, label, color } = STATUS[state];
       />
       <p className={s.note}>
         <code>size="sm"</code> for a narrow column — a sidebar block, a pane — where the page's
-        proportions would be most of the space: one caption line, aligned left, the icon not drawn,
-        the description as wide as the column.
+        proportions would be most of the space. Every part is drawn, each a step smaller, and the
+        description is measured by the column rather than by the 280 pixels a page allows it. The
+        icon is sized by the variant, so the same call site serves both.
       </p>
       <Frame padding={0} style={{ maxWidth: 280 }}>
         <EmptyState
@@ -289,7 +290,12 @@ const { icon, label, color } = STATUS[state];
       </Frame>
       <CodeBlock
         language="tsx"
-        code={`<EmptyState size="sm" title="Nothing to show" description="Open a page or add something to the cart." />`}
+        code={`<EmptyState
+  size="sm"
+  icon={<MagnifyingGlass size={32} />}
+  title="Nothing to show"
+  description="Open a page or add something to the cart."
+/>`}
       />
 
       <div className={s.sub}>Error patterns</div>

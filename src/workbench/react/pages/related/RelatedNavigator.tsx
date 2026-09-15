@@ -135,7 +135,7 @@ export function RelatedNavigator() {
         size="sm"
         icon={<MagnifyingGlass size={32} />}
         title="Nothing to show"
-        description="No page is open and the cart is empty."
+        description="No other plugin has anything about the open page or the cart."
       />
     );
   }

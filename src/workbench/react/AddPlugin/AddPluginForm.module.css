@@ -1,0 +1,16 @@
+.form {
+  display: grid;
+  gap: var(--s-2);
+}
+
+/* The field takes the width; Add keeps its own. */
+.row {
+  display: flex;
+  gap: var(--s-2);
+  align-items: center;
+}
+
+.row > :first-child {
+  flex: 1;
+  min-inline-size: 0;
+}

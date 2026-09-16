@@ -14,6 +14,7 @@ import {
   qualifiedName,
   setKeybinding,
 } from '../../../commands';
+import { AddPluginForm } from '../../AddPlugin/AddPluginForm';
 import { useLayout, useRun, useServices } from '../../context';
 import { iconFor } from '../../icons';
 import styles from './Settings.module.css';
@@ -53,6 +54,8 @@ export function SettingsDocument() {
             const Icon = iconFor(m.icon, m.color);
             const pinned = layout.sidebar.pinned.includes(m.id);
             const loaded = source.anyLoaded(m.id);
+            const byUrl = source.origin(m.id) !== undefined;
+            const hasPane = source.has(m.id, 'pane');
             return (
               <li key={m.id} className={styles.row}>
                 <span className={styles.rowIcon} aria-hidden="true">
@@ -61,17 +64,32 @@ export function SettingsDocument() {
                 <span className={styles.rowTitle}>
                   <span className="body">{m.title}</span>
                   {loaded && <Chip color="green" label="loaded" />}
+                  {byUrl && <Chip color="neutral" label="from URL" />}
                 </span>
-                {source.has(m.id, 'pane') && (
+                {(hasPane || byUrl) && (
                   <span className={styles.rowControls}>
-                    <span className="caption">Pinned</span>
-                    <Switch
-                      checked={pinned}
-                      onCheckedChange={(v) =>
-                        run(v ? 'workbench:pin' : 'workbench:unpin', { plugin: m.id })
-                      }
-                      aria-label={`Pin ${m.title} to the sidebar`}
-                    />
+                    {hasPane && (
+                      <>
+                        <span className="caption">Pinned</span>
+                        <Switch
+                          checked={pinned}
+                          onCheckedChange={(v) =>
+                            run(v ? 'workbench:pin' : 'workbench:unpin', { plugin: m.id })
+                          }
+                          aria-label={`Pin ${m.title} to the sidebar`}
+                        />
+                      </>
+                    )}
+                    {byUrl && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => run('workbench:uninstall', { plugin: m.id })}
+                        aria-label={`Remove ${m.title}`}
+                      >
+                        Remove
+                      </Button>
+                    )}
                   </span>
                 )}
                 {m.description && <p className={`caption ${styles.rowDesc}`}>{m.description}</p>}
@@ -79,6 +97,16 @@ export function SettingsDocument() {
             );
           })}
         </ul>
+        {/* Figma and Obsidian keep "install from a file or URL" beside the
+            installed list; the docs page has the same form with the skill. */}
+        <h3 id="settings-install" className="section-label">
+          Install from a URL
+        </h3>
+        <p className="caption">
+          The URL of a plugin's manifest.json. The plugin is fetched from that origin, so its server
+          must allow this one.
+        </p>
+        <AddPluginForm />
         {declined.length > 0 && (
           <>
             {/* What the registry listed and the workbench did not load. The

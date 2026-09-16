@@ -132,9 +132,11 @@ export interface Prompt {
 // workbench itself reads no text, and every row it draws for free text comes
 // from here.
 export interface Intent {
-  // Once when the module arrives, with everything the workbench can be asked
-  // to do, so that no keystroke has to see the catalog: every plugin's
-  // declared commands, and every call the manifests already filled in.
+  // When the module arrives, and again whenever a plugin is installed or
+  // uninstalled, with everything the workbench can be asked to do, so that
+  // no keystroke has to see the catalog: every plugin's declared commands,
+  // and every call the manifests already filled in. Each call replaces the
+  // last.
   index: (commands: DeclaredCommand[], calls: DeclaredCall[]) => void;
   // Every keystroke, and again when a slow plugin's offer lands or the page
   // or cart changes under text already typed. The answer is the whole list,

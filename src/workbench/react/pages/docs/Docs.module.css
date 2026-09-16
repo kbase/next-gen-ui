@@ -79,6 +79,28 @@
   gap: var(--s-3);
 }
 
+/* The title and the demo's button, on one line while there is room. */
+.headRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+}
+
+.headRow h1 {
+  margin: 0;
+}
+
+.tryIt {
+  max-width: 560px;
+}
+
+.dialogRow {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .para {
   margin: 0;
   max-inline-size: 46rem;

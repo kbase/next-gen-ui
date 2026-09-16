@@ -1,9 +1,10 @@
 import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { PanelContext } from '@kbase/plugin-sdk';
+import { PanelContext, definePluginManifest } from '@kbase/plugin-sdk';
 import type { PanelHandle } from '@kbase/plugin-sdk';
 import { testWorkbench } from '../../../../test/workbench';
+import { localPlugin } from '../../../host/plugins/local';
 import { useKeybindings } from '../../hooks/useKeybindings';
 import { WorkbenchProvider } from '../../WorkbenchProvider';
 import { SettingsDocument } from './Settings';
@@ -189,13 +190,43 @@ describe("the Settings page's Not loaded list", () => {
   });
 });
 
-describe("a setting that names a plugin that is not installed", () => {
+describe('a plugin installed from a URL', () => {
+  const url = 'http://plugins.test/services/hello/manifest.json';
+  const hello = () => ({
+    ...localPlugin({ config: definePluginManifest({ id: 'hello', title: 'Hello' }) }),
+    origin: { url },
+  });
+
+  it('is marked, and Remove runs /uninstall for it', async () => {
+    const user = userEvent.setup();
+    const services = mount();
+    act(() => services.source.add(hello()));
+    const run = vi.spyOn(services.registry, 'run').mockResolvedValue(undefined);
+
+    const row = screen.getByText('Hello').closest('li')!;
+    expect(within(row).getByText('from URL')).toBeInTheDocument();
+    await user.click(within(row).getByRole('button', { name: 'Remove Hello' }));
+
+    expect(run).toHaveBeenCalledWith('workbench:uninstall', { plugin: 'hello' }, 'user');
+  });
+
+  it('has a form under Installed, and a bundled plugin has no Remove', () => {
+    mount();
+    expect(screen.getByRole('textbox', { name: 'Manifest URL' })).toBeInTheDocument();
+    // The keyboard section's "Remove the key for …" buttons are not these.
+    expect(screen.queryByRole('button', { name: /^Remove (?!the key)/ })).toBeNull();
+  });
+});
+
+describe('a setting that names a plugin that is not installed', () => {
   it('is said under the list, which otherwise draws nothing selected', () => {
     const services = mount();
     act(() => services.settings.set({ assistant: 'uninstalled' }));
     expect(screen.getByText('uninstalled is set here and is not installed.')).toBeInTheDocument();
     expect(
-      within(screen.getByRole('radiogroup', { name: 'Assistant' })).queryByRole('radio', { checked: true }),
+      within(screen.getByRole('radiogroup', { name: 'Assistant' })).queryByRole('radio', {
+        checked: true,
+      }),
     ).toBeNull();
   });
 });

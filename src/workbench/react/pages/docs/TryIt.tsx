@@ -1,0 +1,71 @@
+import { useState } from 'react';
+import type { RefObject } from 'react';
+import { Button, CopyButton, Dialog } from '@kbase/design-system';
+import { SDK_VERSION } from '@kbase/plugin-sdk';
+import { AddPluginForm } from '../../AddPlugin/AddPluginForm';
+import { skillMarkdown } from './skill';
+import styles from './Docs.module.css';
+
+// The demo of the page: an agent is handed the page as a skill, builds a
+// plugin from it, and the plugin is installed from the URL the agent reports.
+// The skill is built when the dialog opens, from the article as rendered.
+export function TryIt({ article }: { article: RefObject<HTMLElement | null> }) {
+  const [open, setOpen] = useState(false);
+  const [skill, setSkill] = useState('');
+  const onOpenChange = (next: boolean) => {
+    if (next && article.current) {
+      setSkill(
+        skillMarkdown(article.current, { origin: location.origin, sdkVersion: SDK_VERSION }),
+      );
+    }
+    setOpen(next);
+  };
+  return (
+    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+      <Dialog.Trigger
+        render={
+          <Button variant="outline" data-skip>
+            Try making an app
+          </Button>
+        }
+      />
+      <Dialog.Popup className={styles.tryIt}>
+        <Dialog.Title>Try making an app</Dialog.Title>
+        <Dialog.Description>
+          A coding agent builds a plugin from this page; the workbench installs it from the URL the
+          agent reports, without a reload.
+        </Dialog.Description>
+        <ol className={styles.steps}>
+          <li>Copy the skill and give it to the agent, with what the app should do.</li>
+          <li>
+            The agent builds and serves the plugin and ends with a line{' '}
+            <code className={styles.inline}>Manifest: &lt;url&gt;</code>.
+          </li>
+          <li>
+            Paste that URL below. The plugin is listed under Installed in Settings, where it can be
+            removed.
+          </li>
+        </ol>
+        <div>
+          <CopyButton text={skill} label="Copy skill" variant="outline" />
+        </div>
+        <AddPluginForm />
+        <p className="caption">
+          The plugin is fetched from its own origin, so its server must send{' '}
+          <code className={styles.inline}>Access-Control-Allow-Origin</code> for this one. A
+          production deployment loads scripts from its own origin only; installing by URL works in a
+          development or demo workbench.
+        </p>
+        <div className={styles.dialogRow}>
+          <Dialog.Close
+            render={
+              <Button variant="ghost" type="button">
+                Close
+              </Button>
+            }
+          />
+        </div>
+      </Dialog.Popup>
+    </Dialog.Root>
+  );
+}

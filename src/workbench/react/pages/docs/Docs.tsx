@@ -1,6 +1,8 @@
+import { useRef } from 'react';
 import type { ReactNode } from 'react';
 import { CodeBlock } from '@kbase/design-system';
 import { SDK_VERSION, usePanelTitle } from '@kbase/plugin-sdk';
+import { TryIt } from './TryIt';
 import styles from './Docs.module.css';
 
 // The plugin contract as it is meant to be: the page is the specification and
@@ -12,12 +14,17 @@ import styles from './Docs.module.css';
 
 export function DocsDocument() {
   usePanelTitle('Plugin developer documentation');
+  // The skill is the article as rendered (skill.ts), so the dialog reads it.
+  const article = useRef<HTMLElement>(null);
   return (
     <div className={styles.layout}>
       <Rail />
-      <article className={styles.root}>
+      <article className={styles.root} ref={article}>
         <header className={styles.head} id="top">
-          <h1 className="h2">Plugin developer documentation</h1>
+          <div className={styles.headRow}>
+            <h1 className="h2">Plugin developer documentation</h1>
+            <TryIt article={article} />
+          </div>
           <p className={styles.narrative}>
             A workbench plugin is a Vite project that exports a manifest and up to six modules. The
             SDK's Vite plugin builds it into a Module Federation remote, served by the plugin's own
@@ -203,6 +210,12 @@ export default defineCommands({ hello: ({ who }, { host }) => host.openRoute(\`/
                 [<Code>/services/hello/plugin/*</Code>, <Code>dist/*</Code>],
               ]}
             />
+            <p className={styles.para}>
+              When the workbench runs on another origin, as it does for a plugin installed from its
+              manifest URL, every response must carry <Code>Access-Control-Allow-Origin</Code>{' '}
+              naming the workbench's origin. <Code>vite preview</Code> allows localhost origins only
+              unless <Code>preview.cors</Code> is <Code>true</Code>.
+            </p>
           </Step>
           <Step title="Connect to the workbench">
             <p className={styles.para}>
@@ -1359,8 +1372,8 @@ export default defineIntent({
 });`}</File>
             <Export id="r-index" name="index">
               <p className={styles.para}>
-                Receives the command catalog. Called once, when the module loads. The installed set
-                does not change during a session.
+                Receives the command catalog. Called when the module loads, and again whenever a
+                plugin is installed or uninstalled while the workbench runs.
               </p>
               <Params
                 rows={[
@@ -2033,6 +2046,12 @@ interface FrameLayer {
               and runs its bundled plugins alone. In development, the dev server is the registry for
               the services listed in <Code>VITE_DEV_SERVICE_PROXY</Code>.
             </p>
+            <p className={styles.para}>
+              A plugin installed from its manifest URL, with <Code>/install</Code> or the form in
+              Settings, is fetched from that URL's origin and persists across reloads. The nginx
+              image's policy blocks that fetch, so installing by URL is for a development or demo
+              workbench.
+            </p>
           </Explainer>
         </Part>
 
@@ -2079,6 +2098,13 @@ interface FrameLayer {
               <Code>exposed nothing at ./route</Code> under Details means the file has no default
               export. "This panel crashed" with Restart panel means <Code>mount</Code> threw; with
               Try again, the component threw during render. The error message is under Details.
+            </Symptom>
+            <Symptom name="Installing from a URL fails with could not fetch">
+              The server did not answer, or answered without{' '}
+              <Code>Access-Control-Allow-Origin</Code> for the workbench's origin; the browser
+              console says which. The URL must end in <Code>/&lt;id&gt;/manifest.json</Code> with
+              the manifest's <Code>id</Code> as that directory. A workbench served with a
+              Content-Security-Policy blocks the fetch as well.
             </Symptom>
           </div>
         </Part>

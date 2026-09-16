@@ -42,4 +42,4 @@ function JobPage() {
   );
 }
 
-export default defineRoute({ ...fromReact(JobPage), normalize: idOf });
+export default defineRoute(fromReact(JobPage), { normalize: idOf });

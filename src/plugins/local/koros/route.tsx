@@ -129,4 +129,4 @@ function ArcPage() {
   );
 }
 
-export default defineRoute({ ...fromReact(ArcPage), normalize: slugOf });
+export default defineRoute(fromReact(ArcPage), { normalize: slugOf });

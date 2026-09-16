@@ -176,16 +176,36 @@ function compareShape(where: string, shape: DocsShape, sdkType: ts.Type, found: 
   }
 }
 
+// The page states one signature; an overloaded function is stated truly by
+// any of them, so a match against one is a match. Where none matches, the
+// complaint is the one from the signature of the same arity, because that is
+// the overload the page was writing about.
 function compareParameters(
   where: string,
   parameters: readonly ts.ParameterDeclaration[],
-  signature: ts.Signature | undefined,
+  signatures: readonly ts.Signature[],
   found: Problem[],
 ) {
-  if (!signature) {
+  if (signatures.length === 0) {
     found.push({ member: where, says: 'the page writes a function; the SDK type is not callable' });
     return;
   }
+  const tries = signatures.map((signature) => {
+    const problems: Problem[] = [];
+    compareSignature(where, parameters, signature, problems);
+    return problems;
+  });
+  if (tries.some((problems) => problems.length === 0)) return;
+  const sameArity = signatures.findIndex((s) => s.parameters.length === parameters.length);
+  found.push(...tries[sameArity === -1 ? 0 : sameArity]);
+}
+
+function compareSignature(
+  where: string,
+  parameters: readonly ts.ParameterDeclaration[],
+  signature: ts.Signature,
+  found: Problem[],
+) {
   if (signature.parameters.length !== parameters.length) {
     found.push({
       member: where,
@@ -226,7 +246,7 @@ function compareNode(where: string, node: ts.TypeNode, sdkType: ts.Type, found: 
     return;
   }
   if (ts.isFunctionTypeNode(node)) {
-    compareParameters(where, node.parameters, sdkType.getCallSignatures()[0], found);
+    compareParameters(where, node.parameters, sdkType.getCallSignatures(), found);
     return;
   }
   if (ts.isArrayTypeNode(node) && ts.isTypeLiteralNode(node.elementType)) {
@@ -274,7 +294,7 @@ function compareDeclaration(node: ts.Statement, found: Problem[]) {
   if (ts.isFunctionDeclaration(node) && node.name) {
     const type = named(node.name.text);
     if (!type) return;
-    compareParameters(node.name.text, node.parameters, type.getCallSignatures()[0], found);
+    compareParameters(node.name.text, node.parameters, type.getCallSignatures(), found);
   }
 }
 

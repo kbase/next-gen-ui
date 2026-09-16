@@ -53,4 +53,4 @@ function DatasetPage() {
   );
 }
 
-export default defineRoute({ ...fromReact(DatasetPage), normalize: refOf });
+export default defineRoute(fromReact(DatasetPage), { normalize: refOf });

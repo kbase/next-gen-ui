@@ -36,7 +36,7 @@ function mount() {
       localPlugin({
         config: { id: 'app', title: 'App' },
         route: () =>
-          Promise.resolve(defineRoute({ ...fromReact(App), normalize: (p) => p })),
+          Promise.resolve(defineRoute(fromReact(App), { normalize: (p) => p })),
       }),
     ],
     persistence: noPersistence,

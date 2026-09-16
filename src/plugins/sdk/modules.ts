@@ -155,8 +155,24 @@ export interface Modules {
 }
 
 export const defineBackground = (b: Background): Background => b;
-export const defineRoute = (r: Route): Route => r;
-export const definePane = (p: Pane): Pane => p;
+
+// The module whole, or a body and the rest of the module beside it:
+// `defineRoute(fromReact(Page), { normalize })`. The second form exists so a
+// body built by a helper needs no spread, and the module's own fields are
+// typed here rather than by the helper, which does not know what kind of
+// module it is feeding — so `normalize`'s argument is a string without the
+// author writing that down.
+export function defineRoute(r: Route): Route;
+export function defineRoute(body: { mount: Mount }, rest: Omit<Route, 'mount'>): Route;
+export function defineRoute(body: Route | { mount: Mount }, rest?: Omit<Route, 'mount'>): Route {
+  return { ...(rest ?? {}), ...body } as Route;
+}
+
+export function definePane(p: Pane): Pane;
+export function definePane(body: { mount: Mount }, rest: Omit<Pane, 'mount'>): Pane;
+export function definePane(body: Pane | { mount: Mount }, rest?: Omit<Pane, 'mount'>): Pane {
+  return { ...(rest ?? {}), ...body };
+}
 export const defineCommands = (c: Commands): Commands => c;
 export const definePrompt = (p: Prompt): Prompt => p;
 export const defineIntent = (i: Intent): Intent => i;

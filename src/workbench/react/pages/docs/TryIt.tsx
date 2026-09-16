@@ -35,7 +35,7 @@ export function TryIt({ article }: { article: RefObject<HTMLElement | null> }) {
           A coding agent builds a plugin from this page; the workbench installs it from the URL the
           agent reports, without a reload.
         </Dialog.Description>
-        <ol className={styles.steps}>
+        <ol className={styles.dialogSteps}>
           <li>Copy the skill and give it to the agent, with what the app should do.</li>
           <li>
             The agent builds and serves the plugin and ends with a line{' '}
@@ -51,10 +51,12 @@ export function TryIt({ article }: { article: RefObject<HTMLElement | null> }) {
         </div>
         <AddPluginForm />
         <p className="caption">
-          The plugin is fetched from its own origin, so its server must send{' '}
-          <code className={styles.inline}>Access-Control-Allow-Origin</code> for this one. A
-          production deployment loads scripts from its own origin only; installing by URL works in a
-          development or demo workbench.
+          This browser fetches the plugin from that URL, so the server must send{' '}
+          <code className={styles.inline}>Access-Control-Allow-Origin</code> for this origin, and on
+          an https workbench an <code className={styles.inline}>http://</code> URL works only from{' '}
+          <code className={styles.inline}>127.0.0.1</code> on this machine. Installing by URL is for
+          a development or demo workbench; a production deployment loads scripts from its own origin
+          only.
         </p>
         <div className={styles.dialogRow}>
           <Dialog.Close

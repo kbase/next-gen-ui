@@ -22,25 +22,32 @@ export function skillMarkdown(article: Element, { origin, sdkVersion }: SkillFac
     'Build a workbench plugin that does what the person asked for, serve it, and report where its manifest is.',
     '',
     '1. Follow "Getting started" below: a Vite project with `plugin.config.ts`, `vite.config.ts` and the modules the plugin needs, built with `npm run build`.',
-    `2. Serve \`dist/\` at the two routes in "Serve", from any origin. Every response must carry \`Access-Control-Allow-Origin: ${origin}\`: the workbench runs at ${origin}, and it fetches the manifest and imports the modules cross-origin. \`vite preview\` allows localhost origins only unless \`preview.cors\` is \`true\` in \`vite.config.ts\`.`,
+    `2. Serve \`dist/\` as in "Serve", with \`preview: { cors: true }\` so every response carries \`Access-Control-Allow-Origin\` for ${origin}, where the workbench runs. ${where(origin)}`,
     '3. End the final message with the manifest URL on its own last line, exactly in this form:',
     '',
     '```',
-    'Manifest: http://127.0.0.1:8899/services/hello/manifest.json',
+    'Manifest: http://127.0.0.1:8899/manifest.json',
     '```',
     '',
-    "The person pastes that URL into the workbench, which installs the plugin without a reload. The manifest's `id` must be the directory the URL names: `<base>/<id>/manifest.json`, with the bundle under `<base>/<id>/plugin/`. After a rebuild, the person removes the plugin and installs the same URL again.",
+    'The person pastes that URL into the workbench, which installs the plugin without a reload. After a rebuild, the person removes the plugin and installs the same URL again.',
     '',
     '## Environment',
     '',
-    `- SDK: \`@kbase/plugin-sdk\` ${sdkVersion}. The workbench repository (\`kbase/next-gen-ui\`) builds it into \`dist-plugin-sdk/\` with \`npm run build:plugin-sdk\`, which its \`prepare\` script runs on install. A plugin depends on that directory as in "Create the project", or on the repository as a git dependency with a \`postinstall\` script that symlinks \`node_modules/@kbase/plugin-sdk\` to \`node_modules/next-gen-ui/dist-plugin-sdk\`.`,
-    '- The workbench that installs by URL is a development or demo build without a Content-Security-Policy. A production deployment serves plugins from its own origin, as "Deployment" describes.',
-    '',
-    '## Documentation',
+    `- SDK: \`@kbase/plugin-sdk\` ${sdkVersion}, built from a checkout of the workbench repository at that version by \`npm run build:plugin-sdk\` into \`dist-plugin-sdk/\`, which "Create the project" depends on. A plugin built against another version is refused, with the reason shown in the workbench's Settings.`,
+    '- The workbench that installs by URL is a development or demo build without a Content-Security-Policy. A production deployment lists plugins in a registry, as "Deployment" describes.',
     '',
     articleToMarkdown(article, 1),
     '',
   ].join('\n');
+}
+
+// Where to serve from, given the workbench's origin: a browser on an https
+// page loads `http://` only from loopback, and loopback is the person's own
+// machine.
+function where(origin: string): string {
+  return origin.startsWith('https:')
+    ? `The workbench is served over https, so serve at \`http://127.0.0.1:<port>\` on the machine the person uses the workbench from; from any other machine the plugin must be served over https, as plain \`http://\` from another host is blocked as mixed content.`
+    : `Serve at \`http://127.0.0.1:<port>\`, or at any origin the person's browser can reach.`;
 }
 
 // The rendered article as markdown. `demote` moves every heading down that

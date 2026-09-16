@@ -64,9 +64,21 @@ describe('the skill', () => {
       sdkVersion: '0.4.0',
     });
     expect(md.startsWith('---\nname: kbase-workbench-plugin\n')).toBe(true);
-    expect(md).toContain('Access-Control-Allow-Origin: http://wb.test:3000');
+    expect(md).toContain('`Access-Control-Allow-Origin` for http://wb.test:3000');
     expect(md).toContain('`@kbase/plugin-sdk` 0.4.0');
     expect(md).toContain('Manifest: http://');
-    expect(md.trimEnd().endsWith('## Documentation\n\n## Docs\n\nBody.')).toBe(true);
+    expect(md).toContain('or at any origin');
+    expect(md).not.toContain('mixed content');
+    expect(md).not.toContain('## Documentation');
+    expect(md.trimEnd().endsWith('## Docs\n\nBody.')).toBe(true);
+  });
+
+  it('sends an https workbench to loopback', () => {
+    const md = skillMarkdown(article('<h1>Docs</h1>'), {
+      origin: 'https://wb.example.ts.net',
+      sdkVersion: '0.4.0',
+    });
+    expect(md).toContain('served over https, so serve at `http://127.0.0.1:<port>`');
+    expect(md).toContain('mixed content');
   });
 });

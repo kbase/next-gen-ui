@@ -5,7 +5,7 @@ __pycache__
 dist-design-system
 dist-plugin-sdk
 dist-python
-build
+/build
 coverage
 .tanstack
 

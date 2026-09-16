@@ -42,7 +42,7 @@ export function AddPluginForm() {
             type="url"
             value={url}
             onValueChange={setUrl}
-            placeholder="http://127.0.0.1:8899/services/hello/manifest.json"
+            placeholder="http://127.0.0.1:8899/manifest.json"
             required
           />
           <Button type="submit" disabled={state.kind === 'adding'}>

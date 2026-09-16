@@ -29,23 +29,25 @@ export function TryIt({ article }: { article: RefObject<HTMLElement | null> }) {
           </Button>
         }
       />
-      <Dialog.Popup className={styles.tryIt}>
+      <Dialog.Popup>
         <Dialog.Title>Try making an app</Dialog.Title>
         <Dialog.Description>
           A coding agent builds a plugin from this page; the workbench installs it from the URL the
           agent reports, without a reload.
         </Dialog.Description>
-        <ol className={styles.dialogSteps}>
-          <li>Copy the skill and give it to the agent, with what the app should do.</li>
-          <li>
-            The agent builds and serves the plugin and ends with a line{' '}
-            <code className={styles.inline}>Manifest: &lt;url&gt;</code>.
-          </li>
-          <li>
-            Paste that URL below. The plugin is listed under Installed in Settings, where it can be
-            removed.
-          </li>
-        </ol>
+        <div className="prose">
+          <ol>
+            <li>Copy the skill and give it to the agent, with what the app should do.</li>
+            <li>
+              The agent builds and serves the plugin and ends with a line{' '}
+              <code>Manifest: &lt;url&gt;</code>.
+            </li>
+            <li>
+              Paste that URL below. The plugin is listed under Installed in Settings, where it can
+              be removed.
+            </li>
+          </ol>
+        </div>
         <div>
           <CopyButton text={skill} label="Copy skill" variant="outline" />
         </div>

@@ -190,29 +190,29 @@ export default defineCommands({ hello: ({ who }, { host }) => host.openRoute(\`/
           <Step title="Build">
             <File name="" language="bash">{`npm run build`}</File>
             <p className={styles.para}>
-              <Code>dist/</Code> now contains <Code>manifest.json</Code>, <Code>remoteEntry-</Code>
-              <em>hash</em>
-              <Code>.js</Code> and one chunk per module under <Code>assets/</Code>. The manifest is
-              the Module Federation manifest, which names the entry file and each module's chunks,
-              with the plugin's own fields added; everything the workbench loads is found from it,
-              relative to its URL. It is emitted only by a production build, so the workbench always
-              loads a plugin from build output; <Code>vite build --watch</Code> rebuilds on every
-              change, and every build names a new entry file.
+              <Code>dist/</Code> now contains <Code>manifest.json</Code>,{' '}
+              <Code>remoteEntry-&lt;hash&gt;.js</Code> and one chunk per module under{' '}
+              <Code>assets/</Code>. The manifest is the Module Federation manifest with the plugin's
+              fields added. It names the entry file and each module's chunks, and the workbench
+              resolves those names relative to the manifest's URL. The manifest is emitted only by a
+              production build, so the workbench always loads a plugin from build output.{' '}
+              <Code>vite build --watch</Code> rebuilds on every change, and every build names a new
+              entry file.
             </p>
           </Step>
           <Step title="Serve">
             <p className={styles.para}>
-              Serve <Code>dist/</Code> as it is, at any URL. The workbench's browser fetches it, so
-              when the workbench is on another origin every response must carry{' '}
-              <Code>Access-Control-Allow-Origin</Code> for that origin. Vite's preview server does
-              with one setting:
+              Serve <Code>dist/</Code> unchanged, at any URL. The browser running the workbench
+              fetches it, so a server on another origin must send{' '}
+              <Code>Access-Control-Allow-Origin</Code> for the workbench's origin.{' '}
+              <Code>vite preview</Code> sends it when <Code>preview.cors</Code> is set:
             </p>
             <File name="vite.config.ts" language="typescript">{`  preview: { cors: true },`}</File>
             <File name="" language="bash">{`npx vite preview --port 8899`}</File>
             <p className={styles.para}>
               A workbench served over https loads an <Code>http://</Code> plugin only from{' '}
-              <Code>127.0.0.1</Code> or <Code>localhost</Code> on the same machine; from any other
-              host the plugin is served over https as well.
+              <Code>127.0.0.1</Code> or <Code>localhost</Code> on the same machine. A plugin on any
+              other host is served over https.
             </p>
           </Step>
           <Step title="Install it">
@@ -222,8 +222,8 @@ export default defineCommands({ hello: ({ who }, { host }) => host.openRoute(\`/
             </p>
             <File name="" language="bash">{`/install http://127.0.0.1:8899/manifest.json`}</File>
             <p className={styles.para}>
-              The plugin is installed without a reload and again at every start until it is removed
-              from Settings. After a rebuild, remove it and install the same URL again.
+              The plugin is installed without a reload, and again at every start until it is removed
+              in Settings. After a rebuild, remove it and install the same URL again.
             </p>
           </Step>
           <Step title="Try it">
@@ -327,7 +327,7 @@ export default defineCommands({ hello: ({ who }, { host }) => host.openRoute(\`/
           <Explainer>
             <p className={styles.para}>
               <strong>Load.</strong> At startup the workbench fetches the manifest URLs the registry
-              lists and the ones installed from Settings, and registers every accepted manifest.{' '}
+              lists and the URLs installed from Settings. Every accepted manifest is registered.{' '}
               <Code>background</Code> and <Code>intent</Code> are loaded immediately, because the
               workbench calls them on its own schedule. <Code>route</Code>, <Code>pane</Code>,{' '}
               <Code>commands</Code> and <Code>prompt</Code> are loaded on first use. A module that
@@ -408,9 +408,9 @@ export default defineCommands({ hello: ({ who }, { host }) => host.openRoute(\`/
           <p className={styles.narrative}>
             <Code>plugin.config.ts</Code> exports a <Code>PluginConfig</Code>. The build adds{' '}
             <Code>sdkVersion</Code> and <Code>modules</Code> and writes the result into the Module
-            Federation manifest, <Code>manifest.json</Code>, whose own keys name the entry file and
-            each module's chunks; the workbench reads it as a <Code>Manifest</Code>. A typical
-            manifest:
+            Federation manifest, <Code>manifest.json</Code>. That file's own keys name the entry
+            file and each module's chunks. The workbench reads it as a <Code>Manifest</Code>. A
+            typical manifest:
           </p>
           <File
             name="plugin.config.ts"
@@ -2000,9 +2000,9 @@ interface FrameLayer {
             />
             <Returns>
               Vite plugins. During <Code>vite build</Code>, each named file is exposed as a
-              federation module under its module name, and <Code>manifest.json</Code> is the
-              federation manifest, naming the hashed entry file and each module's chunks, with the
-              config, <Code>sdkVersion</Code> and <Code>modules</Code> added. <Code>react</Code>,{' '}
+              federation module under its module name. <Code>manifest.json</Code> is the federation
+              manifest with the config, <Code>sdkVersion</Code> and <Code>modules</Code> added. It
+              names the hashed entry file and each module's chunks. <Code>react</Code>,{' '}
               <Code>react-dom</Code>, <Code>zod</Code>, <Code>@phosphor-icons/react</Code>,{' '}
               <Code>@tanstack/react-router</Code>, <Code>@kbase/design-system</Code> and{' '}
               <Code>@kbase/plugin-sdk</Code> are configured as shared singletons provided by the
@@ -2036,20 +2036,21 @@ interface FrameLayer {
           />
           <Explainer>
             <p className={styles.para}>
-              The workbench fetches the registry once at startup, then each manifest, and hands the
-              manifest's URL to the federation runtime, which loads the entry file and chunks it
-              names. A manifest that cannot be fetched or is not accepted is listed in Settings
-              under Not loaded with the reason. The workbench image serves its HTML shell for{' '}
-              <Code>/plugin-registry/plugins</Code>; the workbench treats a non-JSON response as "no
-              registry", logs <Code>plugin registry unavailable; using bundled plugins only</Code>,
-              and runs its bundled plugins alone.
+              The workbench fetches the registry once at startup, then each manifest it lists. It
+              hands the manifest's URL to the federation runtime, which loads the entry file and the
+              chunks the manifest names. A manifest that cannot be fetched or is refused is listed
+              in Settings under Not loaded with the reason. The workbench image serves its HTML
+              shell for <Code>/plugin-registry/plugins</Code>; the workbench treats a non-JSON
+              response as "no registry", logs{' '}
+              <Code>plugin registry unavailable; using bundled plugins only</Code>, and runs its
+              bundled plugins alone.
             </p>
             <p className={styles.para}>
               The KBase deployment mounts each plugin's service under{' '}
               <Code>/services/&lt;id&gt;/</Code> on the workbench's origin and lists{' '}
               <Code>/services/&lt;id&gt;/manifest.json</Code>. Every fetch is then same-origin,
               which the image's <Code>script-src 'self'</Code> policy requires. The proxies forward
-              the path unchanged, so a service behind one answers under its mount, and{' '}
+              the path unchanged, so a service behind one answers under its mount.{' '}
               <Code>base: '/services/&lt;id&gt;/plugin/'</Code> in the plugin's{' '}
               <Code>vite.config.ts</Code> writes that prefix into the manifest's asset paths. In
               development the dev server is that registry for the services listed in{' '}
@@ -2058,8 +2059,8 @@ interface FrameLayer {
             </p>
             <p className={styles.para}>
               A plugin installed from Settings or with <Code>/install</Code> is fetched from its own
-              URL and installed again at every start until removed. Behind the image's policy that
-              fetch is blocked, so installing by URL is for a development or demo workbench.
+              URL, and again at every start until it is removed. The image's policy blocks that
+              fetch, so installing by URL is for a development or demo workbench.
             </p>
           </Explainer>
         </Part>
@@ -2067,9 +2068,9 @@ interface FrameLayer {
         <Part id="errors" title="Troubleshooting">
           <div className={styles.trouble}>
             <Symptom name="The plugin does not appear">
-              Settings lists every installed plugin under Installed and every manifest it could not
-              install under Not loaded, with the reason: unreachable, not JSON, or refused, where an
-              incompatible <Code>sdkVersion</Code> is the usual refusal and the fix is a rebuild
+              Settings lists every installed plugin under Installed. A manifest the workbench could
+              not install is under Not loaded with the reason: unreachable, not JSON, or refused. An
+              incompatible <Code>sdkVersion</Code> is the usual refusal, and the fix is a rebuild
               against the SDK the workbench serves. A plugin in neither list is missing from{' '}
               <Code>/plugin-registry/plugins</Code>. A plugin listed in Settings but absent from
               Home has no <Code>launcher</Code>.
@@ -2109,11 +2110,12 @@ interface FrameLayer {
               Try again, the component threw during render. The error message is under Details.
             </Symptom>
             <Symptom name="Installing from a URL fails with could not fetch">
-              The workbench's browser could not fetch the manifest: the server did not answer, it
-              answered without <Code>Access-Control-Allow-Origin</Code> for the workbench's origin,
-              or an https workbench was given an <Code>http://</Code> URL on a host other than{' '}
-              <Code>127.0.0.1</Code> or <Code>localhost</Code>. The browser console says which. A
-              workbench served with a Content-Security-Policy blocks the fetch as well.
+              The browser could not fetch the manifest. The server did not answer, or it answered
+              without <Code>Access-Control-Allow-Origin</Code> for the workbench's origin. On an
+              https workbench, an <Code>http://</Code> URL on a host other than{' '}
+              <Code>127.0.0.1</Code> or <Code>localhost</Code> is blocked as mixed content. The
+              browser console says which. A workbench served with a Content-Security-Policy blocks
+              the fetch as well.
             </Symptom>
           </div>
         </Part>

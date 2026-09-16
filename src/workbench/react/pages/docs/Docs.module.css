@@ -92,23 +92,10 @@
   margin: 0;
 }
 
-.tryIt {
-  max-width: 560px;
-}
-
+/* The dialog's own button row; the dialog carries no layout for one. */
 .dialogRow {
   display: flex;
   justify-content: flex-end;
-}
-
-/* The dialog's steps, at the size of its description. */
-.dialogSteps {
-  margin: 0;
-  padding-inline-start: var(--s-5);
-  display: grid;
-  gap: var(--s-2);
-  font-size: var(--fs-4);
-  color: var(--c-ink2);
 }
 
 .para {

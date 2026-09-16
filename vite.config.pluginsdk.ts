@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// Builds @kbase/plugin-sdk as a three-entry library:
+// Builds @kbase/plugin-sdk as a four-entry library:
 //   .        the runtime surface a plugin imports (the define* helpers,
 //            fromReact, the hooks); reaches React and the design system
 //   ./config the contract alone (definePluginManifest, the schemas), for

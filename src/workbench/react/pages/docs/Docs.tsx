@@ -1,15 +1,14 @@
 import type { ReactNode } from 'react';
 import { CodeBlock } from '@kbase/design-system';
-import { usePanelTitle } from '@kbase/plugin-sdk';
+import { SDK_VERSION, usePanelTitle } from '@kbase/plugin-sdk';
 import styles from './Docs.module.css';
 
 // The plugin contract as it is meant to be: the page is the specification and
-// the implementation is measured against it.
+// the implementation is measured against it (Docs.contract.test.ts).
 //
-// Shaped like Vite's and Rollup's plugin pages: a working plugin first, then
-// one section per module with its example and the few rules that are not
-// visible in the code, then the reference with each module's signature and
-// schedule. A type appears once, in the reference entry that consumes it.
+// Overview, Getting started, Anatomy, Lifecycle, Manifest reference, API
+// reference, Deployment, Troubleshooting. Reference entries are name, one-line
+// description, signature, example, parameters table, returns.
 
 export function DocsDocument() {
   usePanelTitle('Plugin developer documentation');
@@ -20,42 +19,100 @@ export function DocsDocument() {
         <header className={styles.head} id="top">
           <h1 className="h2">Plugin developer documentation</h1>
           <p className={styles.narrative}>
-            Plugin developers add features to the workbench without changing the workbench itself. A
-            plugin is a small Vite project that describes itself in one config file and adds up to
-            five things: a page, a sidebar panel, slash commands, answers about what the user is
-            typing or has in view, and an assistant that answers free text. The workbench loads
-            plugins while it runs, so each one ships on its own schedule from its own server.
+            A workbench plugin is a Vite project that exports a manifest and up to six modules. The
+            SDK's Vite plugin builds it into a Module Federation remote, served by the plugin's own
+            backend. The workbench fetches the manifest at startup and loads each module on demand.
           </p>
+        </header>
+
+        <Part id="concepts" title="Concepts and usage">
+          <p className={styles.narrative}>The plugin API covers these areas.</p>
           <Explainer>
             <p className={styles.para}>
-              A plugin is a config object and up to six modules. The config names the plugin and
-              declares its slash commands. The workbench's prompt bar is a text input: text
-              beginning with <Code>/</Code> runs a slash command; other text, once sent, goes to the
-              plugin chosen as the assistant. The modules are <Code>route</Code>, a page;{' '}
-              <Code>pane</Code>, a sidebar block (the page's tab and the block are both panels);{' '}
-              <Code>commands</Code>, the slash command handlers; <Code>background</Code>, what the
-              plugin offers for text as it is typed and what it has about the terms an open page or
-              the cart carries; <Code>prompt</Code>, the handler for sent text when the plugin is
-              the assistant; and <Code>intent</Code>, what turns the text being typed into the rows
-              under the bar when the plugin is chosen for that. <Code>pluginFederation</Code>, a
-              Vite plugin from <Code>@kbase/plugin-sdk/vite</Code>, exposes each module over Module
-              Federation and writes the config to <Code>manifest.json</Code>. The workbench reads
-              the manifest at startup and fetches each module the first time it is needed, except{' '}
-              <Code>background</Code> and <Code>intent</Code>, which it fetches at startup.
+              <strong>Manifest.</strong> <Code>plugin.config.ts</Code> declares the plugin's id,
+              title, icon, commands, shortcuts and launcher. The build writes it to{' '}
+              <Code>manifest.json</Code> with the SDK version and the module list. The workbench
+              registers the declared commands and lists the plugin in Settings and on Home before
+              loading any plugin code.
+            </p>
+            <p className={styles.para}>
+              <strong>Modules.</strong> Each module is a file named in <Code>vite.config.ts</Code>{' '}
+              whose default export is created with a <Code>define*</Code> helper. <Code>route</Code>{' '}
+              renders the plugin's page. <Code>pane</Code> renders its sidebar panel.{' '}
+              <Code>commands</Code> implements the declared slash commands. <Code>background</Code>{' '}
+              extracts terms from typed text, offers commands, returns related items, and publishes
+              status bar items. <Code>prompt</Code> receives submitted free text.{' '}
+              <Code>intent</Code> ranks command suggestions for free text.
+            </p>
+            <p className={styles.para}>
+              <strong>Panels.</strong> Pages and panes are panels. The workbench calls the module's{' '}
+              <Code>mount(element, context)</Code> once per panel and the returned cleanup when the
+              panel is removed. <Code>fromReact</Code> wraps a React component as a mount. The panel
+              API reports the panel's path and focus and sets its title, breadcrumbs and terms.
+            </p>
+            <p className={styles.para}>
+              <strong>Commands.</strong> A command is declared in the manifest and implemented in
+              the <Code>commands</Code> module. It runs from the prompt bar, the Shortcuts pane, the
+              launcher card on Home, a suggestion row, a status bar item, or another plugin's{' '}
+              <Code>host.execute</Code>. Commands are registered as{' '}
+              <Code>&lt;id&gt;:&lt;name&gt;</Code>. Every argument is a string.
+            </p>
+            <p className={styles.para}>
+              <strong>Terms.</strong> A term is a namespaced identifier such as{' '}
+              <Code>uniprot:P0AEX9</Code>. A page declares terms with <Code>setTerms</Code>, a cart
+              item carries terms, and <Code>background.terms</Code> extracts terms from typed text.
+              The workbench passes terms between plugins unchanged; a plugin acts on the namespaces
+              it recognises.
+            </p>
+            <p className={styles.para}>
+              <strong>Cart.</strong> The cart holds references the user has collected. A plugin adds
+              items with <Code>cart.add</Code> and reads back its own items. When free text is
+              submitted, the cart's items are passed to the assistant as attachments and the cart is
+              cleared.
+            </p>
+            <p className={styles.para}>
+              <strong>Assistant and suggestions.</strong> Settings selects one plugin with a{' '}
+              <Code>prompt</Code> module as the assistant and one with an <Code>intent</Code> module
+              as the suggestion provider. Submitted free text goes to the assistant. The rows shown
+              under the prompt bar while typing come from the provider.
+            </p>
+            <p className={styles.para}>
+              <strong>Error handling.</strong> Every value passed to the workbench is validated
+              against a zod schema. An invalid argument to a host or panel call throws a{' '}
+              <Code>TypeError</Code>. An invalid item in a callback result is discarded and a
+              warning naming the plugin is logged. A panel that throws is contained by an error
+              boundary with a retry button.
             </p>
           </Explainer>
-        </header>
+        </Part>
 
         <Part id="start" title="Getting started">
           <p className={styles.narrative}>
-            The smallest useful plugin is one command that opens one page. These four files are the
-            whole thing; the note after them says what each part does once the workbench has loaded
-            it.
+            This tutorial builds a plugin with one slash command and one page and connects it to a
+            workbench dev server. Prerequisites: Node.js, npm, and a checkout of the workbench
+            repository in which <Code>npm run build:plugin-sdk</Code> has produced{' '}
+            <Code>dist-plugin-sdk/</Code>.
           </p>
-          <File
-            name="plugin.config.ts"
-            language="typescript"
-          >{`import { definePluginManifest } from '@kbase/plugin-sdk/config';
+          <Step title="Create the project">
+            <p className={styles.para}>Scaffold a Vite project and add the SDK:</p>
+            <File name="" language="bash">{`npm create vite@latest hello -- --template react-ts
+cd hello
+rm -r src/* public
+npm i file:../next-gen-ui/dist-plugin-sdk
+npm i -D @module-federation/vite`}</File>
+            <p className={styles.para}>
+              <Code>index.html</Code> stays: Vite requires an HTML entry, and the workbench never
+              loads it.
+            </p>
+          </Step>
+          <Step title="Add the manifest">
+            <p className={styles.para}>
+              Create <Code>plugin.config.ts</Code>:
+            </p>
+            <File
+              name="plugin.config.ts"
+              language="typescript"
+            >{`import { definePluginManifest } from '@kbase/plugin-sdk/config';
 
 export default definePluginManifest({
   id: 'hello',
@@ -64,25 +121,42 @@ export default definePluginManifest({
   commands: [{ name: 'hello', title: 'Say hello', args: [{ name: 'who' }] }],
   launcher: { label: 'Hello', command: 'hello' },
 });`}</File>
-          <File name="vite.config.ts" language="typescript">{`import { defineConfig } from 'vite';
+            <p className={styles.para}>
+              Add it to the Node project in <Code>tsconfig.node.json</Code>:
+            </p>
+            <File
+              name="tsconfig.node.json"
+              language="json"
+            >{`"include": ["vite.config.ts", "plugin.config.ts"]`}</File>
+          </Step>
+          <Step title="Configure the build">
+            <p className={styles.para}>
+              Replace <Code>vite.config.ts</Code>:
+            </p>
+            <File name="vite.config.ts" language="typescript">{`import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { pluginFederation } from '@kbase/plugin-sdk/vite';
-import config from './plugin.config';
+import config from './plugin.config.ts';
 
 export default defineConfig({
   plugins: [
-    pluginFederation({
-      config,
-      route: './src/route.tsx',
-      commands: './src/commands.ts',
-    }),
+    pluginFederation({ config, route: './src/route.tsx', commands: './src/commands.ts' }),
     react(),
   ],
 });`}</File>
-          <File
-            name="src/route.tsx"
-            language="tsx"
-          >{`import { defineRoute, fromReact, usePanel, usePanelTitle } from '@kbase/plugin-sdk';
+            <p className={styles.para}>
+              <Code>pluginFederation</Code> exposes each named file as a module and emits the
+              manifest.
+            </p>
+          </Step>
+          <Step title="Add the page and the command">
+            <p className={styles.para}>
+              Create <Code>src/route.tsx</Code>:
+            </p>
+            <File
+              name="src/route.tsx"
+              language="tsx"
+            >{`import { defineRoute, fromReact, usePanel, usePanelTitle } from '@kbase/plugin-sdk';
 
 function Hello() {
   const { path } = usePanel();
@@ -91,39 +165,243 @@ function Hello() {
   return <p>Hello, {who}.</p>;
 }
 
-export default defineRoute({ ...fromReact(Hello), normalize: (path) => path.toLowerCase() });`}</File>
-          <File
-            name="src/commands.ts"
-            language="typescript"
-          >{`import { defineCommands } from '@kbase/plugin-sdk';
+export default defineRoute(fromReact(Hello), { normalize: (path) => path.toLowerCase() });`}</File>
+            <p className={styles.para}>
+              Create <Code>src/commands.ts</Code>:
+            </p>
+            <File
+              name="src/commands.ts"
+              language="typescript"
+            >{`import { defineCommands } from '@kbase/plugin-sdk';
 
 export default defineCommands({ hello: ({ who }, { host }) => host.openRoute(\`/\${who ?? ''}\`) });`}</File>
-          <File name="" language="bash">{`npm create vite@latest hello -- --template react-ts
-cd hello && npm i @kbase/plugin-sdk
-npm run dev -- --port 8770`}</File>
+            <p className={styles.para}>
+              The handler opens the page at <Code>/&lt;who&gt;</Code>. The page reads the name back
+              from <Code>usePanel().path</Code>.
+            </p>
+          </Step>
+          <Step title="Build">
+            <File name="" language="bash">{`npm run build`}</File>
+            <p className={styles.para}>
+              <Code>dist/</Code> now contains <Code>remoteEntry.js</Code>, one chunk per module, and{' '}
+              <Code>manifest.json</Code>. The manifest is emitted only by a production build, so the
+              workbench always loads a plugin from build output; <Code>vite build --watch</Code>{' '}
+              rebuilds on every change. Chunk URLs are resolved relative to{' '}
+              <Code>remoteEntry.js</Code>, so <Code>base</Code> can stay at Vite's default. Set{' '}
+              <Code>base: '/services/hello/plugin/'</Code> if the bundle references static assets
+              such as images or CSS <Code>url()</Code>.
+            </p>
+          </Step>
+          <Step title="Serve">
+            <p className={styles.para}>
+              Serve the build output from the plugin's backend at two routes:
+            </p>
+            <Table
+              head={['Route', 'Serves']}
+              rows={[
+                [<Code>/services/hello/manifest.json</Code>, <Code>dist/manifest.json</Code>],
+                [<Code>/services/hello/plugin/*</Code>, <Code>dist/*</Code>],
+              ]}
+            />
+          </Step>
+          <Step title="Connect to the workbench">
+            <p className={styles.para}>
+              In the workbench checkout, add the plugin's origin to{' '}
+              <Code>.env.development.local</Code> and start the workbench dev server:
+            </p>
+            <File
+              name=".env.development.local"
+              language="bash"
+            >{`VITE_DEV_SERVICE_PROXY=/services/hello=http://127.0.0.1:8899`}</File>
+            <p className={styles.para}>
+              The dev server proxies <Code>/services/hello</Code> to that origin and lists the
+              plugin at <Code>/plugin-registry/plugins</Code>, the endpoint the workbench reads at
+              startup. Adding an origin requires a dev server restart; rebuilding the plugin
+              requires a page reload.
+            </p>
+          </Step>
+          <Step title="Try it">
+            <ol className={styles.steps}>
+              <li>
+                Open Home. A Hello card appears, from <Code>launcher</Code>. Clicking it runs{' '}
+                <Code>hello</Code> with no arguments and opens a tab that reads "Hello, nobody."
+              </li>
+              <li>
+                Type <Code>/hello Alice</Code> in the prompt bar. A tab titled Alice opens at{' '}
+                <Code>/p/hello/Alice</Code>.
+              </li>
+              <li>
+                Type <Code>/hello alice</Code>. The Alice tab is focused instead of a second tab
+                opening, because <Code>normalize</Code> maps both paths to the same string.
+              </li>
+              <li>
+                Open <Code>/p/hello/Alice</Code> in a new browser tab. The same page opens from the
+                URL.
+              </li>
+            </ol>
+          </Step>
+        </Part>
+
+        <Part id="anatomy" title="Anatomy of a plugin">
+          <p className={styles.narrative}>The tutorial plugin has this structure.</p>
+          <File name="" language="text">{`hello/
+├── plugin.config.ts     // manifest: id, title, commands, launcher
+├── vite.config.ts       // pluginFederation: which files are modules
+├── src/
+│   ├── route.tsx        // route module: the page
+│   └── commands.ts      // commands module: slash command handlers
+└── dist/                // build output, served by the plugin's backend
+    ├── remoteEntry.js   // Module Federation entry
+    ├── manifest.json    // plugin.config.ts plus sdkVersion and modules
+    └── assets/          // one chunk per module`}</File>
           <Explainer>
             <p className={styles.para}>
-              With <Code>VITE_DEV_SERVICE_PROXY=/services/hello=http://127.0.0.1:8770</Code> in the
-              workbench's <Code>.env.local</Code>, read when its dev server starts, the workbench
-              proxies <Code>/services/hello</Code> to that origin and reads{' '}
-              <Code>/services/hello/manifest.json</Code> at startup. <Code>launcher</Code> puts a
-              Hello card on Browse, the workbench's page listing every plugin; pressing the card
-              runs the command. <Code>/hello Alice</Code> runs the <Code>hello</Code> handler, which
-              opens the <Code>route</Code> module at <Code>/Alice</Code>:{' '}
-              <Code>usePanel().path</Code> is <Code>/Alice</Code> (<Code>openRoute</Code> uses{' '}
-              <Code>normalize</Code> only to compare the requested path with each open tab's), and{' '}
-              <Code>usePanelTitle</Code> names the tab Alice. <Code>/hello alice</Code> focuses that
-              tab instead of opening another.
+              <strong>Manifest fields.</strong> The most important fields, in{' '}
+              <Code>plugin.config.ts</Code>:
+            </p>
+            <ul className={styles.list}>
+              <li>
+                <Code>id</Code>: the plugin's unique identifier. It appears in every page URL and in
+                saved layouts, so it is permanent.
+              </li>
+              <li>
+                <Code>title</Code>, <Code>icon</Code>, <Code>color</Code>: how the plugin is shown
+                in tabs, rows and cards.
+              </li>
+              <li>
+                <Code>commands</Code>: the slash commands the plugin implements, with their
+                arguments.
+              </li>
+              <li>
+                <Code>launcher</Code>, <Code>shortcuts</Code>: command invocations shown as a card
+                on Home and as buttons in the Shortcuts pane.
+              </li>
+              <li>
+                <Code>sdkVersion</Code>, <Code>modules</Code>: written by the build. The workbench
+                loads a plugin only when <Code>sdkVersion</Code> is compatible.
+              </li>
+            </ul>
+            <p className={styles.para}>
+              <strong>Module files.</strong> Each module file has one default export:
+            </p>
+            <ul className={styles.list}>
+              <li>
+                <Code>defineRoute({'{ mount, normalize }'})</Code>: the page.
+              </li>
+              <li>
+                <Code>definePane({'{ mount, fit? }'})</Code>: the sidebar panel.
+              </li>
+              <li>
+                <Code>defineCommands({'{ [name]: handler }'})</Code>: one handler per declared
+                command.
+              </li>
+              <li>
+                <Code>defineBackground({'{ terms?, offer?, relate?, status? }'})</Code>: callbacks
+                the workbench invokes on its own schedule.
+              </li>
+              <li>
+                <Code>definePrompt({'{ handle, newConversation, destination? }'})</Code>: the
+                assistant.
+              </li>
+              <li>
+                <Code>defineIntent({'{ index, suggest }'})</Code>: the suggestion provider.
+              </li>
+            </ul>
+            <p className={styles.para}>
+              Each <Code>define*</Code> helper types its argument and returns it unchanged.
             </p>
           </Explainer>
         </Part>
 
-        <Part id="manifest" title="The manifest">
+        <Part id="lifecycle" title="Lifecycle">
           <p className={styles.narrative}>
-            The manifest is the plugin's description: its name and icon, the commands it offers, the
-            button that opens it. The workbench reads it before loading any code, so everything a
-            user can find without opening the plugin comes from here. Names matter here more than
-            anywhere else: the id is permanent.
+            A plugin is discovered at startup, its modules are loaded when needed, and its panels
+            are mounted and unmounted as the layout changes.
+          </p>
+          <Explainer>
+            <p className={styles.para}>
+              <strong>Load.</strong> The workbench fetches <Code>/plugin-registry/plugins</Code> at
+              startup and registers every accepted manifest. <Code>background</Code> and{' '}
+              <Code>intent</Code> are loaded immediately, because the workbench calls them on its
+              own schedule. <Code>route</Code>, <Code>pane</Code>, <Code>commands</Code> and{' '}
+              <Code>prompt</Code> are loaded on first use. A module that fails to load is logged and
+              skipped; a panel whose module fails to load shows a retry button.
+            </p>
+            <Table
+              head={['Module', 'Loaded', 'Members called']}
+              rows={[
+                [
+                  <Code>background</Code>,
+                  'at startup, for every installed plugin that has one',
+                  <>
+                    <Code>terms</Code> and <Code>offer</Code> on every change to free text;{' '}
+                    <Code>relate</Code> 250 ms after the active tab's or the cart's terms change;{' '}
+                    <Code>status</Code> once, when the module loads
+                  </>,
+                ],
+                [
+                  <Code>intent</Code>,
+                  'at startup, for every installed plugin that has one',
+                  <>
+                    <Code>index</Code> once, when the module loads; <Code>suggest</Code>, for the
+                    selected provider only, on every change to free text, when an <Code>offer</Code>{' '}
+                    resolves asynchronously, and when the active tab's or the cart's terms change
+                    while text is in the bar
+                  </>,
+                ],
+                [
+                  <Code>prompt</Code>,
+                  'when the plugin is selected as the assistant',
+                  <>
+                    <Code>destination</Code> once, when the module loads; <Code>handle</Code> on
+                    each submitted message; <Code>newConversation</Code> from New in the destination
+                    menu
+                  </>,
+                ],
+                [
+                  <Code>route</Code>,
+                  'when the plugin’s first tab opens, or when a restored tab is first rendered',
+                  <>
+                    <Code>mount</Code> once per tab, and again after Restart panel
+                  </>,
+                ],
+                [
+                  <Code>pane</Code>,
+                  'when the pane is first rendered: a pinned pane at startup, a preview from Home, or the flyout from the collapsed sidebar',
+                  <>
+                    <Code>mount</Code> once, and again after the pane is unfolded or restarted
+                  </>,
+                ],
+                [
+                  <Code>commands</Code>,
+                  'the first time one of the plugin’s commands runs',
+                  'the handler with the command’s name, on each run',
+                ],
+              ]}
+            />
+            <p className={styles.para}>
+              <strong>Run.</strong> <Code>mount()</Code> runs when a panel is first rendered, with a
+              fresh element and the panel and host APIs. The panel's DOM is created once and
+              re-parented when the layout changes: moving a tab to another group, splitting a group,
+              moving a pane between the sidebar and the main area, switching tabs and collapsing the
+              sidebar keep the plugin's root mounted. <Code>mount()</Code> runs again after Restart
+              panel, after a folded pane is unfolded, and after a page reload restores the tab from
+              the saved layout.
+            </p>
+            <p className={styles.para}>
+              <strong>Unload.</strong> The cleanup returned by <Code>mount()</Code> runs when the
+              tab is closed, when the pane is unpinned or folded, and before a restart. The title,
+              breadcrumbs and terms of a closed panel are discarded. The layout, the cart and the
+              settings are saved to browser storage on every change and restored on the next load.
+            </p>
+          </Explainer>
+        </Part>
+
+        <Part id="manifest" title="Manifest reference">
+          <p className={styles.narrative}>
+            <Code>plugin.config.ts</Code> exports a <Code>PluginConfig</Code>. The build adds{' '}
+            <Code>sdkVersion</Code> and <Code>modules</Code> and writes the result to{' '}
+            <Code>manifest.json</Code> as a <Code>Manifest</Code>. A typical manifest:
           </p>
           <File
             name="plugin.config.ts"
@@ -137,118 +415,289 @@ npm run dev -- --port 8770`}</File>
   commands: [
     {
       name: 'open',
-      title: 'Open the evidence dossier',
-      args: [{ name: 'id', description: 'a UniProt accession', required: true }],
+      title: 'Open the evidence dossier for a protein',
+      args: [{ name: 'q', description: 'a UniProt or RefSeq id, a gene name, or a sequence' }],
     },
-    { name: 'compare', title: 'Compare with a taxon', args: [{ name: 'taxid' }] },
+    { name: 'compare', title: 'Compare with a taxon', args: [{ name: 'taxid', required: true }] },
   ],
-  shortcuts: [{ label: 'Dossier', command: 'open', args: { id: 'P0AEX9' } }],
+  shortcuts: [{ label: 'Dossier', command: 'open', args: { q: 'P0AEX9' } }],
   launcher: { label: 'Function Junction', command: 'open' },
 });`}</File>
-          <Explainer>
+          <Entry id="m-plugin" name="Plugin properties">
+            <Params
+              heading="Properties"
+              rows={[
+                {
+                  name: 'id',
+                  required: true,
+                  type: 'string',
+                  description: (
+                    <>
+                      A unique identifier matching <Code>/^[a-z][a-z0-9-]{'{1,40}'}$/</Code>. Used
+                      in page URLs and saved layouts; permanent once published.
+                    </>
+                  ),
+                },
+                { name: 'title', required: true, type: 'string', description: 'The display name.' },
+                {
+                  name: 'description',
+                  type: 'string',
+                  description:
+                    'One sentence about the plugin. Shown on the launcher card and pane rows, and indexed for suggestions.',
+                },
+                {
+                  name: 'icon',
+                  type: 'string',
+                  description: 'A name from the icon table below. Defaults to a pin.',
+                },
+                {
+                  name: 'color',
+                  type: 'string',
+                  description: (
+                    <>
+                      One of <Code>blue</Code>, <Code>green</Code>, <Code>teal</Code>,{' '}
+                      <Code>purple</Code>, <Code>orange</Code>, <Code>red</Code>. Tints the icon
+                      wherever it appears. Defaults to the surrounding text colour.
+                    </>
+                  ),
+                },
+                {
+                  name: 'commands',
+                  type: 'SlashCommand[]',
+                  description: 'The slash commands the plugin implements. See Command properties.',
+                },
+                {
+                  name: 'shortcuts',
+                  type: 'CommandCall[]',
+                  description:
+                    'Buttons in the Shortcuts sidebar pane. See Command call properties.',
+                },
+                {
+                  name: 'launcher',
+                  type: 'CommandCall',
+                  description:
+                    'The card on Home. Without a launcher the plugin is not listed as an app.',
+                },
+                {
+                  name: 'sdkVersion',
+                  type: 'string',
+                  description: 'Written by the build: the SDK version the plugin was built with.',
+                },
+                {
+                  name: 'modules',
+                  type: 'Module[]',
+                  description: (
+                    <>
+                      Written by the build: the modules named in <Code>vite.config.ts</Code>, in the
+                      order background, route, pane, commands, prompt, intent.
+                    </>
+                  ),
+                },
+              ]}
+            />
             <p className={styles.para}>
-              The config is the object <Code>vite.config.ts</Code> passes as <Code>config</Code>.
-              The prompt bar completes each declared command and validates its arguments from the
-              declaration; the <Code>commands</Code> module must export a handler with the same
-              name. <Code>shortcuts</Code> adds buttons to the sidebar; each runs the command with
-              the given arguments.
+              <strong>Version compatibility.</strong> This workbench serves SDK{' '}
+              <Code>{SDK_VERSION}</Code>. Under a 0.x SDK a manifest is accepted when its{' '}
+              <Code>sdkVersion</Code> has the same major and minor version. From 1.0.0, it is
+              accepted with the same major version and a minor version at or below the workbench's.
+              A rejected manifest is listed on Settings under Not loaded with the reason, and the
+              console logs <Code>plugin registry: not loading fj, built against SDK 0.3.0: …</Code>.
             </p>
             <p className={styles.para}>
-              Text that is not a slash command goes to the intent plugin chosen in Settings, which
-              suggests commands for it from every declaration; see Intent below. The bundled one
-              reads the title, the descriptions, and <Code>semantics</Code>, a section never shown:{' '}
-              <Code>semantics.description</Code> is what the command does in the words a user would
-              type for it, synonyms included; <Code>semantics.examples</Code> are phrasings that
-              should reach it. An identifier in the text fills the argument whose description says
-              it takes that kind of thing, so "dossier for P0AEX9" offers <Code>open</Code> with{' '}
-              <Code>id</Code> filled.
+              <strong>Icon table.</strong> <Code>Briefcase</Code>, <Code>ChatCircle</Code>,{' '}
+              <Code>ChatCircleDots</Code>, <Code>ChatCirclePlus</Code>, <Code>Code</Code>,{' '}
+              <Code>Database</Code>, <Code>Flask</Code>, <Code>FolderOpen</Code>, <Code>Gear</Code>,{' '}
+              <Code>Globe</Code>, <Code>GraduationCap</Code>, <Code>HandWaving</Code>,{' '}
+              <Code>House</Code>, <Code>Lightning</Code>, <Code>LinkSimple</Code>,{' '}
+              <Code>ListChecks</Code>, <Code>Nut</Code>, <Code>SquaresFour</Code>,{' '}
+              <Code>Table</Code>, <Code>TreeStructure</Code>.
             </p>
+          </Entry>
+          <Entry id="m-command" name="Command properties">
+            <Params
+              heading="Properties"
+              rows={[
+                {
+                  name: 'name',
+                  required: true,
+                  type: 'string',
+                  description: (
+                    <>
+                      The slash name, matching <Code>/^[a-z][a-z0-9-]*$/</Code>. Registered as{' '}
+                      <Code>&lt;id&gt;:&lt;name&gt;</Code>. <Code>/open</Code> resolves while
+                      exactly one installed plugin declares <Code>open</Code>; otherwise the prompt
+                      bar reports{' '}
+                      <Code>/open is declared by a:open and b:open; type one of them</Code>.
+                    </>
+                  ),
+                },
+                {
+                  name: 'title',
+                  required: true,
+                  type: 'string',
+                  description: 'Shown beside the command in completions.',
+                },
+                { name: 'description', type: 'string', description: 'Indexed for suggestions.' },
+                {
+                  name: 'args',
+                  type: 'ArgDecl[]',
+                  description:
+                    'The arguments, in the order they are typed. See Argument properties.',
+                },
+                {
+                  name: 'icon',
+                  type: 'string',
+                  description:
+                    "The icon for the command's Shortcuts button. Defaults to the plugin's icon.",
+                },
+                {
+                  name: 'semantics.description',
+                  type: 'string',
+                  description:
+                    'What the command does, in the words a user would type. Indexed for suggestions; never displayed.',
+                },
+                {
+                  name: 'semantics.examples',
+                  type: 'string[]',
+                  description: 'Phrasings that should match this command. Indexed for suggestions.',
+                },
+              ]}
+            />
+          </Entry>
+          <Entry id="m-arg" name="Argument properties">
+            <Params
+              heading="Properties"
+              rows={[
+                {
+                  name: 'name',
+                  required: true,
+                  type: 'string',
+                  description: (
+                    <>
+                      Matches <Code>/^[a-z][a-z0-9-]*$/</Code>. The key under which the value is
+                      passed to the handler.
+                    </>
+                  ),
+                },
+                {
+                  name: 'description',
+                  type: 'string',
+                  description:
+                    'What kind of value the argument takes. The bundled suggestion provider uses it to bind identifiers to arguments.',
+                },
+                {
+                  name: 'required',
+                  type: 'boolean',
+                  description:
+                    'When true, the prompt bar reports a missing value before the command runs, and suggestions omit the command when nothing fills the argument.',
+                },
+              ]}
+            />
+          </Entry>
+          <Entry id="m-call" name="Command call properties">
             <p className={styles.para}>
-              <Code>id</Code> appears in URLs and saved layouts and must not change. Command names
-              are namespaced by plugin id: <Code>function-junction:open</Code>. The short form{' '}
-              <Code>/open</Code> is accepted when it is unambiguous. If another installed plugin
-              also declares <Code>open</Code>, the prompt bar rejects <Code>/open</Code> and lists
-              the qualified names.
+              A command call is a command with its arguments filled in. It is used by{' '}
+              <Code>launcher</Code>, <Code>shortcuts</Code>, an <Code>Offer</Code>, a{' '}
+              <Code>Suggestion</Code> and a <Code>StatusItem</Code> action.
             </p>
-          </Explainer>
-        </Part>
+            <Params
+              heading="Properties"
+              rows={[
+                {
+                  name: 'label',
+                  required: true,
+                  type: 'string',
+                  description: 'The button or row text.',
+                },
+                {
+                  name: 'command',
+                  required: true,
+                  type: 'string',
+                  description: (
+                    <>
+                      <Code>plugin:name</Code>, or <Code>name</Code> for the declaring plugin's own
+                      command.
+                    </>
+                  ),
+                },
+                {
+                  name: 'args',
+                  type: 'Record<string, string>',
+                  description: 'Argument values by name.',
+                },
+              ]}
+            />
+            <p className={styles.para}>More formally:</p>
+            <Sig>{`type PluginConfig = Omit<Manifest, 'sdkVersion' | 'modules'>;
 
-        <Part id="pages" title="Pages">
-          <p className={styles.narrative}>
-            A page is the plugin's main view. The workbench shows it in a tab and gives it a path,
-            the way a browser gives a site a URL; the plugin decides what each path shows. One rule
-            to know: opening a page the user already has focuses that tab rather than adding
-            another, and the plugin says which paths count as the same page.
-          </p>
-          <File name="src/route.tsx" language="tsx">{`function Dossier() {
-  const { path, navigate } = usePanel();
-  const id = path.slice(1);
-  usePanelTitle(id || 'Function Junction');
-  usePanelTerms(id ? [\`uniprot:\${id}\`] : []);
-  if (!id) return <SearchBox onPick={(picked) => navigate(\`/\${picked}\`)} />;
-  return <Report id={id} />;
+interface Manifest {
+  id: string;
+  title: string;
+  description?: string;
+  icon?: string;
+  color?: string;
+  commands?: SlashCommand[];
+  shortcuts?: CommandCall[];
+  launcher?: CommandCall;
+  sdkVersion: string;            // written by the build
+  modules: Module[];             // written by the build
 }
 
-export default defineRoute({
-  ...fromReact(Dossier),
-  normalize: (path) => path.split('?')[0].toUpperCase(),
-});`}</File>
-          <Explainer>
-            <p className={styles.para}>
-              A tab's URL is <Code>/p/&lt;id&gt;&lt;path&gt;</Code>; <Code>usePanel().path</Code> is
-              the part after <Code>/p/&lt;id&gt;</Code>, including the query string.{' '}
-              <Code>openRoute(path)</Code> focuses an open tab whose path has the same{' '}
-              <Code>normalize</Code> result as <Code>path</Code>, and opens a new tab otherwise;
-              this route's <Code>normalize</Code> ignores case and the query string.{' '}
-              <Code>navigate(path)</Code> changes the tab's path and pushes a history entry.{' '}
-              <Code>usePanelTerms(terms)</Code> sets the tab's terms, strings of the form{' '}
-              <Code>prefix:value</Code>; while the tab is in front, the workbench asks every other
-              plugin's <Code>relate</Code> about them 250 ms after they change, and hands them to
-              the intent as the <Code>page</Code> tier. A page that has nothing to say sets none,
-              and nothing is asked; the workbench cannot tell that from a page that has not reported
-              yet, so the Related pane says only that there is nothing to ask about.
-            </p>
-          </Explainer>
+interface SlashCommand {
+  name: string;
+  title: string;
+  description?: string;
+  args?: ArgDecl[];
+  icon?: string;
+  semantics?: {
+    description: string;
+    examples?: string[];
+  };
+}
+
+interface ArgDecl {
+  name: string;
+  description?: string;
+  required?: boolean;
+}
+
+interface CommandCall {
+  label: string;
+  command: string;
+  args?: Record<string, string>;
+}
+
+function definePluginManifest(config: PluginConfig): PluginConfig;`}</Sig>
+          </Entry>
         </Part>
 
-        <Part id="pane" title="Sidebar pane">
+        <Part id="reference" title="API reference">
           <p className={styles.narrative}>
-            A pane is a compact block in the sidebar, next to other plugins' panes: a recent list, a
-            status readout, a toolbar. Users choose which panes are pinned; the plugin only renders.
+            Modules, then the host API, the panel API, the cart API, the React helpers and the build
+            plugin. Every signature is checked against the SDK source by the test suite.
           </p>
-          <File
-            name="src/pane.tsx"
-            language="tsx"
-          >{`export default definePane({ ...fromReact(RecentProteins), fit: 'content' });`}</File>
-          <Explainer>
-            <p className={styles.para}>
-              A plugin with a <Code>pane</Code> module can be pinned to the sidebar from Settings.{' '}
-              <Code>fit: 'content'</Code> sizes the block to its content; otherwise it shares the
-              sidebar's height with the other pinned panes. <Code>usePanel().path</Code> is{' '}
-              <Code>''</Code>. A pane is mounted once wherever it is drawn: with the sidebar
-              collapsed its rail icon opens a flyout, and the pane moves into the flyout rather than
-              being mounted a second time there. Folding the block unmounts the pane, and unfolding
-              mounts it again from scratch.
-            </p>
-          </Explainer>
-        </Part>
 
-        <Part id="background" title="Background">
-          <p className={styles.narrative}>
-            The background module lets a plugin join in before anything of the plugin's is open. It
-            answers two questions on two clocks. While the user types, it says what this plugin
-            would do with the text — an accession it recognises, a job id, a dataset it holds — as
-            commands the prompt bar can run. Once a page is open or the cart has something in it, it
-            says what this plugin has about the terms they carry, as things the user can open or
-            keep. The workbench interprets no text itself: what one plugin recognises is pooled and
-            passed to the others, so each answers for what the others found. The bundled intent
-            plugin's background does nothing but that recognising — it tags identifiers by shape (
-            <Code>uniprot:P0AEX9</Code>, <Code>ncbitaxon:562</Code>; a bare number is never tagged).
-          </p>
-          <File
-            name="src/background.ts"
-            language="typescript"
-          >{`const ACCESSION = /^[A-Z][0-9][A-Z0-9]{3}[0-9]$/i;
+          <Entry id="r-background" name="background">
+            <p className={styles.para}>
+              Callbacks the workbench invokes on its own schedule. All four members are optional.
+              Loaded at startup.
+            </p>
+            <Sig>{`type Cleanup = () => void;
+type Subscribe<T> = (set: (value: T) => void) => Cleanup;
+
+interface Background {
+  terms?: (q: TypedText) => string[];
+  offer?: (q: TypedQuery) => Offer[] | Promise<Offer[]>;
+  relate?: (q: TermsQuery) => CartItem[] | Promise<CartItem[]>;
+  status?: Subscribe<StatusItem[]>;
+}
+
+function defineBackground(b: Background): Background;`}</Sig>
+            <p className={styles.para}>Example:</p>
+            <File
+              name="src/background.ts"
+              language="typescript"
+            >{`const ACCESSION = /^[A-Z][0-9][A-Z0-9]{3}[0-9]$/i;
 const idsIn = (terms) => terms.flatMap((t) => t.match(/^uniprot:(.+)$/)?.[1] ?? []);
 
 export default defineBackground({
@@ -257,17 +706,14 @@ export default defineBackground({
     return ACCESSION.test(q) ? [\`uniprot:\${q}\`] : [];
   },
 
-  // Every keystroke, from the pooled terms alone.
   offer: ({ terms }) =>
     idsIn(terms).map((id) => ({
       label: \`Evidence dossier for \${id}\`,
       command: 'open',
-      args: { id },
-      // Recognised by its shape and not looked up, so it may name nothing.
+      args: { q: id },
       match: { term: \`uniprot:\${id}\`, kind: 'identifier' },
     })),
 
-  // 250 ms after the open page's or the cart's terms change. May fetch.
   relate: async ({ terms, signal }) => {
     const rows = await Promise.all(idsIn(terms).map((id) => fetchSummary(id, signal)));
     return rows.filter(Boolean).map((row) => ({
@@ -276,142 +722,628 @@ export default defineBackground({
       subject: row.id,
       summary: row.verdict,
       terms: [\`uniprot:\${row.id}\`, \`ncbitaxon:\${row.taxon}\`],
-      // UniProt returned the entry, so this plugin holds the thing.
       answers: [{ term: \`uniprot:\${row.id}\`, kind: 'record' }],
-      source: { command: 'open', args: { id: row.id } },
+      source: { command: 'open', args: { q: row.id } },
       context: { measuredOver: row.population },
     }));
   },
 
-  // Pushed: the lines as they stand now, and again whenever they change.
   status: (set) => {
     const push = () => set(pending() > 0 ? [{ text: \`\${pending()} lookups running\` }] : []);
     push();
     return lookups.subscribe(push);
   },
 });`}</File>
-          <Explainer>
-            <p className={styles.para}>
-              The <Code>background</Code> module's default export has up to four members, each with
-              its own schedule. <Code>terms(query)</Code> is called on every keystroke with{' '}
-              <Code>query.text</Code> set to the typed text, and returns the terms it recognises in
-              it. It is synchronous and does no I/O: the answer is due before the next keystroke.
-              Every plugin's terms are pooled, and the pool is what the other two questions are
-              asked about.
-            </p>
-            <p className={styles.para}>
-              A term is <Code>prefix:value</Code>, and the prefix is how two plugins that know
-              nothing about each other discover they mean the same thing. The rule: where
-              Bioregistry has a prefix for the kind of thing, mint the canonical one —{' '}
-              <Code>uniprot:</Code>, <Code>ncbitaxon:</Code>, <Code>insdc.gca:</Code>,{' '}
-              <Code>kegg.orthology:</Code> — and where it has none, as for names and KBase-local
-              ids, mint one of your own and document it. Nothing enforces this: a plugin answers on
-              the prefixes it knows and stays silent on the rest, so two spellings of one identifier
-              are two terms that nobody connects.
-            </p>
-            <p className={styles.para}>
-              <Code>offer(query)</Code> is called on every keystroke, with <Code>query.text</Code>{' '}
-              and <Code>query.terms</Code>, the pool. Answer from the terms alone, without I/O; a
-              lookup belongs in <Code>relate</Code>. Each offer carries the term it answers and how
-              it matched — <Code>record</Code> if the plugin holds the thing and read the offer out
-              of its own inventory, <Code>identifier</Code> if the term is an id in a namespace it
-              serves, recognised by shape and not looked up, <Code>name</Code> if words matched
-              words — and no score: one plugin's 0.8 says nothing beside another's, and the ordering
-              is the intent's job. The offers go to the intent, which decides the rows the bar
-              draws. It may be async; <Code>query.signal</Code> aborts when the text changes, an
-              answer that arrives after that is dropped, and a late answer asks the intent again.
-            </p>
-            <p className={styles.para}>
-              <Code>relate(query)</Code> is called 250 ms after the front tab's terms or the cart's
-              change, with those terms, and never for typed text. It may fetch. It answers with cart
-              items, which are shown in the Related pane, where the user opens one, keeps it or
-              dismisses it. A plugin is never asked about its own front tab's terms.{' '}
-              <Code>answers</Code> names which of the terms it was asked about the item answers, in
-              the same <Code>{'{ term, kind }'}</Code> shape an offer's <Code>match</Code> has, and
-              the row reads it out: "Function Junction, because this page is about P0AEX9". When a
-              pool only grows — the cart gains an item — the plugins are asked about the new terms
-              alone and the answers join the rows already on screen.
-            </p>
-            <p className={styles.para}>
-              <Code>status</Code> is a subscription rather than a call: <Code>set</Code> the
-              plugin's status-bar lines as it subscribes, and again whenever they change; the
-              function it returns ends whatever produces the pushes. A line that waits on a server
-              reaches the bar when it lands, because the workbench has no clock of its own for it.
-            </p>
-            <p className={styles.para}>
-              A cart item carries no data. <Code>id</Code> is unique across plugins and derived from
-              what the thing is, so adding it twice is the same item and re-adding replaces;{' '}
-              <Code>terms</Code> are what other plugins are asked about once the item is in the
-              cart; <Code>context</Code> is what an assistant is told and could not infer — units,
-              caveats, the population a number was measured over. <Code>source</Code> is the command
-              that produces the thing again, and a command rather than a path because whoever ends
-              up holding the item — the cart tray, the Related pane, an assistant — runs it through
-              the host, and a path can be opened only by the plugin that owns it. The workbench
-              stamps the adding plugin's id on <Code>plugin</Code>; a plugin cannot set it, and a
-              consumer qualifies <Code>source.command</Code> with it.
-            </p>
-          </Explainer>
-        </Part>
 
-        <Part id="assistant" title="Assistant">
-          <p className={styles.narrative}>
-            A plugin that can answer free text, whether a chat, a query language or an agent, can be
-            chosen as the assistant. Everything the user sends without a leading slash goes to it,
-            along with whatever they collected in the cart, and the plugin shows the answer in its
-            own page.
-          </p>
-          <File name="src/prompt.ts" language="typescript">{`export default definePrompt({
+            <Export id="r-terms" name="terms">
+              <p className={styles.para}>
+                Extracts terms from typed text. Called synchronously on every change to free text in
+                the prompt bar.
+              </p>
+              <Sig>{`interface TypedText {
+  text: string;
+}`}</Sig>
+              <Params
+                rows={[
+                  {
+                    name: 'q.text',
+                    required: true,
+                    type: 'string',
+                    description: 'The prompt bar text, trimmed.',
+                  },
+                ]}
+              />
+              <Returns>
+                An array of terms. The arrays from all plugins are merged and passed to{' '}
+                <Code>offer</Code> and to <Code>suggest</Code>. Each term is validated as a string;
+                an invalid entry is discarded and a warning is logged. A returned promise is treated
+                as an empty array. A thrown error is logged and counts as an empty result.
+              </Returns>
+            </Export>
+
+            <Export id="r-offer" name="offer">
+              <p className={styles.para}>
+                Offers commands for typed text. Called on every change to free text, after every
+                plugin's <Code>terms</Code>.
+              </p>
+              <Sig>{`interface TypedQuery {
+  text: string;
+  terms: string[];
+  signal: AbortSignal;
+}
+
+type MatchKind =
+  | 'record'                     // the plugin holds the record
+  | 'identifier'                 // the term is an id in a namespace the plugin serves, matched by pattern
+  | 'name';                      // a name or description matched the words
+
+interface Match {
+  term: string;
+  kind: MatchKind;
+}
+
+interface Offer extends CommandCall {
+  match: Match;
+}`}</Sig>
+              <Params
+                rows={[
+                  {
+                    name: 'q.text',
+                    required: true,
+                    type: 'string',
+                    description: 'The prompt bar text.',
+                  },
+                  {
+                    name: 'q.terms',
+                    required: true,
+                    type: 'string[]',
+                    description: 'The merged terms every plugin extracted from the text.',
+                  },
+                  {
+                    name: 'q.signal',
+                    required: true,
+                    type: 'AbortSignal',
+                    description:
+                      'Aborted on the next change to the text and when the text is cleared.',
+                  },
+                ]}
+              />
+              <Returns>
+                An array of <Code>Offer</Code>, or a promise of one. Each offer is validated; an
+                invalid offer is discarded and a warning is logged. Offers are not displayed
+                directly: they are passed to the suggestion provider with each <Code>command</Code>{' '}
+                qualified, and <Code>suggest</Code> is called again when a promise resolves. A
+                result that resolves after the signal aborted is discarded. A thrown error or
+                rejection is logged and counts as no offers.
+              </Returns>
+              <Params
+                heading="Offer properties"
+                rows={[
+                  { name: 'label', required: true, type: 'string', description: 'The row text.' },
+                  {
+                    name: 'command',
+                    required: true,
+                    type: 'string',
+                    description: "The plugin's own command name, or plugin:name.",
+                  },
+                  {
+                    name: 'args',
+                    type: 'Record<string, string>',
+                    description: 'Argument values by name.',
+                  },
+                  {
+                    name: 'match.term',
+                    required: true,
+                    type: 'string',
+                    description: 'The term the offer answers, as it appeared in q.terms.',
+                  },
+                  {
+                    name: 'match.kind',
+                    required: true,
+                    type: 'MatchKind',
+                    description: (
+                      <>
+                        How the term was matched. The bundled provider ranks <Code>record</Code>{' '}
+                        above <Code>identifier</Code> above <Code>name</Code>.
+                      </>
+                    ),
+                  },
+                ]}
+              />
+            </Export>
+
+            <Export id="r-relate" name="relate">
+              <p className={styles.para}>
+                Returns items related to the terms of the open page or the cart. Called 250 ms after
+                those terms change, once per plugin that implements it; the plugin that owns the
+                active tab is not called for the page's terms.
+              </p>
+              <Sig>{`interface TermsQuery {
+  terms: string[];
+  signal: AbortSignal;
+}`}</Sig>
+              <Params
+                rows={[
+                  {
+                    name: 'q.terms',
+                    required: true,
+                    type: 'string[]',
+                    description:
+                      'The terms to look up. When the term set grew, only the new terms.',
+                  },
+                  {
+                    name: 'q.signal',
+                    required: true,
+                    type: 'AbortSignal',
+                    description:
+                      "Aborted when the same source's terms change again, when they become empty, or when the workbench unmounts.",
+                  },
+                ]}
+              />
+              <Returns>
+                An array of <Code>CartItem</Code>, or a promise of one. Each item is validated; an
+                invalid item is discarded and a warning naming the plugin is logged. A thrown error
+                or a rejected promise counts as an empty result. Items are shown in the Related
+                pane; if the query changed before the promise resolved, the result is discarded.
+                When the term set grew, the new items are merged with the plugin's items already
+                displayed.
+              </Returns>
+              <p className={styles.para}>
+                In the Related pane, clicking a row runs the item's <Code>source</Code> command in
+                the plugin that returned it. The row's cart button adds the item to that plugin's
+                cart without <Code>answers</Code>. Dismissing a row hides that item id for the
+                session.
+              </p>
+            </Export>
+
+            <Export id="r-status" name="status">
+              <p className={styles.para}>
+                Publishes status bar items. Called once, when the module loads, with a setter. The
+                subscription lasts for the session.
+              </p>
+              <Sig>{`interface StatusItem {
+  text: string;
+  action?: CommandCall;
+}`}</Sig>
+              <Params
+                rows={[
+                  {
+                    name: 'set',
+                    required: true,
+                    type: '(items: StatusItem[]) => void',
+                    description:
+                      "Replaces the plugin's items in the status bar. An empty array removes them. Each item is validated; an invalid item is discarded and a warning is logged.",
+                  },
+                ]}
+              />
+              <Returns>
+                A cleanup function. If <Code>status</Code> throws, the error is logged and the
+                plugin is not subscribed again.
+              </Returns>
+              <Params
+                heading="StatusItem properties"
+                rows={[
+                  { name: 'text', required: true, type: 'string', description: 'The item text.' },
+                  {
+                    name: 'action',
+                    type: 'CommandCall',
+                    description:
+                      'Run when the item is clicked. The item is disabled while the command runs.',
+                  },
+                ]}
+              />
+            </Export>
+          </Entry>
+
+          <Entry id="r-route" name="route">
+            <p className={styles.para}>
+              Renders the plugin's page in a tab. Loaded when the plugin's first tab opens, or when
+              a tab restored from the saved layout is first rendered.
+            </p>
+            <Sig>{`type Mount = (el: HTMLElement, ctx: { panel: PanelHandle; host: PluginHost }) => Cleanup | void;
+
+interface Route {
+  mount: Mount;
+  normalize: (path: string) => string;
+}
+
+function defineRoute(r: Route): Route;
+function defineRoute(body: { mount: Mount }, rest: Omit<Route, 'mount'>): Route;`}</Sig>
+            <p className={styles.para}>Example:</p>
+            <File name="src/route.tsx" language="tsx">{`function Dossier() {
+  const { path, navigate } = usePanel();
+  const id = path.slice(1);
+  usePanelTitle(id || 'Function Junction');
+  usePanelTerms(id ? [\`uniprot:\${id}\`] : []);
+  if (!id) return <SearchBox onPick={(picked) => navigate(\`/\${picked}\`)} />;
+  return <Report id={id} />;
+}
+
+export default defineRoute(fromReact(Dossier), {
+  normalize: (path) => path.split('?')[0].toUpperCase(),
+});`}</File>
+            <Export id="r-mount" name="mount">
+              <p className={styles.para}>
+                Renders the panel. Called once per tab when the module has loaded, and again after
+                Restart panel.
+              </p>
+              <Params
+                rows={[
+                  {
+                    name: 'el',
+                    required: true,
+                    type: 'HTMLElement',
+                    description:
+                      'An empty element inside the panel. A new element is created for each call.',
+                  },
+                  {
+                    name: 'ctx.panel',
+                    required: true,
+                    type: 'PanelHandle',
+                    description: 'The panel API.',
+                  },
+                  {
+                    name: 'ctx.host',
+                    required: true,
+                    type: 'PluginHost',
+                    description: 'The host API.',
+                  },
+                ]}
+              />
+              <Returns>
+                A cleanup function, or nothing. The cleanup runs when the tab is closed and before a
+                restart. If <Code>mount</Code> throws, the panel shows "This panel crashed" with a
+                Restart panel button.
+              </Returns>
+            </Export>
+            <Export id="r-normalize" name="normalize">
+              <p className={styles.para}>
+                Maps a path to a canonical string. Two paths with the same result are the same page.
+                Called by <Code>openRoute</Code> with the requested path and with each open tab's
+                path.
+              </p>
+              <Params
+                rows={[
+                  {
+                    name: 'path',
+                    required: true,
+                    type: 'string',
+                    description: (
+                      <>
+                        Everything after <Code>/p/&lt;id&gt;</Code> in the tab URL, including the
+                        query string.
+                      </>
+                    ),
+                  },
+                ]}
+              />
+              <Returns>
+                A string. If the return value is not a string, it is ignored, a warning is logged,
+                and the path is compared as-is.
+              </Returns>
+            </Export>
+            <p className={styles.para}>
+              Until the panel sets a title, the tab shows the plugin title and the path,{' '}
+              <Code>Function Junction: /P0AEX9</Code>. The address bar reflects the focused tab:{' '}
+              <Code>navigate</Code> in the focused tab pushes a history entry, or replaces it with{' '}
+              <Code>{'{ replace: true }'}</Code>.
+            </p>
+          </Entry>
+
+          <Entry id="r-pane" name="pane">
+            <p className={styles.para}>
+              Renders the plugin's sidebar panel. Loaded when the pane is first rendered.
+            </p>
+            <Sig>{`interface Pane {
+  mount: Mount;
+  fit?: 'content';
+}
+
+function definePane(p: Pane): Pane;
+function definePane(body: { mount: Mount }, rest: Omit<Pane, 'mount'>): Pane;`}</Sig>
+            <p className={styles.para}>Example:</p>
+            <File
+              name="src/pane.tsx"
+              language="tsx"
+            >{`export default definePane(fromReact(RecentProteins), { fit: 'content' });`}</File>
+            <Params
+              heading="Pane properties"
+              rows={[
+                {
+                  name: 'mount',
+                  required: true,
+                  type: 'Mount',
+                  description: (
+                    <>
+                      As for <Code>route</Code>. <Code>ctx.panel.path</Code> is <Code>''</Code>, and{' '}
+                      <Code>navigate</Code> is a no-op.
+                    </>
+                  ),
+                },
+                {
+                  name: 'fit',
+                  type: "'content'",
+                  description:
+                    "Sizes the panel to its content instead of sharing the sidebar's height. For toolbars and status panels.",
+                },
+              ]}
+            />
+            <p className={styles.para}>
+              A plugin with a pane is pinned to the sidebar from Settings. The suggestion provider
+              receives a <Code>Show Function Junction</Code> call for it, which runs{' '}
+              <Code>workbench:show</Code>: that focuses a pinned pane, or previews an unpinned one
+              in a temporary sidebar panel that a reload discards. Folding the pane unmounts it;
+              unfolding mounts it again. Collapsing the sidebar keeps it mounted, and the sidebar
+              icon opens the same panel in a flyout.
+            </p>
+          </Entry>
+
+          <Entry id="r-commands" name="commands">
+            <p className={styles.para}>
+              Implements the slash commands the manifest declares. Loaded the first time one of the
+              plugin's commands runs.
+            </p>
+            <Sig>{`interface CommandContext {
+  host: PluginHost;
+  caller: string;
+}
+
+type CommandHandler = (args: Record<string, string>, ctx: CommandContext) => void | Promise<void>;
+type Commands = Record<string, CommandHandler>;
+
+function defineCommands(handlers: Commands): Commands;`}</Sig>
+            <p className={styles.para}>Example:</p>
+            <File name="src/commands.ts" language="typescript">{`export default defineCommands({
+  open: ({ q }, { host }) => host.openRoute(\`/\${q ?? ''}\`),
+  compare: async ({ taxid }, { host }) => {
+    if (!host.hasCommand('genknown:taxon')) return host.notify('genKnown is not installed.');
+    await host.execute('genknown:taxon', { q: taxid });
+  },
+});`}</File>
+            <Export id="r-handler" name="handler">
+              <p className={styles.para}>
+                Runs the command. Called each time the command runs, under the key matching the
+                declared name.
+              </p>
+              <Params
+                rows={[
+                  {
+                    name: 'args',
+                    required: true,
+                    type: 'Record<string, string>',
+                    description:
+                      'Argument values by name. From the prompt bar, tokens are bound by position; double quotes group a token with spaces; values are passed as typed. From execute, a command call or a cart item source, values are passed by name.',
+                  },
+                  {
+                    name: 'ctx.host',
+                    required: true,
+                    type: 'PluginHost',
+                    description: 'The host API.',
+                  },
+                  {
+                    name: 'ctx.caller',
+                    required: true,
+                    type: 'string',
+                    description: (
+                      <>
+                        <Code>'user'</Code> when run from the prompt bar, a keybinding, a menu, a
+                        button or a row; otherwise the id of the plugin whose <Code>execute</Code>{' '}
+                        ran it. Set by the workbench.
+                      </>
+                    ),
+                  },
+                ]}
+              />
+              <Returns>
+                Nothing, or a promise. If the handler throws and the command was run from the UI, a
+                toast titled <Code>/compare failed</Code> shows the message. If it was run through{' '}
+                <Code>execute</Code>, the promise rejects with the error. A declared command with no
+                handler fails with{' '}
+                <Code>plugin function-junction declares /compare but does not implement it</Code>.
+              </Returns>
+            </Export>
+          </Entry>
+
+          <Entry id="r-prompt" name="prompt">
+            <p className={styles.para}>
+              Makes the plugin an assistant. Loaded when the plugin is selected as the assistant in
+              Settings.
+            </p>
+            <Sig>{`interface Query {
+  text: string;
+  terms: string[];
+  signal: AbortSignal;
+}
+
+interface Destination {
+  label: string;
+  path?: string;
+  options?: { key: string; label: string }[];
+  select?: (key: string) => void;
+}
+
+interface Prompt {
+  handle: (q: Query, ctx: { host: PluginHost; attachments: readonly CartItem[] }) => Promise<void>;
+  newConversation: (ctx: { host: PluginHost }) => void | Promise<void>;
+  destination?: Subscribe<Destination | null>;
+}
+
+function definePrompt(p: Prompt): Prompt;`}</Sig>
+            <p className={styles.para}>Example:</p>
+            <File name="src/prompt.ts" language="typescript">{`export default definePrompt({
   handle: async ({ text }, { host, attachments }) => {
     const slug = koros.current() ?? koros.newArc().slug;
     koros.steer(slug, text, attachments);
     host.openRoute(\`/\${slug}\`);
   },
   newConversation: ({ host }) => host.openRoute(\`/\${koros.newArc().slug}\`),
-  // Pushed: where a message would land now, and again whenever that moves.
   destination: (set) => {
     const push = () => set(koros.destination());
     push();
     return koros.subscribe(push);
   },
 });`}</File>
-          <Explainer>
-            <p className={styles.para}>
-              Settings lists every plugin with a <Code>prompt</Code> module, and the user picks the
-              assistant from them; there is always one, and a workbench is built with a default.{' '}
-              <Code>handle(query, ctx)</Code> is called when the user sends text that does not start
-              with <Code>/</Code>. <Code>query.text</Code> is the text, <Code>query.terms</Code> the
-              terms found in it, and <Code>ctx.attachments</Code> the cart's items as they stood
-              when Enter was pressed. The box and the cart are emptied at that moment, and both come
-              back if <Code>handle</Code> rejects. The workbench renders nothing for the response;
-              the handler opens the plugin's page with <Code>host.openRoute</Code> and renders it
-              there. <Code>newConversation(ctx)</Code> is called when the user picks New in the
-              prompt bar's destination menu, which every assistant gets: it opens the page a fresh
-              conversation lands on.
-            </p>
-            <p className={styles.para}>
-              <Code>destination(set)</Code> is what the prompt bar shows above the input:{' '}
-              <Code>set</Code> a <Code>label</Code>; optionally a <Code>path</Code>, shown as a link
-              that opens it with <Code>openRoute</Code>; and optionally <Code>options</Code> and{' '}
-              <Code>select</Code>, the options shown as a menu and the chosen key passed back to{' '}
-              <Code>select</Code>. Call <Code>set</Code> as you subscribe and again on every move.
-              The bar shows the last value it was handed and never asks for one, so your own call is
-              what tells it something changed; <Code>set(null)</Code> is no destination, and the bar
-              shows New conversation. Choosing another assistant ends the subscription and drops the
-              value.
-            </p>
-          </Explainer>
-        </Part>
+            <Export id="r-handle" name="handle">
+              <p className={styles.para}>
+                Receives a submitted message. Called when the user submits free text.
+              </p>
+              <Params
+                rows={[
+                  {
+                    name: 'q.text',
+                    required: true,
+                    type: 'string',
+                    description:
+                      'The message. Never blank: the prompt bar rejects an empty submission.',
+                  },
+                  {
+                    name: 'q.terms',
+                    required: true,
+                    type: 'string[]',
+                    description: 'The terms extracted from the text.',
+                  },
+                  {
+                    name: 'q.signal',
+                    required: true,
+                    type: 'AbortSignal',
+                    description: 'Aborted when the user clicks Stop or submits another message.',
+                  },
+                  {
+                    name: 'ctx.host',
+                    required: true,
+                    type: 'PluginHost',
+                    description: 'The host API.',
+                  },
+                  {
+                    name: 'ctx.attachments',
+                    required: true,
+                    type: 'readonly CartItem[]',
+                    description: (
+                      <>
+                        The entire cart at submission, every plugin's items, each with{' '}
+                        <Code>plugin</Code> set. The cart is cleared on submission.
+                      </>
+                    ),
+                  },
+                ]}
+              />
+              <Returns>
+                A promise. The plugin renders the response itself, usually by opening its page with{' '}
+                <Code>host.openRoute</Code>. If the promise rejects, the message is shown under the
+                input, and the text and the attachments are restored unless a newer message was
+                submitted.
+              </Returns>
+            </Export>
+            <Export id="r-newConversation" name="newConversation">
+              <p className={styles.para}>
+                Starts a new conversation. Called when the user chooses New in the destination menu
+                above the prompt bar.
+              </p>
+              <Params
+                rows={[
+                  {
+                    name: 'ctx.host',
+                    required: true,
+                    type: 'PluginHost',
+                    description: 'The host API.',
+                  },
+                ]}
+              />
+              <Returns>Nothing, or a promise.</Returns>
+            </Export>
+            <Export id="r-destination" name="destination">
+              <p className={styles.para}>
+                Publishes where the next message goes. Called once, when the module loads, with a
+                setter. The prompt bar shows the current destination above the input.
+              </p>
+              <Params
+                rows={[
+                  {
+                    name: 'set',
+                    required: true,
+                    type: '(value: Destination | null) => void',
+                    description: (
+                      <>
+                        Replaces the destination. <Code>null</Code> shows "New conversation". An
+                        invalid value is discarded, a warning is logged, and the previous
+                        destination stays.
+                      </>
+                    ),
+                  },
+                ]}
+              />
+              <Returns>
+                A cleanup function. It runs when another assistant is selected, and the destination
+                is discarded.
+              </Returns>
+              <Params
+                heading="Destination properties"
+                rows={[
+                  {
+                    name: 'label',
+                    required: true,
+                    type: 'string',
+                    description: 'The destination text.',
+                  },
+                  {
+                    name: 'path',
+                    type: 'string',
+                    description: "The plugin's page for it. The bar shows a link that opens it.",
+                  },
+                  {
+                    name: 'options',
+                    type: '{ key: string; label: string }[]',
+                    description:
+                      'Alternative destinations, shown as a menu when select is also set.',
+                  },
+                  {
+                    name: 'select',
+                    type: '(key: string) => void',
+                    description: 'Called with the chosen key.',
+                  },
+                ]}
+              />
+            </Export>
+          </Entry>
 
-        <Part id="intent" title="Intent">
-          <p className={styles.narrative}>
-            A plugin that can turn typed text into command suggestions can be chosen as the intent.
-            There is always one, and every row the prompt bar draws under free text comes from it:
-            the workbench matches no text itself. Every keystroke that is not a slash command goes
-            to it, with the terms the backgrounds found, what the open page and the cart carry, and
-            what the plugins offered. The workbench ships one; a plugin with a better reading of
-            text replaces it from Settings.
-          </p>
-          <File name="src/intent.ts" language="typescript">{`let index = buildIndex([], []);
+          <Entry id="r-intent" name="intent">
+            <p className={styles.para}>
+              Makes the plugin a suggestion provider. Loaded at startup for every plugin that has
+              one; only the plugin selected in Settings is asked for suggestions.
+            </p>
+            <Sig>{`type ContextTier = 'typed' | 'page' | 'cart';
+type TieredTerms = Record<ContextTier, string[]>;
+
+type DeclaredCommand = SlashCommand & { plugin: string; pluginTitle: string };
+
+interface DeclaredCall extends CommandCall {
+  plugin: string;
+  pluginTitle: string;
+  description?: string;
+}
+
+interface IntentQuery {
+  text: string;
+  terms: TieredTerms;
+  offers: Offer[];
+  signal: AbortSignal;
+}
+
+interface Suggestion {
+  call: CommandCall;
+  plugin?: string;
+  detail?: string;
+  score: number;
+}
+
+interface Intent {
+  index: (commands: DeclaredCommand[], calls: DeclaredCall[]) => void;
+  suggest: (q: IntentQuery) => Suggestion[] | Promise<Suggestion[]>;
+}
+
+function defineIntent(i: Intent): Intent;`}</Sig>
+            <p className={styles.para}>Example:</p>
+            <File name="src/intent.ts" language="typescript">{`let index = buildIndex([], []);
 
 export default defineIntent({
   index: (commands, calls) => {
@@ -425,573 +1357,728 @@ export default defineIntent({
       score: r.score,
     })),
 });`}</File>
-          <Explainer>
+            <Export id="r-index" name="index">
+              <p className={styles.para}>
+                Receives the command catalog. Called once, when the module loads. The installed set
+                does not change during a session.
+              </p>
+              <Params
+                rows={[
+                  {
+                    name: 'commands',
+                    required: true,
+                    type: 'DeclaredCommand[]',
+                    description:
+                      "Every installed plugin's commands as declared, each with its plugin's id and title.",
+                  },
+                  {
+                    name: 'calls',
+                    required: true,
+                    type: 'DeclaredCall[]',
+                    description: (
+                      <>
+                        Every command call from the manifests: each launcher, each shortcut, and one{' '}
+                        <Code>workbench:show</Code> per plugin with a pane. A call runs as declared;
+                        typed text fills nothing in it.
+                      </>
+                    ),
+                  },
+                ]}
+              />
+              <Returns>Nothing.</Returns>
+            </Export>
+            <Export id="r-suggest" name="suggest">
+              <p className={styles.para}>
+                Ranks suggestions for free text. Called on every change to free text, again when a
+                plugin's <Code>offer</Code> resolves asynchronously, and again when the active tab's
+                or the cart's terms change while text is in the bar.
+              </p>
+              <Params
+                rows={[
+                  {
+                    name: 'q.text',
+                    required: true,
+                    type: 'string',
+                    description: 'The prompt bar text.',
+                  },
+                  {
+                    name: 'q.terms',
+                    required: true,
+                    type: 'TieredTerms',
+                    description: (
+                      <>
+                        Terms grouped by context tier: <Code>typed</Code> from the text,{' '}
+                        <Code>page</Code> from the active tab, <Code>cart</Code> from the cart's
+                        items. The page and cart tiers are disjoint; the typed tier may repeat
+                        either.
+                      </>
+                    ),
+                  },
+                  {
+                    name: 'q.offers',
+                    required: true,
+                    type: 'Offer[]',
+                    description: "Every plugin's offers for the text, each command qualified.",
+                  },
+                  {
+                    name: 'q.signal',
+                    required: true,
+                    type: 'AbortSignal',
+                    description: 'Aborted when the query changes.',
+                  },
+                ]}
+              />
+              <Returns>
+                An array of <Code>Suggestion</Code>, or a promise of one. Each suggestion is
+                validated; an invalid one is discarded and a warning is logged. The prompt bar
+                displays the first four in the order returned, below a first row that submits the
+                text to the assistant. Previous rows stay until the next result arrives. A result
+                for an outdated query is discarded. A thrown error or rejection is logged and the
+                previous rows stay. While no provider is loaded, no rows are shown and Enter submits
+                the text.
+              </Returns>
+              <Params
+                heading="Suggestion properties"
+                rows={[
+                  {
+                    name: 'call',
+                    required: true,
+                    type: 'CommandCall',
+                    description: 'The row. Its command is qualified as plugin:name.',
+                  },
+                  {
+                    name: 'plugin',
+                    type: 'string',
+                    description:
+                      "The plugin whose icon the row shows, when it is not the command's plugin.",
+                  },
+                  {
+                    name: 'detail',
+                    type: 'string',
+                    description: "Caption text, in place of the plugin's title.",
+                  },
+                  {
+                    name: 'score',
+                    required: true,
+                    type: 'number',
+                    description: 'Higher ranks higher. Rows are displayed in the order returned.',
+                  },
+                ]}
+              />
+              <p className={styles.para}>
+                The bundled provider scores each declaration against the text by character n-gram
+                cosine similarity, with identifiers in the text replaced by the name of their type.
+                It drops rows without an offer below a score of 0.2, binds identifiers to arguments
+                by the similarity between the identifier's type and the argument's name and
+                description, boosts offered rows by the weight of <Code>match.kind</Code> times the
+                weight of the term's context tier, and drops rows with an unfilled required
+                argument.
+              </p>
+            </Export>
+          </Entry>
+
+          <Entry id="r-host" name="Host API">
             <p className={styles.para}>
-              Settings lists every plugin with an <Code>intent</Code> module, and the user picks
-              one. <Code>index(commands, calls)</Code> is called once when the module arrives, with
-              everything the workbench can be asked to do: every installed plugin's declared
-              commands, each with the plugin's id and title, and every call a manifest has already
-              filled in — the launcher on Browse, each shortcut button, and one{' '}
-              <Code>workbench:show</Code> per plugin with a sidebar pane. A declared command has
-              argument holes for the text to fill; a declared call runs as written, so what the text
-              decides about it is only whether it is worth showing. Build whatever you rank from
-              here, so that a keystroke never sees the catalog.
+              What a plugin can ask the workbench to do. Passed to every mount, command handler and
+              prompt handler as <Code>ctx.host</Code>; in React, read with <Code>useHost()</Code>.
             </p>
+            <Sig>{`interface PluginHost {
+  openRoute: (path: string, options?: { duplicate?: boolean }) => void;
+  execute: (command: string, args?: Record<string, string>) => Promise<void>;
+  hasCommand: (command: string) => boolean;
+  notify: (text: string) => void;
+  cart: Cart;
+  frames: FrameLayer;
+}`}</Sig>
+            <Export id="r-openRoute" name="openRoute">
+              <p className={styles.para}>Opens this plugin's page at a path.</p>
+              <Params
+                rows={[
+                  {
+                    name: 'path',
+                    required: true,
+                    type: 'string',
+                    description: 'The path, including any query string.',
+                  },
+                  {
+                    name: 'options.duplicate',
+                    type: 'boolean',
+                    description: 'When true, opens a new tab without checking for an existing one.',
+                  },
+                ]}
+              />
+              <Returns>
+                Nothing. If an open tab of the plugin has a path with the same{' '}
+                <Code>normalize</Code> result, that tab is focused; otherwise a new tab opens. If{' '}
+                <Code>path</Code> is not a string, a <Code>TypeError</Code> is thrown. If the route
+                module fails to load, the failure is announced and no tab opens.
+              </Returns>
+            </Export>
+            <Export id="r-execute" name="execute">
+              <p className={styles.para}>Runs a command.</p>
+              <Params
+                rows={[
+                  {
+                    name: 'command',
+                    required: true,
+                    type: 'string',
+                    description: (
+                      <>
+                        <Code>name</Code> for this plugin's own command, or <Code>plugin:name</Code>
+                        .
+                      </>
+                    ),
+                  },
+                  {
+                    name: 'args',
+                    type: 'Record<string, string>',
+                    description: 'Argument values by name.',
+                  },
+                ]}
+              />
+              <Returns>
+                A promise that resolves when the handler resolves, with no value. It rejects with a{' '}
+                <Code>TypeError</Code> if an argument value is not a string, with{' '}
+                <Code>unknown command /genknown:taxon</Code> if no command is registered under the
+                name, and with the handler's error if the handler throws. The handler receives this
+                plugin's id as <Code>caller</Code>.
+              </Returns>
+            </Export>
+            <Export id="r-hasCommand" name="hasCommand">
+              <p className={styles.para}>Reports whether a command is registered.</p>
+              <Params
+                rows={[
+                  {
+                    name: 'command',
+                    required: true,
+                    type: 'string',
+                    description: 'As for execute.',
+                  },
+                ]}
+              />
+              <Returns>
+                <Code>true</Code> if a command is registered under the qualified name.
+              </Returns>
+            </Export>
+            <Export id="r-notify" name="notify">
+              <p className={styles.para}>Shows a toast.</p>
+              <Params
+                rows={[
+                  {
+                    name: 'text',
+                    required: true,
+                    type: 'string',
+                    description: 'The toast title. Must be non-empty.',
+                  },
+                ]}
+              />
+              <Returns>
+                Nothing. If <Code>text</Code> is empty or not a string, a <Code>TypeError</Code> is
+                thrown.
+              </Returns>
+            </Export>
             <p className={styles.para}>
-              <Code>suggest(query)</Code> is called on every keystroke. <Code>query.text</Code> is
-              the text. <Code>query.terms</Code> is tiered: <Code>typed</Code>, the terms the
-              backgrounds found in the text; <Code>page</Code>, the front tab's; <Code>cart</Code>,
-              the terms the cart's items carry. A term that arrives by more than one road is listed
-              under the first tier that holds it, and the tier is how much the user meant it — no
-              plugin is asked about <Code>page</Code> or <Code>cart</Code> on a keystroke, because
-              that would put a bigger question to every background on every letter, and the intent
-              already ranks the whole catalog. <Code>query.offers</Code> is what the plugins offered
-              for the text, each <Code>command</Code> qualified and each carrying the term it
-              answers and how it matched.
-            </p>
-            <p className={styles.para}>
-              The answer is the whole list: the intent keeps, moves or drops each offer as it
-              judges, alongside its own candidates, and the bar draws what comes back in the order
-              it comes back, at most four rows. A suggestion's <Code>plugin</Code> is whose mark the
-              row wears where that is not the plugin whose command runs — a pane's row runs{' '}
-              <Code>workbench:show</Code> and belongs to the plugin it shows. <Code>suggest</Code>{' '}
-              is called again when a slow plugin's offer lands, and when the page or the cart moves
-              under text already typed. It may be synchronous or return a promise; the previous rows
-              stay until the next answer lands, and <Code>query.signal</Code> aborts when the
-              question changes.
-            </p>
-            <p className={styles.para}>
-              The bundled intent scores each candidate by character n-grams over the words its
-              declaration gives it, reads an identifier in the text as the kind of thing it is
-              rather than as letters, and fills an argument whose description says it takes that
-              kind — from a typed term first, then from one the page or the cart merely has around.
-              An offer is a candidate like any other, never dropped for its text score and weighted
-              by the account the plugin gave for it: a thing read out of an inventory outranks an id
-              recognised by shape, which outranks words that matched words.
-            </p>
-          </Explainer>
-        </Part>
-
-        <Part id="commands" title="Commands and the host">
-          <p className={styles.narrative}>
-            Commands are what the plugin does when a user runs it, from the prompt bar, a sidebar
-            button or a suggestion. Each handler gets a host object, the plugin's way to ask the
-            workbench for things: open its page, run another plugin's command, show a message, add
-            to the cart.
-          </p>
-          <File name="src/commands.ts" language="typescript">{`export default defineCommands({
-  open: ({ id }, { host }) => host.openRoute(\`/\${id}\`),
-  compare: async ({ taxid }, { host }) => {
-    if (!host.hasCommand('genknown:taxon')) return host.notify('genKnown is not installed.');
-    await host.execute('genknown:taxon', { q: taxid });
-  },
-});`}</File>
-          <Explainer>
-            <p className={styles.para}>
-              A handler receives the arguments, always as strings, and a context holding{' '}
-              <Code>host</Code> and <Code>caller</Code>. <Code>host.execute(command, args)</Code>{' '}
-              runs a command: <Code>name</Code> runs this plugin's command, <Code>plugin:name</Code>{' '}
-              another plugin's. <Code>host.hasCommand(command)</Code> returns whether it is
-              registered. <Code>host.notify(text)</Code> shows a toast.{' '}
-              <Code>host.cart.add(item)</Code> and <Code>host.cart.remove(id)</Code> change the
-              cart; <Code>has</Code> and <Code>count</Code> see only this plugin's items.{' '}
-              <Code>useHost()</Code> returns the same object inside a page or pane;{' '}
-              <Code>CartButton</Code> renders an Add/Added button for an item.
-            </p>
-            <p className={styles.para}>
-              <Code>ctx.caller</Code> is the id of the plugin whose <Code>execute</Code> ran the
-              command, or <Code>'user'</Code> when the workbench's own chrome did: the prompt bar, a
-              keybinding, a menu, a shortcut button, a row in a pane. It is a stamp of the
-              workbench's and a plugin cannot forge it, so a destructive command can refuse a
-              neighbour's call. Read it as "through the workbench's UI" rather than "a person
-              pressed something": a button on a plugin's own page that calls <Code>execute</Code>{' '}
-              arrives as that plugin.
-            </p>
-          </Explainer>
-        </Part>
-
-        <Part id="reference" title="Reference">
-          <Entry id="r-config" name="config" when="Served as manifest.json.">
-            <Sig>{`type PluginConfig = Omit<Manifest, 'sdkVersion' | 'modules'>;   // what the author writes
-
-interface Manifest {
-  id: string;                    // /^[a-z][a-z0-9-]{1,40}$/
-  title: string;
-  description?: string;
-  icon?: string;                 // a name from the workbench's icon table
-  color?: string;                // blue | green | teal | purple | orange | red
-  commands?: SlashCommand[];
-  shortcuts?: CommandCall[];     // buttons in the sidebar's Shortcuts block
-  launcher?: CommandCall;        // the card on Browse
-
-  // written by the build
-  sdkVersion: string;            // the SDK this plugin was built against
-  modules: Module[];             // 'background' | 'route' | 'pane' | 'commands' | 'prompt' | 'intent'
-}
-
-interface SlashCommand {
-  name: string;                  // /^[a-z][a-z0-9-]*$/
-  title: string;
-  description?: string;
-  args?: ArgDecl[];              // positional, in this order
-  icon?: string;
-  semantics?: {                  // what an intent ranks by, never shown
-    description: string;         // what the command does, in the words a user would type
-    examples?: string[];         // phrasings that should reach it
-  };
-}
-
-interface ArgDecl {
-  name: string;
-  description?: string;          // what kind of thing it takes; an intent binds a term by it
-  required?: boolean;
-}
-
-interface CommandCall {
-  label: string;
-  command: string;               // "plugin:name", or "name" for this plugin's own
-  args?: Record<string, string>;
-}
-
-function definePluginManifest(config: PluginConfig): PluginConfig;`}</Sig>
-            <p className={styles.para}>
-              The workbench accepts a manifest whose <Code>sdkVersion</Code> has the same major
-              version as its own and a minor no higher: additions bump the minor, removals the
-              major, and the patch never moves the contract. Under 0.x semver gives a minor the
-              weight of a major, so until 1.0 only the workbench's own <Code>0.minor</Code> loads.
-              Anything else is dropped before any of its code is fetched, and the console says which
-              version was served and which is accepted.
+              <Code>cart</Code> is the cart API below. <Code>frames</Code> is the frame layer used
+              by <Code>AppFrame</Code>.
             </p>
           </Entry>
 
-          <Entry id="r-vite" name="vite.config.ts" when="Read by the build.">
+          <Entry id="r-panel" name="Panel API">
+            <p className={styles.para}>
+              What a panel knows about itself and can change. Passed to <Code>mount</Code> as{' '}
+              <Code>ctx.panel</Code>; in React, read with <Code>usePanel()</Code>.
+            </p>
+            <Sig>{`interface Crumb {
+  label: string;
+  path?: string;
+  icon?: string;
+}
+
+interface PanelHandle {
+  id: string;
+  plugin: string;
+  kind: 'route' | 'pane';
+  path: string;
+  focused: boolean;
+  navigate: (path: string, options?: { replace?: boolean }) => void;
+  setTitle: (title: string) => void;
+  setCrumbs: (crumbs: Crumb[]) => void;
+  setTerms: (terms: string[]) => void;
+  subscribe: (listener: () => void) => Cleanup;
+}`}</Sig>
+            <Params
+              heading="Properties"
+              rows={[
+                {
+                  name: 'id',
+                  type: 'string',
+                  description: "Opaque. Stable for the panel's lifetime.",
+                },
+                { name: 'plugin', type: 'string', description: "The plugin's id." },
+                { name: 'kind', type: "'route' | 'pane'", description: 'Page or sidebar panel.' },
+                {
+                  name: 'path',
+                  type: 'string',
+                  description: (
+                    <>
+                      Everything after <Code>/p/&lt;plugin&gt;</Code> in the tab URL, including the
+                      query string. <Code>''</Code> for a pane. Read live.
+                    </>
+                  ),
+                },
+                {
+                  name: 'focused',
+                  type: 'boolean',
+                  description: 'Whether this panel is the focused panel. Read live.',
+                },
+              ]}
+            />
+            <Params
+              heading="Methods"
+              rows={[
+                {
+                  name: 'navigate(path, options?)',
+                  type: 'void',
+                  description: (
+                    <>
+                      Changes the tab's path. In the focused tab this pushes a history entry, or
+                      replaces it when <Code>options.replace</Code> is true. A no-op for panes.
+                      Throws a <Code>TypeError</Code> if <Code>path</Code> is not a string.
+                    </>
+                  ),
+                },
+                {
+                  name: 'setTitle(title)',
+                  type: 'void',
+                  description: (
+                    <>
+                      Sets the tab or panel title. Throws a <Code>TypeError</Code> if{' '}
+                      <Code>title</Code> is not a string.
+                    </>
+                  ),
+                },
+                {
+                  name: 'setCrumbs(crumbs)',
+                  type: 'void',
+                  description: (
+                    <>
+                      Sets the breadcrumbs shown above the panel. Clicking a crumb with a{' '}
+                      <Code>path</Code> navigates this panel there. The tab strip also uses
+                      breadcrumbs to distinguish two tabs with the same title. Throws a{' '}
+                      <Code>TypeError</Code> if a crumb is invalid.
+                    </>
+                  ),
+                },
+                {
+                  name: 'setTerms(terms)',
+                  type: 'void',
+                  description: (
+                    <>
+                      Declares what the panel is about. While the tab is active, the terms are
+                      queried against every other plugin's <Code>relate</Code> and passed to{' '}
+                      <Code>suggest</Code> under the <Code>page</Code> tier. Throws a{' '}
+                      <Code>TypeError</Code> if <Code>terms</Code> is not an array of strings.
+                    </>
+                  ),
+                },
+                {
+                  name: 'subscribe(listener)',
+                  type: 'Cleanup',
+                  description:
+                    "Calls listener when this panel's path or focus changes. Returns an unsubscribe function.",
+                },
+              ]}
+            />
+          </Entry>
+
+          <Entry id="r-cart" name="Cart API">
+            <p className={styles.para}>
+              This plugin's view of the cart. Available as <Code>host.cart</Code>; in React, read
+              with <Code>useCart()</Code>.
+            </p>
+            <Sig>{`interface Cart {
+  add: (item: Omit<CartItem, 'plugin'>) => void;
+  remove: (id: string) => void;
+  items: () => readonly CartItem[];
+  has: (id: string) => boolean;
+  count: () => number;
+  subscribe: (listener: () => void) => Cleanup;
+}
+
+interface CartItem {
+  id: string;
+  readonly plugin?: string;
+  name: string;
+  subject?: string;
+  summary?: string;
+  terms?: string[];
+  answers?: Match[];
+  source?: CartSource;
+  context?: Record<string, unknown>;
+}
+
+interface CartSource {
+  command: string;
+  args?: Record<string, string>;
+}`}</Sig>
+            <Params
+              heading="Methods"
+              rows={[
+                {
+                  name: 'add(item)',
+                  type: 'void',
+                  description: (
+                    <>
+                      Adds an item. The workbench sets <Code>plugin</Code> to this plugin's id,
+                      overriding any value passed. An item with the same <Code>id</Code> is
+                      replaced. Throws a <Code>TypeError</Code> naming the failing field if the item
+                      is invalid:{' '}
+                      <Code>plugin fj: cart.add refused the item — source.command: …</Code>.
+                    </>
+                  ),
+                },
+                {
+                  name: 'remove(id)',
+                  type: 'void',
+                  description: 'Removes the item if this plugin added it.',
+                },
+                {
+                  name: 'items()',
+                  type: 'readonly CartItem[]',
+                  description: "This plugin's items.",
+                },
+                {
+                  name: 'has(id)',
+                  type: 'boolean',
+                  description: 'Whether this plugin added an item with the id.',
+                },
+                {
+                  name: 'count()',
+                  type: 'number',
+                  description: "The number of this plugin's items.",
+                },
+                {
+                  name: 'subscribe(listener)',
+                  type: 'Cleanup',
+                  description:
+                    "Calls listener on any plugin's change to the cart. Returns an unsubscribe function.",
+                },
+              ]}
+            />
+            <Params
+              heading="CartItem properties"
+              rows={[
+                {
+                  name: 'id',
+                  required: true,
+                  type: 'string',
+                  description: (
+                    <>
+                      Unique across plugins. Derived from the identity of the thing, as{' '}
+                      <Code>function-junction:protein:P0AEX9</Code>, so adding it twice replaces
+                      rather than duplicates.
+                    </>
+                  ),
+                },
+                {
+                  name: 'plugin',
+                  type: 'string',
+                  description: 'Set by the workbench when the item enters the cart. Read-only.',
+                },
+                {
+                  name: 'name',
+                  required: true,
+                  type: 'string',
+                  description: 'What the user calls the item.',
+                },
+                {
+                  name: 'subject',
+                  type: 'string',
+                  description:
+                    'The identifier the item is about. Shown first on the tile and the Related row.',
+                },
+                { name: 'summary', type: 'string', description: 'One line.' },
+                {
+                  name: 'terms',
+                  type: 'string[]',
+                  description:
+                    "Namespaced identifiers. Once the item is in the cart, they are queried against other plugins' relate.",
+                },
+                {
+                  name: 'answers',
+                  type: 'Match[]',
+                  description:
+                    'On an item returned by relate: which of the queried terms the item answers, and how. Shown as the reason on the Related row; not stored in the cart.',
+                },
+                {
+                  name: 'source',
+                  type: 'CartSource',
+                  description:
+                    'A command that reproduces the item: the bare name of one of the adding plugin’s commands, with arguments. Any holder of the item can run it.',
+                },
+                {
+                  name: 'context',
+                  type: 'Record<string, unknown>',
+                  description:
+                    'What an assistant should know about the item: units, population, caveats. Kept small; it goes into a prompt.',
+                },
+              ]}
+            />
+            <p className={styles.para}>
+              A cart item is a reference, not a payload. A consumer fetches the underlying data
+              through <Code>terms</Code> and <Code>source</Code>.
+            </p>
+          </Entry>
+
+          <Entry id="r-react" name="React">
+            <p className={styles.para}>
+              Hooks and components for a panel rendered with <Code>fromReact</Code>. The hooks throw{' '}
+              <Code>usePanel() called outside a workbench panel</Code>, or the <Code>useHost</Code>{' '}
+              equivalent, when rendered outside the SDK's providers.
+            </p>
+            <Sig>{`function fromReact(Component: ComponentType): { mount: Mount };
+
+function useHost(): PluginHost;
+function usePanel(): PanelHandle;
+function useCart(): Cart;
+function usePanelTitle(title: string): void;
+function usePanelBreadcrumbs(crumbs: Crumb[]): void;
+function usePanelTerms(terms: string[]): void;
+
+interface CartButtonProps {
+  item: CartItem;
+  labelled?: boolean;
+  className?: string;
+  disabled?: boolean;
+}
+
+function CartButton(props: CartButtonProps): JSX.Element;`}</Sig>
+            <Params
+              heading="Functions"
+              rows={[
+                {
+                  name: 'fromReact(Component)',
+                  type: '{ mount }',
+                  description:
+                    'Wraps a component as a mount. Creates a React root in the mount element, provides the panel and host contexts, and re-renders when the path or focus changes. A component that throws during render is replaced by "This panel crashed" with a Try again button that re-renders it.',
+                },
+                { name: 'useHost()', type: 'PluginHost', description: 'The host API.' },
+                {
+                  name: 'usePanel()',
+                  type: 'PanelHandle',
+                  description: "The panel API. Re-renders on this panel's path and focus changes.",
+                },
+                {
+                  name: 'useCart()',
+                  type: 'Cart',
+                  description: "The cart API. Re-renders when this plugin's items change.",
+                },
+                {
+                  name: 'usePanelTitle(title)',
+                  type: 'void',
+                  description: 'Sets the title in an effect.',
+                },
+                {
+                  name: 'usePanelBreadcrumbs(crumbs)',
+                  type: 'void',
+                  description: 'Sets the breadcrumbs in an effect, compared by value.',
+                },
+                {
+                  name: 'usePanelTerms(terms)',
+                  type: 'void',
+                  description: 'Sets the terms in an effect, compared by value.',
+                },
+                {
+                  name: 'CartButton',
+                  type: 'component',
+                  description: (
+                    <>
+                      The design system's cart button bound to this plugin's cart. Pressed while{' '}
+                      <Code>item.id</Code> is in the cart; clicking adds or removes the item.{' '}
+                      <Code>labelled</Code> shows the label text instead of the icon-only pill.
+                    </>
+                  ),
+                },
+              ]}
+            />
+          </Entry>
+
+          <Entry id="r-frame" name="AppFrame">
+            <p className={styles.para}>
+              Embeds an application in an iframe that survives layout changes. Rendered by a page or
+              pane; the iframe is created once and kept for the panel's lifetime.
+            </p>
+            <Sig>{`interface AppFrameProps {
+  src: string;
+  title: string;
+  ref?: Ref<HTMLIFrameElement>;
+}
+
+function AppFrame(props: AppFrameProps): ReactElement;
+
+interface FrameLayer {
+  container: HTMLElement;
+  attach: (frame: HTMLElement, placeholder: HTMLElement) => Cleanup;
+}`}</Sig>
+            <Params
+              heading="Props"
+              rows={[
+                {
+                  name: 'src',
+                  required: true,
+                  type: 'string',
+                  description: 'The iframe URL. Changing it reloads the app.',
+                },
+                { name: 'title', required: true, type: 'string', description: 'The iframe title.' },
+                {
+                  name: 'ref',
+                  type: 'Ref<HTMLIFrameElement>',
+                  description: (
+                    <>
+                      The iframe element, for <Code>postMessage</Code> to its{' '}
+                      <Code>contentWindow</Code> and for matching a message's <Code>source</Code>.
+                    </>
+                  ),
+                },
+              ]}
+            />
+            <p className={styles.para}>
+              Browsers reload an iframe that is moved in the DOM, and a panel is moved when its tab
+              changes group or its pane moves between the sidebar and the main area.{' '}
+              <Code>AppFrame</Code> renders the iframe into a fixed layer at the end of the document
+              and positions it over a placeholder inside the panel. The placeholder moves with the
+              panel; the iframe follows without being moved. The iframe fills the placeholder.
+              Messaging between the panel and the embedded app is the plugin's own protocol.{' '}
+              <Code>FrameLayer</Code> is <Code>host.frames</Code>, for a non-React panel that
+              attaches its own iframe with <Code>attach(frame, placeholder)</Code>.
+            </p>
+          </Entry>
+
+          <Entry id="r-vite" name="pluginFederation">
+            <p className={styles.para}>
+              Builds the plugin as a Module Federation remote. Used in the plugin's{' '}
+              <Code>vite.config.ts</Code>.
+            </p>
             <Sig>{`function pluginFederation(options: {
-  config: PluginConfig;          // the manifest, without the two fields the build writes
-  background?: string;           // the entry point for each module this plugin ships
+  config: PluginConfig;
+  background?: string;
   route?: string;
   pane?: string;
   commands?: string;
   prompt?: string;
   intent?: string;
 }): Plugin[];`}</Sig>
-            <p className={styles.para}>
-              Exposes each named entry point as a module and writes the list to{' '}
-              <Code>manifest.modules</Code>. A file not named here is not part of the plugin,
-              whatever it exports. <Code>react</Code>, <Code>react-dom</Code>, <Code>zod</Code>,{' '}
-              <Code>@kbase/plugin-sdk</Code>, <Code>@kbase/design-system</Code>,{' '}
-              <Code>@phosphor-icons/react</Code> and <Code>@tanstack/react-router</Code> are taken
-              from the workbench and never bundled, whether or not the plugin lists them: these
-              remotes run only inside the workbench, so a fallback copy is weight that never loads,
-              and a second copy of React or the design system that did load would break hook and
-              context identity.
-            </p>
-          </Entry>
-
-          <Entry id="r-background" name="background" when="Fetched at startup.">
-            <Sig>{`type Cleanup = () => void;
-type Subscribe<T> = (set: (value: T) => void) => Cleanup;
-
-interface Background {
-  terms?: (q: TypedText) => string[];
-  offer?: (q: TypedQuery) => Offer[] | Promise<Offer[]>;
-  relate?: (q: TermsQuery) => CartItem[] | Promise<CartItem[]>;
-  status?: Subscribe<StatusItem[]>;
-}
-
-function defineBackground(b: Background): Background;`}</Sig>
-            <Export
-              id="r-terms"
-              name="terms"
-              when="Every keystroke, with the text as typed. Synchronous and no I/O: the answer is due before the next keystroke. Every plugin's terms are pooled, and the pool is what offer and relate are asked about."
-            >
-              <Sig>{`interface TypedText {
-  text: string;
-}`}</Sig>
-            </Export>
-
-            <Export
-              id="r-offer"
-              name="offer"
-              when="Every keystroke, with the text and the pooled terms. Answer from the terms alone. The signal aborts on the next keystroke; an answer that arrives after it is dropped, and one that arrives before it asks the intent again."
-            >
-              <Sig>{`interface TypedQuery {
-  text: string;
-  terms: string[];               // every term every plugin found in the text
-  signal: AbortSignal;
-}
-
-type MatchKind =
-  | 'record'                     // the plugin holds the thing and read this offer out of its inventory
-  | 'identifier'                 // an id in a namespace it serves, recognised by shape, not looked up
-  | 'name';                      // words matched words
-
-interface Match {
-  term: string;                  // the term this answers, as it appeared in the query
-  kind: MatchKind;
-}
-
-interface Offer extends CommandCall {
-  match: Match;                  // why it is offered; no score — ordering is the intent's job
-}`}</Sig>
-              <p className={styles.para}>
-                An offer reaches the bar only through the chosen intent, which is handed every
-                plugin's offers with each <Code>command</Code> qualified, and answers with the rows
-                to draw.
-              </p>
-            </Export>
-
-            <Export
-              id="r-relate"
-              name="relate"
-              when="250 ms after the front tab's terms or the cart's change, with those terms; never for typed text. May fetch. A plugin is not asked about its own front tab's terms. The signal aborts when the terms change again; after 2 s the pane stops saying it is asking, and a later answer still lands."
-            >
-              <Sig>{`interface TermsQuery {
-  terms: string[];               // what the open page or the cart carries
-  signal: AbortSignal;
-}
-
-interface CartItem {
-  id: string;                    // unique across plugins; derive it from what the thing is
-  readonly plugin?: string;      // stamped by the workbench on the way in; a plugin cannot set it
-  name: string;
-  subject?: string;              // the identifier the item is about
-  summary?: string;              // one line
-  terms?: string[];              // what other plugins are asked about once the item is in the cart
-  answers?: Match[];             // which of the terms asked about this item answers, and how
-  source?: CartSource;           // how to produce it again; anyone holding the item can run it
-  context?: Record<string, unknown>;           // what an assistant is told: units, population, caveats
-}
-
-interface CartSource {
-  command: string;               // bare, meaning this plugin's own: the host qualifies it
-  args?: Record<string, string>;
-}`}</Sig>
-              <p className={styles.para}>
-                <Code>terms</Code> is what the item carries onward and <Code>answers</Code> is what
-                it was asked about, so an item may answer a term it does not carry and carry terms
-                nobody asked for. <Code>answers</Code> is evidence about one question rather than a
-                property of the thing: the Related row reads it off, and what the <Code>+</Code>{' '}
-                puts in the cart is the item without it. A row the user dismissed stays gone for the
-                session, whoever offers it next; a row whose item is already in the cart is shown
-                with its button pressed.
-              </p>
-            </Export>
-
-            <Export
-              id="r-status"
-              name="status"
-              when="Subscribed when the module arrives. Call set with the lines as they stand, and again whenever they change; the workbench shows the last value it was handed. The returned cleanup ends whatever produces the pushes."
-            >
-              <Sig>{`interface StatusItem {
-  text: string;
-  action?: CommandCall;          // run when the line is pressed
-}`}</Sig>
-            </Export>
-          </Entry>
-
-          <Entry
-            id="r-route"
-            name="route"
-            when="Fetched when a tab of this plugin first opens. mount runs once per tab."
-          >
-            <Sig>{`type Mount = (el: HTMLElement, ctx: { panel: PanelHandle; host: PluginHost }) => Cleanup | void;
-
-interface Route {
-  mount: Mount;
-  // Two paths are the same page when this maps them to one string. The
-  // workbench opens and deduplicates on what it returns, and reads no path itself.
-  normalize: (path: string) => string;
-}
-
-function defineRoute(r: Route): Route;
-function fromReact(Component: ComponentType): { mount: Mount };`}</Sig>
-            <p className={styles.para}>
-              <Code>{'openRoute(path, { duplicate: true })'}</Code> opens a second tab for the same
-              page. <Code>{'navigate(path, { replace: true })'}</Code> replaces the history entry
-              instead of adding one. A panel is mounted once: moving its tab to another group,
-              splitting the group, and moving a pane between the sidebar and the main area all move
-              the element the panel drew into rather than rebuilding it, so <Code>mount</Code> does
-              not run again. A browser reloads an <Code>iframe</Code> that is moved, whatever moves
-              it; a page holding one draws it with <Code>AppFrame</Code>, which keeps the frame
-              where a move cannot reach it.
-            </p>
-          </Entry>
-
-          <Entry
-            id="r-frame"
-            name="AppFrame"
-            when="Rendered by a page or pane that embeds an app. The frame is created once and kept while the panel lives."
-          >
-            <Sig>{`interface AppFrameProps {
-  src: string;
-  title: string;
-  ref?: Ref<HTMLIFrameElement>;  // the <iframe>: post to its contentWindow, match a message's source against it
-}
-
-function AppFrame(props: AppFrameProps): ReactElement;
-
-interface FrameLayer {
-  container: HTMLElement;        // where the frame is rendered; the panel holds a box the frame is laid over
-  attach: (frame: HTMLElement, placeholder: HTMLElement) => Cleanup;
-}`}</Sig>
-            <p className={styles.para}>
-              The frame is rendered into the workbench's frame layer, at the end of the document,
-              and laid over the box <Code>AppFrame</Code> leaves in the panel; the box moves with
-              the panel and the frame follows it without moving. It fills the box, so size the
-              element around it. <Code>FrameLayer</Code> is <Code>host.frames</Code>, which{' '}
-              <Code>AppFrame</Code> uses; a panel that is not React attaches its own frame the same
-              way.
-            </p>
-          </Entry>
-
-          <Entry
-            id="r-pane"
-            name="pane"
-            when="Fetched when the pane is first shown. mount runs once, and again after the block is folded and unfolded."
-          >
-            <Sig>{`interface Pane {
-  mount: Mount;
-  // The sidebar block hugs its content instead of taking a share of the
-  // stack's height — for toolbars and status panels.
-  fit?: 'content';
-}
-
-function definePane(p: Pane): Pane;`}</Sig>
-          </Entry>
-
-          <Entry
-            id="r-commands"
-            name="commands"
-            when="Fetched the first time one of this plugin's commands runs."
-          >
-            <Sig>{`interface CommandContext {
-  host: PluginHost;
-  caller: string;                // the plugin whose execute ran it, or 'user' for the workbench's chrome
-}
-
-type CommandHandler = (args: Record<string, string>, ctx: CommandContext) => void | Promise<void>;
-type Commands = Record<string, CommandHandler>;
-
-function defineCommands(handlers: Commands): Commands;`}</Sig>
-            <p className={styles.para}>
-              Every argument arrives as a string, whether it was typed in the prompt bar or written
-              into a call, a shortcut or a suggestion. A handler that throws produces a toast naming
-              the command. The tab appears when <Code>openRoute</Code> is called, so a handler that
-              opens a page calls it before its first <Code>await</Code>.
-            </p>
-          </Entry>
-
-          <Entry
-            id="r-prompt"
-            name="prompt"
-            when="Fetched when Settings names this plugin as the assistant. handle runs when the user sends text that is not a slash command; destination is subscribed as the module arrives."
-          >
-            <Sig>{`interface Query {
-  text: string;                  // never blank: the bar refuses an empty box
-  terms: string[];               // the terms the backgrounds found in the text
-  signal: AbortSignal;
-}
-
-interface Destination {
-  label: string;                 // where the next message lands
-  path?: string;                 // this plugin's page for it; the bar offers a jump there
-  options?: { key: string; label: string }[];   // other places it could land
-  select?: (key: string) => void;               // the user picked one
-}
-
-interface Prompt {
-  handle: (q: Query, ctx: { host: PluginHost; attachments: readonly CartItem[] }) => Promise<void>;
-  newConversation: (ctx: { host: PluginHost }) => void | Promise<void>;   // New, in the destination menu
-  destination?: Subscribe<Destination | null>;
-}
-
-function definePrompt(p: Prompt): Prompt;`}</Sig>
-            <p className={styles.para}>
-              <Code>q.signal</Code> aborts when the user presses Stop or sends another message.
-              Choosing another assistant ends the <Code>destination</Code> subscription and drops
-              its value, so the previous one is never shown under the new assistant's name.
-            </p>
-          </Entry>
-
-          <Entry
-            id="r-intent"
-            name="intent"
-            when="Fetched at startup, whether or not Settings names this plugin. index runs once when the module arrives; suggest on every keystroke that is not a slash command, again when a plugin's offer lands late, and again when the page or the cart moves under text already typed."
-          >
-            <Sig>{`type ContextTier = 'typed' | 'page' | 'cart';       // strongest first
-type TieredTerms = Record<ContextTier, string[]>;
-
-type DeclaredCommand = SlashCommand & { plugin: string; pluginTitle: string };
-
-interface DeclaredCall extends CommandCall {
-  // The manifest the call came from, whose mark the row wears — not the plugin
-  // that declares the command: a pane's call runs the workbench's.
-  plugin: string;
-  pluginTitle: string;
-  description?: string;          // the manifest's own, where the call stands for the whole plugin
-}
-
-interface IntentQuery {
-  text: string;
-  terms: TieredTerms;            // a term is listed under the first tier that holds it
-  offers: Offer[];               // each command qualified, each carrying its match
-  signal: AbortSignal;
-}
-
-interface Suggestion {
-  call: CommandCall;             // command qualified as "plugin:name"
-  plugin?: string;               // whose mark the row wears, when that is not the command's plugin
-  detail?: string;               // the row's caption, in place of the plugin's title
-  score: number;                 // higher is closer; rows are shown in the order returned
-}
-
-interface Intent {
-  index: (commands: DeclaredCommand[], calls: DeclaredCall[]) => void;
-  suggest: (q: IntentQuery) => Suggestion[] | Promise<Suggestion[]>;
-}
-
-function defineIntent(i: Intent): Intent;`}</Sig>
-            <p className={styles.para}>
-              At most four rows are drawn, under the row that sends the text to the assistant. With
-              no answer there are no rows: the workbench has none of its own.
-            </p>
-          </Entry>
-
-          <Entry
-            id="r-handles"
-            name="Handles"
-            when="Given to every mount, command handler and prompt handler. In React, read them with the hooks."
-          >
-            <Sig>{`interface PluginHost {
-  openRoute: (path: string, options?: { duplicate?: boolean }) => void;   // this plugin's page
-  execute: (command: string, args?: Record<string, string>) => Promise<void>;
-  hasCommand: (command: string) => boolean;
-  notify: (text: string) => void;
-  cart: Cart;
-  frames: FrameLayer;            // where an iframe goes so that a move does not reload it; see AppFrame
-}
-
-interface Crumb {
-  label: string;
-  path?: string;                 // a link that moves the panel there; a crumb naming a level omits it
-  icon?: string;                 // a name from the workbench's icon table
-}
-
-interface PanelHandle {
-  id: string;                    // opaque; stable while the panel lives, whatever its path becomes
-  plugin: string;
-  kind: 'route' | 'pane';
-  path: string;                  // everything under /p/<plugin>, query string included; '' for a pane
-  focused: boolean;
-  navigate: (path: string, options?: { replace?: boolean }) => void;
-  setTitle: (title: string) => void;
-  setCrumbs: (crumbs: Crumb[]) => void;
-  setTerms: (terms: string[]) => void;
-  subscribe: (listener: () => void) => Cleanup;   // path or focus changed
-}
-
-interface Cart {
-  add: (item: Omit<CartItem, 'plugin'>) => void;   // same id replaces; the workbench stamps the plugin
-  remove: (id: string) => void;  // this plugin's items only
-  items: () => readonly CartItem[]; // this plugin's items only
-  has: (id: string) => boolean;  // this plugin's items only
-  count: () => number;           // this plugin's items only
-  subscribe: (listener: () => void) => Cleanup;
-}
-
-interface CartButtonProps {
-  item: CartItem;
-  labelled?: boolean;            // the pill with its words showing, for a prominent placement
-  className?: string;
-  disabled?: boolean;
-}
-
-// React
-function useHost(): PluginHost;
-function usePanel(): PanelHandle;         // re-renders on path and focus
-function useCart(): Cart;                 // re-renders on change
-function usePanelTitle(title: string): void;
-function usePanelBreadcrumbs(crumbs: Crumb[]): void;
-function usePanelTerms(terms: string[]): void;
-function CartButton(props: CartButtonProps): JSX.Element;   // the design system's, bound to this plugin's cart`}</Sig>
-            <p className={styles.para}>
-              <Code>setCrumbs</Code> draws a trail above the panel; a crumb with a <Code>path</Code>{' '}
-              is a link that moves the panel there. A plugin reads the cart slice it wrote and
-              nothing else: what the user has collected from elsewhere is their business and the
-              assistant's.
-            </p>
-            <p className={styles.para}>
-              Three things can go wrong inside a panel, and each has its own recovery, so read which
-              button the alert offers. A module that never arrived — an unreachable remote, a bad
-              bundle, a missing default export — is an alert naming the plugin and saying it could
-              not be loaded, and <strong>Try again</strong> fetches it again in place; nothing of
-              the plugin has run. A component that throws under the fence <Code>fromReact</Code>{' '}
-              puts around it reads "This panel crashed", and <strong>Try again</strong> draws the
-              component again inside the React root your <Code>mount</Code> already made, so the
-              mount and everything it holds outside the component survive. Anything that throws
-              outside that fence — a <Code>mount</Code> of your own, or a throw React could not
-              route to it — reaches the workbench's own boundary around the whole panel, which reads
-              the same and offers <strong>Restart panel</strong>: clearing it runs your{' '}
-              <Code>mount</Code> again on a fresh element, from the module already in memory. In all
-              three the thrown message sits behind the alert's Details rather than on its face.
-            </p>
+            <Params
+              rows={[
+                {
+                  name: 'options.config',
+                  required: true,
+                  type: 'PluginConfig',
+                  description: 'The manifest exported by plugin.config.ts.',
+                },
+                {
+                  name: 'options.<module>',
+                  type: 'string',
+                  description:
+                    'The entry file for each module the plugin provides. Only the files named here are part of the plugin.',
+                },
+              ]}
+            />
+            <Returns>
+              Vite plugins. During <Code>vite build</Code>, each named file is exposed as a
+              federation module under its module name, and <Code>manifest.json</Code> is emitted
+              next to <Code>remoteEntry.js</Code> with <Code>modules</Code> set to the names.{' '}
+              <Code>react</Code>, <Code>react-dom</Code>, <Code>zod</Code>,{' '}
+              <Code>@phosphor-icons/react</Code>, <Code>@tanstack/react-router</Code>,{' '}
+              <Code>@kbase/design-system</Code> and <Code>@kbase/plugin-sdk</Code> are configured as
+              shared singletons provided by the host, regardless of the plugin's{' '}
+              <Code>package.json</Code>: they are excluded from the bundle and resolved at runtime
+              to the workbench's instances.
+            </Returns>
           </Entry>
         </Part>
 
-        <Part id="deploying" title="Deploying">
+        <Part id="deploying" title="Deployment">
           <p className={styles.narrative}>
-            In production a plugin is a static bundle served beside its own backend. The workbench
-            needs three paths to reach it, and a registry that lists which plugins exist.
+            In production a plugin is a static bundle served next to its backend. The workbench
+            fetches it from three routes on the workbench's own origin.
           </p>
-          <File name="" language="text">{`/services/<id>/manifest.json     the manifest
-/services/<id>/plugin/…          everything in dist/
-/plugin-registry/plugins         the list of manifests`}</File>
+          <Table
+            head={['Route', 'Served by', 'Content']}
+            rows={[
+              [
+                <Code>/services/&lt;id&gt;/manifest.json</Code>,
+                "the plugin's service",
+                'the manifest',
+              ],
+              [
+                <Code>/services/&lt;id&gt;/plugin/*</Code>,
+                "the plugin's service",
+                <>
+                  the contents of <Code>dist/</Code>
+                </>,
+              ],
+              [<Code>/plugin-registry/plugins</Code>, 'a registry', 'a JSON array of manifests'],
+            ]}
+          />
           <Explainer>
             <p className={styles.para}>
-              The plugin's service serves the first two paths. A registry answers the third with an
-              array of manifests. The workbench fetches all three from its own origin; a deployment
-              routes them to the plugin services and the registry in front of the workbench image.
-              Without a registry the workbench runs its bundled plugins only. In development,{' '}
-              <Code>VITE_DEV_SERVICE_PROXY</Code> proxies each{' '}
-              <Code>&lt;prefix&gt;=&lt;origin&gt;</Code> pair and serves as the registry for them.
+              The workbench fetches the registry once at startup and derives the other two routes
+              from each manifest's <Code>id</Code>. A deployment routes the three paths to the
+              plugin services and the registry in front of the workbench image. Because every fetch
+              is same-origin, the remote entries satisfy the page's <Code>script-src 'self'</Code>{' '}
+              policy. The workbench image itself serves its HTML shell for{' '}
+              <Code>/plugin-registry/plugins</Code>; the workbench treats a non-JSON response as "no
+              registry", logs <Code>plugin registry unavailable; using bundled plugins only</Code>,
+              and runs its bundled plugins alone. In development, the dev server is the registry for
+              the services listed in <Code>VITE_DEV_SERVICE_PROXY</Code>.
             </p>
           </Explainer>
         </Part>
 
         <Part id="errors" title="Troubleshooting">
-          <p className={styles.narrative}>Symptoms, and what each one means.</p>
           <div className={styles.trouble}>
             <Symptom name="The plugin does not appear">
-              Settings lists every installed plugin. If it is missing there, open{' '}
-              <Code>/plugin-registry/plugins</Code> from the workbench's origin: the manifest is
-              either absent, because the registry or dev proxy cannot reach the service, or present
-              but invalid, in which case the console names the field. If it is in Settings but not
-              on Browse, it has no <Code>launcher</Code>.
+              Settings lists every installed plugin under Installed and every rejected manifest
+              under Not loaded, with the reason. An incompatible <Code>sdkVersion</Code> is the
+              usual reason; rebuild against the SDK the workbench serves. A plugin in neither list
+              is missing from <Code>/plugin-registry/plugins</Code>: the registry or the dev proxy
+              cannot reach the service, or the service returns non-JSON for its manifest. A plugin
+              listed in Settings but absent from Home has no <Code>launcher</Code>.
+            </Symptom>
+            <Symptom name="The tab is titled Hello: /Alice">
+              The panel has not set a title. Call <Code>usePanelTitle</Code> or{' '}
+              <Code>setTitle</Code>.
+            </Symptom>
+            <Symptom name="A second tab opens for a page that is already open">
+              <Code>normalize</Code> returns different strings for the two paths, or the caller
+              passed <Code>duplicate: true</Code>.
+            </Symptom>
+            <Symptom name="Invalid hook call, or a context that is always null">
+              The bundle includes its own copy of React or of the SDK. <Code>mf-manifest.json</Code>{' '}
+              in the build output lists the shared packages; a package missing there means{' '}
+              <Code>pluginFederation</Code> did not process that entry point.
             </Symptom>
             <Symptom name="usePanel() called outside a workbench panel">
-              The component rendered outside the panel's tree, for example in a portal. The handle
-              exists only inside that tree; a component rendered elsewhere receives it as a prop.
+              The component rendered outside the React root <Code>fromReact</Code> created, usually
+              inside a second <Code>createRoot</Code>. Pass the handle to such components as a prop.
+              Context passes through portals, so <Code>AppFrame</Code> reads it from inside one.
             </Symptom>
-            <Symptom name="A command completes, then fails">
-              The toast says why: <Code>vite.config.ts</Code> does not name <Code>commands</Code>,
-              the module has no handler for that name, or the handler threw.
+            <Symptom name="A command runs, then fails">
+              The toast gives the reason: <Code>vite.config.ts</Code> does not name{' '}
+              <Code>commands</Code>, the module has no handler with that name, or the handler threw.
             </Symptom>
-            <Symptom name="Nothing this plugin offers ever appears">
-              Check, in order of likelihood, that <Code>background</Code> is named in{' '}
-              <Code>vite.config.ts</Code>, that the console does not report it failing to load, and
-              that <Code>terms</Code> mints a term <Code>offer</Code> or <Code>relate</Code> reads
-              back — the pool carries every plugin's terms, so a prefix a neighbour minted is not
-              one you match unless you both chose the canonical one. Beyond that: an offer reaches
-              the bar only through the chosen intent, which draws four rows and may rank yours below
-              them; a plugin is never asked about its own front tab's terms; and a row dismissed in
-              Related stays gone for the rest of the session.
+            <Symptom name="The plugin's offers never appear">
+              Check that <Code>background</Code> is named in <Code>vite.config.ts</Code>, that the
+              console shows no load failure for it, and that <Code>terms</Code> returns a term that{' '}
+              <Code>offer</Code> handles. Offers are displayed only through the selected suggestion
+              provider.
             </Symptom>
             <Symptom name="The panel shows an alert instead of the plugin">
-              Which recovery it offers says what happened. "could not be loaded" with Try again is
-              the module never arriving: "exposed nothing at ./route" means the file has no default
-              export, and pressing the button fetches it again. "This panel crashed" is the plugin's
-              own code throwing while rendering; the message is behind Details. Try again there
-              redraws the component, and Restart panel runs <Code>mount</Code> again.
+              "Could not be loaded" with Try again is a load failure;{' '}
+              <Code>exposed nothing at ./route</Code> under Details means the file has no default
+              export. "This panel crashed" with Restart panel means <Code>mount</Code> threw; with
+              Try again, the component threw during render. The error message is under Details.
             </Symptom>
           </div>
         </Part>
@@ -1001,30 +2088,30 @@ function CartButton(props: CartButtonProps): JSX.Element;   // the design system
 }
 
 const SECTIONS: { id: string; label: string; children?: { id: string; label: string }[] }[] = [
+  { id: 'concepts', label: 'Concepts and usage' },
   { id: 'start', label: 'Getting started' },
-  { id: 'manifest', label: 'The manifest' },
-  { id: 'pages', label: 'Pages' },
-  { id: 'pane', label: 'Sidebar pane' },
-  { id: 'background', label: 'Background' },
-  { id: 'assistant', label: 'Assistant' },
-  { id: 'intent', label: 'Intent' },
-  { id: 'commands', label: 'Commands and the host' },
+  { id: 'anatomy', label: 'Anatomy of a plugin' },
+  { id: 'lifecycle', label: 'Lifecycle' },
+  { id: 'manifest', label: 'Manifest reference' },
   {
     id: 'reference',
-    label: 'Reference',
+    label: 'API reference',
     children: [
-      { id: 'r-config', label: 'config' },
-      { id: 'r-vite', label: 'vite.config.ts' },
       { id: 'r-background', label: 'background' },
       { id: 'r-route', label: 'route' },
       { id: 'r-pane', label: 'pane' },
       { id: 'r-commands', label: 'commands' },
       { id: 'r-prompt', label: 'prompt' },
       { id: 'r-intent', label: 'intent' },
-      { id: 'r-handles', label: 'Handles' },
+      { id: 'r-host', label: 'Host API' },
+      { id: 'r-panel', label: 'Panel API' },
+      { id: 'r-cart', label: 'Cart API' },
+      { id: 'r-react', label: 'React' },
+      { id: 'r-frame', label: 'AppFrame' },
+      { id: 'r-vite', label: 'pluginFederation' },
     ],
   },
-  { id: 'deploying', label: 'Deploying' },
+  { id: 'deploying', label: 'Deployment' },
   { id: 'errors', label: 'Troubleshooting' },
 ];
 
@@ -1070,54 +2157,110 @@ function Part({ id, title, children }: { id: string; title: string; children: Re
   );
 }
 
-// One module of the contract: its name, when the host reaches it, the types it
-// consumes, and the constraints as prose.
-function Entry({
-  id,
-  name,
-  when,
-  children,
-}: {
-  id: string;
-  name: string;
-  when: string;
-  children: ReactNode;
-}) {
+// A tutorial step: a heading, then prose and code.
+function Step({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className={styles.entry} id={id} aria-labelledby={`${id}-h`}>
-      <div className={styles.entryHead}>
-        <h3 id={`${id}-h`} className={styles.entryName}>
-          {name}
-        </h3>
-        <p className={styles.when}>{when}</p>
-      </div>
+    <section className={styles.step}>
+      <h3 className={styles.stepName}>{title}</h3>
       {children}
     </section>
   );
 }
 
-// One member of a module whose default export holds several, each with its own schedule.
-function Export({
-  id,
-  name,
-  when,
-  children,
-}: {
-  id: string;
-  name: string;
-  when: string;
-  children: ReactNode;
-}) {
+// One reference entry: name, description, signature, example, members.
+function Entry({ id, name, children }: { id: string; name: string; children: ReactNode }) {
   return (
-    <section className={styles.export} id={id} aria-labelledby={`${id}-h`}>
-      <div className={styles.entryHead}>
-        <h4 id={`${id}-h`} className={styles.exportName}>
-          {name}
-        </h4>
-        <p className={styles.when}>{when}</p>
-      </div>
+    <section className={styles.entry} id={id} aria-labelledby={`${id}-h`}>
+      <h3 id={`${id}-h`} className={styles.entryName}>
+        {name}
+      </h3>
       {children}
     </section>
+  );
+}
+
+// One member of an entry: a method, a callback or a property group.
+function Export({ id, name, children }: { id: string; name: string; children: ReactNode }) {
+  return (
+    <section className={styles.export} id={id} aria-labelledby={`${id}-h`}>
+      <h4 id={`${id}-h`} className={styles.exportName}>
+        {name}
+      </h4>
+      {children}
+    </section>
+  );
+}
+
+interface ParamRow {
+  name: string;
+  description: ReactNode;
+  type: string;
+  required?: boolean;
+}
+
+// Name | Description | Type. A trailing * marks a required parameter.
+function Params({ rows, heading = 'Parameters' }: { rows: ParamRow[]; heading?: string }) {
+  return (
+    <div className={styles.block}>
+      <h5 className={styles.subhead}>{heading}</h5>
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Description</th>
+            <th scope="col">Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.name}>
+              <td>
+                {r.name}
+                {r.required && <span className={styles.required}>*</span>}
+              </td>
+              <td>{r.description}</td>
+              <td>
+                <Code>{r.type}</Code>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function Returns({ children }: { children: ReactNode }) {
+  return (
+    <div className={styles.block}>
+      <h5 className={styles.subhead}>Returns</h5>
+      <p className={styles.para}>{children}</p>
+    </div>
+  );
+}
+
+function Table({ head, rows }: { head: string[]; rows: ReactNode[][] }) {
+  return (
+    <table className={styles.table}>
+      <thead>
+        <tr>
+          {head.map((h) => (
+            <th key={h} scope="col">
+              {h}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((r, i) => (
+          <tr key={i}>
+            {r.map((cell, j) => (
+              <td key={j}>{cell}</td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
 
@@ -1134,7 +2277,7 @@ function File({ name, language, children }: { name: string; language: string; ch
   );
 }
 
-// The precise rules of a section, read after its narrative has set them up.
+// The detailed rules of a section, after its overview paragraph.
 function Explainer({ children }: { children: ReactNode }) {
   return <div className={styles.explainer}>{children}</div>;
 }

@@ -158,6 +158,69 @@
   gap: var(--s-2);
 }
 
+/* The schedule: one row per module, when it is fetched and when each member
+   runs. Text columns at caption size; the module name in the mono face. */
+.table {
+  border-collapse: collapse;
+  font-size: var(--fs-3);
+  max-inline-size: 62rem;
+}
+
+.table th,
+.table td {
+  padding: var(--s-2) var(--s-3);
+  border-block-end: 1px solid var(--c-border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.table th {
+  color: var(--c-ink3);
+  font-weight: var(--fw-semibold, 600);
+}
+
+.table td:first-child {
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+.required {
+  color: var(--ct-red);
+}
+
+/* A labelled block inside an entry: Parameters, Returns. */
+.block {
+  display: grid;
+  gap: var(--s-2);
+}
+
+.subhead {
+  margin: 0;
+  font-size: var(--fs-3);
+  font-weight: var(--fw-semibold, 600);
+  color: var(--c-ink3);
+}
+
+/* A tutorial step. */
+.step {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.stepName {
+  margin: 0;
+  font-size: var(--fs-5);
+}
+
+.list,
+.steps {
+  margin: 0;
+  padding-inline-start: var(--s-5);
+  max-inline-size: 46rem;
+  display: grid;
+  gap: var(--s-2);
+}
+
 .fileName {
   font-family: var(--font-mono);
   font-size: var(--fs-2);

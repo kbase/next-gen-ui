@@ -5,7 +5,7 @@ A **layout** is the saved arrangement. Plugins supply panels; the workbench deci
 go and remembers it. (`workspace` is the KBase data service and is not used here.)
 
 What a plugin author needs is documented elsewhere and is not repeated here: `plugins/sdk/README.md`
-for the package and its three entries, and the workbench's own **Plugin developer documentation**
+for how the package is built and depended on, and the workbench's own **Plugin developer documentation**
 page — `/plugin-docs` in a running workbench, `react/pages/docs/Docs.tsx` in the tree — for the
 manifest, the six modules, the handles and the deployment paths. `Docs.contract.test.ts` fails when
 that page and the SDK disagree, which is why it, and not this file, is where the contract is

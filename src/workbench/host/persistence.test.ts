@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { StoredCartItem } from '../core';
 import { CART_STORAGE_KEY, defaultLayout, serialize } from '../core';
-import { LAYOUT_STORAGE_KEY, loadWorkbench } from './persistence';
+import { LAYOUT_STORAGE_KEY, PLUGINS_STORAGE_KEY, loadWorkbench } from './persistence';
 import { SETTINGS_STORAGE_KEY } from './settings';
 
 function memoryStorage(seed: Record<string, string> = {}): Storage {
@@ -29,11 +29,12 @@ function refusing(op: 'getItem' | 'setItem'): Storage {
 }
 
 const item: StoredCartItem = { id: 'gk:P0AEX9', plugin: 'gk', name: 'SecA' };
+const url = 'http://plugins.test/services/hello/manifest.json';
 
 describe('loading a workbench from storage', () => {
   it('has nothing for a first visit', async () => {
     const { loaded } = await loadWorkbench(memoryStorage());
-    expect(loaded).toEqual({ layout: null, cart: [], settings: null });
+    expect(loaded).toEqual({ layout: null, cart: [], settings: null, plugins: null });
   });
 
   it('returns each document it can read', async () => {
@@ -47,13 +48,24 @@ describe('loading a workbench from storage', () => {
           intent: 'intent',
           keybindings: { 'Ctrl+Z': '' },
         }),
+        [PLUGINS_STORAGE_KEY]: JSON.stringify([url]),
       }),
     );
     expect(loaded).toEqual({
       layout,
       cart: [item],
       settings: { assistant: 'koros', intent: 'intent', keybindings: { 'Ctrl+Z': '' } },
+      plugins: [url],
     });
+  });
+
+  it.each([
+    ['unparseable', '{not json'],
+    ['not a list', '{"url":"x"}'],
+    ['a list holding something that is not a URL string', '[5]'],
+  ])('loads no plugin list from %s', async (_case, text) => {
+    const { loaded } = await loadWorkbench(memoryStorage({ [PLUGINS_STORAGE_KEY]: text }));
+    expect(loaded.plugins).toBeNull();
   });
 
   it.each([
@@ -80,7 +92,7 @@ describe('loading a workbench from storage', () => {
 
   it('loads nothing from a storage that refuses to be read', async () => {
     const { loaded } = await loadWorkbench(refusing('getItem'));
-    expect(loaded).toEqual({ layout: null, cart: [], settings: null });
+    expect(loaded).toEqual({ layout: null, cart: [], settings: null, plugins: null });
   });
 });
 
@@ -97,8 +109,9 @@ describe('saving a workbench to storage', () => {
       keybindings: { 'Ctrl+Y': 'workbench:redo', 'Ctrl+Shift+Z': '' },
     };
     save('settings', settings);
+    save('plugins', [url]);
     const { loaded } = await loadWorkbench(storage);
-    expect(loaded).toEqual({ layout, cart: [item], settings });
+    expect(loaded).toEqual({ layout, cart: [item], settings, plugins: [url] });
   });
 
   it('is a no-op, not an error, when the browser refuses the write', async () => {

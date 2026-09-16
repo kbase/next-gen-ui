@@ -5,9 +5,17 @@ import { localPlugins } from '../../plugins/local';
 import { createWorkbench } from './createWorkbench';
 import { defaultContext, defaultLayout, groups, paneId, placementOf, reduce } from '../core';
 import type { LoadedDocs } from '../host/persistence';
+import { openRoute } from '../host/open';
 import { pluginHostFor } from '../host/pluginHost';
 import { localPlugin } from '../host/plugins/local';
+import type * as Registry from '../host/plugins/registry';
+import { fromManifestUrl } from '../host/plugins/registry';
 import { noPersistence } from '../host/persistence';
+
+vi.mock('../host/plugins/registry', async (importOriginal) => ({
+  ...(await importOriginal<typeof Registry>()),
+  fromManifestUrl: vi.fn(),
+}));
 
 // genKnown owns a command and adds items; KOROS owns neither and is handed one
 // of those items, which is the case a cart item exists for.
@@ -159,8 +167,14 @@ describe('a value a plugin hands the host', () => {
     const services = workbench(vi.fn());
     const gk = pluginHostFor(services, 'gk');
     // The shape Function Junction's Python half still sends (K90, K125).
-    const sent = { id: 'gk:83333', name: 'E. coli', source: { path: '/83333' } } as unknown as CartItem;
-    expect(() => gk.cart.add(sent)).toThrow(/plugin gk: cart.add refused the item — source\.command/);
+    const sent = {
+      id: 'gk:83333',
+      name: 'E. coli',
+      source: { path: '/83333' },
+    } as unknown as CartItem;
+    expect(() => gk.cart.add(sent)).toThrow(
+      /plugin gk: cart.add refused the item — source\.command/,
+    );
     expect(services.cart.items()).toEqual([]);
   });
 
@@ -203,7 +217,10 @@ describe('a default pin a saved layout has never been offered', () => {
   const build = (docs: Partial<LoadedDocs>, save = vi.fn()) =>
     createWorkbench({
       installed: localPlugins,
-      persistence: { loaded: { layout: null, cart: null, settings: null, ...docs }, save },
+      persistence: {
+        loaded: { layout: null, cart: null, settings: null, plugins: null, ...docs },
+        save,
+      },
       defaultPinned: ['koros', 'jobs'],
       defaultAssistant: 'koros',
       defaultIntent: 'intent',
@@ -215,7 +232,10 @@ describe('a default pin a saved layout has never been offered', () => {
     const services = build({ layout, settings }, save);
     expect(services.store.get().sidebar.pinned).toEqual(['koros', 'jobs']);
     expect(services.settings.get().offered).toEqual(['koros', 'jobs']);
-    expect(save).toHaveBeenCalledWith('settings', expect.objectContaining({ offered: ['koros', 'jobs'] }));
+    expect(save).toHaveBeenCalledWith(
+      'settings',
+      expect.objectContaining({ offered: ['koros', 'jobs'] }),
+    );
   });
 
   it('stays unpinned on the next load once it has been offered', () => {
@@ -223,7 +243,12 @@ describe('a default pin a saved layout has never been offered', () => {
     // The reader unpinned jobs after it was offered.
     const services = build({
       layout,
-      settings: { assistant: 'koros', intent: 'intent', keybindings: {}, offered: ['koros', 'jobs'] },
+      settings: {
+        assistant: 'koros',
+        intent: 'intent',
+        keybindings: {},
+        offered: ['koros', 'jobs'],
+      },
     });
     expect(services.store.get().sidebar.pinned).toEqual(['koros']);
   });
@@ -241,5 +266,90 @@ describe('a default pin a saved layout has never been offered', () => {
     expect(services.store.get()).toEqual(inMain);
     expect(placementOf(services.store.get(), paneId('jobs')).zone).toBe('main');
     expect(services.settings.get().offered).toEqual(['koros', 'jobs']);
+  });
+});
+
+// The plugin at a URL is what `fromManifestUrl` answers; here that is a
+// bundled-shaped plugin with an origin, so nothing is fetched.
+describe('a plugin installed from a URL', () => {
+  const url = 'http://plugins.test/services/hello/manifest.json';
+  const hello = () => ({
+    ...localPlugin({
+      config: definePluginManifest({
+        id: 'hello',
+        title: 'Hello',
+        commands: [{ name: 'hello', title: 'Say hello' }],
+      }),
+      commands: () => Promise.resolve({ hello: () => {} }),
+      route: () => Promise.resolve({ mount: () => {}, normalize: (p: string) => p }),
+      pane: () => Promise.resolve({ mount: () => {} }),
+    }),
+    origin: { url },
+  });
+  const build = (save = vi.fn()) =>
+    createWorkbench({
+      installed: localPlugins,
+      persistence: { loaded: { layout: null, cart: null, settings: null, plugins: null }, save },
+      defaultAssistant: 'koros',
+      defaultIntent: 'intent',
+    });
+
+  it('is installed by /install, with its commands, and its URL is saved', async () => {
+    vi.mocked(fromManifestUrl).mockResolvedValue(hello());
+    const save = vi.fn();
+    const services = build(save);
+
+    await services.registry.run('workbench:install', { url });
+
+    expect(fromManifestUrl).toHaveBeenCalledWith(url);
+    expect(services.source.manifest('hello')?.title).toBe('Hello');
+    expect(services.source.origin('hello')).toEqual({ url });
+    expect(services.registry.get('hello:hello')?.title).toBe('Say hello');
+    expect(save).toHaveBeenCalledWith('plugins', [url]);
+  });
+
+  it('is not installed, and nothing is saved, when the URL cannot be loaded', async () => {
+    vi.mocked(fromManifestUrl).mockRejectedValue(new Error(`could not fetch ${url}`));
+    const save = vi.fn();
+    const services = build(save);
+
+    await expect(services.registry.run('workbench:install', { url })).rejects.toThrow(
+      `could not fetch ${url}`,
+    );
+
+    expect(services.source.manifest('hello')).toBeUndefined();
+    expect(save).not.toHaveBeenCalledWith('plugins', expect.arrayContaining([url]));
+  });
+
+  it('is uninstalled by /uninstall: unpinned, its tabs closed, forgotten, and unsaved', async () => {
+    vi.mocked(fromManifestUrl).mockResolvedValue(hello());
+    const save = vi.fn();
+    const services = build(save);
+    await services.registry.run('workbench:install', { url });
+    services.dispatch({ type: 'pin', plugin: 'hello' });
+    await openRoute(services, 'hello', '/');
+    expect(
+      Object.values(services.store.get().panels).filter((p) => p.plugin === 'hello'),
+    ).toHaveLength(2);
+
+    await services.registry.run('workbench:uninstall', { plugin: 'hello' });
+
+    expect(services.store.get().sidebar.pinned).not.toContain('hello');
+    expect(Object.values(services.store.get().panels).filter((p) => p.plugin === 'hello')).toEqual(
+      [],
+    );
+    expect(services.source.manifest('hello')).toBeUndefined();
+    expect(services.registry.get('hello:hello')).toBeUndefined();
+    expect(save).toHaveBeenLastCalledWith('plugins', []);
+  });
+
+  it('is the only kind /uninstall removes', async () => {
+    const services = build();
+    const announce = vi.spyOn(services.announcer, 'announce');
+
+    await services.registry.run('workbench:uninstall', { plugin: 'koros' });
+
+    expect(services.source.manifest('koros')).toBeDefined();
+    expect(announce).toHaveBeenCalledWith('KOROS was not installed from a URL');
   });
 });

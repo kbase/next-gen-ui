@@ -7,6 +7,7 @@ import { SETTINGS_STORAGE_KEY, SettingsSchema } from './settings';
 // `LayoutSchema` lives under a different key and is never read again; the
 // cart and the settings keys work the same way.
 export const LAYOUT_STORAGE_KEY = 'workbench.layout.v4';
+export const PLUGINS_STORAGE_KEY = 'workbench.plugins.v1';
 
 // The documents a workbench keeps between sessions, one per kind. Each is
 // plain JSON, so a store needs no encoder of its own and nothing here has a
@@ -15,6 +16,9 @@ export interface WorkbenchDocs {
   layout: Layout;
   cart: readonly StoredCartItem[];
   settings: Settings;
+  // The manifest URLs of the plugins installed by URL, installed again at
+  // the next start.
+  plugins: readonly string[];
 }
 
 // A document that was absent or unreadable comes back null, and the workbench
@@ -34,7 +38,7 @@ export interface WorkbenchPersistence {
 // A workbench that starts fresh and forgets: what tests and a browser with no
 // readable storage get.
 export const noPersistence: WorkbenchPersistence = {
-  loaded: { layout: null, cart: null, settings: null },
+  loaded: { layout: null, cart: null, settings: null, plugins: null },
   save: () => {},
 };
 
@@ -42,6 +46,7 @@ const KEYS: Record<keyof WorkbenchDocs, string> = {
   layout: LAYOUT_STORAGE_KEY,
   cart: CART_STORAGE_KEY,
   settings: SETTINGS_STORAGE_KEY,
+  plugins: PLUGINS_STORAGE_KEY,
 };
 
 // Async because the caller runs before React mounts and can afford to wait,
@@ -53,9 +58,20 @@ export async function loadWorkbench(storage: Storage): Promise<WorkbenchPersiste
       layout: readLayout(read(storage, LAYOUT_STORAGE_KEY)),
       cart: readCart(read(storage, CART_STORAGE_KEY)),
       settings: readSettings(read(storage, SETTINGS_STORAGE_KEY)),
+      plugins: readPlugins(read(storage, PLUGINS_STORAGE_KEY)),
     },
     save: saveTo(storage),
   };
+}
+
+function readPlugins(text: string | null): readonly string[] | null {
+  if (!text) return null;
+  try {
+    const parsed: unknown = JSON.parse(text);
+    return Array.isArray(parsed) && parsed.every((url) => typeof url === 'string') ? parsed : null;
+  } catch {
+    return null;
+  }
 }
 
 function saveTo(storage: Storage): SaveWorkbench {

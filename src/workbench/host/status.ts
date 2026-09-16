@@ -29,21 +29,37 @@ export function createStatusStore(source: HostIndex): StatusStore {
   const epoch = createEpoch();
   const live = epoch.begin();
 
+  const end = (plugin: PluginId, stop: Cleanup) => {
+    try {
+      stop();
+    } catch (err) {
+      console.warn(`plugin ${plugin}: its status cleanup threw`, err);
+    }
+  };
+
   // Subscribes to each background that has arrived and is not subscribed to
-  // yet. The plugin is entered in `stops` before `status` is called, because
-  // a plugin that throws on subscribe must not be called again every time
-  // another module loads.
+  // yet, and ends the subscription of a plugin that has been uninstalled. The
+  // plugin is entered in `stops` before `status` is called, because a plugin
+  // that throws on subscribe must not be called again every time another
+  // module loads. A push from a subscription that has ended is not heard.
   const attach = () => {
     if (!live()) return;
+    const present = new Set<PluginId>();
     for (const { plugin, background } of source.backgrounds()) {
+      present.add(plugin);
       if (!background.status || stops.has(plugin)) continue;
       stops.set(plugin, () => {});
       try {
         stops.set(
           plugin,
           background.status((pushed) => {
-            if (!live()) return;
-            const items = accepted(`plugin ${plugin}`, 'a status line it pushed', StatusItemSchema, pushed);
+            if (!live() || !stops.has(plugin)) return;
+            const items = accepted(
+              `plugin ${plugin}`,
+              'a status line it pushed',
+              StatusItemSchema,
+              pushed,
+            );
             if (items.length) current.set(plugin, items);
             else current.forget(plugin);
           }),
@@ -51,6 +67,12 @@ export function createStatusStore(source: HostIndex): StatusStore {
       } catch (err) {
         console.warn(`plugin ${plugin}: its status subscription threw; showing nothing`, err);
       }
+    }
+    for (const [plugin, stop] of [...stops]) {
+      if (present.has(plugin)) continue;
+      stops.delete(plugin);
+      end(plugin, stop);
+      current.forget(plugin);
     }
   };
 
@@ -65,13 +87,7 @@ export function createStatusStore(source: HostIndex): StatusStore {
       if (!live()) return;
       epoch.end();
       unwatch();
-      for (const [plugin, stop] of stops) {
-        try {
-          stop();
-        } catch (err) {
-          console.warn(`plugin ${plugin}: its status cleanup threw`, err);
-        }
-      }
+      for (const [plugin, stop] of stops) end(plugin, stop);
       stops.clear();
       current.clear();
     },

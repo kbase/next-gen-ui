@@ -4,31 +4,41 @@ import type { Manifest, Module, Modules } from '@kbase/plugin-sdk';
 import { ManifestSchema } from '@kbase/plugin-sdk';
 import type { InstalledPlugin, ModuleLoaders } from './installed';
 
-// The registry: GET <base>/plugins → Manifest[]. Same origin, so a remote
-// entry it names is covered by `script-src 'self'`. In dev a Vite middleware
-// answers it from the proxied services; the built image serves nothing here,
-// so a deployment either fronts the path or runs the bundled plugins alone.
+// The registry: GET <base>/plugins → the URLs of the manifests to install,
+// absolute or relative to the workbench's origin. In dev a Vite middleware
+// answers it with one URL per proxied service; the built image serves nothing
+// here, so a deployment either fronts the path or runs the bundled plugins
+// alone.
 export const REGISTRY_BASE = '/plugin-registry';
 
-// Where a plugin's service is mounted. The manifest does not say where the
-// code is: the service serves its manifest at <base>/<id>/manifest.json and
-// its bundle under <base>/<id>/plugin/, and the host derives both from the
-// id.
-export const SERVICES_BASE = '/services';
-
-// A registry entry the workbench did not load, and why: what Settings lists
+// A plugin the workbench did not install, and why: what Settings lists
 // beside the plugins that are installed, so a reader who cannot find a plugin
 // sees that it was declined rather than nothing at all.
 export interface DeclinedPlugin {
+  // The manifest's id when it had one; otherwise the URL.
   id: string;
   // The SDK the manifest declared, when that is the reason.
   sdkVersion?: string;
   reason: string;
+  // Where the manifest was asked for.
+  url: string;
+  // A URL this reader installed in an earlier session, kept until they
+  // remove it; the registry's own entries are not.
+  saved?: boolean;
 }
 
 export interface RegistryReport {
-  manifests: Manifest[];
+  installed: InstalledPlugin[];
   declined: DeclinedPlugin[];
+}
+
+// Why a manifest URL did not become a plugin, in one sentence for the person
+// who typed it, and as a `DeclinedPlugin` for the list Settings draws.
+export class ManifestUrlError extends Error {
+  constructor(readonly decline: DeclinedPlugin) {
+    super(decline.reason);
+    this.name = 'ManifestUrlError';
+  }
 }
 
 export async function fetchRegistry(
@@ -43,122 +53,115 @@ export async function fetchRegistry(
     throw new Error(`nothing answers ${base}/plugins as a registry`);
   }
   const raw: unknown = await res.json();
-  if (!Array.isArray(raw)) throw new Error('plugin registry did not return a list');
-  const manifests: Manifest[] = [];
-  const declined: DeclinedPlugin[] = [];
-  for (const item of raw) {
-    const parsed = ManifestSchema.safeParse(item);
-    if (parsed.success) {
-      manifests.push(parsed.data);
-      continue;
-    }
-    const decline = describeDecline(item, parsed.error.issues);
-    declined.push(decline);
-    if (decline.sdkVersion) {
-      console.warn(
-        `plugin registry: not loading ${decline.id}, built against SDK ${decline.sdkVersion}: ${decline.reason}`,
-      );
-    } else {
-      console.warn('plugin registry: skipping an invalid manifest', item, parsed.error.issues);
-    }
+  if (!Array.isArray(raw) || !raw.every((url) => typeof url === 'string')) {
+    throw new Error('plugin registry did not return a list of manifest URLs');
   }
-  return { manifests, declined };
+  const results = await Promise.all(
+    raw.map(async (url: string) => {
+      try {
+        return { plugin: await pluginFromManifestUrl(url, fetchImpl) };
+      } catch (err) {
+        const decline = declineOf(url, err);
+        console.warn(`plugin registry: not loading ${url}: ${decline.reason}`);
+        return { decline };
+      }
+    }),
+  );
+  return {
+    installed: results.flatMap((r) => (r.plugin ? [r.plugin] : [])),
+    declined: results.flatMap((r) => (r.decline ? [r.decline] : [])),
+  };
+}
+
+export function declineOf(url: string, err: unknown): DeclinedPlugin {
+  if (err instanceof ManifestUrlError) return err.decline;
+  return { id: url, url, reason: err instanceof Error ? err.message : String(err) };
 }
 
 // A manifest that is sound apart from the SDK it names is a plugin whose
 // author has to rebuild it, so that one gets a sentence naming the plugin,
 // the SDK it declared and the rule, in place of a pile of issues.
-export function describeDecline(item: unknown, issues: z.ZodError['issues']): DeclinedPlugin {
+export function describeDecline(
+  item: unknown,
+  issues: z.ZodError['issues'],
+  url: string,
+): DeclinedPlugin {
   const entry = item as { id?: unknown; sdkVersion?: unknown };
-  const id = typeof entry.id === 'string' ? entry.id : String(entry.id);
+  const id = typeof entry.id === 'string' ? entry.id : url;
   if (
     issues.length === 1 &&
     issues[0].path[0] === 'sdkVersion' &&
     typeof entry.sdkVersion === 'string'
   ) {
-    return { id, sdkVersion: entry.sdkVersion, reason: issues[0].message };
+    return { id, url, sdkVersion: entry.sdkVersion, reason: issues[0].message };
   }
   return {
     id,
+    url,
     reason: issues
       .map((i) => `${i.path.map(String).join('.') || 'manifest'}: ${i.message}`)
       .join('; '),
   };
 }
 
-// One plugin from the URL of its manifest, `<base>/<id>/manifest.json`, with
-// its bundle expected under `<base>/<id>/plugin/` the way a registry plugin's
-// is. Every failure is a sentence for the person who typed the URL. The entry
-// carries a version query so that installing the same URL again, after a
-// rebuild, is a new entry URL: the federation runtime re-registers it and the
-// browser does not answer from its module map.
-export async function fromManifestUrl(
+// One plugin from the URL of its manifest. The file is the federation
+// manifest with the plugin's fields on top, so the same URL is what the
+// federation runtime is given as the remote's entry: it reads the entry
+// file's name and type, the chunks of each module and the asset base from
+// it. Every failure is a sentence for the person who typed the URL.
+export async function pluginFromManifestUrl(
   url: string,
   fetchImpl: typeof fetch = fetch,
 ): Promise<InstalledPlugin> {
-  let parsedUrl: URL;
+  const fail = (reason: string) => new ManifestUrlError({ id: url, url, reason });
+  let absolute: string;
   try {
-    parsedUrl = new URL(url);
+    absolute = new URL(url, typeof location === 'undefined' ? undefined : location.href).href;
   } catch {
-    throw new Error(`${url} is not a URL`);
-  }
-  const segments = parsedUrl.pathname.split('/');
-  if (segments.length < 3 || segments.at(-1) !== 'manifest.json') {
-    throw new Error(
-      `the workbench expects a manifest at <base>/<id>/manifest.json; ${url} does not end that way`,
-    );
+    throw fail(`${url} is not a URL`);
   }
   let res: Response;
   try {
-    res = await fetchImpl(url);
+    // Revalidated on every install: the manifest names a hashed entry, and a
+    // rebuild changes the manifest at the same URL.
+    res = await fetchImpl(absolute, { cache: 'no-cache' });
   } catch {
     const origin = typeof location === 'undefined' ? 'the workbench' : location.origin;
-    throw new Error(
+    throw fail(
       `could not fetch ${url}; the server must allow cross-origin requests from ${origin}`,
     );
   }
-  if (!res.ok) throw new Error(`${url} answered ${res.status}`);
+  if (!res.ok) throw fail(`${url} answered ${res.status}`);
   let raw: unknown;
   try {
     raw = await res.json();
   } catch {
-    throw new Error(`${url} is not JSON`);
+    throw fail(`${url} is not JSON`);
   }
   const parsed = ManifestSchema.safeParse(raw);
   if (!parsed.success) {
-    throw new Error(`${url}: ${describeDecline(raw, parsed.error.issues).reason}`);
+    const decline = describeDecline(raw, parsed.error.issues, url);
+    throw new ManifestUrlError({ ...decline, reason: `${url}: ${decline.reason}` });
   }
-  const manifest = parsed.data;
-  if (segments.at(-2) !== manifest.id) {
-    throw new Error(
-      `the manifest at ${url} declares id ${manifest.id}; the workbench expects it at …/${manifest.id}/manifest.json`,
-    );
-  }
-  const base = parsedUrl.origin + segments.slice(0, -2).join('/');
-  return { ...remotePlugin(manifest, base, String(Date.now())), origin: { url } };
+  return remotePlugin(parsed.data, absolute);
 }
 
-// A registry manifest becomes an installed plugin whose modules arrive over
-// Module Federation, each on first use. Registered once per id, and
-// re-registered only if the entry URL changes: `registerRemotes` warns when
-// asked to override a remote it already has.
-const registered = new Map<string, string>();
+// The ids registered with the federation runtime in this session. A plugin
+// installed again — the same URL after a rebuild, or another — replaces what
+// the runtime holds: `removeRemote` drops its manifest and module caches, and
+// the entry file's hashed name means the browser's module map holds nothing
+// it could hand back.
+const registered = new Set<string>();
 
-export function remotePlugin(
-  manifest: Manifest,
-  base: string = SERVICES_BASE,
-  version?: string,
-): InstalledPlugin {
-  const entry = `${base}/${manifest.id}/plugin/remoteEntry.js${version ? `?v=${version}` : ''}`;
+export function remotePlugin(manifest: Manifest, manifestUrl: string): InstalledPlugin {
+  let done = false;
   const register = () => {
-    const already = registered.get(manifest.id);
-    if (already === entry) return;
-    // A Vite federation build is an ES module; without saying so the runtime
-    // would load the entry as a classic script.
-    registerRemotes([{ name: manifest.id, entry, type: 'module' }], {
-      force: already !== undefined,
+    if (done) return;
+    done = true;
+    registerRemotes([{ name: manifest.id, entry: manifestUrl }], {
+      force: registered.has(manifest.id),
     });
-    registered.set(manifest.id, entry);
+    registered.add(manifest.id);
   };
   const loader =
     <K extends Module>(kind: K) =>
@@ -180,28 +183,27 @@ export function remotePlugin(
 // stops a registry from replacing first-party code.
 export function mergeInstalled(
   local: InstalledPlugin[],
-  remote: Manifest[],
-  base?: string,
+  remote: InstalledPlugin[],
 ): InstalledPlugin[] {
   const ids = new Set(local.map((p) => p.manifest.id));
   const extra: InstalledPlugin[] = [];
-  for (const manifest of remote) {
-    if (ids.has(manifest.id)) continue;
-    ids.add(manifest.id);
-    extra.push(remotePlugin(manifest, base));
+  for (const plugin of remote) {
+    if (ids.has(plugin.manifest.id)) continue;
+    ids.add(plugin.manifest.id);
+    extra.push(plugin);
   }
   return [...local, ...extra];
 }
 
 // What main.tsx calls: the bundled list plus whatever the registry adds, and
-// what the registry listed that was not loaded. A registry that is down or
+// what the registry listed that was not installed. A registry that is down or
 // absent leaves the bundled plugins working.
 export async function loadInstalled(
   local: InstalledPlugin[],
 ): Promise<{ installed: InstalledPlugin[]; declined: DeclinedPlugin[] }> {
   try {
-    const { manifests, declined } = await fetchRegistry();
-    return { installed: mergeInstalled(local, manifests), declined };
+    const { installed, declined } = await fetchRegistry();
+    return { installed: mergeInstalled(local, installed), declined };
   } catch (err) {
     console.warn('plugin registry unavailable; using bundled plugins only', err);
     return { installed: local, declined: [] };

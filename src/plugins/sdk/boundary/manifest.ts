@@ -104,8 +104,13 @@ export const PluginConfigSchema = z.object({
 });
 export type PluginConfig = z.infer<typeof PluginConfigSchema>;
 
-// What the host reads: the config plus what the build knows.
-export const ManifestSchema = PluginConfigSchema.extend({
+// What the host reads: the config plus what the build knows. The file the
+// build writes is the federation manifest with these fields on top, so the
+// object is loose: the federation runtime's keys — `name`, `metaData`,
+// `exposes`, `shared`, `remotes` — pass through unread, and the runtime reads
+// the same file for itself from the same URL.
+export const ManifestSchema = z.looseObject({
+  ...PluginConfigSchema.shape,
   sdkVersion: z.string().refine((v) => acceptsSdkVersion(v), {
     message: `sdkVersion must be ${ACCEPTED_RANGE}; this workbench serves SDK ${SDK_VERSION}, and a plugin runs against the copy it serves`,
   }),

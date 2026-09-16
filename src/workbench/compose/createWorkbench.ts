@@ -20,7 +20,7 @@ import { createFrameLayer } from '../host/frames';
 import type { InstalledPlugin } from '../host/plugins/installed';
 import { createHostIndex } from '../host/plugins/installed';
 import type { DeclinedPlugin } from '../host/plugins/registry';
-import { fromManifestUrl } from '../host/plugins/registry';
+import { declineOf, pluginFromManifestUrl } from '../host/plugins/registry';
 import { openPane, openRoute } from '../host/open';
 import { pluginHostFor } from '../host/pluginHost';
 import { hostPlugins } from './hostPlugins';
@@ -153,9 +153,24 @@ export function createWorkbench({
     pluginTitle: (plugin) => source.manifest(plugin)?.title ?? plugin,
     panelTitle: (id) => titles.get(id) ?? fallbackTitle(services, store.get().panels[id], id),
   }).forEach((c) => registry.register(c));
+  // The manifest URLs this reader installed, written when one is installed
+  // or removed and at no other time: a URL whose server is down at startup
+  // is declined, listed under Not loaded, and kept for the next start.
+  const saved = new Set(loaded.plugins ?? []);
+  const installs = {
+    urls: () => [...saved],
+    add: (url: string) => {
+      saved.add(url);
+      save('plugins', [...saved]);
+    },
+    remove: (url: string) => {
+      if (!saved.delete(url)) return;
+      save('plugins', [...saved]);
+    },
+  };
   registry.register(openCommand(services));
-  registry.register(installCommand(services));
-  registry.register(uninstallCommand(services));
+  registry.register(installCommand(services, installs));
+  registry.register(uninstallCommand(services, installs));
   source.registerCommands(registry, (plugin) => pluginHostFor(services, plugin));
 
   store.subscribe(() => save('layout', store.get()));
@@ -164,16 +179,7 @@ export function createWorkbench({
   // separate for the same reason — resetting the layout keeps them.
   cart.subscribe(() => save('cart', cart.items()));
   settings.subscribe(() => save('settings', settings.get()));
-  // The index bumps on every module load as well; the list is written when
-  // it differs from the last one written.
-  let savedPlugins: string | undefined;
-  source.subscribe(() => {
-    const urls = source.manifests().flatMap((m) => source.origin(m.id)?.url ?? []);
-    const key = JSON.stringify(urls);
-    if (key === savedPlugins) return;
-    savedPlugins = key;
-    save('plugins', urls);
-  });
+  restoreInstalls(services, installs.urls());
   // Written now that a change reaches storage, so a block is offered once
   // rather than pinned again on every load.
   if (newlyOffered.length) settings.set({ offered: [...offered, ...newlyOffered] });
@@ -217,10 +223,37 @@ function openCommand(services: WorkbenchServices): Command {
   };
 }
 
-// `/install <url>`: a plugin from the URL of its manifest, installed now.
-// Rejects with a sentence naming what went wrong, which the form under the
-// docs page and under Settings shows beside the field.
-function installCommand(services: WorkbenchServices): Command {
+// The manifest URLs a reader has installed, and where they are written.
+interface Installs {
+  urls: () => string[];
+  add: (url: string) => void;
+  remove: (url: string) => void;
+}
+
+// A URL saved in an earlier session, installed again the way `/install`
+// installs one, without the announcement: nothing happened that the reader
+// did. One that fails is listed under Not loaded with the reason and stays
+// saved, so a server that was down at startup costs a reload, not the URL.
+function restoreInstalls(services: WorkbenchServices, urls: string[]): void {
+  const { source } = services;
+  for (const url of urls) {
+    pluginFromManifestUrl(url)
+      .then((plugin) => {
+        if (source.manifest(plugin.manifest.id))
+          throw new Error(`plugin ${plugin.manifest.id} is already installed`);
+        source.add({ ...plugin, origin: { url } });
+      })
+      .catch((err: unknown) => {
+        source.decline({ ...declineOf(url, err), saved: true });
+      });
+  }
+}
+
+// `/install <url>`: a plugin from the URL of its manifest, installed now and
+// at every start until `/uninstall`. Rejects with a sentence naming what
+// went wrong, which the form under the docs page and under Settings shows
+// beside the field.
+function installCommand(services: WorkbenchServices, installs: Installs): Command {
   const { source, announcer } = services;
   return {
     name: 'install',
@@ -229,19 +262,24 @@ function installCommand(services: WorkbenchServices): Command {
     source: 'workbench',
     args: [{ name: 'url', required: true, description: "the URL of the plugin's manifest.json" }],
     run: async ({ url }) => {
-      const plugin = await fromManifestUrl(String(url));
-      source.add(plugin);
+      const at = String(url);
+      const plugin = await pluginFromManifestUrl(at);
+      source.add({ ...plugin, origin: { url: at } });
+      source.undecline(at);
+      installs.add(at);
       announcer.announce(`${plugin.manifest.title} is installed`);
     },
   };
 }
 
-// `/uninstall <plugin>`: only a plugin installed by URL, because a bundled or
-// registry plugin would be back at the next start and the reader would have
-// been told nothing true. Its pane leaves the sidebar, its tabs close, and
-// then the index forgets it, so every panel's cleanup runs while the module
-// is still there.
-function uninstallCommand(services: WorkbenchServices): Command {
+// `/uninstall <plugin>`: a plugin installed from a URL, named by its id, or
+// a saved URL that did not install, named by the URL. Only those: a bundled
+// or registry plugin would be back at the next start and the reader would
+// have been told nothing true. The plugin's pane leaves the sidebar and its
+// tabs close before the index forgets it. The panels unmount when React
+// next commits, after this returns; each holds its own cleanup from `mount`
+// and needs nothing from the index by then.
+function uninstallCommand(services: WorkbenchServices, installs: Installs): Command {
   const { source, store, dispatch, preview, announcer } = services;
   const byUrl = () => source.manifests().filter((m) => source.origin(m.id) !== undefined);
   return {
@@ -253,19 +291,31 @@ function uninstallCommand(services: WorkbenchServices): Command {
         name: 'plugin',
         required: true,
         complete: (prefix) =>
-          byUrl()
-            .map((m) => m.id)
-            .filter((id) => id.startsWith(prefix)),
+          [
+            ...byUrl().map((m) => m.id),
+            ...source
+              .declined()
+              .filter((d) => d.saved)
+              .map((d) => d.url),
+          ].filter((name) => name.startsWith(prefix)),
       },
     ],
     run: ({ plugin }) => {
       const id = String(plugin);
       const manifest = source.manifest(id);
       if (!manifest) {
-        announcer.announce(`${id} is not installed`);
+        const saved = source.declined().find((d) => d.saved && (d.url === id || d.id === id));
+        if (!saved) {
+          announcer.announce(`${id} is not installed`);
+          return;
+        }
+        source.undecline(saved.url);
+        installs.remove(saved.url);
+        announcer.announce(`${saved.url} is forgotten`);
         return;
       }
-      if (!source.origin(id)) {
+      const origin = source.origin(id);
+      if (!origin) {
         announcer.announce(`${manifest.title} was not installed from a URL`);
         return;
       }
@@ -275,6 +325,7 @@ function uninstallCommand(services: WorkbenchServices): Command {
         if (panel.plugin === id) dispatch({ type: 'close', panel: panel.id });
       }
       source.remove(id);
+      installs.remove(origin.url);
       announcer.announce(`${manifest.title} is uninstalled`);
     },
   };

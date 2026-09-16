@@ -104,3 +104,30 @@ describe('removing a plugin from the index', () => {
     expect(source.version()).toBe(before);
   });
 });
+
+describe('the declined list', () => {
+  const url = 'http://plugins.test/manifest.json';
+  const down = { id: url, url, reason: 'could not fetch', saved: true };
+
+  it('takes an entry, replacing one with the same URL, and gives it back', () => {
+    const source = createHostIndex(
+      [],
+      [{ id: 'old', url: '/services/old/manifest.json', reason: 'x' }],
+    );
+    const listener = vi.fn();
+    source.subscribe(listener);
+
+    source.decline(down);
+    source.decline({ ...down, reason: 'still down' });
+    expect(source.declined().map((d) => [d.id, d.reason])).toEqual([
+      ['old', 'x'],
+      [url, 'still down'],
+    ]);
+
+    source.undecline(url);
+    expect(source.declined().map((d) => d.id)).toEqual(['old']);
+    expect(listener).toHaveBeenCalledTimes(3);
+    source.undecline(url);
+    expect(listener).toHaveBeenCalledTimes(3);
+  });
+});

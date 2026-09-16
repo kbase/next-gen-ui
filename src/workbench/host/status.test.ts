@@ -42,6 +42,21 @@ describe('the status store and an uninstalled plugin', () => {
     expect(status.all()).toEqual([]);
   });
 
+  it('ignores a push from the old subscription after the plugin is installed again', async () => {
+    const first = pushing('hello', 'first build');
+    const source = createHostIndex([first.plugin]);
+    const status = createStatusStore(source);
+    await vi.waitFor(() => expect(status.all()[0]?.items).toEqual([{ text: 'first build' }]));
+
+    source.remove('hello');
+    const second = pushing('hello', 'second build');
+    source.add(second.plugin);
+    await vi.waitFor(() => expect(status.all()[0]?.items).toEqual([{ text: 'second build' }]));
+
+    first.push([{ text: 'from the old build' }]);
+    expect(status.all()).toEqual([{ plugin: 'hello', items: [{ text: 'second build' }] }]);
+  });
+
   it('subscribes to a plugin added later', async () => {
     const source = createHostIndex([]);
     const status = createStatusStore(source);

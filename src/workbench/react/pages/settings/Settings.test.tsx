@@ -175,7 +175,12 @@ describe("the Settings page's Not loaded list", () => {
   it('names each declined plugin, the SDK it declared, and the rule', () => {
     mount({
       declined: [
-        { id: 'function-junction', sdkVersion: '0.1.0', reason: 'sdkVersion must be 0.3.x' },
+        {
+          id: 'function-junction',
+          url: '/services/function-junction/manifest.json',
+          sdkVersion: '0.1.0',
+          reason: 'sdkVersion must be 0.3.x',
+        },
       ],
     });
     const list = within(screen.getByRole('list', { name: 'Not loaded' }));
@@ -208,6 +213,21 @@ describe('a plugin installed from a URL', () => {
     await user.click(within(row).getByRole('button', { name: 'Remove Hello' }));
 
     expect(run).toHaveBeenCalledWith('workbench:uninstall', { plugin: 'hello' }, 'user');
+  });
+
+  it('is listed under Not loaded with Remove when it did not install', async () => {
+    const user = userEvent.setup();
+    const services = mount();
+    act(() =>
+      services.source.decline({ id: url, url, reason: `could not fetch ${url}`, saved: true }),
+    );
+    const run = vi.spyOn(services.registry, 'run').mockResolvedValue(undefined);
+
+    const list = within(screen.getByRole('list', { name: 'Not loaded' }));
+    expect(list.getByText(`could not fetch ${url}`)).toBeInTheDocument();
+    await user.click(list.getByRole('button', { name: `Remove ${url}` }));
+
+    expect(run).toHaveBeenCalledWith('workbench:uninstall', { plugin: url }, 'user');
   });
 
   it('has a form under Installed, and a bundled plugin has no Remove', () => {

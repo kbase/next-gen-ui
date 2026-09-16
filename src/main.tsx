@@ -48,24 +48,14 @@ installAuthExpiryWatcher(queryClient);
 // workbench exists, from localStorage today. An account service replaces
 // this call with one that fetches; `createWorkbench` does not change.
 const { installed, declined } = await loadInstalled(localPlugins);
-const persistence = await loadWorkbench(window.localStorage);
 const workbench = createWorkbench({
   installed,
   declined,
-  persistence,
+  persistence: await loadWorkbench(window.localStorage),
   defaultPinned: [...DEFAULT_PINNED],
   defaultAssistant: DEFAULT_ASSISTANT,
   defaultIntent: DEFAULT_INTENT,
 });
-
-// Plugins installed by URL in an earlier session, installed again the way
-// the form installs one. One whose server is gone is warned about and is not
-// in the list the next save writes.
-for (const url of persistence.loaded.plugins ?? []) {
-  workbench.registry.run('workbench:install', { url }).catch((err: unknown) => {
-    console.warn(`plugin at ${url}: not installed`, err);
-  });
-}
 
 const router = createRouter({
   routeTree,

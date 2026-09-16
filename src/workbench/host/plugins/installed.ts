@@ -55,8 +55,14 @@ export interface HostIndex {
   plugins: () => PluginInfo[];
   manifest: (id: PluginId) => Manifest | undefined;
   manifests: () => Manifest[];
-  // What the registry listed and the workbench did not load, with the reason.
+  // What was listed or asked for and the workbench did not install, with
+  // the reason: registry entries at startup, and a saved manifest URL whose
+  // install failed.
   declined: () => DeclinedPlugin[];
+  // Records one, replacing an entry with the same URL; bumps.
+  decline: (entry: DeclinedPlugin) => void;
+  // Drops the entries for a URL; bumps if there was one.
+  undecline: (url: string) => void;
   // Every manifest's commands, each with the plugin that declares it.
   declaredCommands: () => DeclaredCommand[];
   // Every call the manifests have already filled in: launchers, shortcut
@@ -94,9 +100,10 @@ export interface HostIndex {
 
 export function createHostIndex(
   initial: InstalledPlugin[],
-  declined: DeclinedPlugin[] = [],
+  initialDeclined: DeclinedPlugin[] = [],
 ): HostIndex {
   const installed = [...initial];
+  let declined = [...initialDeclined];
   const byId = new Map(installed.map((p) => [p.manifest.id, p]));
   const loaded = new Map<string, unknown>();
   const loading = new Map<string, Promise<unknown>>();
@@ -267,6 +274,16 @@ export function createHostIndex(
     manifest: (id) => byId.get(id)?.manifest,
     manifests: () => installed.map((p) => p.manifest),
     declined: () => declined,
+    decline(entry) {
+      declined = [...declined.filter((d) => d.url !== entry.url), entry];
+      bump();
+    },
+    undecline(url) {
+      const kept = declined.filter((d) => d.url !== url);
+      if (kept.length === declined.length) return;
+      declined = kept;
+      bump();
+    },
     declaredCommands,
     declaredCalls,
     has,

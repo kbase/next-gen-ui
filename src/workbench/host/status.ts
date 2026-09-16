@@ -24,6 +24,10 @@ export interface StatusStore {
 export function createStatusStore(source: HostIndex): StatusStore {
   const current = createKeyedStore<PluginId, StatusItem[]>();
   const stops = new Map<PluginId, Cleanup>();
+  // One token per subscription: a push from a subscription that has ended —
+  // the plugin uninstalled, or uninstalled and installed again — is not
+  // heard, however late it lands.
+  const tokens = new Map<PluginId, object>();
   // One epoch for the store's life: `stop` ends it, and a push after that —
   // a plugin whose cleanup missed a request in flight — is not heard.
   const epoch = createEpoch();
@@ -48,12 +52,14 @@ export function createStatusStore(source: HostIndex): StatusStore {
     for (const { plugin, background } of source.backgrounds()) {
       present.add(plugin);
       if (!background.status || stops.has(plugin)) continue;
+      const token = {};
+      tokens.set(plugin, token);
       stops.set(plugin, () => {});
       try {
         stops.set(
           plugin,
           background.status((pushed) => {
-            if (!live() || !stops.has(plugin)) return;
+            if (!live() || tokens.get(plugin) !== token) return;
             const items = accepted(
               `plugin ${plugin}`,
               'a status line it pushed',
@@ -71,6 +77,7 @@ export function createStatusStore(source: HostIndex): StatusStore {
     for (const [plugin, stop] of [...stops]) {
       if (present.has(plugin)) continue;
       stops.delete(plugin);
+      tokens.delete(plugin);
       end(plugin, stop);
       current.forget(plugin);
     }
@@ -89,6 +96,7 @@ export function createStatusStore(source: HostIndex): StatusStore {
       unwatch();
       for (const [plugin, stop] of stops) end(plugin, stop);
       stops.clear();
+      tokens.clear();
       current.clear();
     },
   };

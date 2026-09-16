@@ -117,11 +117,24 @@ export function SettingsDocument() {
             </h3>
             <ul className={styles.list} aria-labelledby="settings-declined">
               {declined.map((d) => (
-                <li key={d.id} className={styles.row}>
+                <li key={d.url} className={styles.row}>
                   <span className={styles.rowTitle}>
                     <span className="body">{d.id}</span>
                     {d.sdkVersion && <Chip color="neutral" label={`SDK ${d.sdkVersion}`} />}
+                    {d.saved && <Chip color="neutral" label="from URL" />}
                   </span>
+                  {d.saved && (
+                    <span className={styles.rowControls}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => run('workbench:uninstall', { plugin: d.url })}
+                        aria-label={`Remove ${d.id}`}
+                      >
+                        Remove
+                      </Button>
+                    </span>
+                  )}
                   <p className={`caption ${styles.rowDesc}`}>{d.reason}</p>
                 </li>
               ))}

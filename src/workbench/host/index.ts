@@ -9,9 +9,10 @@ export {
   fetchRegistry,
   loadInstalled,
   mergeInstalled,
+  pluginFromManifestUrl,
   remotePlugin,
+  ManifestUrlError,
   REGISTRY_BASE,
-  SERVICES_BASE,
 } from './plugins/registry';
 export type { DeclinedPlugin, RegistryReport } from './plugins/registry';
 export { createSettingsStore, SETTINGS_STORAGE_KEY } from './settings';

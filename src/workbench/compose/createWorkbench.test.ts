@@ -9,12 +9,12 @@ import { openRoute } from '../host/open';
 import { pluginHostFor } from '../host/pluginHost';
 import { localPlugin } from '../host/plugins/local';
 import type * as Registry from '../host/plugins/registry';
-import { fromManifestUrl } from '../host/plugins/registry';
+import { ManifestUrlError, pluginFromManifestUrl } from '../host/plugins/registry';
 import { noPersistence } from '../host/persistence';
 
 vi.mock('../host/plugins/registry', async (importOriginal) => ({
   ...(await importOriginal<typeof Registry>()),
-  fromManifestUrl: vi.fn(),
+  pluginFromManifestUrl: vi.fn(),
 }));
 
 // genKnown owns a command and adds items; KOROS owns neither and is handed one
@@ -269,12 +269,12 @@ describe('a default pin a saved layout has never been offered', () => {
   });
 });
 
-// The plugin at a URL is what `fromManifestUrl` answers; here that is a
-// bundled-shaped plugin with an origin, so nothing is fetched.
+// The plugin at a URL is what `pluginFromManifestUrl` answers; here that is
+// a bundled-shaped plugin, so nothing is fetched.
 describe('a plugin installed from a URL', () => {
-  const url = 'http://plugins.test/services/hello/manifest.json';
-  const hello = () => ({
-    ...localPlugin({
+  const url = 'http://plugins.test/manifest.json';
+  const hello = () =>
+    localPlugin({
       config: definePluginManifest({
         id: 'hello',
         title: 'Hello',
@@ -283,25 +283,23 @@ describe('a plugin installed from a URL', () => {
       commands: () => Promise.resolve({ hello: () => {} }),
       route: () => Promise.resolve({ mount: () => {}, normalize: (p: string) => p }),
       pane: () => Promise.resolve({ mount: () => {} }),
-    }),
-    origin: { url },
-  });
-  const build = (save = vi.fn()) =>
+    });
+  const build = (save = vi.fn(), plugins: string[] | null = null) =>
     createWorkbench({
       installed: localPlugins,
-      persistence: { loaded: { layout: null, cart: null, settings: null, plugins: null }, save },
+      persistence: { loaded: { layout: null, cart: null, settings: null, plugins }, save },
       defaultAssistant: 'koros',
       defaultIntent: 'intent',
     });
 
   it('is installed by /install, with its commands, and its URL is saved', async () => {
-    vi.mocked(fromManifestUrl).mockResolvedValue(hello());
+    vi.mocked(pluginFromManifestUrl).mockResolvedValue(hello());
     const save = vi.fn();
     const services = build(save);
 
     await services.registry.run('workbench:install', { url });
 
-    expect(fromManifestUrl).toHaveBeenCalledWith(url);
+    expect(pluginFromManifestUrl).toHaveBeenCalledWith(url);
     expect(services.source.manifest('hello')?.title).toBe('Hello');
     expect(services.source.origin('hello')).toEqual({ url });
     expect(services.registry.get('hello:hello')?.title).toBe('Say hello');
@@ -309,7 +307,7 @@ describe('a plugin installed from a URL', () => {
   });
 
   it('is not installed, and nothing is saved, when the URL cannot be loaded', async () => {
-    vi.mocked(fromManifestUrl).mockRejectedValue(new Error(`could not fetch ${url}`));
+    vi.mocked(pluginFromManifestUrl).mockRejectedValue(new Error(`could not fetch ${url}`));
     const save = vi.fn();
     const services = build(save);
 
@@ -318,11 +316,11 @@ describe('a plugin installed from a URL', () => {
     );
 
     expect(services.source.manifest('hello')).toBeUndefined();
-    expect(save).not.toHaveBeenCalledWith('plugins', expect.arrayContaining([url]));
+    expect(save).not.toHaveBeenCalledWith('plugins', expect.anything());
   });
 
   it('is uninstalled by /uninstall: unpinned, its tabs closed, forgotten, and unsaved', async () => {
-    vi.mocked(fromManifestUrl).mockResolvedValue(hello());
+    vi.mocked(pluginFromManifestUrl).mockResolvedValue(hello());
     const save = vi.fn();
     const services = build(save);
     await services.registry.run('workbench:install', { url });
@@ -351,5 +349,41 @@ describe('a plugin installed from a URL', () => {
 
     expect(services.source.manifest('koros')).toBeDefined();
     expect(announce).toHaveBeenCalledWith('KOROS was not installed from a URL');
+  });
+
+  it('is installed again at the next start, without an announcement', async () => {
+    vi.mocked(pluginFromManifestUrl).mockResolvedValue(hello());
+    const save = vi.fn();
+    const services = build(save, [url]);
+    const announce = vi.spyOn(services.announcer, 'announce');
+
+    await vi.waitFor(() => expect(services.source.manifest('hello')).toBeDefined());
+
+    expect(services.source.origin('hello')).toEqual({ url });
+    expect(announce).not.toHaveBeenCalled();
+    expect(save).not.toHaveBeenCalledWith('plugins', expect.anything());
+  });
+
+  it('is listed under Not loaded, and kept, when its server is down at the next start', async () => {
+    vi.mocked(pluginFromManifestUrl).mockRejectedValue(
+      new ManifestUrlError({ id: url, url, reason: `could not fetch ${url}` }),
+    );
+    const save = vi.fn();
+    const services = build(save, [url]);
+
+    await vi.waitFor(() => expect(services.source.declined()).toHaveLength(1));
+
+    expect(services.source.declined()[0]).toEqual({
+      id: url,
+      url,
+      reason: `could not fetch ${url}`,
+      saved: true,
+    });
+    expect(save).not.toHaveBeenCalledWith('plugins', expect.anything());
+
+    // Forgetting it is the one way it leaves the saved list.
+    await services.registry.run('workbench:uninstall', { plugin: url });
+    expect(services.source.declined()).toEqual([]);
+    expect(save).toHaveBeenLastCalledWith('plugins', []);
   });
 });

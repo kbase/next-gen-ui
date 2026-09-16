@@ -25,8 +25,8 @@ export function AddPluginForm() {
     setState({ kind: 'adding' });
     try {
       await registry.run('workbench:install', { url: value }, 'user');
-      const id = new URL(value).pathname.split('/').at(-2) ?? value;
-      setState({ kind: 'added', title: source.manifest(id)?.title ?? id });
+      const installed = source.manifests().find((m) => source.origin(m.id)?.url === value);
+      setState({ kind: 'added', title: installed?.title ?? value });
       setUrl('');
     } catch (err) {
       setState({ kind: 'error', message: err instanceof Error ? err.message : String(err) });
@@ -51,11 +51,8 @@ export function AddPluginForm() {
         </div>
         {state.kind === 'error' && <Field.Error match>{state.message}</Field.Error>}
       </Field.Root>
-      {state.kind === 'added' && (
-        <p className="caption" role="status">
-          {state.title} is installed.
-        </p>
-      )}
+      {/* Not a live region: the workbench's announcer already says it. */}
+      {state.kind === 'added' && <p className="caption">{state.title} is installed.</p>}
     </form>
   );
 }

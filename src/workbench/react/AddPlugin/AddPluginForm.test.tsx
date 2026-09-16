@@ -34,7 +34,7 @@ describe('the add-by-URL form', () => {
     await user.click(screen.getByRole('button', { name: 'Add' }));
 
     expect(run).toHaveBeenCalledWith('workbench:install', { url }, 'user');
-    expect(screen.getByRole('status')).toHaveTextContent('Hello is installed.');
+    expect(screen.getByText('Hello is installed.')).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: 'Manifest URL' })).toHaveValue('');
   });
 

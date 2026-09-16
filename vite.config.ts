@@ -26,7 +26,10 @@ function serviceProxies(spec: string | undefined) {
       const at = pair.indexOf('=');
       if (at < 1) throw new Error(`VITE_DEV_SERVICE_PROXY entry is not <prefix>=<origin>: ${pair}`);
       // `ws`: a plugin that iframes its own app (Solara, Jupyter) needs its websocket through too.
-      return [pair.slice(0, at), { target: pair.slice(at + 1), changeOrigin: false, ws: true }] as const;
+      return [
+        pair.slice(0, at),
+        { target: pair.slice(at + 1), changeOrigin: false, ws: true },
+      ] as const;
     });
   return Object.fromEntries(entries);
 }
@@ -45,35 +48,20 @@ export default defineConfig(({ mode }) => {
         ? []
         : [federation({ name: 'host', remotes: {}, shared: SHARED_SINGLETONS, dts: false })]),
       {
-        // The registry, in development: the manifests of the proxied
-        // services. Bundled plugins are not listed — the host has them
-        // already and would ignore a registry entry with the same id. The
-        // built image answers nothing here; a deployment fronts the path or
-        // does without.
+        // The registry, in development: one manifest URL per proxied service,
+        // `<prefix>/manifest.json`, which the service publishes and the
+        // workbench fetches. A service that is down is then declined with the
+        // reason rather than missing from the list. Bundled plugins are not
+        // listed — the host has them already and would ignore a registry
+        // entry with the same id. The built image answers nothing here; a
+        // deployment fronts the path or does without.
         name: 'local-plugin-registry',
         apply: 'serve' as const,
         configureServer(server) {
           server.middlewares.use('/plugin-registry/plugins', (_req, res) => {
             res.setHeader('Content-Type', 'application/json');
-            // A proxied service publishes its own manifest, so a plugin under
-            // development is registered by running its backend rather than by
-            // editing this repo. Asked for on each request: restarting the
-            // service is enough, no dev-server restart.
             const proxied = Object.keys(serviceProxies(env.VITE_DEV_SERVICE_PROXY));
-            Promise.all(
-              proxied.map(async (prefix) => {
-                try {
-                  const answer = await fetch(
-                    `http://127.0.0.1:${server.config.server.port}${prefix}/manifest.json`,
-                  );
-                  return answer.ok ? await answer.json() : undefined;
-                } catch {
-                  return undefined;
-                }
-              }),
-            ).then((manifests) => {
-              res.end(JSON.stringify(manifests.filter(Boolean)));
-            });
+            res.end(JSON.stringify(proxied.map((prefix) => `${prefix}/manifest.json`)));
           });
         },
       },

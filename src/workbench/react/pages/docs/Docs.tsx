@@ -1875,9 +1875,7 @@ interface CartSource {
             <p className={styles.para}>
               Hooks and components for a panel rendered with <Code>fromReact</Code>. The hooks throw{' '}
               <Code>usePanel() called outside a workbench panel</Code>, or the <Code>useHost</Code>{' '}
-              equivalent, when rendered outside the SDK's providers. The design system is shared
-              with the plugin at runtime; its components and text classes are shown at{' '}
-              <Code>/design-system</Code> in a running workbench.
+              equivalent, when rendered outside the SDK's providers.
             </p>
             <Sig>{`function fromReact(Component: ComponentType): { mount: Mount };
 

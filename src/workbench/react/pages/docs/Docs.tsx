@@ -111,8 +111,8 @@ export function DocsDocument() {
             <File name="" language="bash">{`npm create vite@latest hello -- --template react-ts
 cd hello
 rm -r src/* public
-npm i ${RELEASES}/sdk-v${SDK_VERSION}/kbase-plugin-sdk-${SDK_VERSION}.tgz
-npm i ${DS_TAG ? `${RELEASES}/${DS_TAG}/kbase-design-system-${DS_TAG.slice(4)}.tgz` : '<the design-system release tarball>'}
+npm i ${DS_TAG ? `${RELEASES}/${DS_TAG}/kbase-design-system-${DS_TAG.slice(4)}.tgz` : '<the design-system release tarball>'} \\
+  ${RELEASES}/sdk-v${SDK_VERSION}/kbase-plugin-sdk-${SDK_VERSION}.tgz
 npm i -D @module-federation/vite`}</File>
             <p className={styles.para}>
               Every release on the repository's Releases page carries its package as a tarball. The
@@ -128,10 +128,11 @@ npm i -D @module-federation/vite`}</File>
                   build of the workbench does not know which one it was built with.
                 </>
               )}{' '}
-              A tarball install copies the package into <Code>node_modules</Code> and installs its
-              peers. Vite requires an HTML entry, and the scaffold's <Code>index.html</Code> loads
-              the deleted <Code>src/main.tsx</Code>, so replace it with one that loads nothing. The
-              workbench never opens it.
+              The two are installed in one command: the SDK declares the design system as a peer,
+              and npm looks a peer up in its registry unless the same command supplies it. Vite
+              requires an HTML entry, and the scaffold's <Code>index.html</Code> loads the deleted{' '}
+              <Code>src/main.tsx</Code>, so replace it with one that loads nothing. The workbench
+              never opens it.
             </p>
             <File name="index.html" language="html">{`<!doctype html>
 <html>

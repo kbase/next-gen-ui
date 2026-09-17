@@ -44,6 +44,12 @@ describe('Try making an app', () => {
     expect(skill).toContain('## Plugin developer documentation');
     expect(skill).toContain('### Getting started');
     expect(skill).toContain('interface Manifest {');
+    // The install lines are assembled at render time from the SDK version and
+    // the design-system tag stamped in by vite.config.ts.
+    expect(skill).toContain(
+      `releases/download/sdk-v${SDK_VERSION}/kbase-plugin-sdk-${SDK_VERSION}.tgz`,
+    );
+    expect(skill).toMatch(/releases\/download\/ds-v(\d+\.\d+\.\d+)\/kbase-design-system-\1\.tgz/);
     expect(skill).not.toContain('Try making an app');
     expect(screen.getByRole('textbox', { name: 'Manifest URL' })).toBeInTheDocument();
   });

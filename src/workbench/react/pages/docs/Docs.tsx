@@ -97,20 +97,30 @@ export function DocsDocument() {
           <p className={styles.narrative}>
             This tutorial builds a plugin with one slash command and one page and connects it to a
             workbench dev server. Prerequisites: Node.js, npm, and a checkout of the workbench
-            repository in which <Code>npm run build:plugin-sdk</Code> has produced{' '}
-            <Code>dist-plugin-sdk/</Code>.
+            repository in which <Code>npm run build:plugin-sdk</Code> and{' '}
+            <Code>npm run build:design-system</Code> have produced <Code>dist-plugin-sdk/</Code> and{' '}
+            <Code>dist-design-system/</Code>.
           </p>
           <Step title="Create the project">
             <p className={styles.para}>Scaffold a Vite project and add the SDK:</p>
             <File name="" language="bash">{`npm create vite@latest hello -- --template react-ts
 cd hello
 rm -r src/* public
-npm i file:../next-gen-ui/dist-plugin-sdk
+npm i file:../next-gen-ui/dist-plugin-sdk file:../next-gen-ui/dist-design-system
 npm i -D @module-federation/vite`}</File>
             <p className={styles.para}>
-              <Code>index.html</Code> stays: Vite requires an HTML entry, and the workbench never
-              loads it.
+              The two paths are the <Code>dist-plugin-sdk/</Code> and{' '}
+              <Code>dist-design-system/</Code> directories of a workbench checkout at the version
+              this page names. The design system is what <Code>CartButton</Code> and the shared
+              components come from. Vite requires an HTML entry, and the scaffold's{' '}
+              <Code>index.html</Code> loads the deleted <Code>src/main.tsx</Code>, so replace it
+              with one that loads nothing. The workbench never opens it.
             </p>
+            <File name="index.html" language="html">{`<!doctype html>
+<html>
+  <head><meta charset="utf-8"><title>hello</title></head>
+  <body></body>
+</html>`}</File>
           </Step>
           <Step title="Add the manifest">
             <p className={styles.para}>
@@ -259,7 +269,7 @@ export default defineCommands({ hello: ({ who }, { host }) => host.openRoute(\`/
 └── dist/                // build output, served as it is
     ├── manifest.json    // the federation manifest plus plugin.config.ts, sdkVersion and modules
     ├── remoteEntry-<hash>.js   // Module Federation entry, named in the manifest
-    └── assets/          // one chunk per module, named in the manifest`}</File>
+    └── assets/          // one chunk per module and the federation runtime's, named in the manifest`}</File>
           <Explainer>
             <p className={styles.para}>
               <strong>Manifest fields.</strong> The most important fields, in{' '}
@@ -1848,7 +1858,9 @@ interface CartSource {
             <p className={styles.para}>
               Hooks and components for a panel rendered with <Code>fromReact</Code>. The hooks throw{' '}
               <Code>usePanel() called outside a workbench panel</Code>, or the <Code>useHost</Code>{' '}
-              equivalent, when rendered outside the SDK's providers.
+              equivalent, when rendered outside the SDK's providers. The design system is shared
+              with the plugin at runtime; its components and text classes are shown at{' '}
+              <Code>/design-system</Code> in a running workbench.
             </p>
             <Sig>{`function fromReact(Component: ComponentType): { mount: Mount };
 
@@ -2084,8 +2096,8 @@ interface FrameLayer {
               passed <Code>duplicate: true</Code>.
             </Symptom>
             <Symptom name="Invalid hook call, or a context that is always null">
-              The bundle includes its own copy of React or of the SDK. <Code>mf-manifest.json</Code>{' '}
-              in the build output lists the shared packages; a package missing there means{' '}
+              The bundle includes its own copy of React or of the SDK. The <Code>shared</Code> key
+              of <Code>manifest.json</Code> lists the shared packages; a package missing there means{' '}
               <Code>pluginFederation</Code> did not process that entry point.
             </Symptom>
             <Symptom name="usePanel() called outside a workbench panel">

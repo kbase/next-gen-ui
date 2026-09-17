@@ -2,7 +2,13 @@ import { describe, expect, it, vi } from 'vitest';
 import { SDK_VERSION } from '@kbase/plugin-sdk';
 import type { Manifest } from '@kbase/plugin-sdk';
 import { localPlugins } from '../../../plugins/local';
-import { fetchRegistry, mergeInstalled, pluginFromManifestUrl, remotePlugin } from './registry';
+import {
+  fetchRegistry,
+  loadInstalled,
+  mergeInstalled,
+  pluginFromManifestUrl,
+  remotePlugin,
+} from './registry';
 
 const loadRemote = vi.fn();
 const registerRemotes = vi.fn();
@@ -152,6 +158,61 @@ describe('fetchRegistry', () => {
   it('treats an HTML answer as no registry at all', async () => {
     const page = serving({ '/plugin-registry/plugins': () => new Response('<!doctype html>') });
     await expect(fetchRegistry('/plugin-registry', page)).rejects.toThrow(/nothing answers/);
+  });
+});
+
+describe('loadInstalled', () => {
+  it('installs the saved URLs beside the registry, and declines one whose server is down', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { installed, declined } = await loadInstalled(
+      localPlugins,
+      [url, 'http://plugins.test/down/manifest.json'],
+      serving({
+        '/plugin-registry/plugins': () => json(['/services/other/manifest.json']),
+        '/services/other/manifest.json': () => json({ ...remote, id: 'other' }),
+        [url]: () => json(remote),
+      }),
+    );
+    const ids = installed.map((p) => p.manifest.id);
+    expect(ids.slice(-2)).toEqual(['other', 'commons']);
+    expect(installed.find((p) => p.manifest.id === 'commons')?.origin).toEqual({ url });
+    expect(installed.find((p) => p.manifest.id === 'other')?.origin).toBeUndefined();
+    expect(declined).toEqual([
+      {
+        id: 'http://plugins.test/down/manifest.json',
+        url: 'http://plugins.test/down/manifest.json',
+        reason: expect.stringContaining('could not fetch'),
+        saved: true,
+      },
+    ]);
+  });
+
+  it('declines a saved URL whose id a registry plugin already holds', async () => {
+    const { installed, declined } = await loadInstalled(
+      localPlugins,
+      [url],
+      serving({
+        '/plugin-registry/plugins': () => json(['/services/commons/manifest.json']),
+        '/services/commons/manifest.json': () => json(remote),
+        [url]: () => json(remote),
+      }),
+    );
+    expect(installed.filter((p) => p.manifest.id === 'commons')).toHaveLength(1);
+    expect(installed.find((p) => p.manifest.id === 'commons')?.origin).toBeUndefined();
+    expect(declined).toEqual([
+      { id: 'commons', url, reason: 'plugin commons is already installed', saved: true },
+    ]);
+  });
+
+  it('still installs the saved URLs when the registry is down', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { installed, declined } = await loadInstalled(
+      localPlugins,
+      [url],
+      serving({ [url]: () => json(remote) }),
+    );
+    expect(installed.at(-1)?.manifest.id).toBe('commons');
+    expect(declined).toEqual([]);
   });
 });
 

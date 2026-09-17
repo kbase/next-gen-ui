@@ -9,7 +9,7 @@ import { openRoute } from '../host/open';
 import { pluginHostFor } from '../host/pluginHost';
 import { localPlugin } from '../host/plugins/local';
 import type * as Registry from '../host/plugins/registry';
-import { ManifestUrlError, pluginFromManifestUrl } from '../host/plugins/registry';
+import { pluginFromManifestUrl } from '../host/plugins/registry';
 import { noPersistence } from '../host/persistence';
 
 vi.mock('../host/plugins/registry', async (importOriginal) => ({
@@ -351,38 +351,19 @@ describe('a plugin installed from a URL', () => {
     expect(announce).toHaveBeenCalledWith('KOROS was not installed from a URL');
   });
 
-  it('is installed again at the next start, without an announcement', async () => {
-    vi.mocked(pluginFromManifestUrl).mockResolvedValue(hello());
+  it('is forgotten by /uninstall when its server was down at startup', async () => {
     const save = vi.fn();
-    const services = build(save, [url]);
-    const announce = vi.spyOn(services.announcer, 'announce');
-
-    await vi.waitFor(() => expect(services.source.manifest('hello')).toBeDefined());
-
-    expect(services.source.origin('hello')).toEqual({ url });
-    expect(announce).not.toHaveBeenCalled();
-    expect(save).not.toHaveBeenCalledWith('plugins', expect.anything());
-  });
-
-  it('is listed under Not loaded, and kept, when its server is down at the next start', async () => {
-    vi.mocked(pluginFromManifestUrl).mockRejectedValue(
-      new ManifestUrlError({ id: url, url, reason: `could not fetch ${url}` }),
-    );
-    const save = vi.fn();
-    const services = build(save, [url]);
-
-    await vi.waitFor(() => expect(services.source.declined()).toHaveLength(1));
-
-    expect(services.source.declined()[0]).toEqual({
-      id: url,
-      url,
-      reason: `could not fetch ${url}`,
-      saved: true,
+    const services = createWorkbench({
+      installed: localPlugins,
+      declined: [{ id: url, url, reason: `could not fetch ${url}`, saved: true }],
+      persistence: { loaded: { layout: null, cart: null, settings: null, plugins: [url] }, save },
+      defaultAssistant: 'koros',
+      defaultIntent: 'intent',
     });
-    expect(save).not.toHaveBeenCalledWith('plugins', expect.anything());
+    expect(services.source.declined()[0]).toMatchObject({ url, saved: true });
 
-    // Forgetting it is the one way it leaves the saved list.
     await services.registry.run('workbench:uninstall', { plugin: url });
+
     expect(services.source.declined()).toEqual([]);
     expect(save).toHaveBeenLastCalledWith('plugins', []);
   });

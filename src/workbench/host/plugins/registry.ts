@@ -195,17 +195,49 @@ export function mergeInstalled(
   return [...local, ...extra];
 }
 
-// What main.tsx calls: the bundled list plus whatever the registry adds, and
-// what the registry listed that was not installed. A registry that is down or
-// absent leaves the bundled plugins working.
+// What main.tsx calls: the bundled list, whatever the registry adds, and the
+// manifest URLs the reader installed in earlier sessions, all fetched before
+// the workbench is built so that a deep link into any of them resolves on
+// the first load. What was listed or saved and not installed is declined
+// with the reason; a saved URL stays saved, marked so Settings offers to
+// forget it. A registry that is down or absent leaves the rest working.
 export async function loadInstalled(
   local: InstalledPlugin[],
+  saved: readonly string[] = [],
+  fetchImpl: typeof fetch = fetch,
 ): Promise<{ installed: InstalledPlugin[]; declined: DeclinedPlugin[] }> {
+  let installed = local;
+  let declined: DeclinedPlugin[] = [];
   try {
-    const { installed, declined } = await fetchRegistry();
-    return { installed: mergeInstalled(local, installed), declined };
+    const registry = await fetchRegistry(REGISTRY_BASE, fetchImpl);
+    installed = mergeInstalled(local, registry.installed);
+    declined = registry.declined;
   } catch (err) {
     console.warn('plugin registry unavailable; using bundled plugins only', err);
-    return { installed: local, declined: [] };
   }
+  const results = await Promise.all(
+    saved.map(async (url) => {
+      try {
+        const plugin = await pluginFromManifestUrl(url, fetchImpl);
+        return { url, plugin: { ...plugin, origin: { url } } };
+      } catch (err) {
+        return { url, decline: { ...declineOf(url, err), saved: true } };
+      }
+    }),
+  );
+  const ids = new Set(installed.map((p) => p.manifest.id));
+  for (const { url, plugin, decline } of results) {
+    if (decline) {
+      declined.push(decline);
+      continue;
+    }
+    const id = plugin.manifest.id;
+    if (ids.has(id)) {
+      declined.push({ id, url, reason: `plugin ${id} is already installed`, saved: true });
+      continue;
+    }
+    ids.add(id);
+    installed = [...installed, plugin];
+  }
+  return { installed, declined };
 }

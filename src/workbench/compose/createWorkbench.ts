@@ -20,7 +20,7 @@ import { createFrameLayer } from '../host/frames';
 import type { InstalledPlugin } from '../host/plugins/installed';
 import { createHostIndex } from '../host/plugins/installed';
 import type { DeclinedPlugin } from '../host/plugins/registry';
-import { declineOf, pluginFromManifestUrl } from '../host/plugins/registry';
+import { pluginFromManifestUrl } from '../host/plugins/registry';
 import { openPane, openRoute } from '../host/open';
 import { pluginHostFor } from '../host/pluginHost';
 import { hostPlugins } from './hostPlugins';
@@ -154,8 +154,9 @@ export function createWorkbench({
     panelTitle: (id) => titles.get(id) ?? fallbackTitle(services, store.get().panels[id], id),
   }).forEach((c) => registry.register(c));
   // The manifest URLs this reader installed, written when one is installed
-  // or removed and at no other time: a URL whose server is down at startup
-  // is declined, listed under Not loaded, and kept for the next start.
+  // or removed and at no other time. `loadInstalled` fetched them before this
+  // was built; one whose server was down is in `declined`, marked `saved`,
+  // and stays in the list until the reader removes it.
   const saved = new Set(loaded.plugins ?? []);
   const installs = {
     urls: () => [...saved],
@@ -179,7 +180,6 @@ export function createWorkbench({
   // separate for the same reason — resetting the layout keeps them.
   cart.subscribe(() => save('cart', cart.items()));
   settings.subscribe(() => save('settings', settings.get()));
-  restoreInstalls(services, installs.urls());
   // Written now that a change reaches storage, so a block is offered once
   // rather than pinned again on every load.
   if (newlyOffered.length) settings.set({ offered: [...offered, ...newlyOffered] });
@@ -228,25 +228,6 @@ interface Installs {
   urls: () => string[];
   add: (url: string) => void;
   remove: (url: string) => void;
-}
-
-// A URL saved in an earlier session, installed again the way `/install`
-// installs one, without the announcement: nothing happened that the reader
-// did. One that fails is listed under Not loaded with the reason and stays
-// saved, so a server that was down at startup costs a reload, not the URL.
-function restoreInstalls(services: WorkbenchServices, urls: string[]): void {
-  const { source } = services;
-  for (const url of urls) {
-    pluginFromManifestUrl(url)
-      .then((plugin) => {
-        if (source.manifest(plugin.manifest.id))
-          throw new Error(`plugin ${plugin.manifest.id} is already installed`);
-        source.add({ ...plugin, origin: { url } });
-      })
-      .catch((err: unknown) => {
-        source.decline({ ...declineOf(url, err), saved: true });
-      });
-  }
 }
 
 // `/install <url>`: a plugin from the URL of its manifest, installed now and

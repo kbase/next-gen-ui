@@ -47,11 +47,12 @@ installAuthExpiryWatcher(queryClient);
 // The last session's layout, cart and settings are loaded before the
 // workbench exists, from localStorage today. An account service replaces
 // this call with one that fetches; `createWorkbench` does not change.
-const { installed, declined } = await loadInstalled(localPlugins);
+const persistence = await loadWorkbench(window.localStorage);
+const { installed, declined } = await loadInstalled(localPlugins, persistence.loaded.plugins ?? []);
 const workbench = createWorkbench({
   installed,
   declined,
-  persistence: await loadWorkbench(window.localStorage),
+  persistence,
   defaultPinned: [...DEFAULT_PINNED],
   defaultAssistant: DEFAULT_ASSISTANT,
   defaultIntent: DEFAULT_INTENT,

@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -34,12 +35,30 @@ function serviceProxies(spec: string | undefined) {
   return Object.fromEntries(entries);
 }
 
+// The design-system release this checkout descends from, `ds-vX.Y.Z`: the
+// plugin developer documentation tells a plugin author to install the
+// design system built for that release, because the copy a plugin runs
+// against at runtime is this workbench's. The design system has no version
+// in source (its release tag is the number), so the tag is read from git at
+// build time. A checkout without git history gets '' and the page says so.
+function designSystemTag(): string {
+  try {
+    return execFileSync('git', ['describe', '--tags', '--match', 'ds-v*', '--abbrev=0'], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+  } catch {
+    return '';
+  }
+}
+
 export default defineConfig(({ mode }) => {
   // .env files are loaded into import.meta.env for the client by
   // default; loadEnv brings them into the config too so allowedHosts
   // honors VITE_DEV_ALLOWED_HOSTS from .env.development.local.
   const env = loadEnv(mode, process.cwd(), '');
   return {
+    define: { __DS_TAG__: JSON.stringify(designSystemTag()) },
     plugins: [
       // Module Federation host. Remotes are registered at runtime from the
       // registry, so none are declared here; the shared list is the SDK's.

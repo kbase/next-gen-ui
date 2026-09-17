@@ -40,16 +40,19 @@ second copy of the SDK gives it its own `PanelContext`, which the host's provide
 ## Depending on it
 
 `npm run build:plugin-sdk` writes `dist-plugin-sdk/` — the four entries as JavaScript, their type
-declarations, the JSON Schemas, and a generated `package.json`. A plugin in another checkout points
-at that directory:
+declarations, the JSON Schemas, and a generated `package.json`. An `sdk-vX.Y.Z` release runs that
+build and attaches the packed result to the release (`.github/workflows/plugin-sdk.yml`), and a
+plugin installs it from there, beside the design system's own release build:
 
-```json
-"@kbase/plugin-sdk": "file:../../next-gen-ui/dist-plugin-sdk"
+```
+npm i https://github.com/kbase/next-gen-ui/releases/download/sdk-v0.5.0/kbase-plugin-sdk-0.5.0.tgz
+npm i https://github.com/kbase/next-gen-ui/releases/download/ds-v0.9.4/kbase-design-system-0.9.4.tgz
 ```
 
-Built rather than consumed as source because a plugin lives in a different repository: it needs
-something npm can resolve, carrying the entry points, the type declarations and the peer
-dependencies that a source directory does not have.
+A tarball install copies the package into `node_modules` and installs its peers, so the type
+declarations resolve as they would for any published package. Built rather than consumed as source
+because a plugin lives in a different repository: it needs something npm can resolve, carrying the
+entry points, the type declarations and the peer dependencies that a source directory does not have.
 
 ## Pinning the boundary from another language
 

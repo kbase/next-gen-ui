@@ -5,6 +5,11 @@ import { SDK_VERSION, usePanelTitle } from '@kbase/plugin-sdk';
 import { TryIt } from './TryIt';
 import styles from './Docs.module.css';
 
+// Where a release's built package is attached, and the design-system release
+// this workbench descends from, stamped at build time (vite.config.ts).
+const RELEASES = 'https://github.com/kbase/next-gen-ui/releases/download';
+const DS_TAG = __DS_TAG__;
+
 // The plugin contract as it is meant to be: the page is the specification and
 // the implementation is measured against it (Docs.contract.test.ts).
 //
@@ -96,25 +101,37 @@ export function DocsDocument() {
         <Part id="start" title="Getting started">
           <p className={styles.narrative}>
             This tutorial builds a plugin with one slash command and one page and connects it to a
-            workbench dev server. Prerequisites: Node.js, npm, and a checkout of the workbench
-            repository in which <Code>npm run build:plugin-sdk</Code> and{' '}
-            <Code>npm run build:design-system</Code> have produced <Code>dist-plugin-sdk/</Code> and{' '}
-            <Code>dist-design-system/</Code>.
+            workbench dev server. Prerequisites: Node.js and npm.
           </p>
           <Step title="Create the project">
-            <p className={styles.para}>Scaffold a Vite project and add the SDK:</p>
+            <p className={styles.para}>
+              Scaffold a Vite project and add the SDK and the design system, each as the package its
+              release built:
+            </p>
             <File name="" language="bash">{`npm create vite@latest hello -- --template react-ts
 cd hello
 rm -r src/* public
-npm i file:../next-gen-ui/dist-plugin-sdk file:../next-gen-ui/dist-design-system
+npm i ${RELEASES}/sdk-v${SDK_VERSION}/kbase-plugin-sdk-${SDK_VERSION}.tgz
+npm i ${DS_TAG ? `${RELEASES}/${DS_TAG}/kbase-design-system-${DS_TAG.slice(4)}.tgz` : '<the design-system release tarball>'}
 npm i -D @module-federation/vite`}</File>
             <p className={styles.para}>
-              The two paths are the <Code>dist-plugin-sdk/</Code> and{' '}
-              <Code>dist-design-system/</Code> directories of a workbench checkout at the version
-              this page names. The design system is what <Code>CartButton</Code> and the shared
-              components come from. Vite requires an HTML entry, and the scaffold's{' '}
-              <Code>index.html</Code> loads the deleted <Code>src/main.tsx</Code>, so replace it
-              with one that loads nothing. The workbench never opens it.
+              Every release on the repository's Releases page carries its package as a tarball. The
+              SDK release is the version this page names.{' '}
+              {DS_TAG ? (
+                <>
+                  The design system release, <Code>{DS_TAG}</Code>, is the one this workbench was
+                  built with, and its copy is what a plugin runs against.
+                </>
+              ) : (
+                <>
+                  The design system release is the newest <Code>ds-v</Code> release listed; this
+                  build of the workbench does not know which one it was built with.
+                </>
+              )}{' '}
+              A tarball install copies the package into <Code>node_modules</Code> and installs its
+              peers. Vite requires an HTML entry, and the scaffold's <Code>index.html</Code> loads
+              the deleted <Code>src/main.tsx</Code>, so replace it with one that loads nothing. The
+              workbench never opens it.
             </p>
             <File name="index.html" language="html">{`<!doctype html>
 <html>

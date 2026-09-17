@@ -33,7 +33,7 @@ export function skillMarkdown(article: Element, { origin, sdkVersion }: SkillFac
     '',
     '## Environment',
     '',
-    `- SDK: \`@kbase/plugin-sdk\` ${sdkVersion}, built from a checkout of the workbench repository at that version by \`npm run build:plugin-sdk\` into \`dist-plugin-sdk/\`, which "Create the project" depends on. A plugin built against another version is refused, with the reason shown in the workbench's Settings.`,
+    `- SDK: \`@kbase/plugin-sdk\` ${sdkVersion}, installed as the release build "Create the project" names, beside the design system's. A plugin built against another SDK version is refused, with the reason shown in the workbench's Settings.`,
     '- The workbench that installs by URL is a development or demo build without a Content-Security-Policy. A production deployment lists plugins in a registry, as "Deployment" describes.',
     '',
     articleToMarkdown(article, 1),

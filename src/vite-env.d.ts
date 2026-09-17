@@ -10,3 +10,7 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+// The nearest `ds-v` tag at build time, or '' without git history
+// (vite.config.ts `define`).
+declare const __DS_TAG__: string;

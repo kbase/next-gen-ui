@@ -29,6 +29,7 @@ IDP_ORIGINS="${IDP_ORIGINS:-https://orcid.org}"
 # deployment rather than an error.
 AUTH_ORIGIN_META="${AUTH_ORIGIN:-__AUTH_ORIGIN__}"
 COOKIE_DOMAIN_VALUE="${COOKIE_DOMAIN:-__COOKIE_DOMAIN__}"
+AUTH_ENVIRONMENT_VALUE="${AUTH_ENVIRONMENT:-__AUTH_ENVIRONMENT__}"
 
 # A literal __AUTH_ORIGIN__ is not a valid CSP source expression, so with no
 # auth service the directive collapses to 'self'. The templates write
@@ -53,6 +54,7 @@ render() {
   sed -e "s#__AUTH_ORIGIN__#$(esc "$1")#g" \
       -e "s#__IDP_ORIGINS__#$(esc "$IDP_ORIGINS")#g" \
       -e "s#__COOKIE_DOMAIN__#$(esc "$COOKIE_DOMAIN_VALUE")#g" \
+      -e "s#__AUTH_ENVIRONMENT__#$(esc "$AUTH_ENVIRONMENT_VALUE")#g" \
       -e "s#__SCRIPT_HASH__#$(esc "$SCRIPT_HASH")#g" \
       "$2" > "$3"
 }
@@ -61,12 +63,12 @@ render "$AUTH_ORIGIN_CSP" "$CONF_IN" "$CONF_OUT"
 render "$AUTH_ORIGIN_META" "$HTML_IN" "$HTML_OUT"
 
 # The nginx conf must be fully substituted -- a stray __VAR__ in a CSP is a
-# broken policy. index.html may keep the two "not configured" markers above,
+# broken policy. index.html may keep the three "not configured" markers above,
 # which the app reads deliberately; anything else there is a placeholder
 # someone added to a template without wiring it up here.
 conf_leftover="$(grep -oh '__[A-Z_]*__' "$CONF_OUT" || true)"
 html_leftover="$(grep -oh '__[A-Z_]*__' "$HTML_OUT" \
-  | grep -vE '^(__AUTH_ORIGIN__|__COOKIE_DOMAIN__)$' || true)"
+  | grep -vE '^(__AUTH_ORIGIN__|__COOKIE_DOMAIN__|__AUTH_ENVIRONMENT__)$' || true)"
 leftover="$(printf '%s\n%s' "$conf_leftover" "$html_leftover" | grep -v '^$' || true)"
 if [ -n "$leftover" ]; then
   echo "05-render-config: unsubstituted placeholders remain:" >&2
@@ -78,5 +80,6 @@ if [ -z "${AUTH_ORIGIN:-}" ]; then
   echo "05-render-config: no AUTH_ORIGIN -- serving with no auth service." \
        "Public routes work; sign-in reports itself unavailable."
 else
-  echo "05-render-config: AUTH_ORIGIN=${AUTH_ORIGIN} IDP_ORIGINS=${IDP_ORIGINS}"
+  echo "05-render-config: AUTH_ORIGIN=${AUTH_ORIGIN} IDP_ORIGINS=${IDP_ORIGINS}" \
+       "AUTH_ENVIRONMENT=${AUTH_ENVIRONMENT:-<default>}"
 fi

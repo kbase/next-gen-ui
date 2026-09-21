@@ -51,3 +51,27 @@ export function parseSafeRedirect(input: string | undefined | null): SafeRedirec
     hash: url.hash || undefined,
   };
 }
+
+// Reads `nextRequest` out of the `state` JSON in a posted redirecturl.
+export function nextRequestFromRedirectUrl(
+  redirecturl: string | null | undefined,
+): string | undefined {
+  if (!redirecturl) return undefined;
+  let state: string | null;
+  try {
+    state = new URL(redirecturl).searchParams.get('state');
+  } catch {
+    return undefined;
+  }
+  if (!state) return undefined;
+  try {
+    const parsed: unknown = JSON.parse(state);
+    if (parsed && typeof parsed === 'object' && 'nextRequest' in parsed) {
+      const next = (parsed as { nextRequest: unknown }).nextRequest;
+      return typeof next === 'string' ? next : undefined;
+    }
+  } catch {
+    /* not JSON */
+  }
+  return undefined;
+}

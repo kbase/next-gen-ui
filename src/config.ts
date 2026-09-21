@@ -14,6 +14,9 @@ const ConfigSchema = z.object({
   // undefined -> derive from the current host; '' -> omit the Domain
   // attribute entirely. See api/auth/cookie.ts.
   cookieDomain: z.string().optional(),
+  // Auth-service environment name, posted with the login form. undefined
+  // -> the auth service's default environment, and no field is sent.
+  authEnvironment: z.string().optional(),
 });
 
 export type AppConfig = z.infer<typeof ConfigSchema>;
@@ -46,6 +49,7 @@ function resolveAuthOrigin(): string | null {
 export const config: AppConfig = ConfigSchema.parse({
   authOrigin: resolveAuthOrigin(),
   cookieDomain: readMeta('cookie-domain') ?? import.meta.env.VITE_COOKIE_DOMAIN,
+  authEnvironment: readMeta('auth-environment') ?? import.meta.env.VITE_AUTH_ENVIRONMENT,
 });
 
 /** False when this deployment has no auth service. */

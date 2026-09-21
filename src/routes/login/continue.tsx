@@ -9,16 +9,17 @@ import {
   authErrorMessage,
   AUTH_ENABLED,
   getLoginChoice,
+  nextRequestFromRedirectUrl,
   parseSafeRedirect,
   postLoginPick,
   primeAuthCache,
 } from '../../api/auth';
 
-// `state` is the OAuth state parameter; the auth service round-trips it
-// through ORCID and back to /login/continue. We pack the post-login
-// destination into it as JSON because (a) the state param has explicit
-// preservation semantics where arbitrary other query params may not,
-// and (b) it's what kbase-ui does (utils.ts:28-35, LogInContinue.tsx:26-39).
+// The auth service stores the posted redirecturl in a cookie and echoes it
+// in the pick response. The browser arrives here on the environment's
+// configured landing URL, which carries no `state`, so the destination is
+// read from the echo, and from this URL only when one is present. kbase-ui
+// does the same (LogInContinue.tsx:22-39).
 const SearchSchema = z.object({
   state: z.string().max(2048).optional(),
 });
@@ -55,7 +56,6 @@ export const Route = createFileRoute('/login/continue')({
   loaderDeps: ({ search }) => ({ stateRaw: search.state }),
   loader: async ({ context, deps }): Promise<LoaderResult> => {
     const { nextRequest } = parseState(deps.stateRaw);
-    const target = parseSafeRedirect(nextRequest);
 
     // Nothing can have issued this callback with no auth service, so this
     // is a stale bookmark. Without the guard the request goes to a relative
@@ -80,6 +80,9 @@ export const Route = createFileRoute('/login/continue')({
 
       if (logins.length === 1) {
         const result = await postLoginPick({ id: logins[0].id, policyids: [] });
+        const target = parseSafeRedirect(
+          nextRequestFromRedirectUrl(result.redirecturl) ?? nextRequest,
+        );
         if (!result.token.expires) {
           console.warn(
             'Auth service returned LoginPickResult without `expires`; using 14-day fallback',
@@ -172,7 +175,6 @@ function LoginChooser({ entries, nextRequest }: { entries: PickEntry[]; nextRequ
   const navigate = useNavigate();
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const target = parseSafeRedirect(nextRequest);
 
   async function pick(id: string) {
     setPendingId(id);
@@ -181,6 +183,9 @@ function LoginChooser({ entries, nextRequest }: { entries: PickEntry[]; nextRequ
       const result = await postLoginPick({ id, policyids: [] });
       const expiresAt = result.token.expires ? new Date(result.token.expires) : fallbackExpiresAt();
       await primeAuthCache(qc, { token: result.token.token, expiresAt });
+      const target = parseSafeRedirect(
+        nextRequestFromRedirectUrl(result.redirecturl) ?? nextRequest,
+      );
       await navigate({
         to: target.pathname,
         search: target.search,

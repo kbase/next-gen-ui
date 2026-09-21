@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseSafeRedirect, safeRedirect } from './redirect';
+import { nextRequestFromRedirectUrl, parseSafeRedirect, safeRedirect } from './redirect';
 
 const SAME_ORIGIN = globalThis.location.origin;
 
@@ -87,5 +87,26 @@ describe('parseSafeRedirect', () => {
     expect(parseSafeRedirect('javascript:alert(1)')).toEqual({ pathname: '/' });
     expect(parseSafeRedirect(undefined)).toEqual({ pathname: '/' });
     expect(parseSafeRedirect(null)).toEqual({ pathname: '/' });
+  });
+});
+
+describe('nextRequestFromRedirectUrl', () => {
+  it('reads nextRequest from the state blob of an echoed redirecturl', () => {
+    const url = `${SAME_ORIGIN}/login/continue?state=${encodeURIComponent(
+      JSON.stringify({ nextRequest: '/account?tab=sessions' }),
+    )}`;
+    expect(nextRequestFromRedirectUrl(url)).toBe('/account?tab=sessions');
+  });
+
+  it.each([
+    ['null', null],
+    ['undefined', undefined],
+    ['no state param', `${SAME_ORIGIN}/login/continue`],
+    ['state not JSON', `${SAME_ORIGIN}/login/continue?state=nope`],
+    ['state without nextRequest', `${SAME_ORIGIN}/login/continue?state=%7B%7D`],
+    ['nextRequest not a string', `${SAME_ORIGIN}/login/continue?state=%7B%22nextRequest%22%3A1%7D`],
+    ['not a URL', 'login/continue?state=%7B%7D'],
+  ])('returns undefined for %s', (_label, input) => {
+    expect(nextRequestFromRedirectUrl(input)).toBeUndefined();
   });
 });

@@ -34,6 +34,8 @@ export const AUTH_ORIGIN: string = config.authOrigin ?? '';
  */
 export const AUTH_ENABLED = authEnabled;
 
+export const AUTH_ENVIRONMENT: string | undefined = config.authEnvironment;
+
 if (import.meta.env.DEV && import.meta.env.VITE_AUTH_ORIGIN === undefined) {
   console.warn(
     '[auth] VITE_AUTH_ORIGIN is unset; falling back to https://kbase.us. ' +

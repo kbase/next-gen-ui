@@ -133,6 +133,7 @@ them.
 | ------------------------ | ------------------ | --------------------------------------------------------------------------------------- |
 | `VITE_AUTH_ORIGIN`       | `https://kbase.us` | Auth service origin. Empty means relative paths through the dev proxy.                  |
 | `VITE_COOKIE_DOMAIN`     | unset              | Optional. `.kbase.us` for prod-like deploys; leave unset locally.                       |
+| `VITE_AUTH_ENVIRONMENT`  | unset              | Optional. Auth-service environment name posted with the login form.                     |
 | `VITE_DEV_ALLOWED_HOSTS` | unset              | Comma-separated; leading dot is Vite's subdomain wildcard. For non-localhost dev hosts. |
 
 **Runtime**, read by the container's entrypoint and rendered into
@@ -141,11 +142,12 @@ no rebuild is involved.
 
 Unset and empty mean the same thing.
 
-| Var             | Not set means                                            |
-| --------------- | -------------------------------------------------------- |
-| `AUTH_ORIGIN`   | no auth service in this deployment                       |
-| `COOKIE_DOMAIN` | derive from the current host                             |
-| `IDP_ORIGINS`   | `https://orcid.org` (space-separated, for `form-action`) |
+| Var                | Not set means                                            |
+| ------------------ | -------------------------------------------------------- |
+| `AUTH_ORIGIN`      | no auth service in this deployment                       |
+| `COOKIE_DOMAIN`    | derive from the current host                             |
+| `AUTH_ENVIRONMENT` | the auth service's default environment                   |
+| `IDP_ORIGINS`      | `https://orcid.org` (space-separated, for `form-action`) |
 
 Leaving `AUTH_ORIGIN` out is a supported deployment, not a broken one:
 public routes serve normally and sign-in reports itself as unavailable

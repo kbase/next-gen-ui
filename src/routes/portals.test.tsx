@@ -5,14 +5,16 @@ import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/rea
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { routeTree } from '../routeTree.gen';
+import type { Me } from '../api/auth';
 import styles from './portals.module.css';
 
 // Expectations are derived from what the page renders, never written down
 // from the portal data or the copy. Adding a portal, renaming a facet or
 // rewording a blurb must not fail a test here.
 
-function mountGallery() {
+function mountGallery(me: Me | null = null) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  queryClient.setQueryData(['auth', 'me'], me);
   render(
     <QueryClientProvider client={queryClient}>
       <RouterProvider
@@ -211,5 +213,28 @@ describe('portal gallery', () => {
     const reset = document.querySelector<HTMLElement>(`.${styles.empty} button`)!;
     await user.click(reset);
     expect(cards().map(titleOf)).toEqual(before);
+  });
+});
+
+describe('signed-in identity', () => {
+  const identity = () => document.querySelector(`.${styles.identity}`);
+
+  it('is absent when signed out', async () => {
+    await mountGallery();
+    expect(identity()).toBeNull();
+  });
+
+  it('shows the username and links the ORCID iD', async () => {
+    await mountGallery({
+      user: 'tester',
+      display: 'Tester',
+      email: '',
+      idents: [{ provider: 'OrcID', provusername: '0000-0002-1825-0097', id: 'x' }],
+    });
+    expect(identity()).toHaveTextContent('tester');
+    expect(screen.getByRole('link', { name: /0000-0002-1825-0097/ })).toHaveAttribute(
+      'href',
+      'https://orcid.org/0000-0002-1825-0097',
+    );
   });
 });

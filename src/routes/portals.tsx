@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
-import { Accordion, ButtonLink, Chip, Frame, SearchBar } from '@kbase/design-system';
+import { Accordion, Avatar, ButtonLink, Chip, Frame, SearchBar } from '@kbase/design-system';
 import type { ChipColor } from '@kbase/design-system';
 import { ArrowUpRight, Brain, Database, Files } from '@phosphor-icons/react';
 import type { Icon } from '@phosphor-icons/react';
 
+import { useMaybeMe } from '../api/auth';
+import orcidIdUrl from '../assets/orcid-id.svg';
 import styles from './portals.module.css';
 
 export const Route = createFileRoute('/portals')({
@@ -535,8 +537,40 @@ function TopBar() {
             height={64}
           />
         </span>
+        <Identity />
       </div>
     </header>
+  );
+}
+
+// ORCID display guidelines: the compact form (iD icon, then the digits,
+// linked to the record), with the icon no smaller than 16px. The icon goes
+// with the digits only; next to the username it would mark the KBase
+// account as the ORCID identity.
+function Identity() {
+  const me = useMaybeMe();
+  if (!me) return null;
+  const orcid = me.idents.find((i) => i.provider && /orcid/i.test(i.provider))?.provusername;
+  return (
+    <div className={styles.identity}>
+      <div className={styles.identityText}>
+        <span className={styles.identityUser} title={me.user}>
+          {me.user}
+        </span>
+        {orcid && (
+          <a
+            className={styles.identityOrcid}
+            href={`https://orcid.org/${orcid}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img src={orcidIdUrl} alt="ORCID iD" width={16} height={16} />
+            {orcid}
+          </a>
+        )}
+      </div>
+      <Avatar size={28} initials={me.display.charAt(0).toUpperCase()} />
+    </div>
   );
 }
 

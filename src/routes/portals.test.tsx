@@ -237,4 +237,19 @@ describe('signed-in identity', () => {
       'https://orcid.org/0000-0002-1825-0097',
     );
   });
+
+  it('offers to link an ORCID iD when none is linked', async () => {
+    await mountGallery({
+      user: 'tester',
+      display: 'Tester',
+      email: '',
+      idents: [{ provider: 'Google', provusername: 'tester@example.org', id: 'g' }],
+    });
+    expect(identity()).toHaveTextContent('tester');
+    expect(screen.getByRole('link', { name: /link your orcid id/i })).toHaveAttribute(
+      'href',
+      'https://narrative.kbase.us/account/providers',
+    );
+    expect(document.querySelector('a[href^="https://orcid.org/"]')).toBeNull();
+  });
 });

@@ -73,10 +73,8 @@
   font-weight: 600;
   line-height: 12px;
   color: var(--c-ink);
-  /* Contributes no width of its own, so the iD line sets the block's width
-     and a long username (up to 100 characters) ends in an ellipsis. */
-  width: 0;
-  min-width: 100%;
+  /* auth2 usernames run to 100 characters; a long one ends in an ellipsis. */
+  max-width: 190px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -85,6 +83,14 @@
      descenders without adding height. */
   padding-bottom: 3px;
   margin-bottom: -3px;
+}
+
+/* With a second line, that line sets the block's width and the username
+   contributes none of its own. */
+.identityText:has(> :nth-child(2)) .identityUser {
+  width: 0;
+  min-width: 100%;
+  max-width: none;
 }
 
 .identityOrcid {
@@ -98,7 +104,18 @@
   text-decoration: none;
 }
 
-.identityOrcid:hover {
+.identityLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--fs-3);
+  line-height: 16px;
+  color: var(--c-ink4);
+  text-decoration: none;
+}
+
+.identityOrcid:hover,
+.identityLink:hover {
   color: var(--ct-link);
   text-decoration: underline;
 }

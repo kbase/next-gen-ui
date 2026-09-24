@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { Accordion, Avatar, ButtonLink, Chip, Frame, SearchBar } from '@kbase/design-system';
 import type { ChipColor } from '@kbase/design-system';
-import { ArrowUpRight, Brain, Database, Files } from '@phosphor-icons/react';
+import { ArrowSquareOut, ArrowUpRight, Brain, Database, Files } from '@phosphor-icons/react';
 import type { Icon } from '@phosphor-icons/react';
 
 import { findOrcid, useMaybeMe } from '../api/auth';
@@ -557,6 +557,19 @@ function Identity() {
         <span className={styles.identityUser} title={me.user}>
           {me.user}
         </span>
+        {!orcid && (
+          // A session from another kbase.us site (a Google or Globus sign-in)
+          // can have no ORCID linked. Linking happens in the legacy account UI.
+          <a
+            className={styles.identityLink}
+            href="https://narrative.kbase.us/account/providers"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Link your ORCID iD
+            <ArrowSquareOut size={12} weight="bold" aria-hidden="true" />
+          </a>
+        )}
         {orcid && (
           <a
             className={styles.identityOrcid}

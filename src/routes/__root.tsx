@@ -32,8 +32,9 @@ export interface RouterContext {
 
 // The design system is documentation, so it is readable without an account.
 // /portals is the public front door: a gallery of published portals that
-// anyone can browse before they have a KBase identity.
+// anyone can browse before they have a KBase identity. / only redirects there.
 const PUBLIC_ROUTES: ReadonlyArray<string> = [
+  '/',
   '/login',
   '/login/continue',
   '/design-system',
@@ -50,7 +51,6 @@ function isPublic(pathname: string): boolean {
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   beforeLoad: async ({ context, location }) => {
-    if (location.pathname === '/') throw redirect({ to: '/portals' });
     if (isPublic(location.pathname)) return;
     const me = await context.queryClient.ensureQueryData(authMeOptions());
     if (!me) {

@@ -1,10 +1,13 @@
 import { useMemo, useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
-import { Accordion, ButtonLink, Chip, Frame, SearchBar } from '@kbase/design-system';
+import { Accordion, Avatar, ButtonLink, Chip, Frame, SearchBar } from '@kbase/design-system';
 import type { ChipColor } from '@kbase/design-system';
-import { ArrowUpRight, Brain, Database, Files } from '@phosphor-icons/react';
+import { ArrowSquareOut, ArrowUpRight, Brain, Database, Files } from '@phosphor-icons/react';
 import type { Icon } from '@phosphor-icons/react';
 
+import { findOrcid, useMaybeMe } from '../api/auth';
+import { legacyUiOrigin } from '../config';
+import orcidIdUrl from '../assets/orcid-id.svg';
 import styles from './portals.module.css';
 
 export const Route = createFileRoute('/portals')({
@@ -535,8 +538,54 @@ function TopBar() {
             height={64}
           />
         </span>
+        <Identity />
       </div>
     </header>
+  );
+}
+
+// ORCID display guidelines: the compact form (iD icon, then the digits,
+// linked to the record), with the icon no smaller than 16px. The icon goes
+// with the digits only; next to the username it would mark the KBase
+// account as the ORCID identity.
+function Identity() {
+  const me = useMaybeMe();
+  if (!me) return null;
+  const orcid = findOrcid(me.idents)?.provusername;
+  const uiOrigin = legacyUiOrigin();
+  return (
+    <div className={styles.identity}>
+      <div className={styles.identityText}>
+        <span className={styles.identityUser} title={me.user}>
+          {me.user}
+        </span>
+        {!orcid && uiOrigin && (
+          // A session from another kbase.us site (a Google or Globus sign-in)
+          // can have no ORCID linked.
+          <a
+            className={styles.identityLink}
+            href={`${uiOrigin}/account/providers`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Link your ORCID iD
+            <ArrowSquareOut size={12} weight="bold" aria-hidden="true" />
+          </a>
+        )}
+        {orcid && (
+          <a
+            className={styles.identityOrcid}
+            href={`https://orcid.org/${orcid}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img src={orcidIdUrl} alt="ORCID iD" width={16} height={16} />
+            {orcid}
+          </a>
+        )}
+      </div>
+      <Avatar size={28} initials={me.display.charAt(0).toUpperCase()} />
+    </div>
   );
 }
 

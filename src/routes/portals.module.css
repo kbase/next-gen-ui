@@ -47,6 +47,79 @@
   height: 26px;
 }
 
+/* Taller than the logo's 26px slot; the negative margin lets it extend into
+   the bar's padding, so the bar is the same height signed in and out. */
+.identity {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  height: 40px;
+  margin-block: -7px;
+  padding: 1px;
+}
+
+.identityText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  /* Optical: the username's caps sit high against the bar's top edge. */
+  position: relative;
+  top: 2px;
+}
+
+.identityUser {
+  font-size: var(--fs-5);
+  font-weight: 600;
+  line-height: 12px;
+  color: var(--c-ink);
+  /* auth2 usernames run to 100 characters. */
+  max-width: 190px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: right;
+  /* overflow: hidden clips at the 12px line box; extend it under the
+     descenders without adding height. */
+  padding-bottom: 3px;
+  margin-bottom: -3px;
+}
+
+/* With a second line, that line sets the block's width and the username
+   contributes none of its own. */
+.identityText:has(> :nth-child(2)) .identityUser {
+  width: 0;
+  min-width: 100%;
+  max-width: none;
+}
+
+.identityOrcid {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--f-mono);
+  font-size: var(--fs-3);
+  line-height: 16px;
+  color: var(--c-ink4);
+  text-decoration: none;
+}
+
+.identityLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--fs-3);
+  line-height: 16px;
+  color: var(--c-ink4);
+  text-decoration: none;
+}
+
+.identityOrcid:hover,
+.identityLink:hover {
+  color: var(--ct-link);
+  text-decoration: underline;
+}
+
 .main {
   flex: 1;
   width: 100%;

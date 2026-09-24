@@ -23,13 +23,14 @@ import orcidIdUrl from '../assets/orcid-id.svg';
 
 import {
   authErrorMessage,
+  findOrcid,
   useMe,
   useRevokeOtherSession,
   useSessions,
   useSignOut,
   useUpdateMe,
 } from '../api/auth';
-import type { Ident, Me, SessionToken } from '../api/auth';
+import type { Me, SessionToken } from '../api/auth';
 
 type EditableField = 'name' | 'email';
 type FieldStatus = { kind: 'saving' | 'saved' | 'error'; message?: string };
@@ -38,10 +39,6 @@ export const Route = createFileRoute('/account')({
   component: AccountPage,
   staticData: { title: 'Account' },
 });
-
-function findOrcid(idents: Ident[] | undefined): Ident | undefined {
-  return idents?.find((i) => i.provider && /orcid/i.test(i.provider));
-}
 
 // Form-layer email check. The wire schema (MeUpdateSchema) is
 // permissive on purpose; input rules live here. Pattern matches the

@@ -40,6 +40,8 @@ export {
   MfaRequiredError,
 } from './queries';
 
+export { findOrcid } from './idents';
+
 export { safeRedirect, parseSafeRedirect, nextRequestFromRedirectUrl } from './redirect';
 export type { SafeRedirectParts } from './redirect';
 

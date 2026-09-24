@@ -5,7 +5,7 @@ import type { ChipColor } from '@kbase/design-system';
 import { ArrowUpRight, Brain, Database, Files } from '@phosphor-icons/react';
 import type { Icon } from '@phosphor-icons/react';
 
-import { useMaybeMe } from '../api/auth';
+import { findOrcid, useMaybeMe } from '../api/auth';
 import orcidIdUrl from '../assets/orcid-id.svg';
 import styles from './portals.module.css';
 
@@ -550,7 +550,7 @@ function TopBar() {
 function Identity() {
   const me = useMaybeMe();
   if (!me) return null;
-  const orcid = me.idents.find((i) => i.provider && /orcid/i.test(i.provider))?.provusername;
+  const orcid = findOrcid(me.idents)?.provusername;
   return (
     <div className={styles.identity}>
       <div className={styles.identityText}>

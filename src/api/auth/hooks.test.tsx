@@ -6,7 +6,7 @@ import type { ReactNode } from 'react';
 
 import { server } from '../../test/setup';
 import { AUTH_ORIGIN } from './client';
-import { BACKUP_COOKIE_NAME, setToken, clearToken, getToken } from './cookie';
+import { BACKUP_COOKIE_NAME, clearBackupToken, setToken, clearToken, getToken } from './cookie';
 import { useMaybeMe, useSignOut, useUpdateMe } from './hooks';
 
 const navigateSpy = vi.fn(() => Promise.resolve());
@@ -25,7 +25,10 @@ beforeEach(() => {
   navigateSpy.mockClear();
   clearToken();
 });
-afterEach(() => clearToken());
+afterEach(() => {
+  clearToken();
+  clearBackupToken();
+});
 
 describe('useMaybeMe', () => {
   it('returns null when there is no cached user', () => {
@@ -165,5 +168,38 @@ describe('useSignOut', () => {
       await result.current.mutateAsync();
     });
     expect(document.cookie).not.toContain(`${BACKUP_COOKIE_NAME}=`);
+  });
+
+  it('keeps a backup that holds a different token', async () => {
+    setToken('tok-1', new Date(Date.now() + 60_000));
+    document.cookie = `${BACKUP_COOKIE_NAME}=other; path=/`;
+    server.use(
+      http.get(`${AUTH_ORIGIN}/services/auth/api/V2/token`, () =>
+        HttpResponse.json({ id: 'session-1', user: 'u' }),
+      ),
+      http.delete(
+        `${AUTH_ORIGIN}/services/auth/tokens/revoke/:id`,
+        () => new HttpResponse(null, { status: 204 }),
+      ),
+    );
+    const { result } = renderHook(() => useSignOut(), { wrapper: makeWrapper(new QueryClient()) });
+    await act(async () => {
+      await result.current.mutateAsync();
+    });
+    expect(document.cookie).toContain(`${BACKUP_COOKIE_NAME}=other`);
+  });
+
+  it('keeps the backup when the revoke fails', async () => {
+    document.cookie = `${BACKUP_COOKIE_NAME}=tok-1; path=/`;
+    server.use(
+      http.get(`${AUTH_ORIGIN}/services/auth/api/V2/token`, () =>
+        HttpResponse.json({ error: { apperror: 'x' } }, { status: 500 }),
+      ),
+    );
+    const { result } = renderHook(() => useSignOut(), { wrapper: makeWrapper(new QueryClient()) });
+    await act(async () => {
+      await result.current.mutateAsync();
+    });
+    expect(document.cookie).toContain(`${BACKUP_COOKIE_NAME}=tok-1`);
   });
 });

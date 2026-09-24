@@ -41,6 +41,11 @@ function onKbaseHost(): boolean {
   return host === 'kbase.us' || host.endsWith('.kbase.us');
 }
 
+/** Deletes kbase_session_backup only when it holds `token`. */
+export function clearBackupTokenIf(token: string): void {
+  if (readCookie(BACKUP_COOKIE_NAME, clearBackupToken) === token) clearBackupToken();
+}
+
 /** kbase_session, else kbase_session_backup. */
 export function getToken(): string | null {
   return readCookie(COOKIE_NAME, clearToken) ?? readCookie(BACKUP_COOKIE_NAME, clearBackupToken);

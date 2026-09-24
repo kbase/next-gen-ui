@@ -260,6 +260,37 @@ describe('authMeOptions', () => {
   });
 });
 
+describe('authMeOptions with two different tokens', () => {
+  const later = () => new Date(Date.now() + 60_000);
+  const backupValue = () =>
+    document.cookie
+      .split(';')
+      .map((c) => c.trim())
+      .find((c) => c.startsWith(`${BACKUP_COOKIE_NAME}=`))
+      ?.split('=')[1];
+
+  it('keeps a live backup when kbase_session is dead, and signs in with it', async () => {
+    setToken('dead', later());
+    document.cookie = `${BACKUP_COOKIE_NAME}=live; path=/`;
+    fetchMock
+      .mockResolvedValueOnce(new Response('{}', { status: 401 }))
+      .mockResolvedValueOnce(meRes({ user: 'b', display: 'B' }));
+    const me = await new QueryClient().fetchQuery(authMeOptions());
+    expect(me?.user).toBe('b');
+    expect(backupValue()).toBe('live');
+  });
+
+  it('deletes the backup when both tokens are dead', async () => {
+    setToken('dead-a', later());
+    document.cookie = `${BACKUP_COOKIE_NAME}=dead-b; path=/`;
+    fetchMock
+      .mockResolvedValueOnce(new Response('{}', { status: 401 }))
+      .mockResolvedValueOnce(new Response('{}', { status: 401 }));
+    expect(await new QueryClient().fetchQuery(authMeOptions())).toBeNull();
+    expect(backupPresent()).toBe(false);
+  });
+});
+
 describe('clearAuthCache and the backup cookie', () => {
   // The gate calls this when this app rejects a live token (no MFA); the
   // backup is shared with other kbase.us sites that still accept it.

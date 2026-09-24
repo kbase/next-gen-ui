@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { logout, revokeSession, setMe } from './client';
-import { clearBackupToken, getToken } from './cookie';
-import { authMeOptions, authSessionsOptions, clearAuthSession } from './queries';
+import { clearBackupTokenIf, getToken } from './cookie';
+import { authMeOptions, authSessionsOptions, clearAuthSession, tokenInfoOptions } from './queries';
 import type { Me, MeUpdate } from './schemas';
 
 // Inside any route gated by the root beforeLoad, the auth cache is
@@ -18,9 +18,21 @@ export function useMe(): Me {
   return data;
 }
 
+/** Any session /me accepts, with or without 2FA. */
 export function useMaybeMe(): Me | null {
   const { data } = useQuery(authMeOptions());
   return data ?? null;
+}
+
+/**
+ * A session this app accepts as signed in: /me accepts it and it used 2FA,
+ * the same rule as the root gate. A session from another kbase.us site
+ * without 2FA is not signed in here.
+ */
+export function useSignedInMe(): Me | null {
+  const me = useMaybeMe();
+  const { data: tokenInfo } = useQuery({ ...tokenInfoOptions(), enabled: me !== null });
+  return me && tokenInfo?.mfa === 'Used' ? me : null;
 }
 
 export function useSessions() {
@@ -81,9 +93,11 @@ export function useSignOut() {
       const token = getToken();
       await navigate({ to: '/login', replace: true });
       qc.removeQueries({ queryKey: ['auth'] });
+      let revoked = false;
       if (token) {
         try {
           await logout(token);
+          revoked = true;
         } catch (err) {
           if (import.meta.env.DEV) {
             console.warn('[useSignOut] revoke failed (best-effort):', err);
@@ -91,8 +105,9 @@ export function useSignOut() {
         }
       }
       clearAuthSession();
-      // The revoke above killed the token, so the shared copy is dead too.
-      clearBackupToken();
+      // The backup is shared with other kbase.us sites: it goes only when it
+      // holds the token just revoked.
+      if (revoked && token) clearBackupTokenIf(token);
     },
   });
 }

@@ -11,7 +11,7 @@ import {
   parseSafeRedirect,
   primeAuthCache,
   safeRedirect,
-  useMaybeMe,
+  useSignedInMe,
   useSignOut,
 } from '../../api/auth';
 // Official ORCID iD mark from Wikimedia Commons. ORCID brand
@@ -31,7 +31,10 @@ export const Route = createFileRoute('/login/')({
     // even when signed in. useSignOut's navigate({ to: '/login' })
     // depends on this so it doesn't bounce back into the gated tree
     // while the auth cache is being evicted.
-    if (search.redirect && context.queryClient.getQueryData(['auth', 'me'])) {
+    const signedIn =
+      context.queryClient.getQueryData(['auth', 'me']) &&
+      context.queryClient.getQueryData<{ mfa?: string }>(['auth', 'tokenInfo'])?.mfa === 'Used';
+    if (search.redirect && signedIn) {
       const target = parseSafeRedirect(search.redirect);
       throw redirect({ to: target.pathname, search: target.search, hash: target.hash });
     }
@@ -43,7 +46,7 @@ export const Route = createFileRoute('/login/')({
 function LoginPage() {
   const { redirect: redirectParam, error } = Route.useSearch();
   const nextRequest = safeRedirect(redirectParam);
-  const me = useMaybeMe();
+  const me = useSignedInMe();
   const signOut = useSignOut();
 
   const isSignedIn = me !== null;

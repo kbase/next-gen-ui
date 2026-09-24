@@ -1,8 +1,10 @@
 # `src/api/auth/`
 
 ORCID-only sign-in against the kbase auth service. Session token is
-stored in a `.kbase.us` cookie; a session from the legacy UI or a
-narrative arrives through `kbase_session_backup` (see Token storage).
+stored in a host-only `kbase_session` cookie; a session from the legacy
+UI or a narrative arrives through `kbase_session_backup` (see Token
+storage). A session without 2FA is not signed in anywhere in the app;
+the gallery still shows its username.
 The wire protocol is mirrored exactly; the implementation
 is not (kbase-ui uses Redux + RTK Query effect chains).
 

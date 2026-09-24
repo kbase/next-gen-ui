@@ -8,7 +8,7 @@ import {
 } from './client';
 import {
   AUTH_SIGNAL_KEY,
-  clearBackupToken,
+  clearBackupTokenIf,
   clearToken,
   getExpiry,
   getToken,
@@ -36,11 +36,18 @@ export function authMeOptions() {
     queryFn: async ({ signal }) => {
       const token = getToken();
       const me = await validateToken(token, { signal });
-      // null with a token and an auth service means /me answered 401: the
-      // token is dead, so neither cookie should offer it again.
+      // null with a token and an auth service means /me answered 401. The
+      // backup is shared with other kbase.us sites, so it goes only if it
+      // holds this same dead token; a different backup token gets its turn.
       if (me === null && token && AUTH_ENABLED) {
         clearToken();
-        clearBackupToken();
+        clearBackupTokenIf(token);
+        const backup = getToken();
+        if (backup && backup !== token) {
+          const fromBackup = await validateToken(backup, { signal });
+          if (fromBackup === null) clearBackupTokenIf(backup);
+          return fromBackup;
+        }
       }
       return me;
     },

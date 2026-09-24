@@ -32,6 +32,7 @@ export {
   setToken,
   clearToken,
   clearBackupToken,
+  clearBackupTokenIf,
 } from './cookie';
 
 export {
@@ -58,6 +59,7 @@ export type { AuthErrorMessageOptions } from './errors';
 export {
   useMe,
   useMaybeMe,
+  useSignedInMe,
   useSessions,
   useSignOut,
   useUpdateMe,

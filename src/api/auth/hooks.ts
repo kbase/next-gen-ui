@@ -24,11 +24,7 @@ export function useMaybeMe(): Me | null {
   return data ?? null;
 }
 
-/**
- * A session this app accepts as signed in: /me accepts it and it used 2FA,
- * the same rule as the root gate. A session from another kbase.us site
- * without 2FA is not signed in here.
- */
+/** A session /me accepts that used 2FA: the root gate's rule. */
 export function useSignedInMe(): Me | null {
   const me = useMaybeMe();
   const { data: tokenInfo } = useQuery({ ...tokenInfoOptions(), enabled: me !== null });
@@ -105,8 +101,7 @@ export function useSignOut() {
         }
       }
       clearAuthSession();
-      // The backup is shared with other kbase.us sites: it goes only when it
-      // holds the token just revoked.
+      // The backup is shared with other kbase.us sites.
       if (revoked && token) clearBackupTokenIf(token);
     },
   });

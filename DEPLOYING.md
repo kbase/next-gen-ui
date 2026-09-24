@@ -102,8 +102,9 @@ through `kbase_session_backup`, which needs a hostname under `kbase.us`.
 
 `BACKUP_COOKIE_NAME` is the name of that backup. Every `kbase.us` host
 receives every `.kbase.us` cookie, so environments tell their backups
-apart by name. The default is production's; a deployment on another
-auth service sets the name its own UI writes, or none is read.
+apart by name. The default is production's. A deployment on another
+auth service sets the name its own UI writes; a name nothing writes
+turns the fallback off.
 
 ---
 

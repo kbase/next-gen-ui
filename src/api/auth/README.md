@@ -180,15 +180,15 @@ when `/api/V2/me` rejects the `kbase_session` token, and never writes
 it. The name comes from `BACKUP_COOKIE_NAME` (default
 `kbase_session_backup`); the domain is this host's parent domain.
 
-It is deleted only when its token is dead everywhere: at sign-out,
-after the token is revoked, and when `/api/V2/me` answers 401. A token
-this app refuses but others accept (no MFA, at the root gate) keeps the
-backup, since deleting it would sign the user out of every `kbase.us`
-site that reads it.
+It is deleted only when it holds a token that is dead everywhere: the
+token revoked at sign-out, if the revoke succeeded, or the token
+`/api/V2/me` answered 401 for. A token this app refuses but others
+accept (no 2FA, at the root gate) keeps the backup, since deleting it
+would sign the user out of every `kbase.us` site that reads it.
 
 ---
 
-## Why `kbase.us` for auth and `app.kbase.us` for deploy
+## Why `kbase.us` for auth and a peer subdomain for deploy
 
 - **Auth host** must be the canonical apex `kbase.us`. Pointing
   `VITE_AUTH_ORIGIN` at a peer like `narrative.kbase.us` causes the

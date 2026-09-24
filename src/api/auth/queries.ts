@@ -38,8 +38,7 @@ export function authMeOptions() {
       const token = getToken();
       const me = await validateToken(token, { signal });
       // null with a token and an auth service means /me answered 401. The
-      // backup is shared with other kbase.us sites, so it goes only if it
-      // holds this same dead token; a different backup token gets its turn.
+      // backup is shared with other kbase.us sites.
       if (me === null && token && AUTH_ENABLED) {
         // Other tabs hear the outcome below, not this intermediate clear.
         clearToken({ notify: false });

@@ -2,16 +2,16 @@
 //
 // XSS exposure trade: this cookie holds a session token and is set
 // from JS, so it cannot be HttpOnly (only the auth service can mark
-// it that way during its own redirect chain). Cross-subdomain SSO
-// requires it readable from JS on every kbase subdomain.
+// it that way during its own redirect chain). JS also reads it, to
+// send the token as an Authorization header.
 
 import { config } from '../../config';
 
 export const COOKIE_NAME = 'kbase_session';
 
-// Production kbase-ui scopes its kbase_session to .narrative.kbase.us, which
-// other kbase.us hosts never receive; it and the Narrative also write a copy
-// on .kbase.us under this name. Read as a fallback, never written here.
+// Production kbase-ui keeps its kbase_session on .narrative.kbase.us, which
+// no other host receives. It and the Narrative also write the token to this
+// cookie on .kbase.us. Read as a fallback; never written here.
 export const BACKUP_COOKIE_NAME = config.backupCookieName;
 
 // Cookies don't fire cross-tab events; localStorage does. We mirror
@@ -25,9 +25,8 @@ export const AUTH_SIGNAL_KEY = 'kbase_session_signal';
 // eviction and rearms it after page reload.
 export const EXPIRY_KEY = 'kbase_session_expires_at';
 
-// Host-only unless COOKIE_DOMAIN names a domain. kbase-ui and the Narrative
-// each keep kbase_session on their own host; one on .kbase.us reaches them
-// too, and they disagree on which of two same-named cookies they read.
+// A kbase_session on .kbase.us would reach kbase-ui and the Narrative as a
+// second cookie of that name, and they read different ones of the pair.
 // Rendered into index.html at container start; falls back to
 // VITE_COOKIE_DOMAIN in dev. See src/config.ts.
 const DOMAIN_OVERRIDE = config.cookieDomain;
@@ -36,9 +35,8 @@ function effectiveDomain(): string | undefined {
   return DOMAIN_OVERRIDE || undefined;
 }
 
-// The backup lives on the registrable domain of whichever site wrote it:
-// the last two labels of this host (gen2.kbase.us -> .kbase.us). A
-// single-label host such as localhost has none, so the delete is host-only.
+// Deletes must name the domain the backup was written on: the parent domain
+// of this host (gen2.kbase.us -> .kbase.us).
 function backupDomain(): string | undefined {
   const labels = window.location.hostname.split('.');
   return labels.length >= 2 ? `.${labels.slice(-2).join('.')}` : undefined;
@@ -64,7 +62,7 @@ export function getToken(): string | null {
 }
 
 function readCookie(name: string, evict: () => void): string | null {
-  // BACKUP_COOKIE_NAME is operator-set; escape it so it matches literally.
+  // BACKUP_COOKIE_NAME is a runtime setting.
   const literal = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${literal}=([^;]*)`));
   if (!match) return null;

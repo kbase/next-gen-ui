@@ -6,7 +6,7 @@ import type { ReactNode } from 'react';
 
 import { server } from '../../test/setup';
 import { AUTH_ORIGIN } from './client';
-import { setToken, clearToken, getToken } from './cookie';
+import { BACKUP_COOKIE_NAME, setToken, clearToken, getToken } from './cookie';
 import { useMaybeMe, useSignOut, useUpdateMe } from './hooks';
 
 const navigateSpy = vi.fn(() => Promise.resolve());
@@ -146,5 +146,24 @@ describe('useSignOut', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(getToken()).toBeNull();
     expect(qc.getQueryData(['auth', 'me'])).toBeUndefined();
+  });
+
+  it('clears kbase_session_backup after revoking the token', async () => {
+    document.cookie = `${BACKUP_COOKIE_NAME}=tok-1; path=/`;
+    server.use(
+      http.get(`${AUTH_ORIGIN}/services/auth/api/V2/token`, () =>
+        HttpResponse.json({ id: 'session-1', user: 'u' }),
+      ),
+      http.delete(
+        `${AUTH_ORIGIN}/services/auth/tokens/revoke/:id`,
+        () => new HttpResponse(null, { status: 204 }),
+      ),
+    );
+    const qc = new QueryClient();
+    const { result } = renderHook(() => useSignOut(), { wrapper: makeWrapper(qc) });
+    await act(async () => {
+      await result.current.mutateAsync();
+    });
+    expect(document.cookie).not.toContain(`${BACKUP_COOKIE_NAME}=`);
   });
 });

@@ -25,7 +25,14 @@ export {
   logout,
 } from './client';
 
-export { COOKIE_NAME, getToken, setToken, clearToken } from './cookie';
+export {
+  BACKUP_COOKIE_NAME,
+  COOKIE_NAME,
+  getToken,
+  setToken,
+  clearToken,
+  clearBackupToken,
+} from './cookie';
 
 export {
   authMeOptions,

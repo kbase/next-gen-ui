@@ -3,11 +3,19 @@ import { QueryClient } from '@tanstack/react-query';
 
 import {
   MfaRequiredError,
+  authMeOptions,
   clearAuthCache,
   installCrossTabAuthSync,
   primeAuthCache,
 } from './queries';
-import { AUTH_SIGNAL_KEY, clearToken, getToken } from './cookie';
+import {
+  AUTH_SIGNAL_KEY,
+  BACKUP_COOKIE_NAME,
+  clearBackupToken,
+  clearToken,
+  getToken,
+  setToken,
+} from './cookie';
 
 const fetchMock = vi.fn<typeof fetch>();
 
@@ -29,12 +37,16 @@ beforeEach(() => {
   fetchMock.mockReset();
   vi.stubGlobal('fetch', fetchMock);
   clearToken();
+  clearBackupToken();
 });
 
 afterEach(() => {
   vi.unstubAllGlobals();
   clearToken();
+  clearBackupToken();
 });
+
+const backupPresent = () => document.cookie.includes(`${BACKUP_COOKIE_NAME}=`);
 
 describe('primeAuthCache', () => {
   it('writes cookie and primes cache on success', async () => {
@@ -212,5 +224,48 @@ describe('installCrossTabAuthSync', () => {
     window.dispatchEvent(new StorageEvent('storage', { key: AUTH_SIGNAL_KEY, newValue: 'set:99' }));
 
     expect(spy).not.toHaveBeenCalled();
+  });
+});
+
+describe('authMeOptions', () => {
+  const later = () => new Date(Date.now() + 60_000);
+
+  it('clears both cookies when /me rejects the token (401)', async () => {
+    setToken('dead', later());
+    document.cookie = `${BACKUP_COOKIE_NAME}=dead; path=/`;
+    fetchMock.mockResolvedValueOnce(new Response('{}', { status: 401 }));
+    const me = await new QueryClient().fetchQuery(authMeOptions());
+    expect(me).toBeNull();
+    expect(getToken()).toBeNull();
+    expect(backupPresent()).toBe(false);
+  });
+
+  it('keeps both cookies when /me errors (5xx)', async () => {
+    setToken('live', later());
+    document.cookie = `${BACKUP_COOKIE_NAME}=live; path=/`;
+    fetchMock.mockResolvedValueOnce(new Response('{}', { status: 503 }));
+    await expect(new QueryClient().fetchQuery(authMeOptions())).rejects.toThrow();
+    expect(getToken()).toBe('live');
+    expect(backupPresent()).toBe(true);
+  });
+
+  it('validates the backup token when kbase_session is absent', async () => {
+    document.cookie = `${BACKUP_COOKIE_NAME}=from-backup; path=/`;
+    fetchMock.mockResolvedValueOnce(meRes({ user: 'b', display: 'B' }));
+    const me = await new QueryClient().fetchQuery(authMeOptions());
+    expect(me?.user).toBe('b');
+    expect(new Headers(fetchMock.mock.calls[0][1]?.headers).get('Authorization')).toBe(
+      'from-backup',
+    );
+  });
+});
+
+describe('clearAuthCache and the backup cookie', () => {
+  // The gate calls this when this app rejects a live token (no MFA); the
+  // backup is shared with other kbase.us sites that still accept it.
+  it('leaves kbase_session_backup in place', () => {
+    document.cookie = `${BACKUP_COOKIE_NAME}=live; path=/`;
+    clearAuthCache(new QueryClient());
+    expect(backupPresent()).toBe(true);
   });
 });

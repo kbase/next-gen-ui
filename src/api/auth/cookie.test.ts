@@ -1,8 +1,25 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { COOKIE_NAME, clearToken, getToken, setToken } from './cookie';
+import {
+  BACKUP_COOKIE_NAME,
+  COOKIE_NAME,
+  clearBackupToken,
+  clearToken,
+  getToken,
+  setToken,
+} from './cookie';
 
-beforeEach(() => clearToken());
-afterEach(() => clearToken());
+function setBackup(value: string) {
+  document.cookie = `${BACKUP_COOKIE_NAME}=${value}; path=/`;
+}
+
+beforeEach(() => {
+  clearToken();
+  clearBackupToken();
+});
+afterEach(() => {
+  clearToken();
+  clearBackupToken();
+});
 
 describe('getToken', () => {
   it('returns null when the cookie is absent', () => {
@@ -37,5 +54,37 @@ describe('clearToken', () => {
     expect(getToken()).toBe('xyz');
     clearToken();
     expect(getToken()).toBeNull();
+  });
+});
+
+describe('kbase_session_backup', () => {
+  it('is read when kbase_session is absent', () => {
+    setBackup('backup-tok');
+    expect(getToken()).toBe('backup-tok');
+  });
+
+  it('loses to kbase_session when both are present', () => {
+    setBackup('backup-tok');
+    setToken('primary-tok', new Date(Date.now() + 60_000));
+    expect(getToken()).toBe('primary-tok');
+  });
+
+  it('survives clearToken', () => {
+    setBackup('backup-tok');
+    setToken('primary-tok', new Date(Date.now() + 60_000));
+    clearToken();
+    expect(getToken()).toBe('backup-tok');
+  });
+
+  it('is removed by clearBackupToken', () => {
+    setBackup('backup-tok');
+    clearBackupToken();
+    expect(getToken()).toBeNull();
+  });
+
+  it('evicts only itself on a malformed percent escape', () => {
+    setBackup('%E0');
+    expect(getToken()).toBeNull();
+    expect(document.cookie).not.toContain(`${BACKUP_COOKIE_NAME}=%E0`);
   });
 });

@@ -1,6 +1,19 @@
 import { queryOptions, type QueryClient } from '@tanstack/react-query';
-import { getAllSessions, getTokenInfo, setAuthFailureHandler, validateToken } from './client';
-import { AUTH_SIGNAL_KEY, clearToken, getExpiry, getToken, setToken } from './cookie';
+import {
+  AUTH_ENABLED,
+  getAllSessions,
+  getTokenInfo,
+  setAuthFailureHandler,
+  validateToken,
+} from './client';
+import {
+  AUTH_SIGNAL_KEY,
+  clearBackupToken,
+  clearToken,
+  getExpiry,
+  getToken,
+  setToken,
+} from './cookie';
 import type { AllSessions, Me, TokenInfo } from './schemas';
 
 const AUTH_ROOT_KEY = ['auth'] as const;
@@ -20,7 +33,17 @@ export class MfaRequiredError extends Error {
 export function authMeOptions() {
   return queryOptions({
     queryKey: ME_KEY,
-    queryFn: ({ signal }) => validateToken(getToken(), { signal }),
+    queryFn: async ({ signal }) => {
+      const token = getToken();
+      const me = await validateToken(token, { signal });
+      // null with a token and an auth service means /me answered 401: the
+      // token is dead, so neither cookie should offer it again.
+      if (me === null && token && AUTH_ENABLED) {
+        clearToken();
+        clearBackupToken();
+      }
+      return me;
+    },
     // Trust until invalidated. The 401 interceptor, cross-tab
     // signal, and expiry watchdog evict this; never the clock.
     staleTime: Infinity,

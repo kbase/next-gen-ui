@@ -1,8 +1,9 @@
 # `src/api/auth/`
 
 ORCID-only sign-in against the kbase auth service. Session token is
-stored in a `.kbase.us` cookie, shared with the legacy UI and
-narratives. The wire protocol is mirrored exactly; the implementation
+stored in a `.kbase.us` cookie; a session from the legacy UI or a
+narrative arrives through `kbase_session_backup` (see Token storage).
+The wire protocol is mirrored exactly; the implementation
 is not (kbase-ui uses Redux + RTK Query effect chains).
 
 Reference implementation for cross-checking: `work/ui/src/common/api/authService.ts`
@@ -170,6 +171,20 @@ logs, or `localStorage`. Cookie attributes:
 - `Path=/`
 - `Secure` on https
 - `SameSite=Lax`
+
+### `kbase_session_backup`
+
+Production kbase-ui sets its `kbase_session` on `.narrative.kbase.us`
+and the Narrative sets its own on the narrative host, so neither
+reaches another `kbase.us` host. Both also write `kbase_session_backup`
+on `.kbase.us`. This app reads it when `kbase_session` is absent and
+never writes it.
+
+It is deleted only when its token is dead everywhere: at sign-out,
+after the token is revoked, and when `/api/V2/me` answers 401. A token
+this app refuses but others accept (no MFA, at the root gate) keeps the
+backup, since deleting it would sign the user out of every `kbase.us`
+site that reads it.
 
 ---
 

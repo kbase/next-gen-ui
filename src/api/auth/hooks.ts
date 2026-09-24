@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { logout, revokeSession, setMe } from './client';
-import { getToken } from './cookie';
+import { clearBackupToken, getToken } from './cookie';
 import { authMeOptions, authSessionsOptions, clearAuthSession } from './queries';
 import type { Me, MeUpdate } from './schemas';
 
@@ -91,6 +91,8 @@ export function useSignOut() {
         }
       }
       clearAuthSession();
+      // The revoke above killed the token, so the shared copy is dead too.
+      clearBackupToken();
     },
   });
 }

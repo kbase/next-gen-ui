@@ -9,6 +9,11 @@ import { config } from '../../config';
 
 export const COOKIE_NAME = 'kbase_session';
 
+// Production kbase-ui scopes its kbase_session to .narrative.kbase.us, which
+// other kbase.us hosts never receive; it and the Narrative also write this
+// copy on .kbase.us. Read as a fallback, never written here.
+export const BACKUP_COOKIE_NAME = 'kbase_session_backup';
+
 // Cookies don't fire cross-tab events; localStorage does. We mirror
 // the cookie write/clear into a tiny localStorage signal so other
 // tabs receive a `storage` event and can invalidate their auth cache.
@@ -33,8 +38,13 @@ function effectiveDomain(): string | undefined {
   return undefined;
 }
 
+/** kbase_session, else kbase_session_backup. */
 export function getToken(): string | null {
-  const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${COOKIE_NAME}=([^;]*)`));
+  return readCookie(COOKIE_NAME, clearToken) ?? readCookie(BACKUP_COOKIE_NAME, clearBackupToken);
+}
+
+function readCookie(name: string, evict: () => void): string | null {
+  const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
   if (!match) return null;
   let decoded: string;
   try {
@@ -42,7 +52,7 @@ export function getToken(): string | null {
   } catch {
     // Stray `%` in the cookie value crashes decodeURIComponent. Treat
     // as corrupted and evict so the gate redirects to /login cleanly.
-    clearToken();
+    evict();
     return null;
   }
   // `decodeURIComponent('')` returns `''`. Collapse to null so callers
@@ -95,6 +105,20 @@ export function clearToken(): void {
   // removeItem when the key existed. setItem with a state-encoded
   // value fires reliably whether or not the key was previously set.
   writeAuthSignal(`cleared:${Date.now()}`);
+}
+
+/**
+ * Deletes kbase_session_backup. Only for a token that is dead everywhere
+ * (revoked at sign-out, or rejected by /me): the backup is shared with every
+ * kbase.us site, so deleting a live one signs the user out of all of them.
+ */
+export function clearBackupToken(): void {
+  const host = window.location.hostname;
+  const onKbase = host === 'kbase.us' || host.endsWith('.kbase.us');
+  const parts = [`${BACKUP_COOKIE_NAME}=`, `Path=/`, `Expires=Thu, 01 Jan 1970 00:00:00 GMT`];
+  if (onKbase) parts.push('Domain=.kbase.us');
+  if (window.location.protocol === 'https:') parts.push('Secure');
+  document.cookie = parts.join('; ');
 }
 
 export function getExpiry(): number | null {

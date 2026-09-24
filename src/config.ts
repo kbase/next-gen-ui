@@ -54,3 +54,16 @@ export const config: AppConfig = ConfigSchema.parse({
 
 /** False when this deployment has no auth service. */
 export const authEnabled: boolean = config.authOrigin !== null;
+
+/**
+ * Origin of the kbase-ui deployment that shares this auth service, for links
+ * into its account pages. Same mapping as kbase-ui (features/auth/utils.ts):
+ * production auth is at the apex, the UI at narrative.kbase.us. In dev the
+ * auth origin is empty (relative, through the proxy), so the proxy target is
+ * the UI's origin. null when there is no auth service.
+ */
+export function legacyUiOrigin(authOrigin: string | null = config.authOrigin): string | null {
+  if (authOrigin === null) return null;
+  if (authOrigin === 'https://kbase.us') return 'https://narrative.kbase.us';
+  return authOrigin || import.meta.env.VITE_DEV_AUTH_PROXY || null;
+}

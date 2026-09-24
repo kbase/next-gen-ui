@@ -83,4 +83,14 @@ describe('runtime config', () => {
     const config = await loadConfig();
     expect(config.authEnvironment).toBeUndefined();
   });
+
+  it.each([
+    ['https://kbase.us', 'https://narrative.kbase.us'],
+    ['https://ci.kbase.us', 'https://ci.kbase.us'],
+    ['https://appdev.kbase.us', 'https://appdev.kbase.us'],
+    [null, null],
+  ])('maps auth origin %s to legacy UI origin %s', async (auth, ui) => {
+    const { legacyUiOrigin } = await import('./config');
+    expect(legacyUiOrigin(auth)).toBe(ui);
+  });
 });

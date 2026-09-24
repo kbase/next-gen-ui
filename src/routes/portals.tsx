@@ -6,6 +6,7 @@ import { ArrowSquareOut, ArrowUpRight, Brain, Database, Files } from '@phosphor-
 import type { Icon } from '@phosphor-icons/react';
 
 import { findOrcid, useMaybeMe } from '../api/auth';
+import { legacyUiOrigin } from '../config';
 import orcidIdUrl from '../assets/orcid-id.svg';
 import styles from './portals.module.css';
 
@@ -551,18 +552,19 @@ function Identity() {
   const me = useMaybeMe();
   if (!me) return null;
   const orcid = findOrcid(me.idents)?.provusername;
+  const uiOrigin = legacyUiOrigin();
   return (
     <div className={styles.identity}>
       <div className={styles.identityText}>
         <span className={styles.identityUser} title={me.user}>
           {me.user}
         </span>
-        {!orcid && (
+        {!orcid && uiOrigin && (
           // A session from another kbase.us site (a Google or Globus sign-in)
           // can have no ORCID linked. Linking happens in the legacy account UI.
           <a
             className={styles.identityLink}
-            href="https://narrative.kbase.us/account/providers"
+            href={`${uiOrigin}/account/providers`}
             target="_blank"
             rel="noopener noreferrer"
           >

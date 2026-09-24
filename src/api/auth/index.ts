@@ -32,6 +32,7 @@ export {
   setToken,
   clearToken,
   clearBackupToken,
+  migrateSharedCookie,
 } from './cookie';
 
 export {

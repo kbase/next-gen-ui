@@ -62,7 +62,8 @@ diff against the committed file.
 - **Schema validation**: Zod at every network boundary. No untyped
   network responses leak into the app.
 - **Auth**: ORCID-only via the kbase auth service; session token in
-  a `.kbase.us` cookie shared with the legacy UI / narratives.
+  a host-only `kbase_session` cookie, falling back to the
+  `.kbase.us` `kbase_session_backup` the legacy UI and narratives write.
   Implementation lives at `src/api/auth/`. See
   [`src/api/auth/README.md`](./src/api/auth/README.md) for the wire
   contract, flow, and trade-offs.
@@ -132,7 +133,7 @@ them.
 | Var                      | Default (in code)  | Notes                                                                                   |
 | ------------------------ | ------------------ | --------------------------------------------------------------------------------------- |
 | `VITE_AUTH_ORIGIN`       | `https://kbase.us` | Auth service origin. Empty means relative paths through the dev proxy.                  |
-| `VITE_COOKIE_DOMAIN`     | unset              | Optional. `.kbase.us` for prod-like deploys; leave unset locally.                       |
+| `VITE_COOKIE_DOMAIN`     | unset              | Optional Domain attribute for the session cookie; unset is host-only.                   |
 | `VITE_AUTH_ENVIRONMENT`  | unset              | Optional. Auth-service environment name posted with the login form.                     |
 | `VITE_DEV_ALLOWED_HOSTS` | unset              | Comma-separated; leading dot is Vite's subdomain wildcard. For non-localhost dev hosts. |
 
@@ -145,7 +146,7 @@ Unset and empty mean the same thing.
 | Var                | Not set means                                            |
 | ------------------ | -------------------------------------------------------- |
 | `AUTH_ORIGIN`      | no auth service in this deployment                       |
-| `COOKIE_DOMAIN`    | derive from the current host                             |
+| `COOKIE_DOMAIN`    | host-only session cookie                                 |
 | `AUTH_ENVIRONMENT` | the auth service's default environment                   |
 | `IDP_ORIGINS`      | `https://orcid.org` (space-separated, for `form-action`) |
 

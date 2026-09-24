@@ -159,15 +159,14 @@ is. XSS surface is unchanged.
 ## Token storage trade-off
 
 `kbase_session` is a JS-set cookie. It can't be `HttpOnly` because
-the design point (cross-subdomain SSO) requires the cookie to be
-readable from JS on every kbase subdomain. Tokens never go in URLs,
+the app sends the token as an `Authorization` header, so JS has to
+read it. Tokens never go in URLs,
 logs, or `localStorage`. Cookie attributes:
 
-- `Domain` is set from `VITE_COOKIE_DOMAIN` when defined (override).
-  Otherwise: `.kbase.us` when the runtime hostname is `kbase.us` or
-  `*.kbase.us`; omitted everywhere else (so localhost dev still
-  works without a Domain attribute landing the cookie on the wrong
-  scope).
+- `Domain` is omitted (host-only) unless `COOKIE_DOMAIN` sets one.
+  Earlier builds defaulted to `.kbase.us`; that copy is expired on
+  every write and clear, and `migrateSharedCookie()` moves a session
+  held only there onto this host at boot, using the mirrored expiry.
 - `Path=/`
 - `Secure` on https
 - `SameSite=Lax`
@@ -194,10 +193,9 @@ site that reads it.
   `VITE_AUTH_ORIGIN` at a peer like `narrative.kbase.us` causes the
   in-process cookie set during the redirect chain to land on the
   wrong domain and the callback fails.
-- **Deploy host** is `app.kbase.us`, a peer subdomain. That still
-  exercises the cross-subdomain shared-cookie path: `kbase_session`
-  is set on `.kbase.us` so any kbase subdomain (this app,
-  narratives, the legacy UI) reads the same session.
+- **Deploy host** is a peer subdomain such as `gen2.kbase.us`. It
+  keeps its own host-only `kbase_session` and reads the legacy UI's
+  and narratives' session from `kbase_session_backup` on `.kbase.us`.
 
 ---
 

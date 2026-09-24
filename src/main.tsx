@@ -13,6 +13,7 @@ import './design-system/global.css';
 
 import { routeTree } from './routeTree.gen';
 import {
+  migrateSharedCookie,
   installAuthExpiryWatcher,
   installAuthFailureInterceptor,
   installCrossTabAuthSync,
@@ -30,6 +31,7 @@ const queryClient = new QueryClient({
 
 // Each installer is idempotent (later calls overwrite the prior
 // handler), so dev StrictMode's intentional double-mount is safe.
+migrateSharedCookie();
 installCrossTabAuthSync(queryClient);
 installAuthFailureInterceptor(queryClient);
 installAuthExpiryWatcher(queryClient);

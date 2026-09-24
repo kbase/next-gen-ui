@@ -37,8 +37,7 @@ export function authMeOptions() {
     queryFn: async ({ signal }) => {
       const token = getToken();
       const me = await validateToken(token, { signal });
-      // null with a token and an auth service means /me answered 401. The
-      // backup is shared with other kbase.us sites.
+      // null with a token and an auth service means /me answered 401.
       if (me === null && token && AUTH_ENABLED) {
         // Other tabs hear the outcome below, not this intermediate clear.
         clearToken({ notify: false });

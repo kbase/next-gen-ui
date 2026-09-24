@@ -35,23 +35,20 @@ function effectiveDomain(): string | undefined {
   return DOMAIN_OVERRIDE || undefined;
 }
 
-// Deletes must name the domain the backup was written on: the parent domain
-// of this host (gen2.kbase.us -> .kbase.us).
+// A delete takes effect only with the Domain the cookie was written with.
+// kbase-ui and the Narrative write the backup on the parent domain.
 function backupDomain(): string | undefined {
   const labels = window.location.hostname.split('.');
   return labels.length >= 2 ? `.${labels.slice(-2).join('.')}` : undefined;
 }
 
-/** Deletes kbase_session_backup only when it holds `token`. */
 export function clearBackupTokenIf(token: string): void {
   if (readCookie(BACKUP_COOKIE_NAME, clearBackupToken) === token) clearBackupToken();
 }
 
-/** kbase_session, else kbase_session_backup. */
 export function getToken(): string | null {
   let evicted = false;
   const primary = readCookie(COOKIE_NAME, () => {
-    // Other tabs are told only if no backup takes over below.
     clearToken({ notify: false });
     evicted = true;
   });
@@ -62,7 +59,7 @@ export function getToken(): string | null {
 }
 
 function readCookie(name: string, evict: () => void): string | null {
-  // BACKUP_COOKIE_NAME is a runtime setting.
+  // Names come from runtime config and may hold regex metacharacters.
   const literal = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${literal}=([^;]*)`));
   if (!match) return null;
@@ -127,16 +124,12 @@ export function clearToken({ notify = true }: { notify?: boolean } = {}): void {
   if (notify) writeAuthSignal(`cleared:${Date.now()}`);
 }
 
-/** Tells other tabs the session changed or ended without writing a cookie. */
 export function notifyOtherTabs(state: 'set' | 'cleared'): void {
   writeAuthSignal(`${state}:${Date.now()}`);
 }
 
-/**
- * Deletes kbase_session_backup. Only for a token that is dead everywhere
- * (revoked at sign-out, or rejected by /me): the backup is shared with every
- * kbase.us site, so deleting a live one signs the user out of all of them.
- */
+// Only for a token that is dead everywhere: the backup is shared with every
+// kbase.us site, so deleting a live one signs the user out of all of them.
 export function clearBackupToken(): void {
   const parts = [`${BACKUP_COOKIE_NAME}=`, `Path=/`, `Expires=Thu, 01 Jan 1970 00:00:00 GMT`];
   const domain = backupDomain();

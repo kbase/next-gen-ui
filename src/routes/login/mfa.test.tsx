@@ -75,7 +75,7 @@ describe('login page and 2FA', () => {
 describe('the root gate after /me switches tokens', () => {
   // kbase_session holds A, which used 2FA and is cached as such; A is then
   // revoked, /me falls back to the backup B, which did not use 2FA.
-  it('checks 2FA for the new token, not the cached answer for the old one', async () => {
+  it('checks 2FA against the token /me validated', async () => {
     document.cookie = 'kbase_session=A; path=/';
     document.cookie = `${BACKUP_COOKIE_NAME}=B; path=/`;
     server.use(

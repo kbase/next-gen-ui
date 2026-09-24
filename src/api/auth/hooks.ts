@@ -101,7 +101,7 @@ export function useSignOut() {
         }
       }
       clearAuthSession();
-      // The backup is shared with other kbase.us sites.
+      // After a failed revoke the token still works on other kbase.us sites.
       if (revoked && token) clearBackupTokenIf(token);
     },
   });

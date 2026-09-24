@@ -83,11 +83,8 @@ describe('root gate', () => {
       }),
     );
 
-    const { router } = mountAt('/');
-    await waitFor(() => {
-      expect(router.state.location.pathname).toBe('/');
-    });
-    expect(observedAuth).toBe('tok-passed');
+    mountAt('/account');
+    await waitFor(() => expect(observedAuth).toBe('tok-passed'));
   });
 
   it('redirects to /login when /api/V2/me returns 401', async () => {
@@ -113,35 +110,12 @@ describe('root gate', () => {
     expect(await screen.findByRole('button', { name: /retry/i })).toBeInTheDocument();
   });
 
-  it('renders the home route when an authenticated session is in cache', async () => {
-    const queryClient = new QueryClient({
-      defaultOptions: { queries: { retry: false } },
-    });
-    queryClient.setQueryData(['auth', 'me'], { user: 't', display: 'T' });
-    queryClient.setQueryData(['auth', 'tokenInfo', null], {
-      id: 'session-1',
-      user: 't',
-      mfa: 'Used',
-    });
-    const router = createRouter({
-      routeTree,
-      context: { queryClient },
-      history: createMemoryHistory({ initialEntries: ['/'] }),
-    });
-    render(
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-      </QueryClientProvider>,
-    );
-    expect(await screen.findByRole('heading', { name: /welcome, t/i })).toBeInTheDocument();
-  });
-
   it('renders the app shell (sidebar) when authenticated and the auth shell when on /login', async () => {
     // Auth layout: no sidebar.
     const { router: authRouter } = mountAt('/login');
     await waitFor(() => {
       expect(authRouter.state.location.pathname).toBe('/login');
     });
-    expect(screen.queryByLabelText('Roadmap')).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /account/i })).not.toBeInTheDocument();
   });
 });

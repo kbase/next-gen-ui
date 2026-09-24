@@ -1,4 +1,4 @@
-import { Link, createFileRoute } from '@tanstack/react-router';
+import { Link, createFileRoute, redirect } from '@tanstack/react-router';
 import { Chip, Frame } from '@kbase/design-system';
 import {
   ArrowUpRight,
@@ -13,7 +13,12 @@ import type { ReactNode } from 'react';
 
 import { useMe } from '../api/auth';
 
+// The roadmap is hidden: '/' sends everyone to the gallery. HomePage stays
+// so the roadmap can be restored by deleting beforeLoad.
 export const Route = createFileRoute('/')({
+  beforeLoad: () => {
+    throw redirect({ to: '/portals' });
+  },
   component: HomePage,
   staticData: { title: 'Roadmap' },
 });

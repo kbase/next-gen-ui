@@ -9,8 +9,7 @@ import {
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import type { QueryClient } from '@tanstack/react-query';
-import { Alert, Avatar, Button, Frame, Loader, NavIcon, Tooltip } from '@kbase/design-system';
-import { MapTrifold } from '@phosphor-icons/react';
+import { Alert, Avatar, Button, Frame, Loader, Tooltip } from '@kbase/design-system';
 
 import {
   AuthApiError,
@@ -199,21 +198,6 @@ function AppLayout({
           </div>
 
           <div className="app-shell__sidebar-nav">
-            <Tooltip.Root>
-              <Tooltip.Trigger
-                render={
-                  <NavIcon active={pathname === '/'} aria-label="Roadmap" asChild>
-                    <Link to="/">
-                      <MapTrifold size={17} weight={pathname === '/' ? 'fill' : 'regular'} />
-                    </Link>
-                  </NavIcon>
-                }
-              />
-              <Tooltip.Popup side="right" sideOffset={8}>
-                Roadmap
-              </Tooltip.Popup>
-            </Tooltip.Root>
-
             <div className="app-shell__spacer" />
 
             <Tooltip.Root>

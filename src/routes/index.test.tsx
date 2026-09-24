@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { routeTree } from '../routeTree.gen';
 
 describe('Home route', () => {
-  it('renders the roadmap hero with the user welcome when authenticated', async () => {
+  it('sends a signed-in user to the gallery', async () => {
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
     });
@@ -34,8 +34,6 @@ describe('Home route', () => {
       </QueryClientProvider>,
     );
 
-    expect(
-      await screen.findByRole('heading', { name: /welcome, tester/i }, { timeout: 5000 }),
-    ).toBeInTheDocument();
+    await waitFor(() => expect(router.state.location.pathname).toBe('/portals'));
   });
 });

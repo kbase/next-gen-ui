@@ -41,38 +41,6 @@ function onKbaseHost(): boolean {
   return host === 'kbase.us' || host.endsWith('.kbase.us');
 }
 
-// Earlier builds wrote kbase_session on .kbase.us by default. Expire that
-// copy whenever this app writes or clears its own, so it stops reaching
-// other kbase.us hosts and stops shadowing the host-only cookie here.
-function expireSharedCopy(): void {
-  const domain = effectiveDomain()?.replace(/^\./, '');
-  if (!onKbaseHost() || domain === 'kbase.us') return;
-  const parts = [
-    `${COOKIE_NAME}=`,
-    `Path=/`,
-    `Expires=Thu, 01 Jan 1970 00:00:00 GMT`,
-    'Domain=.kbase.us',
-  ];
-  if (window.location.protocol === 'https:') parts.push('Secure');
-  document.cookie = parts.join('; ');
-}
-
-/**
- * Moves a session held only in the old .kbase.us copy onto this host, using
- * the expiry mirrored at sign-in. Run once at boot. document.cookie does not
- * say which domain a cookie belongs to, so the copy is expired and the token
- * rewritten if nothing host-only remains.
- */
-export function migrateSharedCookie(): void {
-  if (!onKbaseHost() || effectiveDomain()?.replace(/^\./, '') === 'kbase.us') return;
-  const token = readCookie(COOKIE_NAME, () => {});
-  if (!token) return;
-  expireSharedCopy();
-  if (readCookie(COOKIE_NAME, () => {}) !== null) return;
-  const expiry = getExpiry();
-  if (expiry !== null && expiry > Date.now()) setToken(token, new Date(expiry));
-}
-
 /** kbase_session, else kbase_session_backup. */
 export function getToken(): string | null {
   return readCookie(COOKIE_NAME, clearToken) ?? readCookie(BACKUP_COOKIE_NAME, clearBackupToken);
@@ -114,7 +82,6 @@ export function setToken(value: string, expiresAt: Date): void {
   ];
   if (domain) parts.push(`Domain=${domain}`);
   if (isHttps) parts.push('Secure');
-  expireSharedCopy();
   document.cookie = parts.join('; ');
   writeExpiry(expiresAt.getTime());
   writeAuthSignal(`set:${Date.now()}`);
@@ -136,7 +103,6 @@ export function clearToken(): void {
   if (domain) parts.push(`Domain=${domain}`);
   if (isHttps) parts.push('Secure');
   document.cookie = parts.join('; ');
-  expireSharedCopy();
   clearExpiry();
   // setItem (not removeItem): the storage event only fires on
   // removeItem when the key existed. setItem with a state-encoded

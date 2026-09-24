@@ -164,9 +164,6 @@ read it. Tokens never go in URLs,
 logs, or `localStorage`. Cookie attributes:
 
 - `Domain` is omitted (host-only) unless `COOKIE_DOMAIN` sets one.
-  Earlier builds defaulted to `.kbase.us`; that copy is expired on
-  every write and clear, and `migrateSharedCookie()` moves a session
-  held only there onto this host at boot, using the mirrored expiry.
 - `Path=/`
 - `Secure` on https
 - `SameSite=Lax`

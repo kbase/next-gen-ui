@@ -1,5 +1,6 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  AUTH_SIGNAL_KEY,
   BACKUP_COOKIE_NAME,
   COOKIE_NAME,
   clearBackupToken,
@@ -86,5 +87,30 @@ describe('kbase_session_backup', () => {
     setBackup('%E0');
     expect(getToken()).toBeNull();
     expect(document.cookie).not.toContain(`${BACKUP_COOKIE_NAME}=%E0`);
+  });
+});
+
+describe('a corrupt kbase_session and other tabs', () => {
+  const signals = (run: () => void) => {
+    const setItem = vi.spyOn(Storage.prototype, 'setItem');
+    run();
+    const out = setItem.mock.calls.filter(([k]) => k === AUTH_SIGNAL_KEY).map(([, v]) => v);
+    setItem.mockRestore();
+    return out;
+  };
+
+  it('tells no one when the backup takes over', () => {
+    document.cookie = `${COOKIE_NAME}=%E0; path=/`;
+    setBackup('backup-tok');
+    let token: string | null = null;
+    expect(signals(() => (token = getToken()))).toEqual([]);
+    expect(token).toBe('backup-tok');
+  });
+
+  it('tells other tabs the session ended when no backup is left', () => {
+    document.cookie = `${COOKIE_NAME}=%E0; path=/`;
+    const sent = signals(() => getToken());
+    expect(sent).toHaveLength(1);
+    expect(sent[0]).toMatch(/^cleared:/);
   });
 });

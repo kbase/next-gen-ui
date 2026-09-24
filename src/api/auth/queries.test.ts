@@ -309,6 +309,18 @@ describe('authMeOptions and other tabs', () => {
     expect(signals[0]).toMatch(/^set:/);
   });
 
+  it('asks other tabs to re-check when the backup check fails', async () => {
+    setToken('dead', later());
+    document.cookie = `${BACKUP_COOKIE_NAME}=maybe; path=/`;
+    fetchMock
+      .mockResolvedValueOnce(new Response('{}', { status: 401 }))
+      .mockRejectedValueOnce(new TypeError('network'));
+    localStorage.removeItem(AUTH_SIGNAL_KEY);
+    await expect(new QueryClient().fetchQuery(authMeOptions())).rejects.toThrow('network');
+    expect(signal()).toMatch(/^set:/);
+    expect(backupPresent()).toBe(true);
+  });
+
   it('tells other tabs the session ended when no token is left', async () => {
     setToken('dead', later());
     fetchMock.mockResolvedValueOnce(new Response('{}', { status: 401 }));

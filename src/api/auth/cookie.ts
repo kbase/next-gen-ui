@@ -51,11 +51,22 @@ export function clearBackupTokenIf(token: string): void {
 
 /** kbase_session, else kbase_session_backup. */
 export function getToken(): string | null {
-  return readCookie(COOKIE_NAME, clearToken) ?? readCookie(BACKUP_COOKIE_NAME, clearBackupToken);
+  let evicted = false;
+  const primary = readCookie(COOKIE_NAME, () => {
+    // Other tabs are told only if no backup takes over below.
+    clearToken({ notify: false });
+    evicted = true;
+  });
+  if (primary !== null) return primary;
+  const backup = readCookie(BACKUP_COOKIE_NAME, clearBackupToken);
+  if (evicted && backup === null) notifyOtherTabs('cleared');
+  return backup;
 }
 
 function readCookie(name: string, evict: () => void): string | null {
-  const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
+  // BACKUP_COOKIE_NAME is operator-set; escape it so it matches literally.
+  const literal = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${literal}=([^;]*)`));
   if (!match) return null;
   let decoded: string;
   try {

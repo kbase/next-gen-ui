@@ -46,7 +46,15 @@ export function authMeOptions() {
         clearBackupTokenIf(token);
         const backup = getToken();
         if (backup && backup !== token) {
-          const fromBackup = await validateToken(backup, { signal });
+          let fromBackup: Awaited<ReturnType<typeof validateToken>>;
+          try {
+            fromBackup = await validateToken(backup, { signal });
+          } catch (err) {
+            // kbase_session is already gone; other tabs re-check rather than
+            // keep a session this tab could not confirm.
+            notifyOtherTabs('set');
+            throw err;
+          }
           if (fromBackup === null) clearBackupTokenIf(backup);
           notifyOtherTabs(fromBackup ? 'set' : 'cleared');
           return fromBackup;

@@ -1,6 +1,20 @@
 import { queryOptions, type QueryClient } from '@tanstack/react-query';
-import { getAllSessions, getTokenInfo, setAuthFailureHandler, validateToken } from './client';
-import { AUTH_SIGNAL_KEY, clearToken, getExpiry, getToken, setToken } from './cookie';
+import {
+  AUTH_ENABLED,
+  getAllSessions,
+  getTokenInfo,
+  setAuthFailureHandler,
+  validateToken,
+} from './client';
+import {
+  AUTH_SIGNAL_KEY,
+  clearBackupTokenIf,
+  clearToken,
+  getExpiry,
+  notifyOtherTabs,
+  getToken,
+  setToken,
+} from './cookie';
 import type { AllSessions, Me, TokenInfo } from './schemas';
 
 const AUTH_ROOT_KEY = ['auth'] as const;
@@ -20,7 +34,33 @@ export class MfaRequiredError extends Error {
 export function authMeOptions() {
   return queryOptions({
     queryKey: ME_KEY,
-    queryFn: ({ signal }) => validateToken(getToken(), { signal }),
+    queryFn: async ({ signal }) => {
+      const token = getToken();
+      const me = await validateToken(token, { signal });
+      // null with a token and an auth service means /me answered 401.
+      if (me === null && token && AUTH_ENABLED) {
+        // Other tabs hear the outcome below, not this intermediate clear.
+        clearToken({ notify: false });
+        clearBackupTokenIf(token);
+        const backup = getToken();
+        if (backup && backup !== token) {
+          let fromBackup: Awaited<ReturnType<typeof validateToken>>;
+          try {
+            fromBackup = await validateToken(backup, { signal });
+          } catch (err) {
+            // kbase_session is already gone; other tabs re-check rather than
+            // keep a session this tab could not confirm.
+            notifyOtherTabs('set');
+            throw err;
+          }
+          if (fromBackup === null) clearBackupTokenIf(backup);
+          notifyOtherTabs(fromBackup ? 'set' : 'cleared');
+          return fromBackup;
+        }
+        notifyOtherTabs('cleared');
+      }
+      return me;
+    },
     // Trust until invalidated. The 401 interceptor, cross-tab
     // signal, and expiry watchdog evict this; never the clock.
     staleTime: Infinity,
@@ -40,11 +80,12 @@ export function authSessionsOptions() {
   });
 }
 
-export function tokenInfoOptions() {
+// Keyed by the token it describes: /me can switch from kbase_session to the
+// backup, and a cached answer for the old token must not vouch for the new.
+export function tokenInfoOptions(token: string | null = getToken()) {
   return queryOptions<TokenInfo>({
-    queryKey: TOKEN_INFO_KEY,
+    queryKey: [...TOKEN_INFO_KEY, token],
     queryFn: ({ signal }) => {
-      const token = getToken();
       if (!token) throw new Error('Not authenticated');
       return getTokenInfo(token, { signal });
     },
@@ -65,7 +106,7 @@ export async function primeAuthCache(
   if (tokenInfo.mfa !== 'Used') throw new MfaRequiredError();
   setToken(args.token, args.expiresAt);
   qc.setQueryData(ME_KEY, me);
-  qc.setQueryData(TOKEN_INFO_KEY, tokenInfo);
+  qc.setQueryData(tokenInfoOptions(args.token).queryKey, tokenInfo);
   scheduleAuthExpiry(qc, args.expiresAt.getTime());
   return me;
 }

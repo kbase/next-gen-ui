@@ -50,6 +50,11 @@ export default defineConfig(({ mode }) => {
             attrs: { name: 'config:auth-environment', content: '__AUTH_ENVIRONMENT__' },
             injectTo: 'head-prepend' as const,
           },
+          {
+            tag: 'meta',
+            attrs: { name: 'config:backup-cookie-name', content: '__BACKUP_COOKIE_NAME__' },
+            injectTo: 'head-prepend' as const,
+          },
         ],
       },
       {

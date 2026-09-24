@@ -25,7 +25,15 @@ export {
   logout,
 } from './client';
 
-export { COOKIE_NAME, getToken, setToken, clearToken } from './cookie';
+export {
+  BACKUP_COOKIE_NAME,
+  COOKIE_NAME,
+  getToken,
+  setToken,
+  clearToken,
+  clearBackupToken,
+  clearBackupTokenIf,
+} from './cookie';
 
 export {
   authMeOptions,
@@ -51,6 +59,7 @@ export type { AuthErrorMessageOptions } from './errors';
 export {
   useMe,
   useMaybeMe,
+  useSignedInMe,
   useSessions,
   useSignOut,
   useUpdateMe,

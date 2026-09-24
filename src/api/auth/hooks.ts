@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { logout, revokeSession, setMe } from './client';
-import { getToken } from './cookie';
-import { authMeOptions, authSessionsOptions, clearAuthSession } from './queries';
+import { clearBackupTokenIf, getToken } from './cookie';
+import { authMeOptions, authSessionsOptions, clearAuthSession, tokenInfoOptions } from './queries';
 import type { Me, MeUpdate } from './schemas';
 
 // Inside any route gated by the root beforeLoad, the auth cache is
@@ -18,9 +18,17 @@ export function useMe(): Me {
   return data;
 }
 
+/** Any session /me accepts, with or without 2FA. */
 export function useMaybeMe(): Me | null {
   const { data } = useQuery(authMeOptions());
   return data ?? null;
+}
+
+/** A session /me accepts that used 2FA: the root gate's rule. */
+export function useSignedInMe(): Me | null {
+  const me = useMaybeMe();
+  const { data: tokenInfo } = useQuery({ ...tokenInfoOptions(), enabled: me !== null });
+  return me && tokenInfo?.mfa === 'Used' ? me : null;
 }
 
 export function useSessions() {
@@ -81,9 +89,11 @@ export function useSignOut() {
       const token = getToken();
       await navigate({ to: '/login', replace: true });
       qc.removeQueries({ queryKey: ['auth'] });
+      let revoked = false;
       if (token) {
         try {
           await logout(token);
+          revoked = true;
         } catch (err) {
           if (import.meta.env.DEV) {
             console.warn('[useSignOut] revoke failed (best-effort):', err);
@@ -91,6 +101,8 @@ export function useSignOut() {
         }
       }
       clearAuthSession();
+      // After a failed revoke the token still works on other kbase.us sites.
+      if (revoked && token) clearBackupTokenIf(token);
     },
   });
 }

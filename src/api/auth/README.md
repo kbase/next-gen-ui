@@ -1,8 +1,11 @@
 # `src/api/auth/`
 
 ORCID-only sign-in against the kbase auth service. Session token is
-stored in a `.kbase.us` cookie, shared with the legacy UI and
-narratives. The wire protocol is mirrored exactly; the implementation
+stored in a host-only `kbase_session` cookie; a session from the legacy
+UI or a narrative arrives through `kbase_session_backup` (see Token
+storage). A session without 2FA is not signed in anywhere in the app;
+the gallery still shows its username.
+The wire protocol is mirrored exactly; the implementation
 is not (kbase-ui uses Redux + RTK Query effect chains).
 
 Reference implementation for cross-checking: `work/ui/src/common/api/authService.ts`
@@ -158,31 +161,42 @@ is. XSS surface is unchanged.
 ## Token storage trade-off
 
 `kbase_session` is a JS-set cookie. It can't be `HttpOnly` because
-the design point (cross-subdomain SSO) requires the cookie to be
-readable from JS on every kbase subdomain. Tokens never go in URLs,
+the app sends the token as an `Authorization` header, so JS has to
+read it. Tokens never go in URLs,
 logs, or `localStorage`. Cookie attributes:
 
-- `Domain` is set from `VITE_COOKIE_DOMAIN` when defined (override).
-  Otherwise: `.kbase.us` when the runtime hostname is `kbase.us` or
-  `*.kbase.us`; omitted everywhere else (so localhost dev still
-  works without a Domain attribute landing the cookie on the wrong
-  scope).
+- `Domain` is omitted (host-only) unless `COOKIE_DOMAIN` sets one.
 - `Path=/`
 - `Secure` on https
 - `SameSite=Lax`
 
+### `kbase_session_backup`
+
+Production kbase-ui sets its `kbase_session` on `.narrative.kbase.us`
+and the Narrative sets its own on the narrative host, so neither
+reaches another `kbase.us` host. Both also write `kbase_session_backup`
+on `.kbase.us`. This app reads it when `kbase_session` is absent, or
+when `/api/V2/me` rejects the `kbase_session` token, and never writes
+it. The name comes from `BACKUP_COOKIE_NAME` (default
+`kbase_session_backup`); the domain is this host's parent domain.
+
+It is deleted only when it holds a token that is dead everywhere: the
+token revoked at sign-out, if the revoke succeeded, or the token
+`/api/V2/me` answered 401 for. A token this app refuses but others
+accept (no 2FA, at the root gate) keeps the backup, since deleting it
+would sign the user out of every `kbase.us` site that reads it.
+
 ---
 
-## Why `kbase.us` for auth and `app.kbase.us` for deploy
+## Why `kbase.us` for auth and a peer subdomain for deploy
 
 - **Auth host** must be the canonical apex `kbase.us`. Pointing
   `VITE_AUTH_ORIGIN` at a peer like `narrative.kbase.us` causes the
   in-process cookie set during the redirect chain to land on the
   wrong domain and the callback fails.
-- **Deploy host** is `app.kbase.us`, a peer subdomain. That still
-  exercises the cross-subdomain shared-cookie path: `kbase_session`
-  is set on `.kbase.us` so any kbase subdomain (this app,
-  narratives, the legacy UI) reads the same session.
+- **Deploy host** is a peer subdomain such as `gen2.kbase.us`. It
+  keeps its own host-only `kbase_session` and reads the legacy UI's
+  and narratives' session from `kbase_session_backup` on `.kbase.us`.
 
 ---
 

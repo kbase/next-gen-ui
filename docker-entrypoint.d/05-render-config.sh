@@ -30,6 +30,7 @@ IDP_ORIGINS="${IDP_ORIGINS:-https://orcid.org}"
 AUTH_ORIGIN_META="${AUTH_ORIGIN:-__AUTH_ORIGIN__}"
 COOKIE_DOMAIN_VALUE="${COOKIE_DOMAIN:-__COOKIE_DOMAIN__}"
 AUTH_ENVIRONMENT_VALUE="${AUTH_ENVIRONMENT:-__AUTH_ENVIRONMENT__}"
+BACKUP_COOKIE_NAME_VALUE="${BACKUP_COOKIE_NAME:-__BACKUP_COOKIE_NAME__}"
 
 # A literal __AUTH_ORIGIN__ is not a valid CSP source expression, so with no
 # auth service the directive collapses to 'self'. The templates write
@@ -55,6 +56,7 @@ render() {
       -e "s#__IDP_ORIGINS__#$(esc "$IDP_ORIGINS")#g" \
       -e "s#__COOKIE_DOMAIN__#$(esc "$COOKIE_DOMAIN_VALUE")#g" \
       -e "s#__AUTH_ENVIRONMENT__#$(esc "$AUTH_ENVIRONMENT_VALUE")#g" \
+      -e "s#__BACKUP_COOKIE_NAME__#$(esc "$BACKUP_COOKIE_NAME_VALUE")#g" \
       -e "s#__SCRIPT_HASH__#$(esc "$SCRIPT_HASH")#g" \
       "$2" > "$3"
 }
@@ -63,12 +65,12 @@ render "$AUTH_ORIGIN_CSP" "$CONF_IN" "$CONF_OUT"
 render "$AUTH_ORIGIN_META" "$HTML_IN" "$HTML_OUT"
 
 # The nginx conf must be fully substituted -- a stray __VAR__ in a CSP is a
-# broken policy. index.html may keep the three "not configured" markers above,
+# broken policy. index.html may keep the four "not configured" markers above,
 # which the app reads deliberately; anything else there is a placeholder
 # someone added to a template without wiring it up here.
 conf_leftover="$(grep -oh '__[A-Z_]*__' "$CONF_OUT" || true)"
 html_leftover="$(grep -oh '__[A-Z_]*__' "$HTML_OUT" \
-  | grep -vE '^(__AUTH_ORIGIN__|__COOKIE_DOMAIN__|__AUTH_ENVIRONMENT__)$' || true)"
+  | grep -vE '^(__AUTH_ORIGIN__|__COOKIE_DOMAIN__|__AUTH_ENVIRONMENT__|__BACKUP_COOKIE_NAME__)$' || true)"
 leftover="$(printf '%s\n%s' "$conf_leftover" "$html_leftover" | grep -v '^$' || true)"
 if [ -n "$leftover" ]; then
   echo "05-render-config: unsubstituted placeholders remain:" >&2

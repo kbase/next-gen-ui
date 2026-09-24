@@ -41,19 +41,18 @@ in the document root, so an `emptyDir` there would replace the app.
 Set these on the workload. Rendered at container start; no rebuild is
 involved. Unset and empty mean the same thing.
 
-| Var                | Not set                                |
-| ------------------ | -------------------------------------- |
-| `AUTH_ORIGIN`      | no auth service in this deployment     |
-| `COOKIE_DOMAIN`    | derived from the current host          |
-| `AUTH_ENVIRONMENT` | the auth service's default environment |
-| `IDP_ORIGINS`      | `https://orcid.org`                    |
+| Var                  | Not set                                |
+| -------------------- | -------------------------------------- |
+| `AUTH_ORIGIN`        | no auth service in this deployment     |
+| `COOKIE_DOMAIN`      | host-only session cookie               |
+| `AUTH_ENVIRONMENT`   | the auth service's default environment |
+| `BACKUP_COOKIE_NAME` | `kbase_session_backup`                 |
+| `IDP_ORIGINS`        | `https://orcid.org`                    |
 
 ```yaml
 env:
   - name: AUTH_ORIGIN
     value: https://kbase.us
-  - name: COOKIE_DOMAIN
-    value: .kbase.us
   - name: AUTH_ENVIRONMENT
     value: gen2
 ```
@@ -95,9 +94,17 @@ either.
 TLS is required: the session cookie is only set over HTTPS, and ORCID
 will not redirect to a plaintext callback.
 
-Use a hostname under `kbase.us` if the session should be shared with
-the legacy UI and narratives. On any other hostname the cookie is
-scoped to that host unless `COOKIE_DOMAIN` is set explicitly.
+The session cookie is host-only. Leave `COOKIE_DOMAIN` unset on
+`kbase.us` hosts: kbase-ui and the Narrative keep their own
+`kbase_session` per host, and one on `.kbase.us` reaches them as a
+second cookie of the same name. A session from those apps arrives here
+through `kbase_session_backup`, which needs a hostname under `kbase.us`.
+
+`BACKUP_COOKIE_NAME` is the name of that backup. Every `kbase.us` host
+receives every `.kbase.us` cookie, so environments tell their backups
+apart by name. The default is production's. A deployment on another
+auth service sets the name its own UI writes; a name nothing writes
+turns the fallback off.
 
 ---
 

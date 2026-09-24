@@ -561,7 +561,7 @@ function Identity() {
         </span>
         {!orcid && uiOrigin && (
           // A session from another kbase.us site (a Google or Globus sign-in)
-          // can have no ORCID linked. Linking happens in the legacy account UI.
+          // can have no ORCID linked.
           <a
             className={styles.identityLink}
             href={`${uiOrigin}/account/providers`}

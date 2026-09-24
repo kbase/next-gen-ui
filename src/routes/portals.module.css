@@ -73,7 +73,7 @@
   font-weight: 600;
   line-height: 12px;
   color: var(--c-ink);
-  /* auth2 usernames run to 100 characters; a long one ends in an ellipsis. */
+  /* auth2 usernames run to 100 characters. */
   max-width: 190px;
   overflow: hidden;
   text-overflow: ellipsis;

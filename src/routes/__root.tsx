@@ -9,8 +9,7 @@ import {
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import type { QueryClient } from '@tanstack/react-query';
-import { Alert, Avatar, Button, Frame, Loader, NavIcon, Tooltip } from '@kbase/design-system';
-import { MapTrifold } from '@phosphor-icons/react';
+import { Alert, Avatar, Button, Frame, Loader, Tooltip } from '@kbase/design-system';
 
 import {
   AuthApiError,
@@ -33,8 +32,9 @@ export interface RouterContext {
 
 // The design system is documentation, so it is readable without an account.
 // /portals is the public front door: a gallery of published portals that
-// anyone can browse before they have a KBase identity.
+// anyone can browse before they have a KBase identity. / only redirects there.
 const PUBLIC_ROUTES: ReadonlyArray<string> = [
+  '/',
   '/login',
   '/login/continue',
   '/design-system',
@@ -54,10 +54,6 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     if (isPublic(location.pathname)) return;
     const me = await context.queryClient.ensureQueryData(authMeOptions());
     if (!me) {
-      // The site root is the public front door: an anonymous visitor gets
-      // the gallery, not a login form. Every other gated route still asks
-      // for a sign-in and returns the visitor to it afterwards.
-      if (location.pathname === '/') throw redirect({ to: '/portals' });
       throw redirect({
         to: '/login',
         search: { redirect: safeRedirect(location.href) },
@@ -199,21 +195,6 @@ function AppLayout({
           </div>
 
           <div className="app-shell__sidebar-nav">
-            <Tooltip.Root>
-              <Tooltip.Trigger
-                render={
-                  <NavIcon active={pathname === '/'} aria-label="Roadmap" asChild>
-                    <Link to="/">
-                      <MapTrifold size={17} weight={pathname === '/' ? 'fill' : 'regular'} />
-                    </Link>
-                  </NavIcon>
-                }
-              />
-              <Tooltip.Popup side="right" sideOffset={8}>
-                Roadmap
-              </Tooltip.Popup>
-            </Tooltip.Root>
-
             <div className="app-shell__spacer" />
 
             <Tooltip.Root>

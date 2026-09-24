@@ -205,25 +205,3 @@ body,
   padding-top: var(--s-7);
   border-top: 1px solid var(--c-border);
 }
-
-/* Page hero. Mirrors the design-system showcase hero so the
-   home page reads as part of the same visual language. */
-.page-hero {
-  padding: var(--s-10) 0;
-}
-
-.page-hero__headline {
-  font-size: var(--fs-hero);
-  font-weight: 700;
-  line-height: 1.15;
-  color: var(--c-ink);
-  margin-bottom: var(--s-5);
-  max-width: 500px;
-}
-
-.page-hero__tagline {
-  font-size: var(--fs-6);
-  color: var(--c-ink3);
-  max-width: 60ch;
-  line-height: 1.6;
-}

@@ -41,6 +41,21 @@ describe('root gate', () => {
     expect(router.state.location.pathname).toBe('/portals');
   });
 
+  it('redirects / without asking the auth service', async () => {
+    setCookie('tok');
+    const calls: string[] = [];
+    server.use(
+      http.get('*/services/auth/api/V2/*', ({ request }) => {
+        calls.push(new URL(request.url).pathname);
+        return HttpResponse.json({ user: 't', display: 'T', id: 's', mfa: 'Used' });
+      }),
+    );
+    const { router } = mountAt('/');
+    await screen.findByRole('heading', { level: 1, name: /portal gallery/i });
+    expect(router.state.location.pathname).toBe('/portals');
+    expect(calls.filter((c) => c.endsWith('/token'))).toEqual([]);
+  });
+
   it('redirects unauthenticated visitors from /account to /login', async () => {
     const { router } = mountAt('/account');
     await waitFor(() => {
@@ -110,7 +125,7 @@ describe('root gate', () => {
     expect(await screen.findByRole('button', { name: /retry/i })).toBeInTheDocument();
   });
 
-  it('renders the app shell (sidebar) when authenticated and the auth shell when on /login', async () => {
+  it('shows no app shell on /login', async () => {
     // Auth layout: no sidebar.
     const { router: authRouter } = mountAt('/login');
     await waitFor(() => {

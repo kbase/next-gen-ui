@@ -130,12 +130,13 @@ Two sets, and the distinction matters.
 These configure `npm run dev` only — a production image ignores
 them.
 
-| Var                      | Default (in code)  | Notes                                                                                   |
-| ------------------------ | ------------------ | --------------------------------------------------------------------------------------- |
-| `VITE_AUTH_ORIGIN`       | `https://kbase.us` | Auth service origin. Empty means relative paths through the dev proxy.                  |
-| `VITE_COOKIE_DOMAIN`     | unset              | Optional Domain attribute for the session cookie; unset is host-only.                   |
-| `VITE_AUTH_ENVIRONMENT`  | unset              | Optional. Auth-service environment name posted with the login form.                     |
-| `VITE_DEV_ALLOWED_HOSTS` | unset              | Comma-separated; leading dot is Vite's subdomain wildcard. For non-localhost dev hosts. |
+| Var                       | Default (in code)      | Notes                                                                                   |
+| ------------------------- | ---------------------- | --------------------------------------------------------------------------------------- |
+| `VITE_AUTH_ORIGIN`        | `https://kbase.us`     | Auth service origin. Empty means relative paths through the dev proxy.                  |
+| `VITE_COOKIE_DOMAIN`      | unset                  | Optional Domain attribute for the session cookie; unset is host-only.                   |
+| `VITE_AUTH_ENVIRONMENT`   | unset                  | Optional. Auth-service environment name posted with the login form.                     |
+| `VITE_BACKUP_COOKIE_NAME` | `kbase_session_backup` | Name of the session backup cookie on the parent domain.                                 |
+| `VITE_DEV_ALLOWED_HOSTS`  | unset                  | Comma-separated; leading dot is Vite's subdomain wildcard. For non-localhost dev hosts. |
 
 **Runtime**, read by the container's entrypoint and rendered into
 `nginx.conf` and `index.html` at start. Set these on the workload;
@@ -143,12 +144,13 @@ no rebuild is involved.
 
 Unset and empty mean the same thing.
 
-| Var                | Not set means                                            |
-| ------------------ | -------------------------------------------------------- |
-| `AUTH_ORIGIN`      | no auth service in this deployment                       |
-| `COOKIE_DOMAIN`    | host-only session cookie                                 |
-| `AUTH_ENVIRONMENT` | the auth service's default environment                   |
-| `IDP_ORIGINS`      | `https://orcid.org` (space-separated, for `form-action`) |
+| Var                  | Not set means                                            |
+| -------------------- | -------------------------------------------------------- |
+| `AUTH_ORIGIN`        | no auth service in this deployment                       |
+| `COOKIE_DOMAIN`      | host-only session cookie                                 |
+| `AUTH_ENVIRONMENT`   | the auth service's default environment                   |
+| `BACKUP_COOKIE_NAME` | `kbase_session_backup`                                   |
+| `IDP_ORIGINS`        | `https://orcid.org` (space-separated, for `form-action`) |
 
 Leaving `AUTH_ORIGIN` out is a supported deployment, not a broken one:
 public routes serve normally and sign-in reports itself as unavailable

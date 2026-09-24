@@ -93,4 +93,15 @@ describe('runtime config', () => {
     const { legacyUiOrigin } = await import('./config');
     expect(legacyUiOrigin(auth)).toBe(ui);
   });
+
+  it("defaults the backup cookie name to production kbase-ui's", async () => {
+    const config = await loadConfig();
+    expect(config.backupCookieName).toBe('kbase_session_backup');
+  });
+
+  it('reads the backup cookie name', async () => {
+    setMeta('backup-cookie-name', 'ci_kbase_session_backup');
+    const config = await loadConfig();
+    expect(config.backupCookieName).toBe('ci_kbase_session_backup');
+  });
 });

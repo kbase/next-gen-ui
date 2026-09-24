@@ -11,6 +11,7 @@ import {
   parseSafeRedirect,
   primeAuthCache,
   safeRedirect,
+  tokenInfoOptions,
   useSignedInMe,
   useSignOut,
 } from '../../api/auth';
@@ -33,7 +34,7 @@ export const Route = createFileRoute('/login/')({
     // while the auth cache is being evicted.
     const signedIn =
       context.queryClient.getQueryData(['auth', 'me']) &&
-      context.queryClient.getQueryData<{ mfa?: string }>(['auth', 'tokenInfo'])?.mfa === 'Used';
+      context.queryClient.getQueryData(tokenInfoOptions().queryKey)?.mfa === 'Used';
     if (search.redirect && signedIn) {
       const target = parseSafeRedirect(search.redirect);
       throw redirect({ to: target.pathname, search: target.search, hash: target.hash });

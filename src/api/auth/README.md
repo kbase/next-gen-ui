@@ -175,8 +175,10 @@ logs, or `localStorage`. Cookie attributes:
 Production kbase-ui sets its `kbase_session` on `.narrative.kbase.us`
 and the Narrative sets its own on the narrative host, so neither
 reaches another `kbase.us` host. Both also write `kbase_session_backup`
-on `.kbase.us`. This app reads it when `kbase_session` is absent and
-never writes it.
+on `.kbase.us`. This app reads it when `kbase_session` is absent, or
+when `/api/V2/me` rejects the `kbase_session` token, and never writes
+it. The name comes from `BACKUP_COOKIE_NAME` (default
+`kbase_session_backup`); the domain is this host's parent domain.
 
 It is deleted only when its token is dead everywhere: at sign-out,
 after the token is revoked, and when `/api/V2/me` answers 401. A token

@@ -16,7 +16,7 @@ describe('Home route', () => {
       user: 'tester',
       display: 'Tester',
     });
-    queryClient.setQueryData(['auth', 'tokenInfo'], {
+    queryClient.setQueryData(['auth', 'tokenInfo', null], {
       id: 'session-1',
       user: 'tester',
       mfa: 'Used',

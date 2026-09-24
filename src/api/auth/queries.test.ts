@@ -61,7 +61,7 @@ describe('primeAuthCache', () => {
     expect(me).toMatchObject({ user: 't', display: 'T' });
     expect(getToken()).toBe('tok-abc');
     expect(qc.getQueryData(['auth', 'me'])).toMatchObject({ user: 't' });
-    expect(qc.getQueryData(['auth', 'tokenInfo'])).toMatchObject({ mfa: 'Used' });
+    expect(qc.getQueryData(['auth', 'tokenInfo', 'tok-abc'])).toMatchObject({ mfa: 'Used' });
   });
 
   it('rejects without writing the cookie when the session lacks MFA', async () => {
@@ -77,7 +77,7 @@ describe('primeAuthCache', () => {
 
     expect(getToken()).toBeNull();
     expect(qc.getQueryData(['auth', 'me'])).toBeUndefined();
-    expect(qc.getQueryData(['auth', 'tokenInfo'])).toBeUndefined();
+    expect(qc.getQueryData(['auth', 'tokenInfo', 'tok-abc'])).toBeUndefined();
   });
 
   it('does not write the cookie when /api/V2/me rejects the token (401)', async () => {
@@ -288,6 +288,32 @@ describe('authMeOptions with two different tokens', () => {
       .mockResolvedValueOnce(new Response('{}', { status: 401 }));
     expect(await new QueryClient().fetchQuery(authMeOptions())).toBeNull();
     expect(backupPresent()).toBe(false);
+  });
+});
+
+describe('authMeOptions and other tabs', () => {
+  const later = () => new Date(Date.now() + 60_000);
+  const signal = () => localStorage.getItem(AUTH_SIGNAL_KEY) ?? '';
+
+  it('tells other tabs only that the session changed when the backup takes over', async () => {
+    setToken('dead', later());
+    document.cookie = `${BACKUP_COOKIE_NAME}=live; path=/`;
+    fetchMock
+      .mockResolvedValueOnce(new Response('{}', { status: 401 }))
+      .mockResolvedValueOnce(meRes({ user: 'b', display: 'B' }));
+    const setItem = vi.spyOn(Storage.prototype, 'setItem');
+    await new QueryClient().fetchQuery(authMeOptions());
+    const signals = setItem.mock.calls.filter(([k]) => k === AUTH_SIGNAL_KEY).map(([, v]) => v);
+    setItem.mockRestore();
+    expect(signals).toHaveLength(1);
+    expect(signals[0]).toMatch(/^set:/);
+  });
+
+  it('tells other tabs the session ended when no token is left', async () => {
+    setToken('dead', later());
+    fetchMock.mockResolvedValueOnce(new Response('{}', { status: 401 }));
+    await new QueryClient().fetchQuery(authMeOptions());
+    expect(signal()).toMatch(/^cleared:/);
   });
 });
 

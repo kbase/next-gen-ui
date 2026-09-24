@@ -11,6 +11,7 @@ import {
   clearBackupTokenIf,
   clearToken,
   getExpiry,
+  notifyOtherTabs,
   getToken,
   setToken,
 } from './cookie';
@@ -40,14 +41,17 @@ export function authMeOptions() {
       // backup is shared with other kbase.us sites, so it goes only if it
       // holds this same dead token; a different backup token gets its turn.
       if (me === null && token && AUTH_ENABLED) {
-        clearToken();
+        // Other tabs hear the outcome below, not this intermediate clear.
+        clearToken({ notify: false });
         clearBackupTokenIf(token);
         const backup = getToken();
         if (backup && backup !== token) {
           const fromBackup = await validateToken(backup, { signal });
           if (fromBackup === null) clearBackupTokenIf(backup);
+          notifyOtherTabs(fromBackup ? 'set' : 'cleared');
           return fromBackup;
         }
+        notifyOtherTabs('cleared');
       }
       return me;
     },
@@ -70,11 +74,12 @@ export function authSessionsOptions() {
   });
 }
 
-export function tokenInfoOptions() {
+// Keyed by the token it describes: /me can switch from kbase_session to the
+// backup, and a cached answer for the old token must not vouch for the new.
+export function tokenInfoOptions(token: string | null = getToken()) {
   return queryOptions<TokenInfo>({
-    queryKey: TOKEN_INFO_KEY,
+    queryKey: [...TOKEN_INFO_KEY, token],
     queryFn: ({ signal }) => {
-      const token = getToken();
       if (!token) throw new Error('Not authenticated');
       return getTokenInfo(token, { signal });
     },
@@ -95,7 +100,7 @@ export async function primeAuthCache(
   if (tokenInfo.mfa !== 'Used') throw new MfaRequiredError();
   setToken(args.token, args.expiresAt);
   qc.setQueryData(ME_KEY, me);
-  qc.setQueryData(TOKEN_INFO_KEY, tokenInfo);
+  qc.setQueryData(tokenInfoOptions(args.token).queryKey, tokenInfo);
   scheduleAuthExpiry(qc, args.expiresAt.getTime());
   return me;
 }

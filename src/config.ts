@@ -17,6 +17,9 @@ const ConfigSchema = z.object({
   // Auth-service environment name, posted with the login form. undefined
   // -> the auth service's default environment, and no field is sent.
   authEnvironment: z.string().optional(),
+  // Name of the .kbase.us session backup. Environments tell their backups
+  // apart by name, since every kbase.us host receives every .kbase.us cookie.
+  backupCookieName: z.string(),
 });
 
 export type AppConfig = z.infer<typeof ConfigSchema>;
@@ -50,6 +53,10 @@ export const config: AppConfig = ConfigSchema.parse({
   authOrigin: resolveAuthOrigin(),
   cookieDomain: readMeta('cookie-domain') ?? import.meta.env.VITE_COOKIE_DOMAIN,
   authEnvironment: readMeta('auth-environment') ?? import.meta.env.VITE_AUTH_ENVIRONMENT,
+  backupCookieName:
+    readMeta('backup-cookie-name') ??
+    import.meta.env.VITE_BACKUP_COOKIE_NAME ??
+    'kbase_session_backup',
 });
 
 /** False when this deployment has no auth service. */

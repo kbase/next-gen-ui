@@ -10,9 +10,9 @@ import { config } from '../../config';
 export const COOKIE_NAME = 'kbase_session';
 
 // Production kbase-ui scopes its kbase_session to .narrative.kbase.us, which
-// other kbase.us hosts never receive; it and the Narrative also write this
-// copy on .kbase.us. Read as a fallback, never written here.
-export const BACKUP_COOKIE_NAME = 'kbase_session_backup';
+// other kbase.us hosts never receive; it and the Narrative also write a copy
+// on .kbase.us under this name. Read as a fallback, never written here.
+export const BACKUP_COOKIE_NAME = config.backupCookieName;
 
 // Cookies don't fire cross-tab events; localStorage does. We mirror
 // the cookie write/clear into a tiny localStorage signal so other
@@ -36,9 +36,12 @@ function effectiveDomain(): string | undefined {
   return DOMAIN_OVERRIDE || undefined;
 }
 
-function onKbaseHost(): boolean {
-  const host = window.location.hostname;
-  return host === 'kbase.us' || host.endsWith('.kbase.us');
+// The backup lives on the registrable domain of whichever site wrote it:
+// the last two labels of this host (gen2.kbase.us -> .kbase.us). A
+// single-label host such as localhost has none, so the delete is host-only.
+function backupDomain(): string | undefined {
+  const labels = window.location.hostname.split('.');
+  return labels.length >= 2 ? `.${labels.slice(-2).join('.')}` : undefined;
 }
 
 /** Deletes kbase_session_backup only when it holds `token`. */
@@ -96,7 +99,7 @@ export function setToken(value: string, expiresAt: Date): void {
 // to match the original write. It's not "in some cases", it's the
 // rule. Keep effectiveDomain() / SameSite / Secure aligned with
 // setToken so the eviction reaches the same cookie.
-export function clearToken(): void {
+export function clearToken({ notify = true }: { notify?: boolean } = {}): void {
   const isHttps = window.location.protocol === 'https:';
   const domain = effectiveDomain();
   const parts = [
@@ -112,7 +115,12 @@ export function clearToken(): void {
   // setItem (not removeItem): the storage event only fires on
   // removeItem when the key existed. setItem with a state-encoded
   // value fires reliably whether or not the key was previously set.
-  writeAuthSignal(`cleared:${Date.now()}`);
+  if (notify) writeAuthSignal(`cleared:${Date.now()}`);
+}
+
+/** Tells other tabs the session changed or ended without writing a cookie. */
+export function notifyOtherTabs(state: 'set' | 'cleared'): void {
+  writeAuthSignal(`${state}:${Date.now()}`);
 }
 
 /**
@@ -122,7 +130,8 @@ export function clearToken(): void {
  */
 export function clearBackupToken(): void {
   const parts = [`${BACKUP_COOKIE_NAME}=`, `Path=/`, `Expires=Thu, 01 Jan 1970 00:00:00 GMT`];
-  if (onKbaseHost()) parts.push('Domain=.kbase.us');
+  const domain = backupDomain();
+  if (domain) parts.push(`Domain=${domain}`);
   if (window.location.protocol === 'https:') parts.push('Secure');
   document.cookie = parts.join('; ');
 }

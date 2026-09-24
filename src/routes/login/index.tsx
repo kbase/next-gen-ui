@@ -6,6 +6,7 @@ import { Alert, Button, Field, Frame, Input } from '@kbase/design-system';
 
 import {
   AUTH_ENABLED,
+  AUTH_ENVIRONMENT,
   AUTH_ORIGIN,
   parseSafeRedirect,
   primeAuthCache,
@@ -48,6 +49,9 @@ function LoginPage() {
   const isSignedIn = me !== null;
   const mfaRequired = error === 'mfa-required';
 
+  // The destination travels inside a query param because the auth service
+  // stores redirecturl in a cookie: a raw `;` ends the cookie value and a
+  // raw `"` is rejected. searchParams.set percent-encodes both.
   const continueUrl = useMemo(() => {
     const url = new URL(`${window.location.origin}/login/continue`);
     url.searchParams.set('state', JSON.stringify({ nextRequest }));
@@ -132,6 +136,9 @@ function LoginPage() {
         {AUTH_ENABLED ? (
           <form action={actionUrl} method="post">
             <input type="hidden" name="redirecturl" value={continueUrl} />
+            {AUTH_ENVIRONMENT !== undefined && (
+              <input type="hidden" name="environment" value={AUTH_ENVIRONMENT} />
+            )}
             <Button
               type="submit"
               name="provider"

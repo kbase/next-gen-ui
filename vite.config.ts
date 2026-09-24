@@ -45,6 +45,11 @@ export default defineConfig(({ mode }) => {
             attrs: { name: 'config:cookie-domain', content: '__COOKIE_DOMAIN__' },
             injectTo: 'head-prepend' as const,
           },
+          {
+            tag: 'meta',
+            attrs: { name: 'config:auth-environment', content: '__AUTH_ENVIRONMENT__' },
+            injectTo: 'head-prepend' as const,
+          },
         ],
       },
       {

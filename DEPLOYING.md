@@ -41,11 +41,12 @@ in the document root, so an `emptyDir` there would replace the app.
 Set these on the workload. Rendered at container start; no rebuild is
 involved. Unset and empty mean the same thing.
 
-| Var             | Not set                            |
-| --------------- | ---------------------------------- |
-| `AUTH_ORIGIN`   | no auth service in this deployment |
-| `COOKIE_DOMAIN` | derived from the current host      |
-| `IDP_ORIGINS`   | `https://orcid.org`                |
+| Var                | Not set                                |
+| ------------------ | -------------------------------------- |
+| `AUTH_ORIGIN`      | no auth service in this deployment     |
+| `COOKIE_DOMAIN`    | derived from the current host          |
+| `AUTH_ENVIRONMENT` | the auth service's default environment |
+| `IDP_ORIGINS`      | `https://orcid.org`                    |
 
 ```yaml
 env:
@@ -53,6 +54,8 @@ env:
     value: https://kbase.us
   - name: COOKIE_DOMAIN
     value: .kbase.us
+  - name: AUTH_ENVIRONMENT
+    value: gen2
 ```
 
 Leaving `AUTH_ORIGIN` out is supported: there is no auth service, the

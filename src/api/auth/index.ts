@@ -12,6 +12,7 @@ export type {
 
 export {
   AUTH_ENABLED,
+  AUTH_ENVIRONMENT,
   AUTH_ORIGIN,
   AuthApiError,
   validateToken,
@@ -39,7 +40,7 @@ export {
   MfaRequiredError,
 } from './queries';
 
-export { safeRedirect, parseSafeRedirect } from './redirect';
+export { safeRedirect, parseSafeRedirect, nextRequestFromRedirectUrl } from './redirect';
 export type { SafeRedirectParts } from './redirect';
 
 export { authErrorMessage } from './errors';

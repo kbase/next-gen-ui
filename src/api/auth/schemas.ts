@@ -114,8 +114,8 @@ export const LoginPickInputSchema = z.object({
 });
 export type LoginPickInput = z.input<typeof LoginPickInputSchema>;
 
-// The auth service returns the bearer token in the response body.
-// Other fields vary; we accept them but only consume `token`.
+// The auth service returns the bearer token in the response body and
+// echoes the `redirecturl` posted at login/start. Other fields vary.
 // `expires` is unix milliseconds since epoch (cross-checked against
 // kbase-ui's cookie test fixtures, which use 13-digit `Date.now()`-style
 // values). cookie.ts's setToken treats the Date built from this as ms;
@@ -123,6 +123,7 @@ export type LoginPickInput = z.input<typeof LoginPickInputSchema>;
 export const LoginPickResultSchema = z
   .object({
     token: z.object({ token: z.string(), expires: z.number().optional() }).passthrough(),
+    redirecturl: z.string().nullable().optional(),
   })
   .passthrough();
 export type LoginPickResult = z.infer<typeof LoginPickResultSchema>;

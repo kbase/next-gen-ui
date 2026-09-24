@@ -76,21 +76,27 @@ matching kbase-ui's `kbaseBaseQuery` behavior.
 ## Flow
 
 1. `/login` form-POSTs to `{AUTH_ORIGIN}/services/auth/login/start/`
-   with `provider=ORCID` and
-   `redirecturl=<our-origin>/login/continue?state=<json>`. The state
-   blob carries `{ nextRequest }` per kbase-ui's pattern; the auth
-   service round-trips it through ORCID and back.
-2. Auth service redirects through ORCID and back to `/login/continue`
-   with an in-process cookie set on `.kbase.us`.
+   with `provider=ORCID`,
+   `redirecturl=<our-origin>/login/continue?state=<json>`, and
+   `environment=<name>` when `AUTH_ENVIRONMENT` is set. The state blob
+   carries `{ nextRequest }` per kbase-ui's pattern. The destination
+   travels inside a query param because the auth service stores
+   `redirecturl` in a cookie: a raw `;` ends the cookie value
+   (`/x?q=a;b` is stored as `/x?q=a`) and a raw `"` gets a 400;
+   `URLSearchParams` encodes both.
+2. Auth service redirects through ORCID and back to the landing URL
+   configured for the environment, `/login/continue`, with an
+   in-process cookie set on `.kbase.us`.
 3. `/login/continue` calls `getLoginChoice()` then `postLoginPick(...)`
    to exchange the in-process cookie for a session token, then
    `primeAuthCache(qc, { token, expiresAt })` writes the
    `kbase_session` cookie _and_ seeds the auth query cache atomically.
    Validation runs _before_ the cookie is written, so failure leaves
    no state behind.
-4. `nextRequest` is parsed via `parseSafeRedirect()` on receipt. It
-   round-trips through the auth service unsigned, so it's treated as
-   untrusted regardless of source.
+4. `nextRequest` is read from the `redirecturl` the pick response
+   echoes back, as kbase-ui does; the landing URL carries no `state`.
+   It round-trips through the auth service unsigned, so it's treated
+   as untrusted regardless of source.
 5. Subsequent navigation to private routes is gated by the root
    `beforeLoad`, which `ensureQueryData(authMeOptions())`s and
    redirects to `/login?redirect=<href>` on `null`. Visiting `/login`

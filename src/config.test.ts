@@ -69,4 +69,18 @@ describe('runtime config', () => {
     const config = await loadConfig();
     expect(config.cookieDomain).toBeUndefined();
   });
+
+  it('reads the auth environment name', async () => {
+    setMeta('auth-origin', 'https://kbase.us');
+    setMeta('auth-environment', 'gen2');
+    const config = await loadConfig();
+    expect(config.authEnvironment).toBe('gen2');
+  });
+
+  it('reads a surviving auth-environment placeholder as unset', async () => {
+    setMeta('auth-origin', 'https://kbase.us');
+    setMeta('auth-environment', '__AUTH_ENVIRONMENT__');
+    const config = await loadConfig();
+    expect(config.authEnvironment).toBeUndefined();
+  });
 });

@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-ARG NODE_VERSION=22
+ARG NODE_VERSION=22.23.4
 ARG NGINX_VERSION=1.27-alpine
 
 # --platform=$BUILDPLATFORM: the deps and build stages run on the runner's

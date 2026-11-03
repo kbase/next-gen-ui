@@ -482,8 +482,6 @@ const DECLARED: readonly Portal[] = [
     // code 92e5827`; 92e5827 is the v1.1.0 tag.
     version: 'v1.1.0',
     updated: '2026-10-29',
-    // Every view with data in it is behind the gate.
-    undeployed: true,
   },
 ];
 

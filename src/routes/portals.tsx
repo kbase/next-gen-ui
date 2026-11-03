@@ -428,8 +428,7 @@ const DECLARED: readonly Portal[] = [
     topics: ['Enzymes', 'Biomanufacturing', 'Data releases'],
     // `ideas-portal sources --json`: the released dataset plus three enrichment providers.
     sources: ['IDEAS program (Argonne)', 'PubChem', 'UniProt', 'RCSB PDB'],
-    // The deployed portal's footer prints `ideas-portal 0.1.12`; the `_v1` in a
-    // dataset id (ideas.diad_v1) is that dataset's release, not the app's.
+    // The deployed portal prints `ideas-portal 0.1.12` below its dataset list.
     version: 'v0.1.12',
     updated: '2026-10-17',
   },
@@ -466,18 +465,21 @@ const DECLARED: readonly Portal[] = [
   },
   {
     // Repo is WeArePROTECT/asma-data-browser, outside kbaseincubator. It is not
-    // a KIND*AI plugin, so it has no manifest: title and blurb are from its README.
+    // a KIND*AI plugin, so there is no manifest. The title is the name its
+    // pyproject.toml `description` opens with; the blurb is the rest of that
+    // description, condensed, with release.yaml `function` folded in.
     slug: 'asma-data-browser',
     title: 'PROTECT ASMA data browser',
     blurb:
-      'A checked snapshot of PROTECT’s airway-microbiome data on the KBase lakehouse — every table by research area, searchable with CSV download; the funnel of 780 strain groups from patients’ airways to mice; and a page per isolate with its genome, phenotypes, tissue and mouse results.',
+      'A survey of what PROTECT data is on the KBase lakehouse and how much, by research area, with search and a CSV download; the funnel of strain groups from patients’ airways to mice, with the team’s shortlist; a page per isolate; the formulation view.',
     section: 'data',
     facets: [FACETS.genomes, FACETS.ecology],
-    topics: ['Airway isolates', 'Strain groups', 'Lakehouse catalog'],
-    // No sources command or registry. The app reads only its packed copy of the
-    // PROTECT tenant's tables (protect.* in data/catalog/areas.csv), and its
-    // isolate pages credit GenomeDepot for gene counts.
-    sources: ['PROTECT (UC Berkeley)', 'GenomeDepot'],
+    // The three views release.yaml `function` names.
+    topics: ['Strain groups', 'Isolates', 'Formulations'],
+    // No sources command, registry or DATA_SOURCES.md. The isolate page's
+    // "Where these numbers come from" lists only protect.* lakehouse tables,
+    // one of them protect.genomedepot.browser_genome.
+    sources: ['PROTECT', 'GenomeDepot'],
     // Outside its team-password gate the portal prints `asma-data-browser 1.1.0 ·
     // code 92e5827`; 92e5827 is the v1.1.0 tag.
     version: 'v1.1.0',

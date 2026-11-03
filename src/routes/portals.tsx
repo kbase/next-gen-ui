@@ -192,8 +192,8 @@ const DECLARED: readonly Portal[] = [
       'NMDC',
       'SPIRE / GBIF',
     ],
-    version: 'v0.3.0',
-    updated: '2026-08-31',
+    version: 'v0.5.3',
+    updated: '2026-10-21',
   },
   {
     slug: 'genknown',
@@ -219,9 +219,8 @@ const DECLARED: readonly Portal[] = [
       'NMDC',
       'GOLD',
     ],
-    // The deployed portal prints no version, so this is the newest tag.
-    version: 'v0.1.7',
-    updated: '2026-09-07',
+    version: 'v0.4.3',
+    updated: '2026-10-21',
   },
   {
     slug: 'fungal-jungle',
@@ -254,8 +253,8 @@ const DECLARED: readonly Portal[] = [
       'CGD',
       'NCBI Datasets / Taxonomy',
     ],
-    version: 'v0.7.5',
-    updated: '2026-09-01',
+    version: 'v0.7.11',
+    updated: '2026-10-21',
   },
   {
     slug: 'plant-terra',
@@ -281,8 +280,8 @@ const DECLARED: readonly Portal[] = [
       'SSURGO',
       'GBIF',
     ],
-    version: 'v0.2.3',
-    updated: '2026-08-29',
+    version: 'v0.2.10',
+    updated: '2026-10-22',
   },
   {
     slug: 'diaspora',
@@ -317,8 +316,8 @@ const DECLARED: readonly Portal[] = [
       'Copernicus GLO-30 DEM',
       'Google Earth Engine rasters (ERA5 · NDVI/EVI · soil)',
     ],
-    version: 'v0.4.1',
-    updated: '2026-09-07',
+    version: 'v0.6.4',
+    updated: '2026-10-22',
   },
   {
     slug: 'enigma-strata',
@@ -339,9 +338,10 @@ const DECLARED: readonly Portal[] = [
       'Web of Microbes',
       'NOAA GHCN-Daily',
     ],
-    // Behind a team-password gate (2026-09); the portal prints this inside it.
-    version: 'v0.5.0',
-    updated: '2026-08-31',
+    // Behind a team-password gate (2026-09), so its printed version is
+    // unreadable from outside; this is the newest tag.
+    version: 'v0.7.10',
+    updated: '2026-10-24',
   },
   {
     slug: 'pmi-understory',
@@ -370,8 +370,8 @@ const DECLARED: readonly Portal[] = [
     ],
     // Behind a team-password gate (2026-09); inside it the portal prints no
     // version, so this is the newest tag.
-    version: 'v0.3.2',
-    updated: '2026-09-01',
+    version: 'v0.3.7',
+    updated: '2026-10-22',
   },
   {
     slug: 'phagecast',
@@ -385,8 +385,8 @@ const DECLARED: readonly Portal[] = [
     sources: ['Phage Foundry (DOE BER)', 'GenomeDepot'],
     // The deployed portal sits behind a team-password gate (2026-09), so its
     // printed version is unreadable from outside; this is the newest tag.
-    version: 'v0.48.0',
-    updated: '2026-09-04',
+    version: 'v0.50.8',
+    updated: '2026-10-24',
   },
   {
     slug: 'asma',
@@ -414,8 +414,8 @@ const DECLARED: readonly Portal[] = [
     ],
     // Behind a team-password gate (2026-09); inside it the portal prints no
     // version, so this is the newest tag.
-    version: 'v0.3.0',
-    updated: '2026-09-07',
+    version: 'v0.6.5',
+    updated: '2026-10-24',
   },
   {
     // Repo and CLI are `ideas-portal`; the deployed path is /portals/ideas/.
@@ -428,10 +428,9 @@ const DECLARED: readonly Portal[] = [
     topics: ['Enzymes', 'Biomanufacturing', 'Data releases'],
     // `ideas-portal sources --json`: the released dataset plus three enrichment providers.
     sources: ['IDEAS program (Argonne)', 'PubChem', 'UniProt', 'RCSB PDB'],
-    // The deployed portal prints no app version (the "v1" it shows is the
-    // dataset's), so this is the newest tag.
-    version: 'v0.1.7',
-    updated: '2026-09-01',
+    // The deployed portal prints `ideas-portal 0.1.12` below its dataset list.
+    version: 'v0.1.12',
+    updated: '2026-10-17',
   },
   {
     slug: 'fungal-biochemistry',
@@ -463,6 +462,28 @@ const DECLARED: readonly Portal[] = [
     // the portal serves the post-rename /portals/fungal-biochemistry/ path and
     // the two contributed tabs, both of which land by 36778d5 (2026-09-11).
     updated: '2026-09-11',
+  },
+  {
+    // Repo is WeArePROTECT/asma-data-browser, outside kbaseincubator. It is not
+    // a KIND*AI plugin, so there is no manifest. The title is the name its
+    // pyproject.toml `description` opens with; the blurb is the rest of that
+    // description, condensed, with release.yaml `function` folded in.
+    slug: 'asma-data-browser',
+    title: 'PROTECT ASMA data browser',
+    blurb:
+      'A survey of what PROTECT data is on the KBase lakehouse and how much, by research area, with search and a CSV download; the funnel of strain groups from patients’ airways to mice, with the team’s shortlist; a page per isolate; the formulation view.',
+    section: 'data',
+    facets: [FACETS.genomes, FACETS.ecology],
+    // The three views release.yaml `function` names.
+    topics: ['Strain groups', 'Isolates', 'Formulations'],
+    // No sources command, registry or DATA_SOURCES.md. The isolate page's
+    // "Where these numbers come from" lists only protect.* lakehouse tables,
+    // one of them protect.genomedepot.browser_genome.
+    sources: ['PROTECT', 'GenomeDepot'],
+    // Outside its team-password gate the portal prints `asma-data-browser 1.1.0 ·
+    // code 92e5827`; 92e5827 is the v1.1.0 tag.
+    version: 'v1.1.0',
+    updated: '2026-10-29',
   },
 ];
 

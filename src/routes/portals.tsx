@@ -510,9 +510,6 @@ const DECLARED: readonly Portal[] = [
     // 5eddda2e1d07. The repo carries no tags, so `updated` is that commit's date.
     version: 'v1.14.5',
     updated: '2026-11-03',
-    // Cloudflare at modelseed.org serves a headless browser its bot check, so
-    // no thumbnail has been captured.
-    undeployed: true,
   },
 ];
 

@@ -76,6 +76,8 @@ type SectionKey = keyof typeof SECTIONS;
 interface Portal {
   /** Also the thumbnail filename: `public/portal-thumbs/<slug>.webp`. */
   slug: string;
+  /** Only for a portal served outside PORTAL_BASE; the card links here instead. */
+  url?: string;
   title: string;
   blurb: string;
   section: SectionKey;
@@ -101,6 +103,8 @@ interface Portal {
 //               filename. Usually also the repo name under kbaseincubator
 //               and the key in the KIND*AI manifest; the deployed path wins
 //               when they differ (IDEAS: repo ideas-portal, path ideas).
+//   url         set only when the portal is served somewhere other than
+//               PORTAL_BASE; the slug is then the last segment of its path.
 //   title       manifest `title`, in the KIND*AI repo at plugins/<slug>.json.
 //   blurb       manifest `description`, condensed. RELEASES.md often carries
 //               detail worth folding in.
@@ -485,6 +489,28 @@ const DECLARED: readonly Portal[] = [
     version: 'v1.1.0',
     updated: '2026-10-29',
   },
+  {
+    // Repo is VibhavSetlur/ai-ale-lims-data-viewer, served from modelseed.org.
+    // Its kind/cli.py manifest is a local-only placeholder, so the title and
+    // blurb come from CITATION.cff `title` and `abstract`, and the topics from
+    // its `keywords`.
+    slug: 'aiale-dev',
+    url: 'https://modelseed.org/annotation/projects/aiale-dev/',
+    title: 'AI-ALE LIMS Data Viewer',
+    blurb:
+      'A read-only viewer over the LIMS of the robotic adaptive-laboratory-evolution study of Acinetobacter baylyi ADP1 — breseq mutation calls, dgoA* copy-number trajectories, OD600 growth curves and VerA/VerB barcode composition, with publication-figure export.',
+    section: 'data',
+    facets: [FACETS.genomes],
+    topics: ['Adaptive laboratory evolution', 'Acinetobacter baylyi', 'Copy number variation'],
+    // No sources command, registry or DATA_SOURCES.md. Per its README and
+    // docs/DATA_MODEL.md, every value is read from a snapshot of the lab's
+    // LIMS (an Argonne / ModelSEED project).
+    sources: ['AI-ALE LIMS (Argonne)'],
+    // The deployed viewer's header button reads `Static 1.14.5`, build commit
+    // 5eddda2e1d07. The repo carries no tags, so `updated` is that commit's date.
+    version: 'v1.14.5',
+    updated: '2026-11-03',
+  },
 ];
 
 const PORTALS = DECLARED.filter((p) => !p.undeployed);
@@ -829,7 +855,7 @@ function PortalCard({ portal, sectionLabel }: { portal: Portal; sectionLabel?: s
           anchor would be an interactive element nested in another. */}
       <a
         className={styles.cardLink}
-        href={`${PORTAL_BASE}${portal.slug}/`}
+        href={portal.url ?? `${PORTAL_BASE}${portal.slug}/`}
         target="_blank"
         rel="noopener noreferrer"
         aria-label={`Open the ${portal.title} portal${sectionLabel ? ` in ${sectionLabel}` : ''} (opens in a new tab)`}

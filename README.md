@@ -188,7 +188,7 @@ Multi-stage layout:
 
 1. `deps`: `npm ci` against `package*.json` with the npm cache mounted.
 2. `build`: `npm run build` → `dist/`, plus `.csp-script-hash`.
-3. `runtime`: `nginxinc/nginx-unprivileged:1.27-alpine` on port
+3. `runtime`: `nginx:1.30-alpine` running as uid 101 on port
    8080, serves `dist/` with the SPA fallback.
 
 At start, `docker-entrypoint.d/05-render-config.sh` renders both
